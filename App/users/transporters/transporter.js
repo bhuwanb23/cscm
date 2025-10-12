@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, Title, Paragraph, Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -55,13 +56,14 @@ const TransporterDashboard = ({ onLogout }) => {
   };
 
   return (
-    <LinearGradient colors={['#F8F9FA', '#E9ECEF']} style={styles.container}>
-      <Header 
-        title="Transporter Dashboard" 
-        subtitle="Delivery Management" 
-        onLogout={onLogout}
-      />
-      <ScrollView style={styles.scrollView}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+      <LinearGradient colors={['#F8F9FA', '#E9ECEF']} style={styles.container}>
+        <Header 
+          title="Transporter Dashboard" 
+          subtitle="Delivery Management" 
+          onLogout={onLogout}
+        />
+        <ScrollView style={styles.scrollView}>
 
         {/* Quick Actions */}
         <View style={styles.section}>
@@ -179,12 +181,16 @@ const TransporterDashboard = ({ onLogout }) => {
             </Card.Content>
           </Card>
         </View>
-      </ScrollView>
-    </LinearGradient>
+        </ScrollView>
+      </LinearGradient>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   container: {
     flex: 1,
   },

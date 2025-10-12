@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
 import { Provider as PaperProvider } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import LoginScreen from './login/login';
 import ShopkeeperDashboard from './users/shopkeepers/shopkeepers';
 import TransporterDashboard from './users/transporters/transporter';
@@ -32,12 +33,14 @@ export default function App() {
   };
 
   return (
-    <PaperProvider>
-      <View style={styles.container}>
-        <StatusBar style="auto" />
-        {user ? renderDashboard() : <LoginScreen onLogin={handleLogin} />}
-      </View>
-    </PaperProvider>
+    <SafeAreaProvider>
+      <PaperProvider>
+        <View style={styles.container}>
+          <StatusBar style="auto" />
+          {user ? renderDashboard() : <LoginScreen onLogin={handleLogin} />}
+        </View>
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 }
 

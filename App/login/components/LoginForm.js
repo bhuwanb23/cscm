@@ -21,18 +21,17 @@ const LoginForm = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
-      return;
-    }
-
     setLoading(true);
     
-    // Simulate API call
+    // Simulate API call - no validation needed for demo
     setTimeout(() => {
       setLoading(false);
-      onLogin({ email, password, role: userRole });
-    }, 1500);
+      onLogin({ 
+        email: email || `${userRole}@cscm.com`, 
+        password: password || 'demo123', 
+        role: userRole 
+      });
+    }, 1000);
   };
 
   return (
@@ -49,6 +48,12 @@ const LoginForm = ({ onLogin }) => {
           </View>
 
           <View style={styles.form}>
+            {/* Demo Notice */}
+            <View style={styles.demoNotice}>
+              <Ionicons name="information-circle" size={16} color="#4A90E2" />
+              <Text style={styles.demoText}>Demo Mode: Select role and click Sign In</Text>
+            </View>
+
             {/* Role Selection */}
             <View style={styles.roleContainer}>
               <Text style={styles.roleLabel}>Select Your Role:</Text>
@@ -97,7 +102,7 @@ const LoginForm = ({ onLogin }) => {
 
             {/* Email Input */}
             <TextInput
-              label="Email"
+              label="Email (Optional for Demo)"
               value={email}
               onChangeText={setEmail}
               mode="outlined"
@@ -105,17 +110,19 @@ const LoginForm = ({ onLogin }) => {
               autoCapitalize="none"
               style={styles.input}
               left={<TextInput.Icon icon="email" />}
+              placeholder="Leave empty for demo"
             />
 
             {/* Password Input */}
             <TextInput
-              label="Password"
+              label="Password (Optional for Demo)"
               value={password}
               onChangeText={setPassword}
               mode="outlined"
               secureTextEntry={!showPassword}
               style={styles.input}
               left={<TextInput.Icon icon="lock" />}
+              placeholder="Leave empty for demo"
               right={
                 <TextInput.Icon
                   icon={showPassword ? "eye-off" : "eye"}
@@ -179,6 +186,20 @@ const styles = StyleSheet.create({
   },
   form: {
     gap: 20,
+  },
+  demoNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E3F2FD',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  demoText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#4A90E2',
+    fontWeight: '500',
   },
   roleContainer: {
     marginBottom: 10,

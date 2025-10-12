@@ -9,7 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Provider as PaperProvider } from 'react-native-paper';
 import LoginForm from './components/LoginForm';
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = ({ onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (loginData) => {
@@ -22,18 +22,8 @@ const LoginScreen = ({ navigation }) => {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Navigate based on role
-      if (loginData.role === 'shopkeeper') {
-        // Navigate to shopkeeper dashboard
-        Alert.alert('Success', 'Welcome, Shopkeeper!', [
-          { text: 'OK', onPress: () => console.log('Navigate to shopkeeper dashboard') }
-        ]);
-      } else if (loginData.role === 'transporter') {
-        // Navigate to transporter dashboard
-        Alert.alert('Success', 'Welcome, Transporter!', [
-          { text: 'OK', onPress: () => console.log('Navigate to transporter dashboard') }
-        ]);
-      }
+      // Directly navigate based on role without alerts
+      onLogin(loginData);
     } catch (error) {
       Alert.alert('Error', 'Login failed. Please try again.');
     } finally {

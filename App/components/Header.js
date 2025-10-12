@@ -5,27 +5,33 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 const Header = ({ title, subtitle, onLogout, showLogout = true }) => {
   return (
-    <View style={styles.header}>
-      <View style={styles.headerContent}>
-        <View style={styles.headerText}>
-          <Text style={styles.headerTitle}>{title}</Text>
-          {subtitle && <Text style={styles.headerSubtitle}>{subtitle}</Text>}
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <View style={styles.headerText}>
+            <Text style={styles.headerTitle}>{title}</Text>
+            {subtitle && <Text style={styles.headerSubtitle}>{subtitle}</Text>}
+          </View>
+          {showLogout && (
+            <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
+              <Ionicons name="log-out-outline" size={24} color="#FF6B6B" />
+            </TouchableOpacity>
+          )}
         </View>
-        {showLogout && (
-          <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-            <Ionicons name="log-out-outline" size={24} color="#FF6B6B" />
-          </TouchableOpacity>
-        )}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    backgroundColor: '#fff',
+  },
   header: {
     backgroundColor: '#fff',
     paddingHorizontal: 16,
