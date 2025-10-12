@@ -37,6 +37,8 @@ const LoginScreen = ({ onLogin }) => {
       <LinearGradient
         colors={['#4A90E2', '#357ABD', '#2C5AA0']}
         style={styles.container}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
       >
         <View style={styles.overlay}>
           <LoginForm onLogin={handleLogin} />
@@ -52,7 +54,9 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
