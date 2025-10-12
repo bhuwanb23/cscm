@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Header from './components/Header';
 import BottomNavbar from './components/BottomNavbar';
 import Dashboard from './dashboard/dashboard';
+import Inventory from './inventory/inventory';
 
 const ShopkeeperDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -60,24 +61,7 @@ const ShopkeeperDashboard = ({ onLogout }) => {
   const renderDashboard = () => <Dashboard />;
 
   const renderInventory = () => (
-    <ScrollView style={styles.scrollView}>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Inventory Management</Text>
-        <Card style={styles.card}>
-          <Card.Content>
-            {inventoryData.map((item, index) => (
-              <View key={index} style={styles.inventoryItem}>
-                <View style={styles.inventoryInfo}>
-                  <Text style={styles.inventoryName}>{item.item}</Text>
-                  <Text style={styles.inventoryQuantity}>{item.quantity} units</Text>
-                </View>
-                <View style={[styles.statusIndicator, { backgroundColor: item.color }]} />
-              </View>
-            ))}
-          </Card.Content>
-        </Card>
-      </View>
-    </ScrollView>
+    <Inventory />
   );
 
   const renderOrders = () => (
