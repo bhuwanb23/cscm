@@ -1,0 +1,102 @@
+export const SHIPMENT_CONSTANTS = {
+  FILTER_OPTIONS: [
+    { id: 'active', label: 'Active', count: 4, activeColor: '#2563EB', activeTextColor: '#FFFFFF', inactiveColor: '#F3F4F6', inactiveTextColor: '#6B7280' },
+    { id: 'delivered', label: 'Delivered', count: 0, activeColor: '#2563EB', activeTextColor: '#FFFFFF', inactiveColor: '#F3F4F6', inactiveTextColor: '#6B7280' },
+    { id: 'delayed', label: 'Delayed', count: 0, activeColor: '#2563EB', activeTextColor: '#FFFFFF', inactiveColor: '#F3F4F6', inactiveTextColor: '#6B7280' },
+  ],
+
+  SHIPMENT_STATUS: {
+    IN_TRANSIT: { label: 'In Transit', bgColor: '#DBEAFE', textColor: '#1E40AF', borderColor: '#3B82F6' },
+    ARRIVING_SOON: { label: 'Arriving Soon', bgColor: '#D1FAE5', textColor: '#065F46', borderColor: '#10B981' },
+    DELAYED: { label: 'Delayed', bgColor: '#FFEDD5', textColor: '#9A3412', borderColor: '#F59E0B' },
+    OUT_FOR_DELIVERY: { label: 'Out for Delivery', bgColor: '#F3E8FF', textColor: '#7C3AED', borderColor: '#A855F7' },
+    DELIVERED: { label: 'Delivered', bgColor: '#D1FAE5', textColor: '#065F46', borderColor: '#10B981' },
+  },
+
+  SAMPLE_SHIPMENTS: [
+    {
+      id: 'SH-2024-001',
+      title: 'Electronics & Components',
+      status: 'in_transit',
+      progress: 75,
+      eta: 'Today, 3:30 PM',
+      transporter: 'FedEx Express',
+      distance: '2.5 km away',
+      icon: 'location-dot',
+      iconColor: '#3B82F6',
+      actionText: 'View Details',
+      actionColor: '#3B82F6',
+    },
+    {
+      id: 'SH-2024-002',
+      title: 'Raw Materials',
+      status: 'arriving_soon',
+      progress: 95,
+      eta: 'Today, 1:15 PM',
+      transporter: 'DHL Logistics',
+      distance: '0.8 km away',
+      icon: 'location-dot',
+      iconColor: '#10B981',
+      actionText: 'Confirm Delivery',
+      actionColor: '#10B981',
+    },
+    {
+      id: 'SH-2024-003',
+      title: 'Office Supplies',
+      status: 'delayed',
+      progress: 60,
+      eta: 'Tomorrow, 10:00 AM',
+      transporter: 'UPS Ground',
+      distance: 'Weather delay',
+      icon: 'triangle-exclamation',
+      iconColor: '#F59E0B',
+      actionText: 'View Details',
+      actionColor: '#3B82F6',
+    },
+    {
+      id: 'SH-2024-004',
+      title: 'Packaging Materials',
+      status: 'out_for_delivery',
+      progress: 90,
+      eta: 'Today, 2:45 PM',
+      transporter: 'Local Courier',
+      distance: 'Driver: John D.',
+      icon: 'truck',
+      iconColor: '#A855F7',
+      actionText: 'Track Live',
+      actionColor: '#3B82F6',
+    },
+  ],
+
+  QUICK_ACTIONS: [
+    {
+      id: 'scan-barcode',
+      title: 'Scan Barcode',
+      icon: 'qr-code',
+      color: '#3B82F6',
+    },
+    {
+      id: 'photo-upload',
+      title: 'Photo Upload',
+      icon: 'camera',
+      color: '#3B82F6',
+    },
+  ],
+
+  RECENT_DELIVERIES: [
+    {
+      id: 'SH-2023-998',
+      title: 'Electronics & Accessories',
+      deliveredAt: 'Delivered yesterday at 2:30 PM',
+      itemCount: '24 items',
+      status: 'delivered',
+    },
+    {
+      id: 'SH-2023-997',
+      title: 'Home & Garden',
+      deliveredAt: 'Delivered 2 days ago at 11:15 AM',
+      itemCount: '15 items',
+      status: 'delivered',
+    },
+  ],
+};
