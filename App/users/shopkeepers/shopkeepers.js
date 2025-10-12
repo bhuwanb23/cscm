@@ -14,6 +14,7 @@ import Header from './components/Header';
 import BottomNavbar from './components/BottomNavbar';
 import Dashboard from './dashboard/dashboard';
 import Inventory from './inventory/inventory';
+import StockRequest from './stock_request/stock_request';
 
 const ShopkeeperDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -44,17 +45,17 @@ const ShopkeeperDashboard = ({ onLogout }) => {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return renderDashboard();
+        return <Dashboard />;
       case 'inventory':
-        return renderInventory();
+        return <Inventory />;
       case 'orders':
-        return renderOrders();
+        return <StockRequest />;
       case 'shipments':
         return renderShipments();
       case 'messages':
         return renderMessages();
       default:
-        return renderDashboard();
+        return <Dashboard />;
     }
   };
 
@@ -62,19 +63,6 @@ const ShopkeeperDashboard = ({ onLogout }) => {
 
   const renderInventory = () => (
     <Inventory />
-  );
-
-  const renderOrders = () => (
-    <ScrollView style={styles.scrollView}>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Stock Requests</Text>
-        <Card style={styles.card}>
-          <Card.Content>
-            <Text style={styles.placeholderText}>No pending requests</Text>
-          </Card.Content>
-        </Card>
-      </View>
-    </ScrollView>
   );
 
   const renderShipments = () => (
