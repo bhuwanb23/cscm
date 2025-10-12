@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,9 +10,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, Title, Paragraph, Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Header from '../../components/Header';
+import Header from './components/Header';
+import BottomNavbar from './components/BottomNavbar';
 
 const ShopkeeperDashboard = ({ onLogout }) => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+
   const inventoryData = [
     { item: 'Milk', quantity: 15, status: 'low', color: '#FF6B6B' },
     { item: 'Bread', quantity: 45, status: 'medium', color: '#FFD93D' },
@@ -32,6 +35,169 @@ const ShopkeeperDashboard = ({ onLogout }) => {
     { title: 'Track Shipments', icon: 'car', color: '#FF6B6B' },
   ];
 
+  const handleTabPress = (tabId) => {
+    setActiveTab(tabId);
+  };
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return renderDashboard();
+      case 'inventory':
+        return renderInventory();
+      case 'orders':
+        return renderOrders();
+      case 'shipments':
+        return renderShipments();
+      case 'messages':
+        return renderMessages();
+      default:
+        return renderDashboard();
+    }
+  };
+
+  const renderDashboard = () => (
+    <ScrollView style={styles.scrollView}>
+      {/* Quick Actions */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <View style={styles.quickActionsGrid}>
+          {quickActions.map((action, index) => (
+            <TouchableOpacity key={index} style={styles.quickActionCard}>
+              <Ionicons name={action.icon} size={24} color={action.color} />
+              <Text style={styles.quickActionText}>{action.title}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Inventory Overview */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Inventory Overview</Text>
+        <Card style={styles.card}>
+          <Card.Content>
+            {inventoryData.map((item, index) => (
+              <View key={index} style={styles.inventoryItem}>
+                <View style={styles.inventoryInfo}>
+                  <Text style={styles.inventoryName}>{item.item}</Text>
+                  <Text style={styles.inventoryQuantity}>{item.quantity} units</Text>
+                </View>
+                <View style={[styles.statusIndicator, { backgroundColor: item.color }]} />
+              </View>
+            ))}
+          </Card.Content>
+        </Card>
+      </View>
+
+      {/* Pending Shipments */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Pending Shipments</Text>
+        {pendingShipments.map((shipment, index) => (
+          <Card key={index} style={styles.shipmentCard}>
+            <Card.Content>
+              <View style={styles.shipmentHeader}>
+                <Text style={styles.shipmentId}>#{shipment.id}</Text>
+                <Text style={styles.shipmentStatus}>{shipment.status}</Text>
+              </View>
+              <Text style={styles.shipmentItems}>{shipment.items}</Text>
+              <Text style={styles.shipmentEta}>ETA: {shipment.eta}</Text>
+              <Button mode="outlined" style={styles.trackButton}>
+                Track Shipment
+              </Button>
+            </Card.Content>
+          </Card>
+        ))}
+      </View>
+
+      {/* Alerts */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Alerts</Text>
+        <Card style={[styles.card, styles.alertCard]}>
+          <Card.Content>
+            <View style={styles.alertItem}>
+              <Ionicons name="warning" size={20} color="#FF6B6B" />
+              <Text style={styles.alertText}>Low stock alert: Milk and Rice</Text>
+            </View>
+            <View style={styles.alertItem}>
+              <Ionicons name="information-circle" size={20} color="#4A90E2" />
+              <Text style={styles.alertText}>New delivery scheduled for tomorrow</Text>
+            </View>
+          </Card.Content>
+        </Card>
+      </View>
+    </ScrollView>
+  );
+
+  const renderInventory = () => (
+    <ScrollView style={styles.scrollView}>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Inventory Management</Text>
+        <Card style={styles.card}>
+          <Card.Content>
+            {inventoryData.map((item, index) => (
+              <View key={index} style={styles.inventoryItem}>
+                <View style={styles.inventoryInfo}>
+                  <Text style={styles.inventoryName}>{item.item}</Text>
+                  <Text style={styles.inventoryQuantity}>{item.quantity} units</Text>
+                </View>
+                <View style={[styles.statusIndicator, { backgroundColor: item.color }]} />
+              </View>
+            ))}
+          </Card.Content>
+        </Card>
+      </View>
+    </ScrollView>
+  );
+
+  const renderOrders = () => (
+    <ScrollView style={styles.scrollView}>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Stock Requests</Text>
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text style={styles.placeholderText}>No pending requests</Text>
+          </Card.Content>
+        </Card>
+      </View>
+    </ScrollView>
+  );
+
+  const renderShipments = () => (
+    <ScrollView style={styles.scrollView}>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Shipment Tracking</Text>
+        {pendingShipments.map((shipment, index) => (
+          <Card key={index} style={styles.shipmentCard}>
+            <Card.Content>
+              <View style={styles.shipmentHeader}>
+                <Text style={styles.shipmentId}>#{shipment.id}</Text>
+                <Text style={styles.shipmentStatus}>{shipment.status}</Text>
+              </View>
+              <Text style={styles.shipmentItems}>{shipment.items}</Text>
+              <Text style={styles.shipmentEta}>ETA: {shipment.eta}</Text>
+              <Button mode="outlined" style={styles.trackButton}>
+                Track Shipment
+              </Button>
+            </Card.Content>
+          </Card>
+        ))}
+      </View>
+    </ScrollView>
+  );
+
+  const renderMessages = () => (
+    <ScrollView style={styles.scrollView}>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Messages</Text>
+        <Card style={styles.card}>
+          <Card.Content>
+            <Text style={styles.placeholderText}>No new messages</Text>
+          </Card.Content>
+        </Card>
+      </View>
+    </ScrollView>
+  );
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <LinearGradient colors={['#F8F9FA', '#E9ECEF']} style={styles.container}>
@@ -40,76 +206,8 @@ const ShopkeeperDashboard = ({ onLogout }) => {
           subtitle="Store Management" 
           onLogout={onLogout}
         />
-        <ScrollView style={styles.scrollView}>
-
-        {/* Quick Actions */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.quickActionsGrid}>
-            {quickActions.map((action, index) => (
-              <TouchableOpacity key={index} style={styles.quickActionCard}>
-                <Ionicons name={action.icon} size={24} color={action.color} />
-                <Text style={styles.quickActionText}>{action.title}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Inventory Overview */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Inventory Overview</Text>
-          <Card style={styles.card}>
-            <Card.Content>
-              {inventoryData.map((item, index) => (
-                <View key={index} style={styles.inventoryItem}>
-                  <View style={styles.inventoryInfo}>
-                    <Text style={styles.inventoryName}>{item.item}</Text>
-                    <Text style={styles.inventoryQuantity}>{item.quantity} units</Text>
-                  </View>
-                  <View style={[styles.statusIndicator, { backgroundColor: item.color }]} />
-                </View>
-              ))}
-            </Card.Content>
-          </Card>
-        </View>
-
-        {/* Pending Shipments */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Pending Shipments</Text>
-          {pendingShipments.map((shipment, index) => (
-            <Card key={index} style={styles.shipmentCard}>
-              <Card.Content>
-                <View style={styles.shipmentHeader}>
-                  <Text style={styles.shipmentId}>#{shipment.id}</Text>
-                  <Text style={styles.shipmentStatus}>{shipment.status}</Text>
-                </View>
-                <Text style={styles.shipmentItems}>{shipment.items}</Text>
-                <Text style={styles.shipmentEta}>ETA: {shipment.eta}</Text>
-                <Button mode="outlined" style={styles.trackButton}>
-                  Track Shipment
-                </Button>
-              </Card.Content>
-            </Card>
-          ))}
-        </View>
-
-        {/* Alerts */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Alerts</Text>
-          <Card style={[styles.card, styles.alertCard]}>
-            <Card.Content>
-              <View style={styles.alertItem}>
-                <Ionicons name="warning" size={20} color="#FF6B6B" />
-                <Text style={styles.alertText}>Low stock alert: Milk and Rice</Text>
-              </View>
-              <View style={styles.alertItem}>
-                <Ionicons name="information-circle" size={20} color="#4A90E2" />
-                <Text style={styles.alertText}>New delivery scheduled for tomorrow</Text>
-              </View>
-            </Card.Content>
-          </Card>
-        </View>
-        </ScrollView>
+        {renderContent()}
+        <BottomNavbar activeTab={activeTab} onTabPress={handleTabPress} />
       </LinearGradient>
     </SafeAreaView>
   );
@@ -241,6 +339,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#2C3E50',
     flex: 1,
+  },
+  placeholderText: {
+    fontSize: 16,
+    color: '#7F8C8D',
+    textAlign: 'center',
+    paddingVertical: 20,
   },
 });
 
