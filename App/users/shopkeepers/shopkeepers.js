@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from './components/Header';
 import BottomNavbar from './components/BottomNavbar';
+import Dashboard from './dashboard/dashboard';
 
 const ShopkeeperDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -56,77 +57,7 @@ const ShopkeeperDashboard = ({ onLogout }) => {
     }
   };
 
-  const renderDashboard = () => (
-    <ScrollView style={styles.scrollView}>
-      {/* Quick Actions */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
-        <View style={styles.quickActionsGrid}>
-          {quickActions.map((action, index) => (
-            <TouchableOpacity key={index} style={styles.quickActionCard}>
-              <Ionicons name={action.icon} size={24} color={action.color} />
-              <Text style={styles.quickActionText}>{action.title}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      {/* Inventory Overview */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Inventory Overview</Text>
-        <Card style={styles.card}>
-          <Card.Content>
-            {inventoryData.map((item, index) => (
-              <View key={index} style={styles.inventoryItem}>
-                <View style={styles.inventoryInfo}>
-                  <Text style={styles.inventoryName}>{item.item}</Text>
-                  <Text style={styles.inventoryQuantity}>{item.quantity} units</Text>
-                </View>
-                <View style={[styles.statusIndicator, { backgroundColor: item.color }]} />
-              </View>
-            ))}
-          </Card.Content>
-        </Card>
-      </View>
-
-      {/* Pending Shipments */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Pending Shipments</Text>
-        {pendingShipments.map((shipment, index) => (
-          <Card key={index} style={styles.shipmentCard}>
-            <Card.Content>
-              <View style={styles.shipmentHeader}>
-                <Text style={styles.shipmentId}>#{shipment.id}</Text>
-                <Text style={styles.shipmentStatus}>{shipment.status}</Text>
-              </View>
-              <Text style={styles.shipmentItems}>{shipment.items}</Text>
-              <Text style={styles.shipmentEta}>ETA: {shipment.eta}</Text>
-              <Button mode="outlined" style={styles.trackButton}>
-                Track Shipment
-              </Button>
-            </Card.Content>
-          </Card>
-        ))}
-      </View>
-
-      {/* Alerts */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Alerts</Text>
-        <Card style={[styles.card, styles.alertCard]}>
-          <Card.Content>
-            <View style={styles.alertItem}>
-              <Ionicons name="warning" size={20} color="#FF6B6B" />
-              <Text style={styles.alertText}>Low stock alert: Milk and Rice</Text>
-            </View>
-            <View style={styles.alertItem}>
-              <Ionicons name="information-circle" size={20} color="#4A90E2" />
-              <Text style={styles.alertText}>New delivery scheduled for tomorrow</Text>
-            </View>
-          </Card.Content>
-        </Card>
-      </View>
-    </ScrollView>
-  );
+  const renderDashboard = () => <Dashboard />;
 
   const renderInventory = () => (
     <ScrollView style={styles.scrollView}>
