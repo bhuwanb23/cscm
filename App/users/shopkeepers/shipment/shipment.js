@@ -2,13 +2,13 @@ import React from 'react';
 import {
   View,
   StyleSheet,
-  ScrollView,
+  FlatList,
 } from 'react-native';
 import { useShipmentData } from './hooks/useShipmentData';
 import FilterTabs from './components/FilterTabs';
 import MapToggle from './components/MapToggle';
 import MapView from './components/MapView';
-import ShipmentList from './components/ShipmentList';
+import ShipmentCard from './components/ShipmentCard';
 import QuickActions from './components/QuickActions';
 import RecentDeliveries from './components/RecentDeliveries';
 
@@ -33,37 +33,50 @@ const Shipment = () => {
     }
   };
 
+  const renderHeader = () => (
+    <View>
+      <FilterTabs
+        activeFilter={activeFilter}
+        onFilterChange={setActiveFilter}
+      />
+      
+      <MapToggle
+        isEnabled={isMapViewEnabled}
+        onToggle={() => setIsMapViewEnabled(!isMapViewEnabled)}
+      />
+
+      {isMapViewEnabled && (
+        <MapView activeShipmentsCount={shipments.length} />
+      )}
+    </View>
+  );
+
+  const renderFooter = () => (
+    <View>
+      <QuickActions />
+      <RecentDeliveries deliveries={recentDeliveries} />
+    </View>
+  );
+
+  const renderShipmentItem = ({ item }) => (
+    <ShipmentCard
+      shipment={item}
+      onActionPress={handleActionPress}
+      getStatusStyle={getStatusStyle}
+    />
+  );
+
   return (
     <View style={styles.container}>
-      <ScrollView
-        style={styles.scrollView}
+      <FlatList
+        data={shipments}
+        keyExtractor={(item) => item.id}
+        renderItem={renderShipmentItem}
+        ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
+        contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        <FilterTabs
-          activeFilter={activeFilter}
-          onFilterChange={setActiveFilter}
-        />
-        
-        <MapToggle
-          isEnabled={isMapViewEnabled}
-          onToggle={() => setIsMapViewEnabled(!isMapViewEnabled)}
-        />
-
-        {isMapViewEnabled && (
-          <MapView activeShipmentsCount={shipments.length} />
-        )}
-
-        <ShipmentList
-          shipments={shipments}
-          onActionPress={handleActionPress}
-          getStatusStyle={getStatusStyle}
-        />
-
-        <QuickActions />
-
-        <RecentDeliveries deliveries={recentDeliveries} />
-      </ScrollView>
+      />
     </View>
   );
 };
@@ -73,10 +86,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F9FAFB',
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
+  listContent: {
     paddingBottom: 20,
   },
 });

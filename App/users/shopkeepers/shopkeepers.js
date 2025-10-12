@@ -15,6 +15,8 @@ import BottomNavbar from './components/BottomNavbar';
 import Dashboard from './dashboard/dashboard';
 import Inventory from './inventory/inventory';
 import StockRequest from './stock_request/stock_request';
+import Shipment from './shipment/shipment';
+import Communication from './communication';
 
 const ShopkeeperDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -51,9 +53,9 @@ const ShopkeeperDashboard = ({ onLogout }) => {
       case 'orders':
         return <StockRequest />;
       case 'shipments':
-        return renderShipments();
+        return <Shipment />;
       case 'messages':
-        return renderMessages();
+        return <Communication />;
       default:
         return <Dashboard />;
     }
@@ -63,42 +65,6 @@ const ShopkeeperDashboard = ({ onLogout }) => {
 
   const renderInventory = () => (
     <Inventory />
-  );
-
-  const renderShipments = () => (
-    <ScrollView style={styles.scrollView}>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Shipment Tracking</Text>
-        {pendingShipments.map((shipment, index) => (
-          <Card key={index} style={styles.shipmentCard}>
-            <Card.Content>
-              <View style={styles.shipmentHeader}>
-                <Text style={styles.shipmentId}>#{shipment.id}</Text>
-                <Text style={styles.shipmentStatus}>{shipment.status}</Text>
-              </View>
-              <Text style={styles.shipmentItems}>{shipment.items}</Text>
-              <Text style={styles.shipmentEta}>ETA: {shipment.eta}</Text>
-              <Button mode="outlined" style={styles.trackButton}>
-                Track Shipment
-              </Button>
-            </Card.Content>
-          </Card>
-        ))}
-      </View>
-    </ScrollView>
-  );
-
-  const renderMessages = () => (
-    <ScrollView style={styles.scrollView}>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Messages</Text>
-        <Card style={styles.card}>
-          <Card.Content>
-            <Text style={styles.placeholderText}>No new messages</Text>
-          </Card.Content>
-        </Card>
-      </View>
-    </ScrollView>
   );
 
   return (
