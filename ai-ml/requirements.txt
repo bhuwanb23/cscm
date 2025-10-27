@@ -1,0 +1,72 @@
+# AI/ML Project Requirements for Cognitive Supply Chain Mesh
+
+# Core Data Science Libraries
+numpy>=1.21.0
+pandas>=1.3.0
+scipy>=1.7.0
+scikit-learn>=1.0.0
+
+# Visualization
+matplotlib>=3.4.0
+seaborn>=0.11.0
+plotly>=5.0.0
+
+# Machine Learning Frameworks
+torch>=1.9.0
+torchvision>=0.10.0
+tensorflow>=2.6.0
+xgboost>=1.5.0
+lightgbm>=3.3.0
+catboost>=1.0.0
+
+# Time Series Libraries
+statsmodels>=0.13.0
+pytorch-forecasting>=0.9.0
+gluonts>=0.10.0
+
+# Reinforcement Learning
+ray[rllib]>=1.10.0
+stable-baselines3>=1.5.0
+
+# Natural Language Processing
+transformers>=4.10.0
+tokenizers>=0.10.0
+sentence-transformers>=2.1.0
+
+# Computer Vision
+opencv-python>=4.5.0
+Pillow>=8.3.0
+detectron2@git+https://github.com/facebookresearch/detectron2.git
+
+# Graph Libraries
+networkx>=2.6.0
+pytorch-geometric>=2.0.0
+dgl>=0.8.0
+
+# Federated Learning
+tensorflow-federated>=0.20.0
+pysyft>=0.7.0
+
+# Optimization
+ortools>=9.0.0
+gurobipy>=9.5.0
+
+# MLOps
+mlflow>=1.20.0
+seldon-core>=1.12.0
+feast>=0.15.0
+airflow>=2.2.0
+
+# Monitoring
+prometheus-client>=0.11.0
+grafana-api>=1.0.0
+
+# Utilities
+pyyaml>=5.4.0
+joblib>=1.0.0
+tqdm>=4.62.0
+requests>=2.25.0
+
+# Testing
+pytest>=6.2.0
+pytest-cov>=2.12.0

@@ -1,0 +1,60 @@
+# Project Configuration for CSCM AI/ML System
+
+project_name: "Cognitive Supply Chain Mesh"
+version: "1.0.0"
+description: "AI/ML components for the Cognitive Supply Chain Mesh"
+
+# Data Configuration
+data:
+  raw_data_path: "../data/raw"
+  processed_data_path: "../data/processed"
+  feature_store_path: "../data/features"
+  data_retention_days: 365
+
+# Model Configuration
+models:
+  demand_forecasting:
+    retrain_frequency: "daily"
+    forecast_horizon_days: 30
+    model_types: ["statistical", "ml", "deep_learning"]
+  
+  inventory_optimization:
+    optimization_frequency: "nightly"
+    safety_stock_method: "quantile_based"
+  
+  routing_optimization:
+    route_recalculation_interval_minutes: 15
+    solver: "or_tools"
+  
+  anomaly_detection:
+    detection_frequency: "hourly"
+    alert_threshold: 0.8
+
+# Training Configuration
+training:
+  default_framework: "pytorch"
+  gpu_required: true
+  cloud_training: true
+  edge_deployment: true
+  federated_learning: true
+
+# Deployment Configuration
+deployment:
+  edge_inference: true
+  cloud_training: true
+  model_serving_platform: "seldon"
+  monitoring_enabled: true
+
+# MLOps Configuration
+mlops:
+  experiment_tracking: "mlflow"
+  pipeline_orchestration: "airflow"
+  model_registry: "mlflow"
+  monitoring: "prometheus_grafana"
+
+# Team Configuration
+team:
+  data_scientists: 2
+  ml_engineers: 2
+  mlops_engineers: 1
+  domain_experts: 2
