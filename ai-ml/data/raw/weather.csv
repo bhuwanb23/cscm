@@ -1,0 +1,4 @@
+date,temperature,humidity,precipitation,wind_speed,condition
+2023-01-01,32,65,0.0,5,Sunny
+2023-01-02,30,70,0.2,8,Cloudy
+2023-01-03,28,75,0.5,12,Rainy

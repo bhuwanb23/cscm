@@ -1,0 +1,6 @@
+date,sku_id,store_id,inventory_on_hand,reorder_point,max_stock_level,stockout_flag,year,month,day,weekday,dayofyear,weekofyear,quarter,is_weekend,is_month_start,is_month_end,is_quarter_start,is_holiday,holiday_name,inventory_utilization,below_reorder_point
+2023-01-01,1,1,100,20,200,False,2023,1,1,6,1,52,1,True,True,False,True,True,New Year,0.5,False
+2023-01-01,2,1,50,10,100,False,2023,1,1,6,1,52,1,True,True,False,True,True,New Year,0.5,False
+2023-01-02,1,1,95,20,200,False,2023,1,2,0,2,1,1,False,True,False,False,False,,0.475,False
+2023-01-02,2,1,0,10,100,True,2023,1,2,0,2,1,1,False,True,False,False,False,,0.0,True
+2023-01-03,1,2,200,30,300,False,2023,1,3,1,3,1,1,False,True,False,False,False,,0.6666666666666666,False

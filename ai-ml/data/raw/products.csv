@@ -1,0 +1,5 @@
+sku_id,product_name,category,subcategory,brand,supplier_id,lead_time_days,weight,volume,unit_of_measure
+1,Whole Milk,Dairy,Fresh Milk,Organic Farms,101,2,1.0,1.5,L
+2,White Bread,Bakery,Sliced Bread,Golden Grain,102,1,0.5,1.0,loaf
+3,Fresh Eggs,Dairy,Eggs,Countryside Farms,103,3,0.7,0.8,dozen
+4,Ground Beef,Meat,Beef,Prime Cuts,104,2,1.0,1.2,lb

@@ -1,0 +1,6 @@
+date,sku_id,store_id,inventory_on_hand,reorder_point,max_stock_level,stockout_flag
+2023-01-01,1,1,100,20,200,False
+2023-01-01,2,1,50,10,100,False
+2023-01-02,1,1,95,20,200,False
+2023-01-02,2,1,0,10,100,True
+2023-01-03,1,2,200,30,300,False

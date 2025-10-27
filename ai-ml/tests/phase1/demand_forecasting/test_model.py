@@ -23,12 +23,12 @@ def test_demand_forecaster_initialization():
 
 def test_demand_forecaster_train():
     """Test training of DemandForecaster."""
-    # Create sample data
+    # Create sample data with string dates
     dates = pd.date_range('2023-01-01', periods=50)
     sales = np.random.randint(50, 200, 50)
     
     train_data = pd.DataFrame({
-        'date': dates,
+        'date': dates.strftime('%Y-%m-%d'),  # Convert to string format
         'sales': sales,
         'product_id': 1
     })
@@ -42,12 +42,12 @@ def test_demand_forecaster_train():
 
 def test_demand_forecaster_predict():
     """Test prediction of DemandForecaster."""
-    # Create sample data
+    # Create sample data with string dates (larger dataset for lag features)
     dates = pd.date_range('2023-01-01', periods=100)
     sales = np.random.randint(50, 200, 100)
     
     data = pd.DataFrame({
-        'date': dates,
+        'date': dates.strftime('%Y-%m-%d'),  # Convert to string format
         'sales': sales,
         'product_id': 1
     })
@@ -68,12 +68,12 @@ def test_demand_forecaster_predict():
 
 def test_demand_forecaster_evaluate():
     """Test evaluation of DemandForecaster."""
-    # Create sample data
+    # Create sample data with string dates (larger dataset for lag features)
     dates = pd.date_range('2023-01-01', periods=100)
     sales = np.random.randint(50, 200, 100)
     
     data = pd.DataFrame({
-        'date': dates,
+        'date': dates.strftime('%Y-%m-%d'),  # Convert to string format
         'sales': sales,
         'product_id': 1
     })
@@ -97,12 +97,12 @@ def test_demand_forecaster_evaluate():
 
 def test_demand_forecaster_predict_before_train():
     """Test that predict raises error if model is not trained."""
-    # Create sample data
+    # Create sample data with string dates
     dates = pd.date_range('2023-01-01', periods=10)
     sales = np.random.randint(50, 200, 10)
     
     test_data = pd.DataFrame({
-        'date': dates,
+        'date': dates.strftime('%Y-%m-%d'),  # Convert to string format
         'sales': sales,
         'product_id': 1
     })

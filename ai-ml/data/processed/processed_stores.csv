@@ -1,0 +1,4 @@
+store_id,store_name,location,store_type,region,size_sqft,opening_date,number_of_employees,manager
+1,Main Street Store,New York,Downtown,NE,5000,2020-01-15,25,John Smith
+2,Mall Location,Chicago,Shopping Mall,MW,8000,2021-03-10,35,Jane Doe
+3,Airport Store,Boston,Airport,NE,3000,2022-07-01,15,Robert Johnson

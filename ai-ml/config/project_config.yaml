@@ -6,9 +6,8 @@ description: "AI/ML components for the Cognitive Supply Chain Mesh"
 
 # Data Configuration
 data:
-  raw_data_path: "../data/raw"
-  processed_data_path: "../data/processed"
-  feature_store_path: "../data/features"
+  raw_data_path: "./data/raw"
+  processed_data_path: "./data/processed"
   data_retention_days: 365
 
 # Model Configuration

@@ -27,29 +27,42 @@ class DemandForecaster:
         self.model_type = model_type
         self.model = None
         self.is_trained = False
+        self.feature_columns = None
         
-    def _prepare_features(self, data):
+    def _prepare_features(self, data, is_training=False):
         """
         Prepare features for modeling.
         
         Args:
             data (pd.DataFrame): Input data
+            is_training (bool): Whether this is training data
             
         Returns:
             pd.DataFrame: Processed features
         """
-        # Create time-based features
+        # Create a copy to avoid modifying original data
         data = data.copy()
+        
+        # Convert date column to datetime
         data['date'] = pd.to_datetime(data['date'])
+        
+        # Create time-based features
         data['year'] = data['date'].dt.year
         data['month'] = data['date'].dt.month
         data['day'] = data['date'].dt.day
         data['dayofweek'] = data['date'].dt.dayofweek
         data['dayofyear'] = data['date'].dt.dayofyear
         
-        # Add lag features
-        for lag in [1, 7, 14, 30]:
-            data[f'sales_lag_{lag}'] = data['sales'].shift(lag)
+        # Add simple lag feature
+        data['sales_lag_1'] = data['sales'].shift(1)
+            
+        # Drop the original date column as it's not numeric
+        if 'date' in data.columns:
+            data = data.drop(columns=['date'])
+            
+        # If training, store feature columns
+        if is_training:
+            self.feature_columns = [col for col in data.columns if col != 'sales']
             
         return data
     
@@ -64,19 +77,22 @@ class DemandForecaster:
         logger.info(f"Training {self.model_type} demand forecasting model")
         
         # Prepare features
-        train_data = self._prepare_features(train_data)
+        train_data = self._prepare_features(train_data, is_training=True)
         
         # Remove rows with NaN values (due to lag features)
         train_data = train_data.dropna()
         
+        # Check if we have enough data
+        if len(train_data) == 0:
+            raise ValueError("Not enough data to train model after removing NaN values")
+        
         # Separate features and target
-        feature_columns = [col for col in train_data.columns if col != target_column]
-        X = train_data[feature_columns]
+        X = train_data[self.feature_columns]
         y = train_data[target_column]
         
         # Initialize model
         if self.model_type == "random_forest":
-            self.model = RandomForestRegressor(n_estimators=100, random_state=42)
+            self.model = RandomForestRegressor(n_estimators=10, random_state=42, max_depth=5)
         else:
             raise ValueError(f"Unsupported model type: {self.model_type}")
         
@@ -102,15 +118,17 @@ class DemandForecaster:
         logger.info("Making demand forecasts")
         
         # Prepare features
-        test_data = self._prepare_features(test_data)
+        test_data = self._prepare_features(test_data, is_training=False)
         
         # Remove rows with NaN values (due to lag features)
         test_data = test_data.dropna()
         
-        # Separate features
-        feature_columns = [col for col in test_data.columns if 'sales' in col and col != 'sales']
-        feature_columns.extend(['year', 'month', 'day', 'dayofweek', 'dayofyear'])
-        X = test_data[feature_columns]
+        # Check if we have data to predict
+        if len(test_data) == 0:
+            raise ValueError("Not enough data to make predictions after removing NaN values")
+        
+        # Use the same feature columns as training
+        X = test_data[self.feature_columns]
         
         # Make predictions
         predictions = self.model.predict(X)
@@ -130,8 +148,8 @@ class DemandForecaster:
         """
         predictions = self.predict(test_data)
         
-        mae = mean_absolute_error(true_values, predictions)
-        rmse = np.sqrt(mean_squared_error(true_values, predictions))
+        mae = mean_absolute_error(true_values[-len(predictions):], predictions)
+        rmse = np.sqrt(mean_squared_error(true_values[-len(predictions):], predictions))
         
         metrics = {
             'mae': mae,
@@ -149,7 +167,7 @@ if __name__ == "__main__":
     sales = np.random.randint(50, 200, 100)
     
     data = pd.DataFrame({
-        'date': dates,
+        'date': dates.strftime('%Y-%m-%d'),  # Convert to string format
         'sales': sales,
         'product_id': 1
     })

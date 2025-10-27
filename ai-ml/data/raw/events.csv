@@ -1,0 +1,3 @@
+event_name,event_type,start_date,end_date,location,expected_attendance,impact_score
+New Year Sale,Promotion,2023-01-01,2023-01-03,All Stores,5000,8.5
+Football Championship,Sports,2023-01-02,2023-01-02,Stadium Area,20000,9.0

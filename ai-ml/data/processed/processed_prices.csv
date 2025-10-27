@@ -1,0 +1,6 @@
+date,sku_id,store_id,regular_price,actual_price,promotion_flag,markdown_rate,year,month,day,weekday,dayofyear,weekofyear,quarter,is_weekend,is_month_start,is_month_end,is_quarter_start,is_holiday,holiday_name,discount_amount,discount_percentage
+2023-01-01,1,1,10.0,9.0,True,0.1,2023,1,1,6,1,52,1,True,True,False,True,True,New Year,1.0,10.0
+2023-01-01,2,1,15.0,15.0,False,0.0,2023,1,1,6,1,52,1,True,True,False,True,True,New Year,0.0,0.0
+2023-01-02,1,1,10.0,10.0,False,0.0,2023,1,2,0,2,1,1,False,True,False,False,False,,0.0,0.0
+2023-01-02,2,1,15.0,13.5,True,0.1,2023,1,2,0,2,1,1,False,True,False,False,False,,1.5,10.0
+2023-01-03,1,2,10.0,8.5,True,0.15,2023,1,3,1,3,1,1,False,True,False,False,False,,1.5,15.0

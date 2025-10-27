@@ -61,8 +61,9 @@ def test_process_sales_data():
 
 def test_process_inventory_data():
     """Test inventory data processing."""
-    # Create sample inventory data
+    # Create sample inventory data with required date column
     inventory_data = pd.DataFrame({
+        'date': pd.date_range('2023-01-01', periods=10),
         'product_id': range(10),
         'stock_level': np.random.randint(0, 1000, 10),
         'reorder_point': np.random.randint(10, 100, 10)
