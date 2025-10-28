@@ -156,14 +156,14 @@ class ARIMAMLHybridModel:
                 'time_squared': np.arange(last_time_index + 1, last_time_index + 1 + steps) ** 2
             })
             
-        # Add ARIMA predictions as a feature
-        X_ml['arima_prediction'] = arima_forecast
+        # Add ARIMA predictions as a feature (use .values to avoid index alignment issues)
+        X_ml['arima_prediction'] = arima_forecast.values
         
         # Get ML predictions for residuals
         ml_residuals = self.ml_model.predict(X_ml)
         
         # Combine ARIMA forecast with ML residuals
-        hybrid_predictions = arima_forecast + ml_residuals
+        hybrid_predictions = arima_forecast.values + ml_residuals
         
         return hybrid_predictions
 
@@ -228,12 +228,6 @@ class ETSMLHybridModel:
         # Get ETS predictions on training data
         ets_predictions = ets_fitted.fittedvalues
         
-        # Debug prints
-        print(f"ets_predictions shape: {ets_predictions.shape}")
-        print(f"ets_predictions NaN count: {ets_predictions.isna().sum()}")
-        print(f"ets_predictions index: {ets_predictions.index}")
-        print(f"data index: {data.index}")
-        
         # Calculate residuals
         self.residuals = data.values - ets_predictions.values  # Use .values to avoid index alignment issues
         
@@ -251,18 +245,9 @@ class ETSMLHybridModel:
         # Add ETS predictions as a feature
         X_ml['ets_prediction'] = ets_predictions.values  # Use .values to avoid index alignment issues
         
-        # Debug prints
-        print(f"X_ml shape: {X_ml.shape}")
-        print(f"X_ml NaN count: {X_ml.isna().sum()}")
-        print(f"residuals shape: {self.residuals.shape}")
-        print(f"residuals NaN count: {np.isnan(self.residuals).sum()}")
-        
         # Handle NaN values in features and residuals
         # Create a mask for valid (non-NaN) values
         valid_mask = ~(np.isnan(self.residuals) | X_ml.isnull().any(axis=1))
-        
-        print(f"valid_mask shape: {valid_mask.shape}")
-        print(f"valid_mask True count: {valid_mask.sum()}")
         
         if not valid_mask.any():
             raise ValueError("No valid data points after removing NaN values")
@@ -270,12 +255,6 @@ class ETSMLHybridModel:
         # Filter using boolean indexing properly
         X_ml_clean = X_ml[valid_mask]
         residuals_clean = self.residuals[valid_mask]
-        
-        # Debug prints
-        print(f"X_ml_clean shape: {X_ml_clean.shape}")
-        print(f"X_ml_clean NaN count: {X_ml_clean.isna().sum()}")
-        print(f"residuals_clean shape: {residuals_clean.shape}")
-        print(f"residuals_clean NaN count: {np.isnan(residuals_clean).sum()}")
         
         # Fit ML model on residuals
         logger.info(f"Fitting {self.ml_model_type} model on residuals")
@@ -324,14 +303,14 @@ class ETSMLHybridModel:
                 'time_squared': np.arange(last_time_index + 1, last_time_index + 1 + steps) ** 2
             })
             
-        # Add ETS predictions as a feature
-        X_ml['ets_prediction'] = ets_forecast
+        # Add ETS predictions as a feature (use .values to avoid index alignment issues)
+        X_ml['ets_prediction'] = ets_forecast.values
         
         # Get ML predictions for residuals
         ml_residuals = self.ml_model.predict(X_ml)
         
         # Combine ETS forecast with ML residuals
-        hybrid_predictions = ets_forecast + ml_residuals
+        hybrid_predictions = ets_forecast.values + ml_residuals
         
         return hybrid_predictions
 

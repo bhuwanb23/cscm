@@ -17,21 +17,41 @@ try:
     import torch
     import torch.nn as nn
     from torch.utils.data import DataLoader, TensorDataset
-    import gluonts
-    from gluonts.model.deepar import DeepAREstimator
-    from gluonts.model.n_beats import NBEATSEstimator
-    from gluonts.mx import Trainer
-    from gluonts.dataset.common import ListDataset
     HAS_PYTORCH = True
-    HAS_GLUONTS = True
 except ImportError:
     HAS_PYTORCH = False
+    torch = None
+    nn = None
+
+try:
+    import gluonts
+    from gluonts.mx import Trainer
+    from gluonts.dataset.common import ListDataset
+    # Try to import specific models
+    try:
+        from gluonts.model.deepar import DeepAREstimator
+        HAS_DEEPAR = True
+    except ImportError:
+        HAS_DEEPAR = False
+        DeepAREstimator = None
+        
+    try:
+        from gluonts.model.n_beats import NBEATSEstimator
+        HAS_NBEATS = True
+    except ImportError:
+        HAS_NBEATS = False
+        NBEATSEstimator = None
+        
+    HAS_GLUONTS = True
+except ImportError:
     HAS_GLUONTS = False
+    HAS_DEEPAR = False
+    HAS_NBEATS = False
     gluonts = None
-    DeepAREstimator = None
-    NBEATSEstimator = None
     Trainer = None
     ListDataset = None
+    DeepAREstimator = None
+    NBEATSEstimator = None
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -62,8 +82,8 @@ class DeepARModel:
             epochs: Number of training epochs
             **kwargs: Additional arguments for DeepAR
         """
-        if not HAS_GLUONTS:
-            raise ImportError("GluonTS library is not installed")
+        if not HAS_GLUONTS or not HAS_DEEPAR:
+            raise ImportError("GluonTS DeepAR library is not installed")
             
         self.freq = freq
         self.prediction_length = prediction_length
@@ -201,8 +221,8 @@ class NBEATSModel:
             epochs: Number of training epochs
             **kwargs: Additional arguments for N-BEATS
         """
-        if not HAS_GLUONTS:
-            raise ImportError("GluonTS library is not installed")
+        if not HAS_GLUONTS or not HAS_NBEATS:
+            raise ImportError("GluonTS N-BEATS library is not installed")
             
         self.prediction_length = prediction_length
         self.context_length = context_length or 2 * prediction_length
@@ -407,12 +427,12 @@ class ProbabilisticForecaster:
         self.is_fitted = False
         
         if self.model_type == 'deepar':
-            if not HAS_GLUONTS:
-                raise ImportError("GluonTS library is required for DeepAR model")
+            if not HAS_GLUONTS or not HAS_DEEPAR:
+                raise ImportError("GluonTS DeepAR library is required for DeepAR model")
             self.model = DeepARModel(**kwargs)
         elif self.model_type == 'nbeats':
-            if not HAS_GLUONTS:
-                raise ImportError("GluonTS library is required for N-BEATS model")
+            if not HAS_GLUONTS or not HAS_NBEATS:
+                raise ImportError("GluonTS N-BEATS library is required for N-BEATS model")
             self.model = NBEATSModel(**kwargs)
         elif self.model_type == 'mqrnn':
             if not HAS_PYTORCH:
