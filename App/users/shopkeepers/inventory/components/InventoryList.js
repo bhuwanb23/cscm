@@ -31,10 +31,10 @@ const InventoryList = ({ items, onQuickUpdate, onViewDetails }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: 'transparent',
   },
   listContent: {
-    paddingBottom: 80, // Space for bottom navigation
+    paddingBottom: 20, // Space for bottom navigation
   },
 });
 

@@ -1,14 +1,50 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
+  Animated,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { INVENTORY_CONSTANTS } from '../constants';
 
 const InventoryItem = ({ item, onQuickUpdate, onViewDetails }) => {
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const handlePress = () => {
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.98,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    onQuickUpdate(item);
+  };
+
   const getStatusStyle = (status) => {
     switch (status) {
       case 'low':
@@ -25,103 +61,122 @@ const InventoryItem = ({ item, onQuickUpdate, onViewDetails }) => {
   const statusStyle = getStatusStyle(item.status);
 
   return (
-    <TouchableOpacity 
-      style={[styles.container, item.borderColor && { borderLeftWidth: 4, borderLeftColor: item.borderColor }]}
-      onPress={() => onQuickUpdate(item)}
-      activeOpacity={0.7}
+    <Animated.View
+      style={[
+        styles.container,
+        {
+          opacity: fadeAnim,
+          transform: [{ scale: scaleAnim }],
+        }
+      ]}
     >
-      <View style={styles.itemContent}>
-        <View style={styles.itemHeader}>
-          <Text style={styles.itemName}>{item.name}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: statusStyle.bgColor }]}>
-            <Text style={[styles.statusText, { color: statusStyle.textColor }]}>
-              {statusStyle.label}
-            </Text>
-          </View>
-        </View>
-        
-        <View style={styles.itemDetails}>
-          <Text style={styles.skuText}>SKU: {item.sku}</Text>
-          <Text style={styles.separator}>•</Text>
-          <Text style={styles.supplierText}>{item.supplier}</Text>
-        </View>
-        
-        <View style={styles.itemFooter}>
-          <View style={styles.quantityContainer}>
-            <Text style={[styles.quantityText, { color: statusStyle.color }]}>
-              {item.quantity}
-            </Text>
-            <Text style={styles.quantityLabel}>
-              {item.quantity === 1 ? 'unit' : 'units'} left
-            </Text>
+      <TouchableOpacity 
+        style={styles.touchable}
+        onPress={handlePress}
+        activeOpacity={0.9}
+      >
+        <LinearGradient
+          colors={['#FFFFFF', '#F8FAFC']}
+          style={styles.itemContent}
+        >
+          <View style={styles.itemHeader}>
+            <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
+            <View style={[styles.statusBadge, { backgroundColor: statusStyle.bgColor }]}>
+              <Text style={[styles.statusText, { color: statusStyle.textColor }]}>
+                {statusStyle.label}
+              </Text>
+            </View>
           </View>
           
-          {item.expiryDate ? (
-            <Text style={styles.expiryText}>Exp: {item.expiryDate}</Text>
-          ) : (
-            <TouchableOpacity onPress={onViewDetails}>
-              <Text style={styles.actionText}>View Details</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-    </TouchableOpacity>
+          <View style={styles.itemDetails}>
+            <Text style={styles.skuText}>SKU: {item.sku}</Text>
+            <Text style={styles.separator}>•</Text>
+            <Text style={styles.supplierText} numberOfLines={1}>{item.supplier}</Text>
+          </View>
+          
+          <View style={styles.itemFooter}>
+            <View style={styles.quantityContainer}>
+              <Text style={[styles.quantityText, { color: statusStyle.color }]}>
+                {item.quantity}
+              </Text>
+              <Text style={styles.quantityLabel}>
+                {item.quantity === 1 ? 'unit' : 'units'}
+              </Text>
+            </View>
+            
+            {item.expiryDate ? (
+              <Text style={styles.expiryText}>Exp: {item.expiryDate}</Text>
+            ) : (
+              <TouchableOpacity onPress={() => onViewDetails(item)}>
+                <Text style={styles.actionText}>Details</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </LinearGradient>
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#FFFFFF',
     marginHorizontal: 16,
-    marginVertical: 8,
-    borderRadius: 8,
+    marginVertical: 4,
+  },
+  touchable: {
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 3,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   itemContent: {
-    padding: 16,
+    padding: 12,
   },
   itemHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   itemName: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
     color: '#111827',
     flex: 1,
+    marginRight: 8,
   },
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 10,
+    fontWeight: '600',
   },
   itemDetails: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   skuText: {
-    fontSize: 14,
+    fontSize: 11,
     color: '#6B7280',
+    fontWeight: '500',
   },
   separator: {
-    fontSize: 14,
+    fontSize: 11,
     color: '#6B7280',
-    marginHorizontal: 8,
+    marginHorizontal: 6,
   },
   supplierText: {
-    fontSize: 14,
+    fontSize: 11,
     color: '#6B7280',
+    fontWeight: '500',
+    flex: 1,
   },
   itemFooter: {
     flexDirection: 'row',
@@ -133,23 +188,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   quantityText: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '800',
     marginRight: 4,
   },
   quantityLabel: {
-    fontSize: 14,
+    fontSize: 11,
     color: '#6B7280',
+    fontWeight: '500',
   },
   expiryText: {
-    fontSize: 12,
+    fontSize: 10,
     color: '#EA580C',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   actionText: {
-    fontSize: 14,
+    fontSize: 11,
     color: '#3B82F6',
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });
 
