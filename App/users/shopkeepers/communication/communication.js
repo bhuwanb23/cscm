@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, ScrollView, StyleSheet, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useEffect, useRef } from 'react';
+import { View, ScrollView, StyleSheet, Alert, Animated } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 // Components
 import Header from './components/Header';
@@ -8,7 +8,6 @@ import QuickStats from './components/QuickStats';
 import AlertsSection from './components/AlertsSection';
 import MessagesSection from './components/MessagesSection';
 import QuickHelpSection from './components/QuickHelpSection';
-import BottomNavbar from './components/BottomNavbar';
 import FloatingChatButton from './components/FloatingChatButton';
 
 // Hooks and Constants
@@ -28,6 +27,24 @@ const Communication = () => {
     getUnreadCount,
     getActiveAlertsCount
   } = useCommunicationData();
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const handleNotificationPress = () => {
     Alert.alert('Notifications', 'You have new notifications');
@@ -63,18 +80,27 @@ const Communication = () => {
     Alert.alert('All Help', 'Viewing all help topics');
   };
 
-  const handleNavItemPress = (item) => {
-    if (item.id === 'messages') return; // Already on messages page
-    Alert.alert('Navigation', `Navigating to ${item.label}`);
-  };
 
   const handleFloatingChatPress = () => {
     Alert.alert('Quick Chat', 'Starting quick chat');
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.app}>
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#EBF4FF', '#F8FAFC']}
+        style={styles.backgroundGradient}
+      />
+      
+      <Animated.View 
+        style={[
+          styles.content,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: slideAnim }],
+          }
+        ]}
+      >
         <Header 
           unreadCount={getUnreadCount()}
           onNotificationPress={handleNotificationPress}
@@ -84,6 +110,7 @@ const Communication = () => {
         <ScrollView 
           style={styles.scrollView}
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
         >
           <QuickStats stats={quickStats} />
           
@@ -106,35 +133,34 @@ const Communication = () => {
           />
         </ScrollView>
         
-        <BottomNavbar 
-          navItems={COMMUNICATION_CONSTANTS.BOTTOM_NAV_ITEMS}
-          onNavItemPress={handleNavItemPress}
-        />
-        
         <FloatingChatButton 
           onPress={handleFloatingChatPress}
         />
-      </View>
-    </SafeAreaView>
+      </Animated.View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.gray[50],
+    backgroundColor: '#F8FAFC',
   },
-  app: {
+  backgroundGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+  },
+  content: {
     flex: 1,
-    maxWidth: 400,
-    alignSelf: 'center',
-    width: '100%',
-    backgroundColor: 'white',
-    minHeight: '100%',
   },
   scrollView: {
     flex: 1,
-    paddingBottom: 80, // Space for bottom navbar
+  },
+  scrollContent: {
+    paddingBottom: 80, // Space for floating button
   },
 });
 

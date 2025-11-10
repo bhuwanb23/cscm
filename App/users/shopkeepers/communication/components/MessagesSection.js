@@ -1,67 +1,161 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, Image, StyleSheet, Animated } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants';
 
-const MessageItem = ({ message, onPress }) => {
+const MessageItem = ({ message, onPress, index }) => {
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        delay: index * 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 400,
+        delay: index * 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  const handlePress = () => {
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 0.98,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    onPress(message);
+  };
+
   return (
-    <TouchableOpacity 
-      style={styles.messageCard}
-      onPress={() => onPress(message)}
+    <Animated.View
+      style={[
+        styles.messageWrapper,
+        {
+          opacity: fadeAnim,
+          transform: [{ scale: scaleAnim }],
+        }
+      ]}
     >
-      <View style={styles.messageContent}>
-        <View style={styles.avatarContainer}>
-          <Image 
-            source={{ uri: message.avatar }} 
-            style={styles.avatar}
-          />
-          <View style={[
-            styles.statusIndicator,
-            { backgroundColor: message.isOnline ? COLORS.success : COLORS.gray[400] }
-          ]} />
-        </View>
-        
-        <View style={styles.messageDetails}>
-          <View style={styles.messageHeader}>
-            <Text style={styles.messageName}>{message.name}</Text>
-            <View style={styles.messageMeta}>
-              {message.unreadCount > 0 && (
-                <View style={styles.unreadBadge}>
-                  <Text style={styles.unreadText}>{message.unreadCount}</Text>
+      <TouchableOpacity 
+        style={styles.messageCard}
+        onPress={handlePress}
+        activeOpacity={0.9}
+      >
+        <LinearGradient
+          colors={['#FFFFFF', '#F8FAFC']}
+          style={styles.messageGradient}
+        >
+          <View style={styles.messageContent}>
+            <View style={styles.avatarContainer}>
+              <Image 
+                source={{ uri: message.avatar }} 
+                style={styles.avatar}
+              />
+              <LinearGradient
+                colors={message.isOnline ? ['#22C55E', '#16A34A'] : ['#9CA3AF', '#6B7280']}
+                style={styles.statusIndicator}
+              />
+            </View>
+            
+            <View style={styles.messageDetails}>
+              <View style={styles.messageHeader}>
+                <Text style={styles.messageName} numberOfLines={1}>{message.name}</Text>
+                <View style={styles.messageMeta}>
+                  {message.unreadCount > 0 && (
+                    <LinearGradient
+                      colors={['#EF4444', '#DC2626']}
+                      style={styles.unreadBadge}
+                    >
+                      <Text style={styles.unreadText}>{message.unreadCount}</Text>
+                    </LinearGradient>
+                  )}
+                  <Text style={styles.messageTime}>{message.time}</Text>
                 </View>
-              )}
-              <Text style={styles.messageTime}>{message.time}</Text>
+              </View>
+              <Text style={styles.lastMessage} numberOfLines={2}>
+                {message.lastMessage}
+              </Text>
             </View>
           </View>
-          <Text style={styles.lastMessage} numberOfLines={1}>
-            {message.lastMessage}
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
+        </LinearGradient>
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 
 const MessagesSection = ({ messages, onMessagePress, onNewChatPress }) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.sectionTitle}>Messages</Text>
-        <TouchableOpacity onPress={onNewChatPress}>
-          <Text style={styles.newChatText}>New Chat</Text>
-        </TouchableOpacity>
-      </View>
-      
-      <View style={styles.messagesList}>
-        {messages.map((message) => (
-          <MessageItem
-            key={message.id}
-            message={message}
-            onPress={onMessagePress}
-          />
-        ))}
-      </View>
-    </View>
+    <Animated.View 
+      style={[
+        styles.container,
+        {
+          opacity: fadeAnim,
+          transform: [{
+            translateY: fadeAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [20, 0],
+            }),
+          }],
+        }
+      ]}
+    >
+      <LinearGradient
+        colors={['#FFFFFF', '#F8FAFC']}
+        style={styles.gradientContainer}
+      >
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Ionicons name="chatbubbles" size={16} color="#3B82F6" />
+            <Text style={styles.sectionTitle}>Messages</Text>
+          </View>
+          <TouchableOpacity onPress={onNewChatPress} style={styles.newChatButton}>
+            <LinearGradient
+              colors={['#22C55E', '#16A34A']}
+              style={styles.newChatGradient}
+            >
+              <Ionicons name="add" size={12} color="#FFFFFF" />
+              <Text style={styles.newChatText}>New Chat</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+        
+        <View style={styles.messagesList}>
+          {messages.map((message, index) => (
+            <MessageItem
+              key={message.id}
+              message={message}
+              onPress={onMessagePress}
+              index={index}
+            />
+          ))}
+        </View>
+      </LinearGradient>
+    </Animated.View>
   );
 };
 

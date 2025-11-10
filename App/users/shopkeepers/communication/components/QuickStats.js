@@ -1,65 +1,148 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants';
 
 const QuickStats = ({ stats }) => {
   const { unread, alerts, active } = stats;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const cardAnims = useRef([
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
+  ]).current;
+
+  const statsData = [
+    { label: 'Unread', value: unread, icon: 'mail-unread', color: '#EF4444' },
+    { label: 'Alerts', value: alerts, icon: 'notifications', color: '#F59E0B' },
+    { label: 'Active', value: active, icon: 'pulse', color: '#22C55E' },
+  ];
+
+  useEffect(() => {
+    const animations = [
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      ...cardAnims.map((anim, index) =>
+        Animated.timing(anim, {
+          toValue: 1,
+          duration: 400,
+          delay: index * 150,
+          useNativeDriver: true,
+        })
+      ),
+    ];
+    
+    Animated.parallel(animations).start();
+  }, []);
 
   return (
-    <LinearGradient
-      colors={[COLORS.primary, '#2563eb']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 0 }}
-      style={styles.container}
+    <Animated.View 
+      style={[
+        styles.container,
+        {
+          opacity: fadeAnim,
+          transform: [{
+            translateY: fadeAnim.interpolate({
+              inputRange: [0, 1],
+              outputRange: [20, 0],
+            }),
+          }],
+        }
+      ]}
     >
-      <View style={styles.statsGrid}>
-        <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Unread</Text>
-          <Text style={styles.statValue}>{unread}</Text>
+      <LinearGradient
+        colors={['#FFFFFF', '#F8FAFC']}
+        style={styles.gradientContainer}
+      >
+        <View style={styles.statsGrid}>
+          {statsData.map((stat, index) => (
+            <Animated.View
+              key={stat.label}
+              style={[
+                styles.statWrapper,
+                {
+                  opacity: cardAnims[index],
+                  transform: [{
+                    scale: cardAnims[index].interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.8, 1],
+                    }),
+                  }],
+                }
+              ]}
+            >
+              <LinearGradient
+                colors={['#FFFFFF', '#F8FAFC']}
+                style={styles.statCard}
+              >
+                <View style={[styles.iconContainer, { backgroundColor: `${stat.color}20` }]}>
+                  <Ionicons name={stat.icon} size={16} color={stat.color} />
+                </View>
+                <Text style={styles.statValue}>{stat.value}</Text>
+                <Text style={styles.statLabel}>{stat.label}</Text>
+              </LinearGradient>
+            </Animated.View>
+          ))}
         </View>
-        
-        <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Alerts</Text>
-          <Text style={styles.statValue}>{alerts}</Text>
-        </View>
-        
-        <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Active</Text>
-          <Text style={styles.statValue}>{active}</Text>
-        </View>
-      </View>
-    </LinearGradient>
+      </LinearGradient>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    marginHorizontal: 16,
+    marginVertical: 4,
+  },
+  gradientContainer: {
+    borderRadius: 12,
+    padding: 12,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   statsGrid: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 8,
+  },
+  statWrapper: {
+    flex: 1,
   },
   statCard: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 10,
+    padding: 10,
     alignItems: 'center',
-    backdropFilter: 'blur(4px)',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
-  statLabel: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: '500',
-    marginBottom: 4,
+  iconContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
   },
   statValue: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1F2937',
+    marginBottom: 2,
+  },
+  statLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#6B7280',
+    textAlign: 'center',
   },
 });
 
