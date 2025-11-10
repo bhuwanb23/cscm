@@ -1,15 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
+  Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { DASHBOARD_CONSTANTS } from '../constants';
 
 const AlertsFeed = ({ alerts }) => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const fadeAnims = useRef(
+    alerts.map(() => new Animated.Value(0))
+  ).current;
+  const slideAnims = useRef(
+    alerts.map(() => new Animated.Value(20))
+  ).current;
+
+  useEffect(() => {
+    if (isExpanded) {
+      const animations = alerts.map((_, index) => [
+        Animated.timing(fadeAnims[index], {
+          toValue: 1,
+          duration: 400,
+          delay: index * 80,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnims[index], {
+          toValue: 0,
+          duration: 400,
+          delay: index * 80,
+          useNativeDriver: true,
+        }),
+      ]).flat();
+
+      Animated.parallel(animations).start();
+    }
+  }, [isExpanded, alerts]);
 
   const getAlertStyle = (type) => {
     switch (type) {
@@ -51,39 +80,49 @@ const AlertsFeed = ({ alerts }) => {
       </View>
       {isExpanded && (
         <View style={styles.alertsList}>
-          {alerts.map((alert) => {
+          {alerts.map((alert, index) => {
             const alertStyle = getAlertStyle(alert.type);
             return (
-              <View
+              <Animated.View
                 key={alert.id}
                 style={[
-                  styles.alertCard,
+                  styles.alertWrapper,
                   {
-                    backgroundColor: alertStyle.color,
-                    borderLeftColor: alertStyle.borderColor,
-                  },
+                    opacity: fadeAnims[index],
+                    transform: [{ translateY: slideAnims[index] }],
+                  }
                 ]}
               >
-                <View style={styles.alertContent}>
-                  <Ionicons
-                    name={getAlertIcon(alert.type)}
-                    size={16}
-                    color={alertStyle.iconColor}
-                    style={styles.alertIcon}
-                  />
-                  <View style={styles.alertText}>
-                    <Text style={[styles.alertTitle, { color: alertStyle.borderColor }]}>
-                      {alert.title}
-                    </Text>
-                    <Text style={[styles.alertMessage, { color: alertStyle.borderColor }]}>
-                      {alert.message}
-                    </Text>
-                    <Text style={[styles.alertTime, { color: alertStyle.borderColor }]}>
-                      {alert.time}
-                    </Text>
+                <LinearGradient
+                  colors={[alertStyle.color, '#FFFFFF']}
+                  style={[
+                    styles.alertCard,
+                    {
+                      borderLeftColor: alertStyle.borderColor,
+                    },
+                  ]}
+                >
+                  <View style={styles.alertContent}>
+                    <Ionicons
+                      name={getAlertIcon(alert.type)}
+                      size={14}
+                      color={alertStyle.iconColor}
+                      style={styles.alertIcon}
+                    />
+                    <View style={styles.alertText}>
+                      <Text style={[styles.alertTitle, { color: alertStyle.borderColor }]}>
+                        {alert.title}
+                      </Text>
+                      <Text style={[styles.alertMessage, { color: alertStyle.borderColor }]}>
+                        {alert.message}
+                      </Text>
+                      <Text style={[styles.alertTime, { color: alertStyle.borderColor }]}>
+                        {alert.time}
+                      </Text>
+                    </View>
                   </View>
-                </View>
-              </View>
+                </LinearGradient>
+              </Animated.View>
             );
           })}
         </View>
@@ -95,49 +134,52 @@ const AlertsFeed = ({ alerts }) => {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: 8,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: '#1F2937',
   },
   alertsList: {
-    gap: 12,
+    gap: 6,
+  },
+  alertWrapper: {
+    flex: 1,
   },
   alertCard: {
     borderRadius: 8,
-    borderLeftWidth: 4,
-    padding: 12,
+    borderLeftWidth: 3,
+    padding: 8,
   },
   alertContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
   alertIcon: {
-    marginTop: 2,
-    marginRight: 8,
+    marginTop: 1,
+    marginRight: 6,
   },
   alertText: {
     flex: 1,
   },
   alertTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 2,
+    fontSize: 12,
+    fontWeight: '700',
+    marginBottom: 1,
   },
   alertMessage: {
-    fontSize: 12,
-    marginBottom: 4,
+    fontSize: 10,
+    marginBottom: 2,
   },
   alertTime: {
-    fontSize: 12,
+    fontSize: 9,
     opacity: 0.8,
   },
 });
