@@ -25,35 +25,35 @@ This document outlines the comprehensive development plan for implementing the A
 ## 1. Demand Forecasting & Demand Sensing
 
 ### Phase 1: Foundation & Data Infrastructure
-- [ ] Set up time-series data pipeline for SKU-store-day/hour sales data
-- [ ] Implement data ingestion for price, promotions, and markdown data
-- [ ] Create store and product attribute database
-- [ ] Integrate calendar features (weekday, holidays) into data pipeline
-- [ ] Establish external signal ingestion (weather, events, macro indices)
-- [ ] Implement inventory data integration (on hand & stockouts)
+- ✅ Set up time-series data pipeline for SKU-store-day/hour sales data
+- ✅ Implement data ingestion for price, promotions, and markdown data
+- ✅ Create store and product attribute database
+- ✅ Integrate calendar features (weekday, holidays) into data pipeline
+- ✅ Establish external signal ingestion (weather, events, macro indices)
+- ✅ Implement inventory data integration (on hand & stockouts)
 
 ### Phase 2: Model Development
-- [ ] Implement baseline statistical models (ETS, ARIMA/SARIMA)
-- [ ] Develop gradient-boosted tree models (XGBoost/LightGBM/CatBoost)
-- [ ] Build deep time-series models (LSTM/GRU, Seq2Seq)
-- [ ] Implement transformer-based models (TFT, Informer, Autoformer)
-- [ ] Develop probabilistic forecasting models (DeepAR, N-BEATS, MQRNN)
-- [ ] Create hybrid models combining classical with ML residual modeling
+- ✅ Implement baseline statistical models (ETS, ARIMA/SARIMA)
+- ✅ Develop gradient-boosted tree models (XGBoost/LightGBM/CatBoost)
+- ✅ Build deep time-series models (LSTM/GRU, Seq2Seq)
+- ✅ Implement transformer-based models (TFT, Informer, Autoformer)
+- ✅ Develop probabilistic forecasting models (DeepAR, N-BEATS, MQRNN)
+- ✅ Create hybrid models combining classical with ML residual modeling
 
 ### Phase 3: Training & Deployment Infrastructure
-- [ ] Set up daily retraining pipeline for nowcasting models
-- [ ] Implement weekly/biweekly retraining for longer horizon models
-- [ ] Develop sliding-window training framework
-- [ ] Create edge inference system for store-level real-time adjustments
-- [ ] Set up cloud/GPU infrastructure for heavy training workloads
+- ✅ Set up daily retraining pipeline for nowcasting models
+- ✅ Implement weekly/biweekly retraining for longer horizon models
+- ✅ Develop sliding-window training framework
+- ✅ Create edge inference system for store-level real-time adjustments
+- ✅ Set up cloud/GPU infrastructure for heavy training workloads
 
 ### Phase 4: Output & Metrics Implementation
-- [ ] Implement point forecast generation with prediction intervals (80%/95%)
-- [ ] Develop nowcast (near real-time demand signal) capabilities
-- [] Create demand error/confidence metrics per SKU
-- [ ] Implement MAPE, sMAPE, MAE, RMSE calculation
-- [ ] Add CRPS or pinball loss for probabilistic forecasts
-- [ ] Develop service-level impact metrics (stockouts prevented, fill-rate improvement)
+- ✅ Implement point forecast generation with prediction intervals (80%/95%)
+- ✅ Develop nowcast (near real-time demand signal) capabilities
+- ✅ Create demand error/confidence metrics per SKU
+- ✅ Implement MAPE, sMAPE, MAE, RMSE calculation
+- ✅ Add CRPS or pinball loss for probabilistic forecasts
+- ✅ Develop service-level impact metrics (stockouts prevented, fill-rate improvement)
 
 ---
 
