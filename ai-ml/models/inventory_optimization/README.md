@@ -146,9 +146,15 @@ inventory_optimization/
 - scipy
 - typing
 
+## Phase 2: Reinforcement Learning Approach ✅
+
+See `reinforcement_learning/README.md` for details.
+
+## Phase 3: Optimization Framework ✅
+
+See `optimization_framework/README.md` for details.
+
 ## Future Phases
 
-- Phase 2: Reinforcement Learning Approach
-- Phase 3: Optimization Framework
 - Phase 4: Deployment & Integration
 
