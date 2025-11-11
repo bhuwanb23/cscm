@@ -1,16 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   StyleSheet,
   StatusBar,
   Alert,
+  Animated,
+  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Provider as PaperProvider } from 'react-native-paper';
 import LoginForm from './components/LoginForm';
 
+const { width, height } = Dimensions.get('window');
+
 const LoginScreen = ({ onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    // Start entrance animations
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // Background animation loop
+    const rotateLoop = Animated.loop(
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 20000,
+        useNativeDriver: true,
+      })
+    );
+    rotateLoop.start();
+
+    return () => rotateLoop.stop();
+  }, []);
 
   const handleLogin = async (loginData) => {
     setIsLoading(true);
@@ -31,18 +72,74 @@ const LoginScreen = ({ onLogin }) => {
     }
   };
 
+  const rotateInterpolate = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
   return (
     <PaperProvider>
-      <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
+      <StatusBar barStyle="light-content" backgroundColor="#3B82F6" />
+      
+      {/* Animated Background */}
       <LinearGradient
-        colors={['#4A90E2', '#357ABD', '#2C5AA0']}
+        colors={['#3B82F6', '#1E40AF', '#1E3A8A']}
         style={styles.container}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <View style={styles.overlay}>
-          <LoginForm onLogin={handleLogin} />
-        </View>
+        {/* Floating Background Elements */}
+        <Animated.View 
+          style={[
+            styles.floatingElement1,
+            {
+              transform: [
+                { rotate: rotateInterpolate },
+                { scale: scaleAnim },
+              ],
+              opacity: fadeAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 0.1],
+              }),
+            }
+          ]}
+        />
+        <Animated.View 
+          style={[
+            styles.floatingElement2,
+            {
+              transform: [
+                { 
+                  rotate: rotateAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['360deg', '0deg'],
+                  })
+                },
+                { scale: scaleAnim },
+              ],
+              opacity: fadeAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 0.08],
+              }),
+            }
+          ]}
+        />
+
+        {/* Main Content */}
+        <Animated.View 
+          style={[
+            styles.overlay,
+            {
+              opacity: fadeAnim,
+              transform: [
+                { translateY: slideAnim },
+                { scale: scaleAnim },
+              ],
+            }
+          ]}
+        >
+          <LoginForm onLogin={handleLogin} isLoading={isLoading} />
+        </Animated.View>
       </LinearGradient>
     </PaperProvider>
   );
@@ -54,9 +151,27 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  floatingElement1: {
+    position: 'absolute',
+    top: height * 0.1,
+    right: width * 0.1,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: '#FFFFFF',
+  },
+  floatingElement2: {
+    position: 'absolute',
+    bottom: height * 0.15,
+    left: width * 0.05,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: '#FFFFFF',
   },
 });
 
