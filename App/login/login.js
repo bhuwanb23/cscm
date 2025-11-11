@@ -15,27 +15,24 @@ const { width, height } = Dimensions.get('window');
 
 const LoginScreen = ({ onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
-  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Start entrance animations
+    // Start with subtle entrance animations
+    slideAnim.setValue(-10);
+    scaleAnim.setValue(0.98);
+    
     Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
       Animated.timing(slideAnim, {
         toValue: 0,
-        duration: 800,
+        duration: 400,
         useNativeDriver: true,
       }),
       Animated.timing(scaleAnim, {
         toValue: 1,
-        duration: 800,
+        duration: 400,
         useNativeDriver: true,
       }),
     ]).start();
@@ -97,10 +94,7 @@ const LoginScreen = ({ onLogin }) => {
                 { rotate: rotateInterpolate },
                 { scale: scaleAnim },
               ],
-              opacity: fadeAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, 0.1],
-              }),
+              opacity: 0.1,
             }
           ]}
         />
@@ -117,10 +111,7 @@ const LoginScreen = ({ onLogin }) => {
                 },
                 { scale: scaleAnim },
               ],
-              opacity: fadeAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, 0.08],
-              }),
+              opacity: 0.08,
             }
           ]}
         />
@@ -130,7 +121,6 @@ const LoginScreen = ({ onLogin }) => {
           style={[
             styles.overlay,
             {
-              opacity: fadeAnim,
               transform: [
                 { translateY: slideAnim },
                 { scale: scaleAnim },

@@ -10,30 +10,21 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { DASHBOARD_CONSTANTS } from '../constants';
 
 const PendingShipments = ({ shipments }) => {
-  const fadeAnims = useRef(
-    shipments.map(() => new Animated.Value(0))
-  ).current;
   const slideAnims = useRef(
-    shipments.map(() => new Animated.Value(30))
+    shipments.map(() => new Animated.Value(0))
   ).current;
 
   useEffect(() => {
-    const animations = shipments.map((_, index) => [
-      Animated.timing(fadeAnims[index], {
-        toValue: 1,
-        duration: 500,
-        delay: index * 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnims[index], {
+    // Start from visible state with subtle entrance animation
+    slideAnims.forEach((anim, index) => {
+      anim.setValue(-3);
+      Animated.timing(anim, {
         toValue: 0,
-        duration: 500,
-        delay: index * 100,
+        duration: 120,
+        delay: index * 20,
         useNativeDriver: true,
-      }),
-    ]).flat();
-
-    Animated.parallel(animations).start();
+      }).start();
+    });
   }, [shipments]);
 
   const getStatusStyle = (status) => {
@@ -64,7 +55,6 @@ const PendingShipments = ({ shipments }) => {
               style={[
                 styles.shipmentWrapper,
                 {
-                  opacity: fadeAnims[index],
                   transform: [{ translateY: slideAnims[index] }],
                 }
               ]}

@@ -12,20 +12,20 @@ import { DASHBOARD_CONSTANTS } from '../constants';
 
 const QuickActions = () => {
   const scaleAnims = useRef(
-    DASHBOARD_CONSTANTS.QUICK_ACTIONS.map(() => new Animated.Value(0))
+    DASHBOARD_CONSTANTS.QUICK_ACTIONS.map(() => new Animated.Value(1))
   ).current;
 
   useEffect(() => {
-    const animations = scaleAnims.map((anim, index) =>
+    // Start from visible state with subtle entrance animation
+    scaleAnims.forEach((anim, index) => {
+      anim.setValue(0.98);
       Animated.timing(anim, {
         toValue: 1,
-        duration: 600,
-        delay: index * 200,
+        duration: 200,
+        delay: index * 50,
         useNativeDriver: true,
-      })
-    );
-    
-    Animated.parallel(animations).start();
+      }).start();
+    });
   }, []);
 
   const handlePress = (index) => {
@@ -53,13 +53,9 @@ const QuickActions = () => {
             style={[
               styles.actionWrapper,
               {
-                opacity: scaleAnims[index],
                 transform: [
                   {
-                    scale: scaleAnims[index].interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.8, 1],
-                    }),
+                    scale: scaleAnims[index],
                   },
                 ],
               },

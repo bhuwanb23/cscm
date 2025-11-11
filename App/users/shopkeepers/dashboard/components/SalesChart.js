@@ -1,10 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
   Dimensions,
-  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { DASHBOARD_CONSTANTS } from '../constants';
@@ -16,23 +15,6 @@ const BAR_WIDTH = (CHART_WIDTH - 40) / 7; // 7 days, with padding
 
 const SalesChart = () => {
   const maxValue = Math.max(...DASHBOARD_CONSTANTS.CHART_DATA.data);
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-  
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
   
   const renderBar = (value, index) => {
     const height = (value / maxValue) * (CHART_HEIGHT - 40);
@@ -59,15 +41,7 @@ const SalesChart = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Sales Analytics</Text>
-      <Animated.View 
-        style={[
-          styles.chartContainer,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          }
-        ]}
-      >
+      <View style={styles.chartContainer}>
         <LinearGradient
           colors={['#FFFFFF', '#F8FAFC']}
           style={styles.chartGradient}
@@ -78,15 +52,9 @@ const SalesChart = () => {
           <View style={styles.legend}>
             <Text style={styles.legendTitle}>Top Selling Items</Text>
             {DASHBOARD_CONSTANTS.TOP_SELLING_ITEMS.map((item, index) => (
-              <Animated.View 
+              <View 
                 key={index} 
-                style={[
-                  styles.legendItem,
-                  {
-                    opacity: fadeAnim,
-                    transform: [{ translateX: slideAnim }],
-                  }
-                ]}
+                style={styles.legendItem}
               >
                 <View style={styles.legendLeft}>
                   <View style={[styles.legendDot, { backgroundColor: item.color }]} />
@@ -96,11 +64,11 @@ const SalesChart = () => {
                   <Text style={styles.legendValue}>{item.sold}</Text>
                   <Text style={styles.legendUnit}>sold</Text>
                 </View>
-              </Animated.View>
+              </View>
             ))}
           </View>
         </LinearGradient>
-      </Animated.View>
+      </View>
     </View>
   );
 };

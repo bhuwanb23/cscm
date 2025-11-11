@@ -28,29 +28,20 @@ const StockLevels = ({ stockLevels }) => {
   ];
 
   const slideAnims = useRef(
-    levels.map(() => new Animated.Value(50))
-  ).current;
-  const fadeAnims = useRef(
     levels.map(() => new Animated.Value(0))
   ).current;
 
   useEffect(() => {
-    const animations = levels.map((_, index) => [
-      Animated.timing(fadeAnims[index], {
-        toValue: 1,
-        duration: 600,
-        delay: index * 150,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnims[index], {
+    // Start from visible state with subtle entrance animation
+    slideAnims.forEach((anim, index) => {
+      anim.setValue(-5);
+      Animated.timing(anim, {
         toValue: 0,
-        duration: 600,
-        delay: index * 150,
+        duration: 150,
+        delay: index * 30,
         useNativeDriver: true,
-      }),
-    ]).flat();
-
-    Animated.parallel(animations).start();
+      }).start();
+    });
   }, [stockLevels]);
 
   return (
@@ -63,7 +54,6 @@ const StockLevels = ({ stockLevels }) => {
             style={[
               styles.cardWrapper,
               {
-                opacity: fadeAnims[index],
                 transform: [{ translateY: slideAnims[index] }],
               },
             ]}

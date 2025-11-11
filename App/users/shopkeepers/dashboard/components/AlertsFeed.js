@@ -12,31 +12,22 @@ import { DASHBOARD_CONSTANTS } from '../constants';
 
 const AlertsFeed = ({ alerts }) => {
   const [isExpanded, setIsExpanded] = useState(true);
-  const fadeAnims = useRef(
-    alerts.map(() => new Animated.Value(0))
-  ).current;
   const slideAnims = useRef(
-    alerts.map(() => new Animated.Value(20))
+    alerts.map(() => new Animated.Value(0))
   ).current;
 
   useEffect(() => {
     if (isExpanded) {
-      const animations = alerts.map((_, index) => [
-        Animated.timing(fadeAnims[index], {
-          toValue: 1,
-          duration: 400,
-          delay: index * 80,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnims[index], {
+      // Start from visible state with subtle entrance animation
+      slideAnims.forEach((anim, index) => {
+        anim.setValue(-3);
+        Animated.timing(anim, {
           toValue: 0,
-          duration: 400,
-          delay: index * 80,
+          duration: 150,
+          delay: index * 25,
           useNativeDriver: true,
-        }),
-      ]).flat();
-
-      Animated.parallel(animations).start();
+        }).start();
+      });
     }
   }, [isExpanded, alerts]);
 
@@ -88,7 +79,6 @@ const AlertsFeed = ({ alerts }) => {
                 style={[
                   styles.alertWrapper,
                   {
-                    opacity: fadeAnims[index],
                     transform: [{ translateY: slideAnims[index] }],
                   }
                 ]}

@@ -25,32 +25,27 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
   const [loading, setLoading] = useState(false);
 
   // Animation refs
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
   const iconRotateAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // Start entrance animations
-    Animated.stagger(200, [
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 800,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleAnim, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]),
+    // Start with subtle entrance animations
+    slideAnim.setValue(-10);
+    scaleAnim.setValue(0.98);
+    
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
     ]).start();
 
     // Icon rotation animation
@@ -137,7 +132,6 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
           style={[
             styles.cardWrapper,
             {
-              opacity: fadeAnim,
               transform: [
                 { translateY: slideAnim },
                 { scale: scaleAnim },

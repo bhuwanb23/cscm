@@ -1,9 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import {
   View,
   StyleSheet,
   ScrollView,
-  Animated,
   Text,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,23 +16,6 @@ import LiveIndicator from './components/LiveIndicator';
 
 const Dashboard = () => {
   const { stockLevels, shipments, alerts, isLive } = useDashboardData();
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(50)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
 
   return (
     <View style={styles.container}>
@@ -42,15 +24,7 @@ const Dashboard = () => {
         style={styles.backgroundGradient}
       />
       
-      <Animated.View 
-        style={[
-          styles.header,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          }
-        ]}
-      >
+      <View style={styles.header}>
         <LinearGradient
           colors={['#3B82F6', '#1E40AF']}
           style={styles.headerGradient}
@@ -60,28 +34,20 @@ const Dashboard = () => {
           <Text style={styles.headerTitle}>Dashboard</Text>
           <Text style={styles.headerSubtitle}>Welcome back, manage your store</Text>
         </LinearGradient>
-      </Animated.View>
+      </View>
 
       <ScrollView 
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <Animated.View 
-          style={[
-            styles.content,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            }
-          ]}
-        >
+        <View style={styles.content}>
           <QuickActions />
           <StockLevels stockLevels={stockLevels} />
           <PendingShipments shipments={shipments} />
           <SalesChart />
           <AlertsFeed alerts={alerts} />
-        </Animated.View>
+        </View>
       </ScrollView>
       <LiveIndicator isLive={isLive} />
     </View>
