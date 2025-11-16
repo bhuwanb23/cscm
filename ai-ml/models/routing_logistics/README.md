@@ -70,9 +70,31 @@ See `ml_augmented/README.md` for detailed usage examples.
 
 See `predictive_models/README.md` for detailed usage examples.
 
-## Future Phases
+## Phase 4: Deployment Infrastructure ✅
 
-- Phase 4: Deployment Infrastructure
+### Components
+
+1. **RL Simulator Environment** (`deployment_infrastructure/rl_simulator.py`)
+   - Comprehensive simulator for training RL routing agents
+   - Realistic routing environment with constraints
+   - State representation and reward functions
+
+2. **Traffic Pattern Simulation** (`deployment_infrastructure/traffic_simulation.py`)
+   - Realistic traffic pattern simulation
+   - Time-of-day and day-of-week patterns
+   - Custom patterns and historical data integration
+
+3. **Edge ETA Deployment** (`deployment_infrastructure/edge_deployment.py`)
+   - Lightweight model deployment for edge computing
+   - Model quantization and optimization
+   - Prediction caching and batch support
+
+4. **Metrics Tracking** (`deployment_infrastructure/metrics_tracker.py`)
+   - Route efficiency metrics
+   - On-time delivery tracking
+   - Dashboard data generation
+
+See `deployment_infrastructure/README.md` for detailed usage examples.
 
 ## File Structure
 
@@ -92,12 +114,19 @@ routing_logistics/
 │   ├── gnn_route_planner.py
 │   ├── learned_heuristics.py
 │   └── rl_routing.py
-└── predictive_models/
+├── predictive_models/
+│   ├── __init__.py
+│   ├── README.md
+│   ├── travel_time_prediction.py
+│   ├── lstm_eta.py
+│   └── transformer_routing.py
+└── deployment_infrastructure/
     ├── __init__.py
     ├── README.md
-    ├── travel_time_prediction.py
-    ├── lstm_eta.py
-    └── transformer_routing.py
+    ├── rl_simulator.py
+    ├── traffic_simulation.py
+    ├── edge_deployment.py
+    └── metrics_tracker.py
 ```
 
 ## Testing
@@ -112,6 +141,7 @@ pytest tests/routing_logistics/ -v
 pytest tests/routing_logistics/phase1/ -v
 pytest tests/routing_logistics/phase2/ -v
 pytest tests/routing_logistics/phase3/ -v
+pytest tests/routing_logistics/phase4/ -v
 ```
 
 ## Dependencies
