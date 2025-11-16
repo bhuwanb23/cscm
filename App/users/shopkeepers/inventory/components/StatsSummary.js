@@ -8,15 +8,10 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 
 const StatsSummary = ({ stats }) => {
-  const fadeAnims = useRef([
-    new Animated.Value(0),
-    new Animated.Value(0),
-    new Animated.Value(0),
-  ]).current;
   const slideAnims = useRef([
-    new Animated.Value(20),
-    new Animated.Value(20),
-    new Animated.Value(20),
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
   ]).current;
 
   const statsData = [
@@ -26,22 +21,16 @@ const StatsSummary = ({ stats }) => {
   ];
 
   useEffect(() => {
-    const animations = statsData.map((_, index) => [
-      Animated.timing(fadeAnims[index], {
-        toValue: 1,
-        duration: 500,
-        delay: index * 150,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnims[index], {
+    // Start from visible state with subtle entrance animation
+    slideAnims.forEach((anim, index) => {
+      anim.setValue(-3);
+      Animated.timing(anim, {
         toValue: 0,
-        duration: 500,
-        delay: index * 150,
+        duration: 150,
+        delay: index * 30,
         useNativeDriver: true,
-      }),
-    ]).flat();
-
-    Animated.parallel(animations).start();
+      }).start();
+    });
   }, [stats]);
 
   return (
@@ -53,7 +42,6 @@ const StatsSummary = ({ stats }) => {
             style={[
               styles.statWrapper,
               {
-                opacity: fadeAnims[index],
                 transform: [{ translateY: slideAnims[index] }],
               }
             ]}
@@ -77,35 +65,35 @@ const StatsSummary = ({ stats }) => {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 4,
   },
   statsGrid: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 8,
   },
   statWrapper: {
     flex: 1,
   },
   statItem: {
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 12,
-    elevation: 2,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    borderRadius: 8,
+    elevation: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
   },
   statValue: {
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 2,
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 1,
   },
   statLabel: {
-    fontSize: 11,
+    fontSize: 9,
     color: '#6B7280',
-    fontWeight: '600',
+    fontWeight: '500',
     textAlign: 'center',
   },
 });

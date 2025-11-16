@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
-  Animated,
   Text,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -30,23 +29,7 @@ const Inventory = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
+  // No animations needed - components appear immediately
 
   const handleQuickUpdate = (item) => {
     setSelectedItem(item);
@@ -78,15 +61,7 @@ const Inventory = () => {
         style={styles.backgroundGradient}
       />
       
-      <Animated.View 
-        style={[
-          styles.header,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          }
-        ]}
-      >
+      <View style={styles.header}>
         <LinearGradient
           colors={['#3B82F6', '#1E40AF']}
           style={styles.headerGradient}
@@ -96,17 +71,9 @@ const Inventory = () => {
           <Text style={styles.headerTitle}>Inventory</Text>
           <Text style={styles.headerSubtitle}>Manage your stock efficiently</Text>
         </LinearGradient>
-      </Animated.View>
+      </View>
 
-      <Animated.View 
-        style={[
-          styles.content,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          }
-        ]}
-      >
+      <View style={styles.content}>
         <StatsSummary stats={stats} />
         
         <SearchBar
@@ -125,7 +92,7 @@ const Inventory = () => {
           onQuickUpdate={handleQuickUpdate}
           onViewDetails={handleViewDetails}
         />
-      </Animated.View>
+      </View>
       
       <QuickUpdateModal
         visible={modalVisible}
@@ -150,29 +117,29 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   header: {
-    marginTop: 10,
+    marginTop: 8,
     marginHorizontal: 16,
-    marginBottom: 12,
-    borderRadius: 16,
+    marginBottom: 6,
+    borderRadius: 12,
     overflow: 'hidden',
-    elevation: 4,
+    elevation: 3,
     shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
   },
   headerGradient: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: '#FFFFFF',
-    marginBottom: 2,
+    marginBottom: 1,
   },
   headerSubtitle: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#DBEAFE',
     opacity: 0.9,
   },

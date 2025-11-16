@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   listContent: {
-    paddingBottom: 20, // Space for bottom navigation
+    paddingBottom: 10, // Reduced space for bottom navigation
   },
 });
 

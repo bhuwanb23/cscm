@@ -9,22 +9,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
 const SearchBar = ({ searchQuery, onSearchChange }) => {
-  const scaleAnim = useRef(new Animated.Value(0.95)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    // Start from visible state with subtle entrance animation
+    scaleAnim.setValue(0.98);
+    Animated.timing(scaleAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
   }, []);
 
   return (
@@ -32,7 +26,6 @@ const SearchBar = ({ searchQuery, onSearchChange }) => {
       style={[
         styles.container,
         {
-          opacity: fadeAnim,
           transform: [{ scale: scaleAnim }],
         }
       ]}
@@ -42,7 +35,7 @@ const SearchBar = ({ searchQuery, onSearchChange }) => {
         style={styles.gradientContainer}
       >
         <View style={styles.searchContainer}>
-          <Ionicons name="search" size={18} color="#9CA3AF" style={styles.searchIcon} />
+          <Ionicons name="search" size={14} color="#9CA3AF" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             placeholder="Search inventory..."
@@ -59,31 +52,31 @@ const SearchBar = ({ searchQuery, onSearchChange }) => {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 4,
   },
   gradientContainer: {
-    borderRadius: 12,
-    elevation: 2,
+    borderRadius: 8,
+    elevation: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    margin: 2,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    margin: 1,
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: 6,
   },
   searchInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 12,
     color: '#1F2937',
   },
 });

@@ -11,22 +11,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { INVENTORY_CONSTANTS } from '../constants';
 
 const InventoryItem = ({ item, onQuickUpdate, onViewDetails }) => {
-  const scaleAnim = useRef(new Animated.Value(0.95)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 400,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    // Start from visible state with subtle entrance animation
+    scaleAnim.setValue(0.98);
+    Animated.timing(scaleAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
   }, []);
 
   const handlePress = () => {
@@ -65,7 +59,6 @@ const InventoryItem = ({ item, onQuickUpdate, onViewDetails }) => {
       style={[
         styles.container,
         {
-          opacity: fadeAnim,
           transform: [{ scale: scaleAnim }],
         }
       ]}
@@ -121,32 +114,32 @@ const InventoryItem = ({ item, onQuickUpdate, onViewDetails }) => {
 const styles = StyleSheet.create({
   container: {
     marginHorizontal: 16,
-    marginVertical: 4,
+    marginVertical: 2,
   },
   touchable: {
-    borderRadius: 12,
+    borderRadius: 8,
     overflow: 'hidden',
-    elevation: 3,
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
   },
   itemContent: {
-    padding: 12,
+    padding: 8,
   },
   itemHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   itemName: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '700',
     color: '#111827',
     flex: 1,
-    marginRight: 8,
+    marginRight: 6,
   },
   statusBadge: {
     paddingHorizontal: 6,
@@ -160,20 +153,20 @@ const styles = StyleSheet.create({
   itemDetails: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   skuText: {
-    fontSize: 11,
+    fontSize: 9,
     color: '#6B7280',
     fontWeight: '500',
   },
   separator: {
-    fontSize: 11,
+    fontSize: 9,
     color: '#6B7280',
-    marginHorizontal: 6,
+    marginHorizontal: 4,
   },
   supplierText: {
-    fontSize: 11,
+    fontSize: 9,
     color: '#6B7280',
     fontWeight: '500',
     flex: 1,

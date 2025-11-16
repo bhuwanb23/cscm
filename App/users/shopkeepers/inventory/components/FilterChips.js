@@ -10,21 +10,21 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 
 const FilterChips = ({ filters, activeFilter, onFilterPress }) => {
-  const fadeAnims = useRef(
-    filters.map(() => new Animated.Value(0))
+  const scaleAnims = useRef(
+    filters.map(() => new Animated.Value(1))
   ).current;
 
   useEffect(() => {
-    const animations = filters.map((_, index) =>
-      Animated.timing(fadeAnims[index], {
+    // Start from visible state with subtle entrance animation
+    scaleAnims.forEach((anim, index) => {
+      anim.setValue(0.98);
+      Animated.timing(anim, {
         toValue: 1,
-        duration: 400,
-        delay: index * 100,
+        duration: 150,
+        delay: index * 25,
         useNativeDriver: true,
-      })
-    );
-    
-    Animated.parallel(animations).start();
+      }).start();
+    });
   }, []);
 
   return (
@@ -40,13 +40,7 @@ const FilterChips = ({ filters, activeFilter, onFilterPress }) => {
             style={[
               styles.chipWrapper,
               {
-                opacity: fadeAnims[index],
-                transform: [{
-                  scale: fadeAnims[index].interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [0.8, 1],
-                  }),
-                }],
+                transform: [{ scale: scaleAnims[index] }],
               }
             ]}
           >
@@ -84,39 +78,39 @@ const FilterChips = ({ filters, activeFilter, onFilterPress }) => {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 4,
   },
   scrollContent: {
     paddingRight: 16,
   },
   chipWrapper: {
-    marginRight: 8,
+    marginRight: 6,
   },
   chip: {
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
-    elevation: 2,
+    elevation: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowOpacity: 0.08,
+    shadowRadius: 1,
   },
   activeChipGradient: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   inactiveChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     backgroundColor: '#F3F4F6',
   },
   chipText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 10,
+    fontWeight: '500',
     color: '#374151',
   },
   activeChipText: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: '600',
     color: '#FFFFFF',
   },
