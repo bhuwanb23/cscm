@@ -60,12 +60,19 @@ multi_agent_coordination/
 │   ├── mappo.py
 │   ├── qmix.py
 │   └── hierarchical_rl.py
-└── communication_protocols/
+├── communication_protocols/
+│   ├── __init__.py
+│   ├── README.md
+│   ├── gnn_communication.py
+│   ├── message_passing.py
+│   └── state_exchange.py
+└── training_deployment/
     ├── __init__.py
     ├── README.md
-    ├── gnn_communication.py
-    ├── message_passing.py
-    └── state_exchange.py
+    ├── ctde_trainer.py
+    ├── digital_twin_simulator.py
+    ├── edge_policy_deployment.py
+    └── coordination_metrics.py
 ```
 
 ## Testing
@@ -79,6 +86,7 @@ pytest tests/multi_agent_coordination/ -v
 # Run specific phase tests
 pytest tests/multi_agent_coordination/phase1/ -v
 pytest tests/multi_agent_coordination/phase2/ -v
+pytest tests/multi_agent_coordination/phase3/ -v
 ```
 
 ## Dependencies
@@ -88,7 +96,29 @@ pytest tests/multi_agent_coordination/phase2/ -v
 - numpy
 - collections (deque)
 
-## Future Phases
+## Phase 3: Training & Deployment ✅
 
-- Phase 3: Training & Deployment
+### Components
+
+1. **CTDE Trainer** (`training_deployment/ctde_trainer.py`)
+   - Centralized Training with Decentralized Execution
+   - Support for multiple training modes
+   - Centralized experience buffer
+
+2. **Digital Twin Simulator** (`training_deployment/digital_twin_simulator.py`)
+   - Multi-agent interaction simulation
+   - Configurable interaction types
+   - Global state computation
+
+3. **Edge Policy Deployment** (`training_deployment/edge_policy_deployment.py`)
+   - Lightweight policy networks
+   - Model optimization for edge
+   - Batch prediction support
+
+4. **Coordination Metrics** (`training_deployment/coordination_metrics.py`)
+   - Coordination efficiency tracking
+   - Communication efficiency metrics
+   - Agent performance tracking
+
+See `training_deployment/README.md` for detailed usage examples.
 
