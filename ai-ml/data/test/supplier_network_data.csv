@@ -1,0 +1,17 @@
+supplier_id,name,location,lead_time,reliability,cost,quality_score
+1,Supplier_A,USA,10,0.95,100.0,0.92
+2,Supplier_B,China,15,0.90,80.0,0.88
+3,Supplier_C,Germany,8,0.98,120.0,0.95
+4,Supplier_D,Japan,12,0.92,110.0,0.90
+5,Supplier_E,USA,9,0.96,105.0,0.93
+6,Supplier_F,China,20,0.85,70.0,0.82
+7,Supplier_G,Germany,7,0.99,125.0,0.96
+8,Supplier_H,Japan,11,0.93,115.0,0.91
+9,Supplier_I,USA,13,0.91,95.0,0.89
+10,Supplier_J,China,18,0.87,75.0,0.85
+11,Supplier_K,Germany,6,0.97,130.0,0.94
+12,Supplier_L,Japan,14,0.89,100.0,0.87
+13,Supplier_M,USA,16,0.88,90.0,0.86
+14,Supplier_N,China,25,0.75,60.0,0.70
+15,Supplier_O,Germany,5,0.99,135.0,0.97
+
