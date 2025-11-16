@@ -154,7 +154,11 @@ See `reinforcement_learning/README.md` for details.
 
 See `optimization_framework/README.md` for details.
 
+## Phase 4: Deployment & Integration ✅
+
+See `deployment_integration/README.md` for details.
+
 ## Future Phases
 
-- Phase 4: Deployment & Integration
+- Additional enhancements and integrations
 
