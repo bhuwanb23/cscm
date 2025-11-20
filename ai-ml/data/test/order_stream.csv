@@ -1,0 +1,5 @@
+order_id,timestamp,origin,destination,units
+1,2024-01-01T08:00:00,DC1,Store1,30
+2,2024-01-01T08:15:00,DC1,Store2,25
+3,2024-01-01T08:30:00,DC1,Store1,20
+4,2024-01-01T09:00:00,DC1,Store2,40
