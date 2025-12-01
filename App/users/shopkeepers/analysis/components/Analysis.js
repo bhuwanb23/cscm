@@ -13,6 +13,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAnalysis } from '../hooks/useAnalysis';
 import { METRIC_CONFIG, ANALYSIS_TABS } from '../constants';
 
+// Import individual tab components
+import InventoryTab from './tabs/InventoryTab';
+import DemandTab from './tabs/DemandTab';
+import RebalancingTab from './tabs/RebalancingTab';
+import ChannelTab from './tabs/ChannelTab';
+import SkuTab from './tabs/SkuTab';
+import ProcurementTab from './tabs/ProcurementTab';
+import RiskTab from './tabs/RiskTab';
+import TwinsTab from './tabs/TwinsTab';
+
 // Modern Card Component
 const ModernCard = React.memo(({ children, style }) => (
   <View style={[styles.modernCard, style]}>
@@ -135,261 +145,43 @@ const Analysis = () => {
     startAnalysis,
   } = useAnalysis();
 
+  // State to control whether content should be displayed
+  const [showContent, setShowContent] = useState(false);
+
+  // When analysis is completed, show the content
+  useEffect(() => {
+    if (status === 'done') {
+      setShowContent(true);
+    }
+  }, [status]);
+
+  // Reset content visibility when analysis starts
+  const handleStartAnalysis = useCallback(() => {
+    setShowContent(false);
+    startAnalysis();
+  }, [startAnalysis]);
+
   // Memoize tab content to prevent unnecessary re-renders
   const renderActiveTabContent = useCallback(() => {
+    if (!showContent) return null;
+
     switch (activeTab) {
       case 'Inventory Health':
-        return (
-          <ModernTabContent title="Inventory Health Dashboard">
-            <View style={styles.contentRow}>
-              <View style={styles.halfCard}>
-                <Text style={styles.cardTitle}>Inventory Mesh</Text>
-                <Text style={styles.cardDescription}>
-                  Live view of all SKUs by node, with low‑stock and excess‑stock heat overlays.
-                </Text>
-              </View>
-              <View style={styles.halfCard}>
-                <Text style={styles.cardTitle}>SKU Velocity</Text>
-                <Text style={styles.cardDescription}>
-                  Fast vs slow movers by store, with demand spikes and ageing buckets.
-                </Text>
-              </View>
-            </View>
-            <View style={styles.fullCard}>
-              <Text style={styles.cardTitle}>AI Actions</Text>
-              <View style={styles.bulletList}>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                  <Text style={styles.bulletText}>Predicts which SKUs will go OOS in 7-14 days</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                  <Text style={styles.bulletText}>Flags slow-moving SKUs for sale</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                  <Text style={styles.bulletText}>Highlights store-to-store transfers</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="checkmark-circle" size={16} color="#10B981" />
-                  <Text style={styles.bulletText}>Surfaces ageing items beyond 90 days</Text>
-                </View>
-              </View>
-            </View>
-          </ModernTabContent>
-        );
+        return <InventoryTab />;
       case 'Demand Forecast':
-        return (
-          <ModernTabContent title="Demand Forecast Engine">
-            <View style={styles.fullCard}>
-              <Text style={styles.cardTitle}>Forecast Highlights</Text>
-              <View style={styles.bulletList}>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="trending-up" size={16} color="#3B82F6" />
-                  <Text style={styles.bulletText}>Top 10 fast movers by uplift vs last week</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="trending-down" size={16} color="#EF4444" />
-                  <Text style={styles.bulletText}>Top 10 slow movers trending to markdown</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="map" size={16} color="#8B5CF6" />
-                  <Text style={styles.bulletText}>Region-wise demand maps to align supply</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="shield-checkmark" size={16} color="#10B981" />
-                  <Text style={styles.bulletText}>Confidence scores per item for planning</Text>
-                </View>
-              </View>
-            </View>
-            <View style={styles.fullCard}>
-              <Text style={styles.cardTitle}>AI Predictions</Text>
-              <View style={styles.bulletList}>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="calendar" size={16} color="#8B5CF6" />
-                  <Text style={styles.bulletText}>Weekend spike of 2.1x expected on beverages</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="location" size={16} color="#F59E0B" />
-                  <Text style={styles.bulletText}>SKU X selling 3x faster in Bangalore</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="trending-up" size={16} color="#3B82F6" />
-                  <Text style={styles.bulletText}>SKU Y trending on marketplace channels</Text>
-                </View>
-              </View>
-            </View>
-          </ModernTabContent>
-        );
+        return <DemandTab />;
       case 'Rebalancing':
-        return (
-          <ModernTabContent title="Rebalancing & Optimal Allocation">
-            <View style={styles.fullCard}>
-              <Text style={styles.cardTitle}>Optimization Outputs</Text>
-              <View style={styles.bulletList}>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="swap-horizontal" size={16} color="#3B82F6" />
-                  <Text style={styles.bulletText}>Store-to-store transfers to reduce stockouts</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="home" size={16} color="#10B981" />
-                  <Text style={styles.bulletText}>Warehouse-to-store replenishments</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="cash" size={16} color="#8B5CF6" />
-                  <Text style={styles.bulletText}>Estimated cost savings and transfer gain</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="trail-sign" size={16} color="#F59E0B" />
-                  <Text style={styles.bulletText}>Truck capacity and route feasibility check</Text>
-                </View>
-              </View>
-            </View>
-          </ModernTabContent>
-        );
+        return <RebalancingTab />;
       case 'Channel Sync':
-        return (
-          <ModernTabContent title="Channel Sync & Availability Mesh">
-            <View style={styles.fullCard}>
-              <Text style={styles.cardTitle}>Channel Intelligence</Text>
-              <View style={styles.bulletList}>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="layers" size={16} color="#3B82F6" />
-                  <Text style={styles.bulletText}>D2C vs marketplace stock comparison</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="wifi" size={16} color="#10B981" />
-                  <Text style={styles.bulletText}>API sync health indicators</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="alert-circle" size={16} color="#EF4444" />
-                  <Text style={styles.bulletText}>Fake-stock detection and overselling risk</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="speedometer" size={16} color="#8B5CF6" />
-                  <Text style={styles.bulletText}>Quick-commerce readiness score</Text>
-                </View>
-              </View>
-            </View>
-          </ModernTabContent>
-        );
+        return <ChannelTab />;
       case 'SKU Intelligence':
-        return (
-          <ModernTabContent title="SKU Performance Intelligence">
-            <View style={styles.fullCard}>
-              <Text style={styles.cardTitle}>Lifecycle & Performance</Text>
-              <View style={styles.bulletList}>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="git-branch" size={16} color="#3B82F6" />
-                  <Text style={styles.bulletText}>Stage classification: New/Growth/Peak/Decline</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="color-palette" size={16} color="#10B981" />
-                  <Text style={styles.bulletText}>Style-level and variant-level performance</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="bar-chart" size={16} color="#8B5CF6" />
-                  <Text style={styles.bulletText}>Margin contribution and sell-through heatmaps</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="return-down-back" size={16} color="#F59E0B" />
-                  <Text style={styles.bulletText}>Return-rate analytics for quality investigations</Text>
-                </View>
-              </View>
-            </View>
-            <View style={styles.fullCard}>
-              <Text style={styles.cardTitle}>AI Actions</Text>
-              <View style={styles.bulletList}>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="refresh" size={16} color="#3B82F6" />
-                  <Text style={styles.bulletText}>SKU X has 70% sell-through and should be reordered</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="warning" size={16} color="#EF4444" />
-                  <Text style={styles.bulletText}>SKU Y has 18% return rate - quality check needed</Text>
-                </View>
-              </View>
-            </View>
-          </ModernTabContent>
-        );
+        return <SkuTab />;
       case 'Procurement':
-        return (
-          <ModernTabContent title="Procurement Simulation">
-            <View style={styles.fullCard}>
-              <Text style={styles.cardTitle}>Procurement Signals</Text>
-              <View style={styles.bulletList}>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="time" size={16} color="#3B82F6" />
-                  <Text style={styles.bulletText}>Vendor-wise lead times and reliability scores</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="calculator" size={16} color="#10B981" />
-                  <Text style={styles.bulletText}>Recommended PO quantities balancing MOQ vs demand</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="shirt" size={16} color="#8B5CF6" />
-                  <Text style={styles.bulletText}>Fabric/yarn/material demand forecast</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="wallet" size={16} color="#F59E0B" />
-                  <Text style={styles.bulletText}>Budget impact simulation for PO adjustments</Text>
-                </View>
-              </View>
-            </View>
-          </ModernTabContent>
-        );
+        return <ProcurementTab />;
       case 'Risk & Alerts':
-        return (
-          <ModernTabContent title="Risk & Alerts Center">
-            <View style={styles.fullCard}>
-              <Text style={styles.cardTitle}>Risk Types Monitored</Text>
-              <View style={styles.bulletList}>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="warning" size={16} color="#EF4444" />
-                  <Text style={styles.bulletText}>Stockout and overstock risk per SKU/node</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="hourglass" size={16} color="#F59E0B" />
-                  <Text style={styles.bulletText}>Ageing inventory and write-off exposure</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="timer" size={16} color="#8B5CF6" />
-                  <Text style={styles.bulletText}>Vendor delay probabilities and OTIF risk</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="wifi" size={16} color="#3B82F6" />
-                  <Text style={styles.bulletText}>API sync failures and SKU tampering risk</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="calendar" size={16} color="#10B981" />
-                  <Text style={styles.bulletText}>Seasonal spike warnings and sales-dip alerts</Text>
-                </View>
-              </View>
-            </View>
-          </ModernTabContent>
-        );
+        return <RiskTab />;
       case 'Digital Twins Explorer':
-        return (
-          <ModernTabContent title="Digital Twin Explorer (Preview)">
-            <View style={styles.fullCard}>
-              <Text style={styles.cardTitle}>Example Simulations</Text>
-              <View style={styles.bulletList}>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="analytics" size={16} color="#3B82F6" />
-                  <Text style={styles.bulletText}>If we increase production by 20%, which nodes saturate first?</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="storefront" size={16} color="#8B5CF6" />
-                  <Text style={styles.bulletText}>If Store A closes for 5 days, what is the revenue and service-level impact?</Text>
-                </View>
-                <View style={styles.bulletItem}>
-                  <Ionicons name="trending-up" size={16} color="#F59E0B" />
-                  <Text style={styles.bulletText}>If we get a 2x weekend spike, which SKUs/regions break first?</Text>
-                </View>
-              </View>
-            </View>
-          </ModernTabContent>
-        );
+        return <TwinsTab />;
       default:
         return (
           <ModernTabContent title={activeTab}>
@@ -402,7 +194,7 @@ const Analysis = () => {
           </ModernTabContent>
         );
     }
-  }, [activeTab]);
+  }, [activeTab, showContent]);
 
   // Memoize metrics entries to prevent unnecessary re-renders
   const memoizedMetrics = useMemo(() => Object.entries(metrics), [metrics]);
@@ -432,7 +224,7 @@ const Analysis = () => {
           <Animated.View style={[styles.runButtonContainer, { transform: [{ scale: runScale }] }]}>
             <TouchableOpacity
               style={styles.runButton}
-              onPress={startAnalysis}
+              onPress={handleStartAnalysis}
               activeOpacity={0.9}
               disabled={status === 'running'}
             >
@@ -465,86 +257,104 @@ const Analysis = () => {
           </View>
         </View>
 
-        {/* Module Progress */}
-        <ModernCard style={styles.progressCard}>
-          <Text style={styles.sectionTitle}>Analysis Modules</Text>
-          <View style={styles.moduleProgressContainer}>
-            {memoizedModuleProgress.map(([moduleId, progress]) => (
-              <View key={moduleId} style={styles.moduleProgressItem}>
-                <View style={styles.moduleHeader}>
-                  <Text style={styles.moduleName}>
-                    {moduleId.charAt(0).toUpperCase() + moduleId.slice(1)}
-                  </Text>
-                  <Text style={styles.moduleProgressText}>{progress}%</Text>
-                </View>
-                <View style={styles.progressBar}>
-                  <LinearGradient
-                    colors={['#3B82F6', '#1E40AF']}
-                    style={[styles.progressFill, { width: `${progress}%` }]}
-                  />
-                </View>
+        {/* Show content only after analysis is run */}
+        {showContent && (
+          <>
+            {/* Module Progress */}
+            <ModernCard style={styles.progressCard}>
+              <Text style={styles.sectionTitle}>Analysis Modules</Text>
+              <View style={styles.moduleProgressContainer}>
+                {memoizedModuleProgress.map(([moduleId, progress]) => (
+                  <View key={moduleId} style={styles.moduleProgressItem}>
+                    <View style={styles.moduleHeader}>
+                      <Text style={styles.moduleName}>
+                        {moduleId.charAt(0).toUpperCase() + moduleId.slice(1)}
+                      </Text>
+                      <Text style={styles.moduleProgressText}>{progress}%</Text>
+                    </View>
+                    <View style={styles.progressBar}>
+                      <LinearGradient
+                        colors={['#3B82F6', '#1E40AF']}
+                        style={[styles.progressFill, { width: `${progress}%` }]}
+                      />
+                    </View>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
-        </ModernCard>
+            </ModernCard>
 
-        {/* Metrics Dashboard */}
-        <ModernCard style={styles.metricsCard}>
-          <Text style={styles.sectionTitle}>Performance Metrics</Text>
-          <View style={styles.metricsGrid}>
-            {memoizedMetrics.map(([key, value]) => (
-              <AnimatedMetricCard 
-                key={key} 
-                metricKey={key} 
-                value={value} 
-                config={METRIC_CONFIG[key]} 
-              />
-            ))}
-          </View>
-        </ModernCard>
+            {/* Metrics Dashboard */}
+            <ModernCard style={styles.metricsCard}>
+              <Text style={styles.sectionTitle}>Performance Metrics</Text>
+              <View style={styles.metricsGrid}>
+                {memoizedMetrics.map(([key, value]) => (
+                  <AnimatedMetricCard 
+                    key={key} 
+                    metricKey={key} 
+                    value={value} 
+                    config={METRIC_CONFIG[key]} 
+                  />
+                ))}
+              </View>
+            </ModernCard>
 
-        {/* Tabs */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.tabsContainer}
-          contentContainerStyle={styles.tabsContent}
-        >
-          {ANALYSIS_TABS.map(tab => (
-            <TabButton
-              key={tab}
-              title={tab}
-              isActive={activeTab === tab}
-              onPress={() => setActiveTab(tab)}
-            />
-          ))}
-        </ScrollView>
+            {/* Tabs */}
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              style={styles.tabsContainer}
+              contentContainerStyle={styles.tabsContent}
+            >
+              {ANALYSIS_TABS.map(tab => (
+                <TabButton
+                  key={tab}
+                  title={tab}
+                  isActive={activeTab === tab}
+                  onPress={() => setActiveTab(tab)}
+                />
+              ))}
+            </ScrollView>
 
-        {/* Tab Content */}
-        {renderActiveTabContent()}
+            {/* Tab Content */}
+            {renderActiveTabContent()}
 
-        {/* Insights Feed */}
-        <ModernCard style={styles.insightsCard}>
-          <View style={styles.insightsHeader}>
-            <Text style={styles.sectionTitle}>AI Insights Feed</Text>
-            <Ionicons name="bulb" size={20} color="#F59E0B" />
-          </View>
-          <Text style={styles.insightsDescription}>
-            Real-time narrative of what the mesh is seeing
-          </Text>
-          {insights.length > 0 ? (
-            insights.map((insight, index) => (
-              <InsightItem key={index} insight={insight} index={index} />
-            ))
-          ) : (
-            <View style={styles.noInsights}>
-              <Ionicons name="information-circle" size={24} color="#94A3B8" />
-              <Text style={styles.noInsightsText}>
-                Run analysis to generate live insights from sample data
+            {/* Insights Feed */}
+            <ModernCard style={styles.insightsCard}>
+              <View style={styles.insightsHeader}>
+                <Text style={styles.sectionTitle}>AI Insights Feed</Text>
+                <Ionicons name="bulb" size={20} color="#F59E0B" />
+              </View>
+              <Text style={styles.insightsDescription}>
+                Real-time narrative of what the mesh is seeing
+              </Text>
+              {insights.length > 0 ? (
+                insights.map((insight, index) => (
+                  <InsightItem key={index} insight={insight} index={index} />
+                ))
+              ) : (
+                <View style={styles.noInsights}>
+                  <Ionicons name="information-circle" size={24} color="#94A3B8" />
+                  <Text style={styles.noInsightsText}>
+                    Run analysis to generate live insights from sample data
+                  </Text>
+                </View>
+              )}
+            </ModernCard>
+          </>
+        )}
+
+        {/* Show initial message when no content is displayed */}
+        {!showContent && status !== 'running' && (
+          <ModernCard style={styles.initialMessageCard}>
+            <View style={styles.initialMessageContainer}>
+              <Ionicons name="analytics" size={48} color="#3B82F6" />
+              <Text style={styles.initialMessageTitle}>Supply Chain Analysis</Text>
+              <Text style={styles.initialMessageText}>
+                Click "Run Analysis" to generate insights and recommendations for your supply chain operations.
               </Text>
             </View>
-          )}
-        </ModernCard>
+          </ModernCard>
+        )}
       </ScrollView>
     </View>
   );
@@ -776,29 +586,89 @@ const styles = StyleSheet.create({
   },
   halfCard: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    padding: 15,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   fullCard: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   cardTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#1E293B',
-    marginBottom: 8,
+    color: '#111827',
+    marginBottom: 12,
   },
   cardDescription: {
+    fontSize: 14,
+    color: '#6B7280',
+    lineHeight: 20,
+  },
+  metricLarge: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginVertical: 8,
+  },
+  trendTextPositive: {
+    fontSize: 12,
+    color: '#10B981',
+    fontWeight: '600',
+  },
+  trendTextNegative: {
+    fontSize: 12,
+    color: '#EF4444',
+    fontWeight: '600',
+  },
+  chartContainer: {
+    marginTop: 10,
+  },
+  chartRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  chartLabel: {
+    width: 80,
     fontSize: 13,
     color: '#64748B',
-    lineHeight: 18,
+    fontWeight: '500',
+  },
+  chartBarContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  chartBar: {
+    height: 20,
+    borderRadius: 10,
+    marginRight: 10,
+  },
+  chartValue: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#1E293B',
+    minWidth: 40,
   },
   bulletList: {
-    gap: 10,
+    gap: 12,
   },
   bulletItem: {
     flexDirection: 'row',
@@ -806,34 +676,64 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   bulletText: {
-    fontSize: 13,
-    color: '#64748B',
+    fontSize: 14,
+    color: '#4B5563',
     flex: 1,
+    lineHeight: 20,
   },
-  insightsCard: {
-    marginBottom: 15,
+  heatmapContainer: {
+    marginTop: 10,
   },
-  insightsHeader: {
+  heatmapRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 5,
+    marginBottom: 12,
   },
-  insightsDescription: {
+  heatmapLabel: {
     fontSize: 13,
     color: '#64748B',
-    marginBottom: 15,
+    fontWeight: '500',
+    width: 60,
+  },
+  heatmapDots: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  heatmapDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  heatmapDotLow: {
+    backgroundColor: '#10B981',
+  },
+  heatmapDotMedium: {
+    backgroundColor: '#F59E0B',
+  },
+  heatmapDotHigh: {
+    backgroundColor: '#EF4444',
+  },
+  heatmapLegend: {
+    fontSize: 12,
+    color: '#94A3B8',
+    textAlign: 'center',
+    marginTop: 5,
   },
   insightItem: {
     flexDirection: 'row',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 12,
+    gap: 12,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
   },
   insightIconContainer: {
-    marginRight: 12,
-    marginTop: 2,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFFBEB',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   insightContent: {
     flex: 1,
@@ -857,7 +757,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#94A3B8',
     textAlign: 'center',
-    marginTop: 10,
+    marginTop: 8,
+  },
+  initialMessageCard: {
+    alignItems: 'center',
+    paddingVertical: 30,
+  },
+  initialMessageContainer: {
+    alignItems: 'center',
+  },
+  initialMessageTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1E3A8A',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  initialMessageText: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 20,
+    maxWidth: 300,
   },
 });
 
