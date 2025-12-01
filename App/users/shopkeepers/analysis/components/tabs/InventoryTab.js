@@ -1,62 +1,131 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 const InventoryTab = () => {
-  return null; // Tab content is now integrated into the main Analysis component
+  return (
+    <View style={styles.container}>
+      <View style={styles.section}>
+        <Text style={styles.title}>Inventory Health Dashboard</Text>
+        <Text style={styles.description}>
+          Live view of all SKUs by node, with low-stock and excess-stock heat overlays
+        </Text>
+      </View>
+      
+      <View style={styles.cardRow}>
+        <View style={styles.halfCard}>
+          <Text style={styles.cardTitle}>Inventory Mesh</Text>
+          <Text style={styles.cardText}>
+            Live view of all SKUs by node, with low‑stock and excess‑stock heat overlays.
+          </Text>
+        </View>
+        <View style={styles.halfCard}>
+          <Text style={styles.cardTitle}>SKU Velocity</Text>
+          <Text style={styles.cardText}>
+            Fast vs slow movers by store, with demand spikes and ageing buckets.
+          </Text>
+        </View>
+      </View>
+      
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>AI Actions</Text>
+        <View style={styles.bulletList}>
+          <View style={styles.bulletItem}>
+            <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+            <Text style={styles.bulletText}>Predicts which SKUs will go OOS in 7-14 days</Text>
+          </View>
+          <View style={styles.bulletItem}>
+            <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+            <Text style={styles.bulletText}>Flags slow-moving SKUs for sale</Text>
+          </View>
+          <View style={styles.bulletItem}>
+            <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+            <Text style={styles.bulletText}>Highlights store-to-store transfers</Text>
+          </View>
+          <View style={styles.bulletItem}>
+            <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+            <Text style={styles.bulletText}>Surfaces ageing items beyond 90 days</Text>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
 };
 
 export default InventoryTab;
 
 const styles = StyleSheet.create({
-  tabSection: {
-    paddingHorizontal: 16,
-    paddingTop: 4,
-    paddingBottom: 12,
+  container: {
+    padding: 16,
   },
-  tabTitle: {
-    fontSize: 15,
+  section: {
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 18,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
-  },
-  tabIntro: {
-    fontSize: 12,
-    color: '#4B5563',
     marginBottom: 8,
+  },
+  description: {
+    fontSize: 14,
+    color: '#6B7280',
+    lineHeight: 20,
   },
   cardRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 8,
+    gap: 12,
+    marginBottom: 16,
   },
-  card: {
+  halfCard: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    padding: 10,
+    borderRadius: 12,
+    padding: 16,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    marginBottom: 8,
-    shadowColor: '#94A3B8',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   cardTitle: {
-    fontSize: 13,
+    fontSize: 16,
     fontWeight: '700',
     color: '#111827',
-    marginBottom: 4,
+    marginBottom: 8,
   },
   cardText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#4B5563',
-    lineHeight: 16,
+    lineHeight: 20,
   },
-  cardBullet: {
-    fontSize: 12,
+  bulletList: {
+    gap: 12,
+  },
+  bulletItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  bulletText: {
+    fontSize: 14,
     color: '#4B5563',
-    marginBottom: 2,
+    flex: 1,
+    lineHeight: 20,
   },
 });

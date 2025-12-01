@@ -170,6 +170,10 @@ const Analysis = () => {
                   <Ionicons name="checkmark-circle" size={16} color="#10B981" />
                   <Text style={styles.bulletText}>Highlights store-to-store transfers</Text>
                 </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                  <Text style={styles.bulletText}>Surfaces ageing items beyond 90 days</Text>
+                </View>
               </View>
             </View>
           </ModernTabContent>
@@ -188,6 +192,14 @@ const Analysis = () => {
                   <Ionicons name="trending-down" size={16} color="#EF4444" />
                   <Text style={styles.bulletText}>Top 10 slow movers trending to markdown</Text>
                 </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="map" size={16} color="#8B5CF6" />
+                  <Text style={styles.bulletText}>Region-wise demand maps to align supply</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="shield-checkmark" size={16} color="#10B981" />
+                  <Text style={styles.bulletText}>Confidence scores per item for planning</Text>
+                </View>
               </View>
             </View>
             <View style={styles.fullCard}>
@@ -200,6 +212,179 @@ const Analysis = () => {
                 <View style={styles.bulletItem}>
                   <Ionicons name="location" size={16} color="#F59E0B" />
                   <Text style={styles.bulletText}>SKU X selling 3x faster in Bangalore</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="trending-up" size={16} color="#3B82F6" />
+                  <Text style={styles.bulletText}>SKU Y trending on marketplace channels</Text>
+                </View>
+              </View>
+            </View>
+          </ModernTabContent>
+        );
+      case 'Rebalancing':
+        return (
+          <ModernTabContent title="Rebalancing & Optimal Allocation">
+            <View style={styles.fullCard}>
+              <Text style={styles.cardTitle}>Optimization Outputs</Text>
+              <View style={styles.bulletList}>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="swap-horizontal" size={16} color="#3B82F6" />
+                  <Text style={styles.bulletText}>Store-to-store transfers to reduce stockouts</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="home" size={16} color="#10B981" />
+                  <Text style={styles.bulletText}>Warehouse-to-store replenishments</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="cash" size={16} color="#8B5CF6" />
+                  <Text style={styles.bulletText}>Estimated cost savings and transfer gain</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="trail-sign" size={16} color="#F59E0B" />
+                  <Text style={styles.bulletText}>Truck capacity and route feasibility check</Text>
+                </View>
+              </View>
+            </View>
+          </ModernTabContent>
+        );
+      case 'Channel Sync':
+        return (
+          <ModernTabContent title="Channel Sync & Availability Mesh">
+            <View style={styles.fullCard}>
+              <Text style={styles.cardTitle}>Channel Intelligence</Text>
+              <View style={styles.bulletList}>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="layers" size={16} color="#3B82F6" />
+                  <Text style={styles.bulletText}>D2C vs marketplace stock comparison</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="wifi" size={16} color="#10B981" />
+                  <Text style={styles.bulletText}>API sync health indicators</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="alert-circle" size={16} color="#EF4444" />
+                  <Text style={styles.bulletText}>Fake-stock detection and overselling risk</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="speedometer" size={16} color="#8B5CF6" />
+                  <Text style={styles.bulletText}>Quick-commerce readiness score</Text>
+                </View>
+              </View>
+            </View>
+          </ModernTabContent>
+        );
+      case 'SKU Intelligence':
+        return (
+          <ModernTabContent title="SKU Performance Intelligence">
+            <View style={styles.fullCard}>
+              <Text style={styles.cardTitle}>Lifecycle & Performance</Text>
+              <View style={styles.bulletList}>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="git-branch" size={16} color="#3B82F6" />
+                  <Text style={styles.bulletText}>Stage classification: New/Growth/Peak/Decline</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="color-palette" size={16} color="#10B981" />
+                  <Text style={styles.bulletText}>Style-level and variant-level performance</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="bar-chart" size={16} color="#8B5CF6" />
+                  <Text style={styles.bulletText}>Margin contribution and sell-through heatmaps</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="return-down-back" size={16} color="#F59E0B" />
+                  <Text style={styles.bulletText}>Return-rate analytics for quality investigations</Text>
+                </View>
+              </View>
+            </View>
+            <View style={styles.fullCard}>
+              <Text style={styles.cardTitle}>AI Actions</Text>
+              <View style={styles.bulletList}>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="refresh" size={16} color="#3B82F6" />
+                  <Text style={styles.bulletText}>SKU X has 70% sell-through and should be reordered</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="warning" size={16} color="#EF4444" />
+                  <Text style={styles.bulletText}>SKU Y has 18% return rate - quality check needed</Text>
+                </View>
+              </View>
+            </View>
+          </ModernTabContent>
+        );
+      case 'Procurement':
+        return (
+          <ModernTabContent title="Procurement Simulation">
+            <View style={styles.fullCard}>
+              <Text style={styles.cardTitle}>Procurement Signals</Text>
+              <View style={styles.bulletList}>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="time" size={16} color="#3B82F6" />
+                  <Text style={styles.bulletText}>Vendor-wise lead times and reliability scores</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="calculator" size={16} color="#10B981" />
+                  <Text style={styles.bulletText}>Recommended PO quantities balancing MOQ vs demand</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="shirt" size={16} color="#8B5CF6" />
+                  <Text style={styles.bulletText}>Fabric/yarn/material demand forecast</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="wallet" size={16} color="#F59E0B" />
+                  <Text style={styles.bulletText}>Budget impact simulation for PO adjustments</Text>
+                </View>
+              </View>
+            </View>
+          </ModernTabContent>
+        );
+      case 'Risk & Alerts':
+        return (
+          <ModernTabContent title="Risk & Alerts Center">
+            <View style={styles.fullCard}>
+              <Text style={styles.cardTitle}>Risk Types Monitored</Text>
+              <View style={styles.bulletList}>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="warning" size={16} color="#EF4444" />
+                  <Text style={styles.bulletText}>Stockout and overstock risk per SKU/node</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="hourglass" size={16} color="#F59E0B" />
+                  <Text style={styles.bulletText}>Ageing inventory and write-off exposure</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="timer" size={16} color="#8B5CF6" />
+                  <Text style={styles.bulletText}>Vendor delay probabilities and OTIF risk</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="wifi" size={16} color="#3B82F6" />
+                  <Text style={styles.bulletText}>API sync failures and SKU tampering risk</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="calendar" size={16} color="#10B981" />
+                  <Text style={styles.bulletText}>Seasonal spike warnings and sales-dip alerts</Text>
+                </View>
+              </View>
+            </View>
+          </ModernTabContent>
+        );
+      case 'Digital Twins Explorer':
+        return (
+          <ModernTabContent title="Digital Twin Explorer (Preview)">
+            <View style={styles.fullCard}>
+              <Text style={styles.cardTitle}>Example Simulations</Text>
+              <View style={styles.bulletList}>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="analytics" size={16} color="#3B82F6" />
+                  <Text style={styles.bulletText}>If we increase production by 20%, which nodes saturate first?</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="storefront" size={16} color="#8B5CF6" />
+                  <Text style={styles.bulletText}>If Store A closes for 5 days, what is the revenue and service-level impact?</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="trending-up" size={16} color="#F59E0B" />
+                  <Text style={styles.bulletText}>If we get a 2x weekend spike, which SKUs/regions break first?</Text>
                 </View>
               </View>
             </View>
