@@ -2,28 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 const ProcurementTab = () => {
-  return (
-    <View style={styles.tabSection}>
-      <Text style={styles.tabTitle}>Procurement Simulation</Text>
-      <Text style={styles.tabIntro}>
-        Simulates POs under different demand and vendor lead‑time scenarios, with budget impact.
-      </Text>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Procurement Signals</Text>
-        <Text style={styles.cardBullet}>• Vendor‑wise lead times and reliability scores.</Text>
-        <Text style={styles.cardBullet}>
-          • Recommended PO quantities balancing MOQ vs forecast demand.
-        </Text>
-        <Text style={styles.cardBullet}>
-          • Fabric / yarn / material demand forecast for upstream planning.
-        </Text>
-        <Text style={styles.cardBullet}>
-          • Budget impact simulation when PO levels are increased or decreased.
-        </Text>
-      </View>
-    </View>
-  );
+  return null; // Tab content is now integrated into the main Analysis component
 };
+
+export default ProcurementTab;
 
 const styles = StyleSheet.create({
   tabSection: {
@@ -62,5 +44,3 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 });
-
-export default ProcurementTab;

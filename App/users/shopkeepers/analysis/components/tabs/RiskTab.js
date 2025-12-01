@@ -2,25 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 const RiskTab = () => {
-  return (
-    <View style={styles.tabSection}>
-      <Text style={styles.tabTitle}>Risk & Alerts Center</Text>
-      <Text style={styles.tabIntro}>
-        A single place where all risk signals converge — stock, vendor, logistics, API and demand.
-      </Text>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Risk Types Monitored</Text>
-        <Text style={styles.cardBullet}>• Stockout and overstock risk per SKU/node.</Text>
-        <Text style={styles.cardBullet}>• Ageing inventory and write‑off exposure.</Text>
-        <Text style={styles.cardBullet}>• Vendor delay probabilities and OTIF risk.</Text>
-        <Text style={styles.cardBullet}>• API sync failures and SKU tampering risk.</Text>
-        <Text style={styles.cardBullet}>
-          • Seasonal spike warnings and early sales‑dip alerts.
-        </Text>
-      </View>
-    </View>
-  );
+  return null; // Tab content is now integrated into the main Analysis component
 };
+
+export default RiskTab;
 
 const styles = StyleSheet.create({
   tabSection: {
@@ -59,5 +44,3 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 });
-
-export default RiskTab;

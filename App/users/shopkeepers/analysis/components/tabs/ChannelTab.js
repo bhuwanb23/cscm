@@ -2,30 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 const ChannelTab = () => {
-  return (
-    <View style={styles.tabSection}>
-      <Text style={styles.tabTitle}>Channel Sync & Availability Mesh</Text>
-      <Text style={styles.tabIntro}>
-        Keeps D2C, marketplaces and quick‑commerce channels in sync to avoid overselling or fake stock.
-      </Text>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Channel Intelligence</Text>
-        <Text style={styles.cardBullet}>
-          • D2C vs marketplace stock comparison for each SKU and node.
-        </Text>
-        <Text style={styles.cardBullet}>
-          • API sync health indicators to spot stale quantities or outages.
-        </Text>
-        <Text style={styles.cardBullet}>
-          • Fake‑stock detection and overselling risk flags per SKU/channel combination.
-        </Text>
-        <Text style={styles.cardBullet}>
-          • Quick‑commerce readiness score based on proximity and freshness.
-        </Text>
-      </View>
-    </View>
-  );
+  return null; // Tab content is now integrated into the main Analysis component
 };
+
+export default ChannelTab;
 
 const styles = StyleSheet.create({
   tabSection: {
@@ -64,5 +44,3 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 });
-
-export default ChannelTab;

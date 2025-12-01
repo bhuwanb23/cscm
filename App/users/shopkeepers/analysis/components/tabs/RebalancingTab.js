@@ -2,31 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 const RebalancingTab = () => {
-  return (
-    <View style={styles.tabSection}>
-      <Text style={styles.tabTitle}>Rebalancing & Optimal Allocation</Text>
-      <Text style={styles.tabIntro}>
-        Suggests how to move stock between stores and warehouses to reduce both stockouts and
-        overstock, while respecting truck and route constraints.
-      </Text>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Optimization Outputs</Text>
-        <Text style={styles.cardBullet}>
-          • Store‑to‑store transfers where one store is overstocked and another is at risk.
-        </Text>
-        <Text style={styles.cardBullet}>
-          • Warehouse‑to‑store replenishments that keep service levels above target.
-        </Text>
-        <Text style={styles.cardBullet}>
-          • Estimated cost savings and transfer gain potential (₹) per decision.
-        </Text>
-        <Text style={styles.cardBullet}>
-          • Truck capacity and route feasibility check before recommending moves.
-        </Text>
-      </View>
-    </View>
-  );
+  return null; // Tab content is now integrated into the main Analysis component
 };
+
+export default RebalancingTab;
 
 const styles = StyleSheet.create({
   tabSection: {
@@ -65,5 +44,3 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 });
-
-export default RebalancingTab;

@@ -2,36 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 const DemandTab = () => {
-  return (
-    <View style={styles.tabSection}>
-      <Text style={styles.tabTitle}>Demand Forecast Engine</Text>
-      <Text style={styles.tabIntro}>
-        Predictive curves for the next 7/14/30/60/90 days, with confidence bands and category colors.
-      </Text>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Forecast Highlights</Text>
-        <Text style={styles.cardBullet}>• Top 10 fast movers by uplift vs last week.</Text>
-        <Text style={styles.cardBullet}>• Top 10 slow movers trending to markdown territory.</Text>
-        <Text style={styles.cardBullet}>• Region‑wise demand maps to align supply with consumption.</Text>
-        <Text style={styles.cardBullet}>
-          • Confidence scores per item so planners know where to rely on AI vs use judgment.
-        </Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>AI Callouts</Text>
-        <Text style={styles.cardBullet}>
-          • "X SKUs will face OOS in 7 days if no action is taken."
-        </Text>
-        <Text style={styles.cardBullet}>
-          • "Y SKUs predicted to spike by 120% this weekend — event / offer detected."
-        </Text>
-        <Text style={styles.cardBullet}>
-          • "Z SKUs are trending on marketplace channels — check pricing and availability."
-        </Text>
-      </View>
-    </View>
-  );
+  return null; // Tab content is now integrated into the main Analysis component
 };
+
+export default DemandTab;
 
 const styles = StyleSheet.create({
   tabSection: {
@@ -70,5 +44,3 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 });
-
-export default DemandTab;

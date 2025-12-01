@@ -2,37 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 const SkuTab = () => {
-  return (
-    <View style={styles.tabSection}>
-      <Text style={styles.tabTitle}>SKU Performance Intelligence</Text>
-      <Text style={styles.tabIntro}>
-        Digital twin view for every SKU, including lifecycle stage, margin, returns and sell‑through.
-      </Text>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Lifecycle & Performance</Text>
-        <Text style={styles.cardBullet}>• Stage classification: New / Growth / Peak / Decline.</Text>
-        <Text style={styles.cardBullet}>
-          • Style‑level and variant‑level performance to avoid blind reorders.
-        </Text>
-        <Text style={styles.cardBullet}>
-          • Margin contribution and sell‑through heatmaps by store/region.
-        </Text>
-        <Text style={styles.cardBullet}>
-          • Return‑rate analytics to trigger quality investigations.
-        </Text>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>AI Actions</Text>
-        <Text style={styles.cardBullet}>
-          • "SKU X has 70% sell‑through and should be reordered."
-        </Text>
-        <Text style={styles.cardBullet}>
-          • "SKU Y has 18% return rate — quality check and supplier review needed."
-        </Text>
-      </View>
-    </View>
-  );
+  return null; // Tab content is now integrated into the main Analysis component
 };
+
+export default SkuTab;
 
 const styles = StyleSheet.create({
   tabSection: {
@@ -71,5 +44,3 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 });
-
-export default SkuTab;

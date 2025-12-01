@@ -2,27 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 const TwinsTab = () => {
-  return (
-    <View style={styles.tabSection}>
-      <Text style={styles.tabTitle}>Digital Twin Explorer (Preview)</Text>
-      <Text style={styles.tabIntro}>
-        Future‑facing view of your virtual supply chain — product, store, region and warehouse twins.
-      </Text>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Example Simulations</Text>
-        <Text style={styles.cardBullet}>
-          • "If we increase production by 20%, which nodes saturate first?"
-        </Text>
-        <Text style={styles.cardBullet}>
-          • "If Store A closes for 5 days, what is the revenue and service‑level impact?"
-        </Text>
-        <Text style={styles.cardBullet}>
-          • "If we get a 2x weekend spike, which SKUs / regions break first?"
-        </Text>
-      </View>
-    </View>
-  );
+  return null; // Tab content is now integrated into the main Analysis component
 };
+
+export default TwinsTab;
 
 const styles = StyleSheet.create({
   tabSection: {
@@ -61,5 +44,3 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 });
-
-export default TwinsTab;

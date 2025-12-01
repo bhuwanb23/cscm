@@ -1,25 +1,127 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   StyleSheet,
   ScrollView,
+  Text,
+  TouchableOpacity,
+  Animated,
+  Easing,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import Header from './Header';
-import ActionBar from './ActionBar';
-import ModuleProgress from './ModuleProgress';
-import MetricCard from './MetricCard';
-import Tabs from './Tabs';
-import InsightsFeed from './InsightsFeed';
-import InventoryTab from './tabs/InventoryTab';
-import DemandTab from './tabs/DemandTab';
-import RebalancingTab from './tabs/RebalancingTab';
-import ChannelTab from './tabs/ChannelTab';
-import SkuTab from './tabs/SkuTab';
-import ProcurementTab from './tabs/ProcurementTab';
-import RiskTab from './tabs/RiskTab';
-import TwinsTab from './tabs/TwinsTab';
+import { Ionicons } from '@expo/vector-icons';
 import { useAnalysis } from '../hooks/useAnalysis';
+import { METRIC_CONFIG, ANALYSIS_TABS } from '../constants';
+
+// Modern Card Component
+const ModernCard = React.memo(({ children, style }) => (
+  <View style={[styles.modernCard, style]}>
+    <LinearGradient
+      colors={['#FFFFFF', '#F8FAFC']}
+      style={styles.cardGradient}
+    >
+      {children}
+    </LinearGradient>
+  </View>
+));
+
+// Animated Metric Card
+const AnimatedMetricCard = React.memo(({ metricKey, value, config }) => {
+  const scaleAnim = React.useRef(new Animated.Value(1)).current;
+  
+  useEffect(() => {
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 1.05,
+        duration: 300,
+        easing: Easing.ease,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 300,
+        easing: Easing.ease,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [value]);
+
+  // Check if config exists before rendering
+  if (!config) {
+    return null;
+  }
+
+  return (
+    <Animated.View style={[styles.metricCard, { transform: [{ scale: scaleAnim }] }]}>
+      <View style={styles.metricHeader}>
+        <Text style={styles.metricLabel}>{config.label || 'Unknown Metric'}</Text>
+        {config.color && (
+          <View style={[styles.metricIndicator, { backgroundColor: config.color }]} />
+        )}
+      </View>
+      <Text style={[styles.metricValue, config.color && { color: config.color }]}>
+        {config.prefix || ''}
+        {typeof value === 'number' && value % 1 !== 0 ? value.toFixed(1) : value}
+        {config.suffix || ''}
+      </Text>
+    </Animated.View>
+  );
+});
+
+// Tab Button Component
+const TabButton = React.memo(({ title, isActive, onPress }) => (
+  <TouchableOpacity 
+    style={[styles.tabButton, isActive && styles.activeTabButton]} 
+    onPress={onPress}
+    activeOpacity={0.8}
+  >
+    <LinearGradient
+      colors={isActive ? ['#3B82F6', '#1E40AF'] : ['#F1F5F9', '#E2E8F0']}
+      style={[styles.tabGradient, isActive && styles.activeTabGradient]}
+    >
+      <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+        {title}
+      </Text>
+    </LinearGradient>
+  </TouchableOpacity>
+));
+
+// Modern Tab Content
+const ModernTabContent = React.memo(({ title, children }) => (
+  <ModernCard style={styles.tabContentCard}>
+    <View style={styles.tabContentHeader}>
+      <Text style={styles.tabContentTitle}>{title}</Text>
+      <View style={styles.divider} />
+    </View>
+    {children}
+  </ModernCard>
+));
+
+// Insight Item Component
+const InsightItem = React.memo(({ insight, index }) => {
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+  
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 500,
+      delay: index * 100,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  return (
+    <Animated.View style={[styles.insightItem, { opacity: fadeAnim }]}>
+      <View style={styles.insightIconContainer}>
+        <Ionicons name="bulb" size={20} color="#F59E0B" />
+      </View>
+      <View style={styles.insightContent}>
+        <Text style={styles.insightTitle}>AI Insight #{index + 1}</Text>
+        <Text style={styles.insightText}>{insight}</Text>
+      </View>
+    </Animated.View>
+  );
+});
 
 const Analysis = () => {
   const {
@@ -33,73 +135,231 @@ const Analysis = () => {
     startAnalysis,
   } = useAnalysis();
 
-  const renderActiveTab = () => {
+  // Memoize tab content to prevent unnecessary re-renders
+  const renderActiveTabContent = useCallback(() => {
     switch (activeTab) {
       case 'Inventory Health':
-        return <InventoryTab />;
+        return (
+          <ModernTabContent title="Inventory Health Dashboard">
+            <View style={styles.contentRow}>
+              <View style={styles.halfCard}>
+                <Text style={styles.cardTitle}>Inventory Mesh</Text>
+                <Text style={styles.cardDescription}>
+                  Live view of all SKUs by node, with low‑stock and excess‑stock heat overlays.
+                </Text>
+              </View>
+              <View style={styles.halfCard}>
+                <Text style={styles.cardTitle}>SKU Velocity</Text>
+                <Text style={styles.cardDescription}>
+                  Fast vs slow movers by store, with demand spikes and ageing buckets.
+                </Text>
+              </View>
+            </View>
+            <View style={styles.fullCard}>
+              <Text style={styles.cardTitle}>AI Actions</Text>
+              <View style={styles.bulletList}>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                  <Text style={styles.bulletText}>Predicts which SKUs will go OOS in 7-14 days</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                  <Text style={styles.bulletText}>Flags slow-moving SKUs for sale</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="checkmark-circle" size={16} color="#10B981" />
+                  <Text style={styles.bulletText}>Highlights store-to-store transfers</Text>
+                </View>
+              </View>
+            </View>
+          </ModernTabContent>
+        );
       case 'Demand Forecast':
-        return <DemandTab />;
-      case 'Rebalancing':
-        return <RebalancingTab />;
-      case 'Channel Sync':
-        return <ChannelTab />;
-      case 'SKU Intelligence':
-        return <SkuTab />;
-      case 'Procurement':
-        return <ProcurementTab />;
-      case 'Risk & Alerts':
-        return <RiskTab />;
-      case 'Digital Twins Explorer':
-        return <TwinsTab />;
+        return (
+          <ModernTabContent title="Demand Forecast Engine">
+            <View style={styles.fullCard}>
+              <Text style={styles.cardTitle}>Forecast Highlights</Text>
+              <View style={styles.bulletList}>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="trending-up" size={16} color="#3B82F6" />
+                  <Text style={styles.bulletText}>Top 10 fast movers by uplift vs last week</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="trending-down" size={16} color="#EF4444" />
+                  <Text style={styles.bulletText}>Top 10 slow movers trending to markdown</Text>
+                </View>
+              </View>
+            </View>
+            <View style={styles.fullCard}>
+              <Text style={styles.cardTitle}>AI Predictions</Text>
+              <View style={styles.bulletList}>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="calendar" size={16} color="#8B5CF6" />
+                  <Text style={styles.bulletText}>Weekend spike of 2.1x expected on beverages</Text>
+                </View>
+                <View style={styles.bulletItem}>
+                  <Ionicons name="location" size={16} color="#F59E0B" />
+                  <Text style={styles.bulletText}>SKU X selling 3x faster in Bangalore</Text>
+                </View>
+              </View>
+            </View>
+          </ModernTabContent>
+        );
       default:
-        return null;
+        return (
+          <ModernTabContent title={activeTab}>
+            <View style={styles.fullCard}>
+              <Text style={styles.cardTitle}>Analysis Results</Text>
+              <Text style={styles.cardDescription}>
+                Detailed insights and recommendations for {activeTab.toLowerCase()}.
+              </Text>
+            </View>
+          </ModernTabContent>
+        );
     }
-  };
+  }, [activeTab]);
+
+  // Memoize metrics entries to prevent unnecessary re-renders
+  const memoizedMetrics = useMemo(() => Object.entries(metrics), [metrics]);
+  const memoizedModuleProgress = useMemo(() => Object.entries(moduleProgress), [moduleProgress]);
 
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#EBF4FF', '#F8FAFC']}
-        style={styles.backgroundGradient}
-      />
-
-      <Header />
+        colors={['#1E3A8A', '#3B82F6']}
+        style={styles.headerGradient}
+      >
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>CSCM Analysis</Text>
+          <Text style={styles.headerSubtitle}>
+            Central brain of the Cognitive Supply Chain Mesh
+          </Text>
+        </View>
+      </LinearGradient>
 
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <View style={styles.contentContainer}>
-          <ActionBar 
-            runScale={runScale} 
-            onStartAnalysis={startAnalysis} 
-            status={status} 
-          />
+        {/* Action Bar */}
+        <View style={styles.actionBar}>
+          <Animated.View style={[styles.runButtonContainer, { transform: [{ scale: runScale }] }]}>
+            <TouchableOpacity
+              style={styles.runButton}
+              onPress={startAnalysis}
+              activeOpacity={0.9}
+              disabled={status === 'running'}
+            >
+              <LinearGradient
+                colors={status === 'running' ? ['#F59E0B', '#D97706'] : ['#10B981', '#059669']}
+                style={styles.runButtonGradient}
+              >
+                <Ionicons 
+                  name={status === 'running' ? 'flash' : 'play'} 
+                  size={20} 
+                  color="#FFFFFF" 
+                />
+                <Text style={styles.runButtonText}>
+                  {status === 'running' ? 'Analyzing...' : 'Run Analysis'}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </Animated.View>
 
-          <ModuleProgress moduleProgress={moduleProgress} />
-
-          {/* Summary metrics row */}
-          <View style={styles.metricsRow}>
-            <MetricCard metricKey="stockoutRisk" value={metrics.stockoutRisk} />
-            <MetricCard metricKey="overstockValue" value={metrics.overstockValue} />
-            <MetricCard metricKey="revenueLost" value={metrics.revenueLost} />
-            <MetricCard metricKey="skuHealth" value={metrics.skuHealth} />
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.actionButton}>
+              <Ionicons name="document-text" size={20} color="#3B82F6" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton}>
+              <Ionicons name="grid" size={20} color="#3B82F6" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionButton}>
+              <Ionicons name="sparkles" size={20} color="#3B82F6" />
+            </TouchableOpacity>
           </View>
-          <View style={styles.metricsRow}>
-            <MetricCard metricKey="forecastAccuracy" value={metrics.forecastAccuracy} />
-            <MetricCard metricKey="workingCapital" value={metrics.workingCapital} />
-            <MetricCard metricKey="demandSpikes" value={metrics.demandSpikes} />
-            <MetricCard metricKey="transferGain" value={metrics.transferGain} />
-          </View>
-
-          <Tabs activeTab={activeTab} onTabChange={setActiveTab} />
-
-          {/* Main tab content */}
-          {renderActiveTab()}
-
-          <InsightsFeed insights={insights} />
         </View>
+
+        {/* Module Progress */}
+        <ModernCard style={styles.progressCard}>
+          <Text style={styles.sectionTitle}>Analysis Modules</Text>
+          <View style={styles.moduleProgressContainer}>
+            {memoizedModuleProgress.map(([moduleId, progress]) => (
+              <View key={moduleId} style={styles.moduleProgressItem}>
+                <View style={styles.moduleHeader}>
+                  <Text style={styles.moduleName}>
+                    {moduleId.charAt(0).toUpperCase() + moduleId.slice(1)}
+                  </Text>
+                  <Text style={styles.moduleProgressText}>{progress}%</Text>
+                </View>
+                <View style={styles.progressBar}>
+                  <LinearGradient
+                    colors={['#3B82F6', '#1E40AF']}
+                    style={[styles.progressFill, { width: `${progress}%` }]}
+                  />
+                </View>
+              </View>
+            ))}
+          </View>
+        </ModernCard>
+
+        {/* Metrics Dashboard */}
+        <ModernCard style={styles.metricsCard}>
+          <Text style={styles.sectionTitle}>Performance Metrics</Text>
+          <View style={styles.metricsGrid}>
+            {memoizedMetrics.map(([key, value]) => (
+              <AnimatedMetricCard 
+                key={key} 
+                metricKey={key} 
+                value={value} 
+                config={METRIC_CONFIG[key]} 
+              />
+            ))}
+          </View>
+        </ModernCard>
+
+        {/* Tabs */}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.tabsContainer}
+          contentContainerStyle={styles.tabsContent}
+        >
+          {ANALYSIS_TABS.map(tab => (
+            <TabButton
+              key={tab}
+              title={tab}
+              isActive={activeTab === tab}
+              onPress={() => setActiveTab(tab)}
+            />
+          ))}
+        </ScrollView>
+
+        {/* Tab Content */}
+        {renderActiveTabContent()}
+
+        {/* Insights Feed */}
+        <ModernCard style={styles.insightsCard}>
+          <View style={styles.insightsHeader}>
+            <Text style={styles.sectionTitle}>AI Insights Feed</Text>
+            <Ionicons name="bulb" size={20} color="#F59E0B" />
+          </View>
+          <Text style={styles.insightsDescription}>
+            Real-time narrative of what the mesh is seeing
+          </Text>
+          {insights.length > 0 ? (
+            insights.map((insight, index) => (
+              <InsightItem key={index} insight={insight} index={index} />
+            ))
+          ) : (
+            <View style={styles.noInsights}>
+              <Ionicons name="information-circle" size={24} color="#94A3B8" />
+              <Text style={styles.noInsightsText}>
+                Run analysis to generate live insights from sample data
+              </Text>
+            </View>
+          )}
+        </ModernCard>
       </ScrollView>
     </View>
   );
@@ -108,29 +368,311 @@ const Analysis = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F1F5F9',
   },
-  backgroundGradient: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
+  headerGradient: {
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerContent: {
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#DBEAFE',
+    textAlign: 'center',
   },
   scrollView: {
     flex: 1,
   },
-  contentContainer: {
+  scrollContent: {
+    paddingBottom: 30,
+    paddingHorizontal: 16,
+  },
+  actionBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 20,
+  },
+  runButtonContainer: {
+    flex: 1,
+    marginRight: 15,
+  },
+  runButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  runButtonGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  runButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 16,
+    marginLeft: 8,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  actionButton: {
+    backgroundColor: '#FFFFFF',
+    width: 45,
+    height: 45,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  modernCard: {
+    borderRadius: 16,
+    marginBottom: 20,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    overflow: 'hidden',
+  },
+  cardGradient: {
+    padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 15,
+  },
+  progressCard: {
+    marginBottom: 15,
+  },
+  moduleProgressContainer: {
+    gap: 15,
+  },
+  moduleProgressItem: {
+    marginBottom: 10,
+  },
+  moduleHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 5,
+  },
+  moduleName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#334155',
+  },
+  moduleProgressText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  progressBar: {
+    height: 8,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  metricsCard: {
+    marginBottom: 15,
+  },
+  metricsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  metricCard: {
+    width: '48%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  metricHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  metricLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  metricIndicator: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  metricValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+  tabsContainer: {
+    marginBottom: 15,
+  },
+  tabsContent: {
+    paddingVertical: 5,
+    paddingRight: 10,
+  },
+  tabButton: {
+    marginRight: 10,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  tabGradient: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+  },
+  activeTabGradient: {
+    elevation: 3,
+    shadowColor: '#1E40AF',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  tabText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  activeTabText: {
+    color: '#FFFFFF',
+  },
+  tabContentCard: {
+    marginBottom: 15,
+  },
+  tabContentHeader: {
+    marginBottom: 15,
+  },
+  tabContentTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#E2E8F0',
+    marginTop: 10,
+  },
+  contentRow: {
+    flexDirection: 'row',
+    gap: 15,
+    marginBottom: 15,
+  },
+  halfCard: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 15,
+  },
+  fullCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 15,
+  },
+  cardTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 8,
+  },
+  cardDescription: {
+    fontSize: 13,
+    color: '#64748B',
+    lineHeight: 18,
+  },
+  bulletList: {
+    gap: 10,
+  },
+  bulletItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  bulletText: {
+    fontSize: 13,
+    color: '#64748B',
     flex: 1,
   },
-  scrollContent: {
-    paddingBottom: 24,
+  insightsCard: {
+    marginBottom: 15,
   },
-  metricsRow: {
-    paddingHorizontal: 16,
-    paddingTop: 6,
+  insightsHeader: {
     flexDirection: 'row',
-    gap: 6,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  insightsDescription: {
+    fontSize: 13,
+    color: '#64748B',
+    marginBottom: 15,
+  },
+  insightItem: {
+    flexDirection: 'row',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 12,
+  },
+  insightIconContainer: {
+    marginRight: 12,
+    marginTop: 2,
+  },
+  insightContent: {
+    flex: 1,
+  },
+  insightTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginBottom: 4,
+  },
+  insightText: {
+    fontSize: 13,
+    color: '#64748B',
+    lineHeight: 18,
+  },
+  noInsights: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  noInsightsText: {
+    fontSize: 14,
+    color: '#94A3B8',
+    textAlign: 'center',
+    marginTop: 10,
   },
 });
 

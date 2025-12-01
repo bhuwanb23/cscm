@@ -18,12 +18,12 @@ export const ANALYSIS_TABS = [
 ];
 
 export const METRIC_CONFIG = {
-  stockoutRisk: { label: 'Stockout Risk', suffix: '%', color: '#DC2626' },
-  overstockValue: { label: 'Overstock Value', suffix: 'L', prefix: '₹', color: '#EA580C' },
-  revenueLost: { label: 'Revenue Lost', suffix: 'L', prefix: '₹', color: '#B91C1C' },
-  skuHealth: { label: 'SKU Health Score', suffix: '/100', color: '#16A34A' },
-  forecastAccuracy: { label: 'Forecast Accuracy', suffix: '%', color: '#2563EB' },
-  workingCapital: { label: 'Working Capital Blocked', suffix: 'L', prefix: '₹', color: '#7C3AED' },
-  demandSpikes: { label: 'Demand Spike Alerts', suffix: '', color: '#F97316' },
-  transferGain: { label: 'Transfer Gain Potential', suffix: 'L', prefix: '₹', color: '#0EA5E9' },
+  stockoutRisk: { label: 'Stockout Risk', suffix: '%', color: '#EF4444' },
+  overstockValue: { label: 'Overstock Value', suffix: 'L', prefix: '₹', color: '#F97316' },
+  revenueLost: { label: 'Revenue Lost', suffix: 'L', prefix: '₹', color: '#DC2626' },
+  skuHealth: { label: 'SKU Health Score', suffix: '/100', color: '#10B981' },
+  forecastAccuracy: { label: 'Forecast Accuracy', suffix: '%', color: '#3B82F6' },
+  workingCapital: { label: 'Working Capital Blocked', suffix: 'L', prefix: '₹', color: '#8B5CF6' },
+  demandSpikes: { label: 'Demand Spike Alerts', suffix: '', color: '#F59E0B' },
+  transferGain: { label: 'Transfer Gain Potential', suffix: 'L', prefix: '₹', color: '#06B6D4' },
 };

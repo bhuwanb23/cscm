@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Animated } from 'react-native';
+import { Animated, Easing } from 'react-native';
 import { ANALYSIS_MODULES } from '../constants';
 
 export const useAnalysis = () => {
@@ -26,27 +26,23 @@ export const useAnalysis = () => {
   useEffect(() => {
     let animation;
     if (status === 'running') {
-      const animate = () => {
-        animation = Animated.loop(
-          Animated.sequence([
-            Animated.timing(runAnim, {
-              toValue: 1,
-              duration: 600,
-              useNativeDriver: true,
-            }),
-            Animated.timing(runAnim, {
-              toValue: 0,
-              duration: 600,
-              useNativeDriver: true,
-            }),
-          ]),
-        ).start();
-      };
-      animate();
+      animation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(runAnim, {
+            toValue: 1,
+            duration: 800,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(runAnim, {
+            toValue: 0,
+            duration: 800,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ]),
+      ).start();
     } else {
-      if (animation) {
-        animation.stop();
-      }
       runAnim.setValue(0);
     }
     
@@ -55,7 +51,7 @@ export const useAnalysis = () => {
         animation.stop();
       }
     };
-  }, [status, runAnim]);
+  }, [status]);
 
   const startAnalysis = () => {
     if (status === 'running') return;
@@ -97,7 +93,7 @@ export const useAnalysis = () => {
 
   const runScale = runAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [1, 1.03],
+    outputRange: [1, 1.05],
   });
 
   return {

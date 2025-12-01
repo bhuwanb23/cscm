@@ -2,41 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 const InventoryTab = () => {
-  return (
-    <View style={styles.tabSection}>
-      <Text style={styles.tabTitle}>Inventory Health Dashboard</Text>
-      <Text style={styles.tabIntro}>
-        This view scans the full inventory mesh — across warehouses, stores and channels —
-        to highlight risk, opportunity and slow movers.
-      </Text>
-      <View style={styles.cardRow}>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Inventory Mesh</Text>
-          <Text style={styles.cardText}>
-            Live view of all SKUs by node, with low‑stock and excess‑stock heat overlays.
-          </Text>
-        </View>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>SKU Velocity</Text>
-          <Text style={styles.cardText}>
-            Fast vs slow movers by store, with demand spikes and ageing buckets (30/60/90+ days).
-          </Text>
-        </View>
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>AI Actions</Text>
-        <Text style={styles.cardBullet}>• Predicts which SKUs will go OOS in the next 7–14 days.</Text>
-        <Text style={styles.cardBullet}>• Flags slow‑moving SKUs that should be marked for sale.</Text>
-        <Text style={styles.cardBullet}>
-          • Highlights store‑to‑store transfers to unlock blocked working capital.
-        </Text>
-        <Text style={styles.cardBullet}>
-          • Surfaces ageing items beyond 90 days for clearance or redistribution.
-        </Text>
-      </View>
-    </View>
-  );
+  return null; // Tab content is now integrated into the main Analysis component
 };
+
+export default InventoryTab;
 
 const styles = StyleSheet.create({
   tabSection: {
@@ -91,5 +60,3 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 });
-
-export default InventoryTab;
