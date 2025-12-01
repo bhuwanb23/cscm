@@ -13,6 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Header from './components/Header';
 import BottomNavbar from './components/BottomNavbar';
 import Dashboard from './dashboard/dashboard';
+import Analysis from './dashboard/analysis';
 import Inventory from './inventory/inventory';
 import StockRequest from './stock_request/stock_request';
 import Shipment from './shipment/shipment';
@@ -48,6 +49,8 @@ const ShopkeeperDashboard = ({ onLogout }) => {
     switch (activeTab) {
       case 'dashboard':
         return <Dashboard />;
+      case 'analysis':
+        return <Analysis />;
       case 'inventory':
         return <Inventory />;
       case 'orders':

@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 const BottomNavbar = ({ activeTab, onTabPress }) => {
   const tabs = [
     { id: 'dashboard', icon: 'home-outline', activeIcon: 'home' },
+    { id: 'analysis', icon: 'pulse-outline', activeIcon: 'pulse' },
     { id: 'inventory', icon: 'list-outline', activeIcon: 'list' },
     { id: 'orders', icon: 'add-circle-outline', activeIcon: 'add-circle' },
     { id: 'shipments', icon: 'car-outline', activeIcon: 'car' },
