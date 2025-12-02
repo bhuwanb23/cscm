@@ -84,7 +84,7 @@ const ShopkeeperDashboard = ({ onLogout }) => {
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <LinearGradient colors={['#F8F9FA', '#E9ECEF']} style={styles.container}>
         <Header 
-          title="Shopkeeper Dashboard" 
+          title="Dashboard" 
           subtitle="Store Management" 
           onLogout={onLogout}
           onProfilePress={handleProfilePress}

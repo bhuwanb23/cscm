@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   View,
   Text,
@@ -31,9 +30,6 @@ const Header = ({ title, subtitle, onLogout, onProfilePress, onMessagesPress }) 
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.iconButton} onPress={onProfilePress}>
                   <Ionicons name="person-circle-outline" size={24} color="#fff" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-                  <Ionicons name="log-out-outline" size={24} color="#fff" />
                 </TouchableOpacity>
               </View>
             </View>
