@@ -16,7 +16,8 @@ export const useInventoryData = () => {
       filtered = filtered.filter(item =>
         item.name.toLowerCase().includes(query.toLowerCase()) ||
         item.sku.toLowerCase().includes(query.toLowerCase()) ||
-        item.supplier.toLowerCase().includes(query.toLowerCase())
+        item.supplier.toLowerCase().includes(query.toLowerCase()) ||
+        item.category.toLowerCase().includes(query.toLowerCase())
       );
     }
 
@@ -31,6 +32,9 @@ export const useInventoryData = () => {
           break;
         case 'clothing':
           filtered = filtered.filter(item => item.type === 'Clothing');
+          break;
+        case 'audio':
+          filtered = filtered.filter(item => item.category === 'Audio');
           break;
         case 'expired':
           filtered = filtered.filter(item => item.status === 'expiring');

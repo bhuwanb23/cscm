@@ -39,6 +39,10 @@ const InventoryItem = ({ item, onQuickUpdate, onViewDetails }) => {
     onQuickUpdate(item);
   };
 
+  const handleViewDetailsPress = () => {
+    onViewDetails(item);
+  };
+
   const getStatusStyle = (status) => {
     switch (status) {
       case 'low':
@@ -97,13 +101,9 @@ const InventoryItem = ({ item, onQuickUpdate, onViewDetails }) => {
               </Text>
             </View>
             
-            {item.expiryDate ? (
-              <Text style={styles.expiryText}>Exp: {item.expiryDate}</Text>
-            ) : (
-              <TouchableOpacity onPress={() => onViewDetails(item)}>
-                <Text style={styles.actionText}>Details</Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity onPress={handleViewDetailsPress}>
+              <Text style={styles.actionText}>Details</Text>
+            </TouchableOpacity>
           </View>
         </LinearGradient>
       </TouchableOpacity>
@@ -189,11 +189,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#6B7280',
     fontWeight: '500',
-  },
-  expiryText: {
-    fontSize: 10,
-    color: '#EA580C',
-    fontWeight: '600',
   },
   actionText: {
     fontSize: 11,

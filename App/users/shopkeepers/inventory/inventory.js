@@ -11,6 +11,7 @@ import FilterChips from './components/FilterChips';
 import StatsSummary from './components/StatsSummary';
 import InventoryList from './components/InventoryList';
 import QuickUpdateModal from './components/QuickUpdateModal';
+import ProductDetails from './components/ProductDetails';
 import { INVENTORY_CONSTANTS } from './constants';
 
 const Inventory = () => {
@@ -28,6 +29,8 @@ const Inventory = () => {
 
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [detailsVisible, setDetailsVisible] = useState(false);
+  const [detailItem, setDetailItem] = useState(null);
   
   // No animations needed - components appear immediately
 
@@ -37,8 +40,8 @@ const Inventory = () => {
   };
 
   const handleViewDetails = (item) => {
-    // Navigate to item details page
-    console.log('View details for:', item.name);
+    setDetailItem(item);
+    setDetailsVisible(true);
   };
 
   const handleUpdateItem = (itemId, newQuantity, status) => {
@@ -52,6 +55,11 @@ const Inventory = () => {
   const handleCloseModal = () => {
     setModalVisible(false);
     setSelectedItem(null);
+  };
+
+  const handleCloseDetails = () => {
+    setDetailsVisible(false);
+    setDetailItem(null);
   };
 
   return (
@@ -99,6 +107,12 @@ const Inventory = () => {
         item={selectedItem}
         onClose={handleCloseModal}
         onUpdate={handleUpdateItem}
+      />
+      
+      <ProductDetails
+        item={detailItem}
+        isVisible={detailsVisible}
+        onClose={handleCloseDetails}
       />
     </View>
   );
