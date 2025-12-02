@@ -1,12 +1,10 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import {
   View,
   StyleSheet,
   FlatList,
-  Animated,
   Text,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useShipmentData } from './hooks/useShipmentData';
 import FilterTabs from './components/FilterTabs';
 import MapToggle from './components/MapToggle';
@@ -26,24 +24,6 @@ const Shipment = () => {
     getStatusStyle,
     confirmDelivery,
   } = useShipmentData();
-
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
 
   const handleActionPress = (shipment) => {
     if (shipment.actionText === 'Confirm Delivery') {
@@ -89,40 +69,14 @@ const Shipment = () => {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#EBF4FF', '#F8FAFC']}
-        style={styles.backgroundGradient}
-      />
-      
-      <Animated.View 
-        style={[
-          styles.header,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          }
-        ]}
-      >
-        <LinearGradient
-          colors={['#3B82F6', '#1E40AF']}
-          style={styles.headerGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-        >
+      <View style={styles.header}>
+        <View style={styles.headerContainer}>
           <Text style={styles.headerTitle}>Shipments</Text>
           <Text style={styles.headerSubtitle}>Track and manage deliveries</Text>
-        </LinearGradient>
-      </Animated.View>
+        </View>
+      </View>
 
-      <Animated.View 
-        style={[
-          styles.content,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          }
-        ]}
-      >
+      <View style={styles.content}>
         <FlatList
           data={shipments}
           keyExtractor={(item) => item.id}
@@ -132,7 +86,7 @@ const Shipment = () => {
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
         />
-      </Animated.View>
+      </View>
     </View>
   );
 };
@@ -142,26 +96,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8FAFC',
   },
-  backgroundGradient: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-  },
   header: {
     marginTop: 10,
     marginHorizontal: 16,
     marginBottom: 12,
-    borderRadius: 16,
-    overflow: 'hidden',
-    elevation: 4,
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    borderRadius: 12,
+    backgroundColor: '#3B82F6',
   },
-  headerGradient: {
+  headerContainer: {
     paddingVertical: 12,
     paddingHorizontal: 16,
   },

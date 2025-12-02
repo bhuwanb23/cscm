@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const ConfirmationModal = ({ isVisible, onClose, request }) => {
+const ConfirmationModal = ({ isVisible, onClose, submittedRequest }) => {
   // Get delivery option details
   const getDeliveryOption = (deliveryId) => {
     const options = {
@@ -34,8 +34,19 @@ const ConfirmationModal = ({ isVisible, onClose, request }) => {
     return priorities[priorityId] || priorities.normal;
   };
 
-  const deliveryInfo = request ? getDeliveryOption(request.delivery) : getDeliveryOption('same_day');
-  const priorityInfo = request ? getPriorityDetails(request.priority) : getPriorityDetails('normal');
+  // Add safety checks for submittedRequest
+  const deliveryInfo = submittedRequest && submittedRequest.delivery ? 
+    getDeliveryOption(submittedRequest.delivery) : 
+    getDeliveryOption('same_day');
+    
+  const priorityInfo = submittedRequest && submittedRequest.priority ? 
+    getPriorityDetails(submittedRequest.priority) : 
+    getPriorityDetails('normal');
+
+  // Only show modal when there's a submitted request
+  if (!isVisible) {
+    return null;
+  }
 
   return (
     <Modal
@@ -65,7 +76,9 @@ const ConfirmationModal = ({ isVisible, onClose, request }) => {
             <View style={styles.detailRow}>
               <Ionicons name="calendar-outline" size={16} color="#6B7280" />
               <Text style={styles.detailLabel}>Reference Number:</Text>
-              <Text style={styles.detailValue}>#{request ? request.id : Math.floor(100000 + Math.random() * 900000)}</Text>
+              <Text style={styles.detailValue}>
+                #{submittedRequest && submittedRequest.id ? submittedRequest.id : Math.floor(100000 + Math.random() * 900000)}
+              </Text>
             </View>
             
             <View style={styles.detailRow}>

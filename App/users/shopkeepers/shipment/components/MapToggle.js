@@ -1,47 +1,11 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const MapToggle = ({ isEnabled, onToggle }) => {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const thumbAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 400,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
-  useEffect(() => {
-    Animated.timing(thumbAnim, {
-      toValue: isEnabled ? 1 : 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  }, [isEnabled]);
-
   return (
-    <Animated.View 
-      style={[
-        styles.container,
-        {
-          opacity: fadeAnim,
-          transform: [{
-            scale: fadeAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0.95, 1],
-            }),
-          }],
-        }
-      ]}
-    >
-      <LinearGradient
-        colors={['#FFFFFF', '#F8FAFC']}
-        style={styles.gradientContainer}
-      >
+    <View style={styles.container}>
+      <View style={styles.gradientContainer}>
         <View style={styles.content}>
           <View style={styles.labelContainer}>
             <Ionicons name="map" size={16} color="#3B82F6" style={styles.icon} />
@@ -53,45 +17,18 @@ const MapToggle = ({ isEnabled, onToggle }) => {
             activeOpacity={0.8}
           >
             {isEnabled ? (
-              <LinearGradient
-                colors={['#3B82F6', '#1E40AF']}
-                style={styles.toggleTrack}
-              >
-                <Animated.View
-                  style={[
-                    styles.toggleThumb,
-                    {
-                      transform: [{
-                        translateX: thumbAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [2, 18],
-                        }),
-                      }],
-                    }
-                  ]}
-                />
-              </LinearGradient>
+              <View style={styles.toggleTrack}>
+                <View style={styles.toggleThumbEnabled} />
+              </View>
             ) : (
               <View style={styles.toggleInactive}>
-                <Animated.View
-                  style={[
-                    styles.toggleThumb,
-                    {
-                      transform: [{
-                        translateX: thumbAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [2, 18],
-                        }),
-                      }],
-                    }
-                  ]}
-                />
+                <View style={styles.toggleThumb} />
               </View>
             )}
           </TouchableOpacity>
         </View>
-      </LinearGradient>
-    </Animated.View>
+      </View>
+    </View>
   );
 };
 
@@ -102,11 +39,7 @@ const styles = StyleSheet.create({
   },
   gradientContainer: {
     borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    backgroundColor: '#FFFFFF',
   },
   content: {
     flexDirection: 'row',
@@ -136,6 +69,7 @@ const styles = StyleSheet.create({
   toggleTrack: {
     width: '100%',
     height: '100%',
+    backgroundColor: '#3B82F6',
     justifyContent: 'center',
   },
   toggleInactive: {
@@ -149,11 +83,14 @@ const styles = StyleSheet.create({
     height: 16,
     backgroundColor: '#FFFFFF',
     borderRadius: 8,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
+    marginLeft: 2,
+  },
+  toggleThumbEnabled: {
+    width: 16,
+    height: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    marginLeft: 18,
   },
 });
 

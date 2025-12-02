@@ -1,93 +1,28 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Image, Dimensions, Animated } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const { width } = Dimensions.get('window');
 const MAP_HEIGHT = 140; // Reduced height for compact design
 
 const MapView = ({ activeShipmentsCount = 4 }) => {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.95)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    // Initial animation
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    // Pulse animation for active indicator
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulse.start();
-
-    return () => pulse.stop();
-  }, []);
-
   return (
-    <Animated.View 
-      style={[
-        styles.container,
-        {
-          opacity: fadeAnim,
-          transform: [{ scale: scaleAnim }],
-        }
-      ]}
-    >
-      <LinearGradient
-        colors={['#FFFFFF', '#F8FAFC']}
-        style={styles.gradientContainer}
-      >
+    <View style={styles.container}>
+      <View style={styles.gradientContainer}>
         <View style={styles.mapHeader}>
           <View style={styles.headerLeft}>
             <Ionicons name="map" size={16} color="#3B82F6" />
             <Text style={styles.mapTitle}>Live Tracking</Text>
           </View>
-          <Animated.View 
-            style={[
-              styles.activeIndicator,
-              {
-                transform: [{ scale: pulseAnim }],
-              }
-            ]}
-          >
-            <LinearGradient
-              colors={['#22C55E', '#16A34A']}
-              style={styles.activeGradient}
-            >
+          <View style={styles.activeIndicator}>
+            <View style={styles.activeGradient}>
               <View style={styles.activeDot} />
               <Text style={styles.activeText}>{activeShipmentsCount} Active</Text>
-            </LinearGradient>
-          </Animated.View>
+            </View>
+          </View>
         </View>
         
         <View style={styles.mapContainer}>
-          <LinearGradient
-            colors={['#EBF4FF', '#DBEAFE']}
-            style={styles.mapBackground}
-          >
+          <View style={styles.mapBackground}>
             <Image
               source={{ uri: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/b982481b6b-ed78231c110ab3c1f8ec.png' }}
               style={styles.mapImage}
@@ -98,10 +33,10 @@ const MapView = ({ activeShipmentsCount = 4 }) => {
               <Ionicons name="location" size={16} color="#3B82F6" style={styles.locationIcon2} />
               <Ionicons name="location" size={18} color="#F59E0B" style={styles.locationIcon3} />
             </View>
-          </LinearGradient>
+          </View>
         </View>
-      </LinearGradient>
-    </Animated.View>
+      </View>
+    </View>
   );
 };
 
@@ -113,11 +48,7 @@ const styles = StyleSheet.create({
   gradientContainer: {
     borderRadius: 12,
     padding: 12,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: '#FFFFFF',
   },
   mapHeader: {
     flexDirection: 'row',
@@ -145,6 +76,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     gap: 4,
+    backgroundColor: '#22C55E',
   },
   activeDot: {
     width: 6,
@@ -166,6 +98,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     position: 'relative',
+    backgroundColor: '#EBF4FF',
   },
   mapImage: {
     width: '100%',

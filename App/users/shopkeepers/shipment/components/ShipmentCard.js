@@ -1,93 +1,55 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Animated,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
 const ShipmentCard = ({ shipment, onActionPress, getStatusStyle }) => {
   const statusStyle = getStatusStyle(shipment.status);
-  const scaleAnim = useRef(new Animated.Value(0.95)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
 
   const getProgressColor = (status) => {
     switch (status) {
       case 'in_transit':
-        return ['#2563EB', '#1E40AF'];
+        return '#2563EB';
       case 'arriving_soon':
-        return ['#10B981', '#059669'];
+        return '#10B981';
       case 'delayed':
-        return ['#F59E0B', '#D97706'];
+        return '#F59E0B';
       case 'out_for_delivery':
-        return ['#A855F7', '#9333EA'];
+        return '#A855F7';
       default:
-        return ['#2563EB', '#1E40AF'];
+        return '#2563EB';
     }
   };
 
   const handlePress = () => {
-    Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 0.98,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
     onActionPress(shipment);
   };
 
   return (
-    <Animated.View 
-      style={[
-        styles.container,
-        {
-          opacity: fadeAnim,
-          transform: [{ scale: scaleAnim }],
-        }
-      ]}
-    >
+    <View style={styles.container}>
       <TouchableOpacity style={styles.touchable} activeOpacity={0.9}>
-        <LinearGradient
-          colors={['#FFFFFF', '#F8FAFC']}
-          style={styles.content}
-        >
+        <View style={styles.content}>
           <View style={styles.header}>
             <View style={styles.titleContainer}>
               <Text style={styles.shipmentId}>#{shipment.id}</Text>
               <Text style={styles.shipmentTitle} numberOfLines={1}>{shipment.title}</Text>
+              {shipment.description && (
+                <Text style={styles.shipmentDescription} numberOfLines={1}>
+                  {shipment.description}
+                </Text>
+              )}
             </View>
-            <LinearGradient
-              colors={[statusStyle.bgColor, `${statusStyle.bgColor}CC`]}
-              style={styles.statusBadge}
+            <View 
+              style={[styles.statusBadge, { backgroundColor: statusStyle.bgColor }]}
             >
               <Text style={[styles.statusText, { color: statusStyle.textColor }]}>
                 {statusStyle.label}
               </Text>
-            </LinearGradient>
+            </View>
           </View>
 
           {/* Progress Bar */}
@@ -98,12 +60,12 @@ const ShipmentCard = ({ shipment, onActionPress, getStatusStyle }) => {
             </View>
             <View style={styles.progressBar}>
               <View style={styles.progressTrack}>
-                <LinearGradient
-                  colors={getProgressColor(shipment.status)}
+                <View
                   style={[
                     styles.progressFill,
                     {
                       width: `${Math.min(shipment.progress, 100)}%`,
+                      backgroundColor: getProgressColor(shipment.status),
                     },
                   ]}
                 />
@@ -122,6 +84,22 @@ const ShipmentCard = ({ shipment, onActionPress, getStatusStyle }) => {
             </View>
           </View>
 
+          {/* Additional Details */}
+          <View style={styles.additionalDetails}>
+            <View style={styles.detailRow}>
+              <Ionicons name="cube" size={12} color="#6B7280" style={styles.detailIcon} />
+              <Text style={styles.detailText}>{shipment.items} items</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Ionicons name="weight-hanging" size={12} color="#6B7280" style={styles.detailIcon} />
+              <Text style={styles.detailText}>{shipment.weight}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Ionicons name="money-bill" size={12} color="#6B7280" style={styles.detailIcon} />
+              <Text style={styles.detailText}>{shipment.orderValue}</Text>
+            </View>
+          </View>
+
           <View style={styles.footer}>
             <View style={styles.locationContainer}>
               <Ionicons
@@ -135,19 +113,20 @@ const ShipmentCard = ({ shipment, onActionPress, getStatusStyle }) => {
               style={styles.actionButton}
               onPress={handlePress}
             >
-              <LinearGradient
-                colors={shipment.actionColor === '#3B82F6' ? ['#3B82F6', '#1E40AF'] : ['#22C55E', '#16A34A']}
-                style={styles.actionGradient}
+              <View 
+                style={[styles.actionGradient, { 
+                  backgroundColor: shipment.actionColor === '#3B82F6' ? '#3B82F6' : '#22C55E' 
+                }]}
               >
                 <Text style={styles.actionText}>
                   {shipment.actionText}
                 </Text>
-              </LinearGradient>
+              </View>
             </TouchableOpacity>
           </View>
-        </LinearGradient>
+        </View>
       </TouchableOpacity>
-    </Animated.View>
+    </View>
   );
 };
 
@@ -159,11 +138,7 @@ const styles = StyleSheet.create({
   touchable: {
     borderRadius: 12,
     overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: '#FFFFFF',
   },
   content: {
     padding: 12,
@@ -185,8 +160,15 @@ const styles = StyleSheet.create({
     marginBottom: 1,
   },
   shipmentTitle: {
-    fontSize: 11,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 1,
+  },
+  shipmentDescription: {
+    fontSize: 10,
     color: '#6B7280',
+    marginBottom: 2,
   },
   statusBadge: {
     paddingHorizontal: 6,
@@ -249,6 +231,25 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
   },
+  additionalDetails: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 10,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  detailIcon: {
+    marginRight: 2,
+  },
+  detailText: {
+    fontSize: 10,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -270,11 +271,6 @@ const styles = StyleSheet.create({
   actionButton: {
     borderRadius: 8,
     overflow: 'hidden',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
   actionGradient: {
     paddingHorizontal: 10,

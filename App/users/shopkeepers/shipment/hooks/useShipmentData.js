@@ -15,6 +15,8 @@ export const useShipmentData = () => {
         return shipment.status === 'delivered';
       case 'delayed':
         return shipment.status === 'delayed';
+      case 'all':
+        return true;
       default:
         return true;
     }

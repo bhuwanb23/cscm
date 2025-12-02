@@ -23,6 +23,7 @@ const StockRequest = () => {
     searchQuery,
     selectedItems,
     isModalVisible,
+    submittedRequest,
     filteredItems,
     setActiveTab,
     setSelectedPriority,
@@ -83,7 +84,7 @@ const StockRequest = () => {
       <ConfirmationModal 
         isVisible={isModalVisible} 
         onClose={closeModal} 
-        request={submittedRequest}
+        submittedRequest={submittedRequest}
       />
     </View>
   );
