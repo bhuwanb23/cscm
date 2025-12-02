@@ -91,14 +91,20 @@ const StockLevels = ({ stockLevels }) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
     color: '#1F2937',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   grid: {
     flexDirection: 'row',
@@ -108,9 +114,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   card: {
-    borderRadius: 10,
-    padding: 12,
-    elevation: 2,
+    borderRadius: 12,
+    padding: 16,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -120,7 +126,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   indicator: {
     width: 16,
@@ -128,29 +134,29 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   label: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
     fontWeight: '600',
   },
   count: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '800',
     color: '#1F2937',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   unit: {
-    fontSize: 10,
+    fontSize: 12,
     color: '#9CA3AF',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   progressBar: {
-    height: 4,
-    borderRadius: 2,
+    height: 6,
+    borderRadius: 3,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    borderRadius: 2,
+    borderRadius: 3,
     width: '100%',
   },
 });

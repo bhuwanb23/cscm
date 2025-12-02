@@ -42,11 +42,21 @@ const Dashboard = () => {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.content}>
-          <QuickActions />
-          <StockLevels stockLevels={stockLevels} />
-          <PendingShipments shipments={shipments} />
-          <SalesChart />
-          <AlertsFeed alerts={alerts} />
+          <View style={styles.section}>
+            <QuickActions />
+          </View>
+          <View style={styles.section}>
+            <StockLevels stockLevels={stockLevels} />
+          </View>
+          <View style={styles.section}>
+            <PendingShipments shipments={shipments} />
+          </View>
+          <View style={styles.section}>
+            <SalesChart />
+          </View>
+          <View style={styles.section}>
+            <AlertsFeed alerts={alerts} />
+          </View>
         </View>
       </ScrollView>
       <LiveIndicator isLive={isLive} />
@@ -67,9 +77,9 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   header: {
-    marginTop: 10,
+    marginTop: 16,
     marginHorizontal: 16,
-    marginBottom: 12,
+    marginBottom: 16,
     borderRadius: 16,
     overflow: 'hidden',
     elevation: 4,
@@ -79,17 +89,17 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   headerGradient: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
   },
   headerTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '700',
     color: '#FFFFFF',
-    marginBottom: 2,
+    marginBottom: 4,
   },
   headerSubtitle: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#DBEAFE',
     opacity: 0.9,
   },
@@ -97,10 +107,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 24,
   },
   content: {
     flex: 1,
+  },
+  section: {
+    marginBottom: 16,
   },
 });
 

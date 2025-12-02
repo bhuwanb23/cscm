@@ -14,7 +14,7 @@ const LiveIndicator = ({ isLive }) => {
       const pulse = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
-            toValue: 0.5,
+            toValue: 0.7,
             duration: 1000,
             useNativeDriver: true,
           }),
@@ -32,7 +32,7 @@ const LiveIndicator = ({ isLive }) => {
 
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.indicator, { opacity: pulseAnim }]}>
+      <Animated.View style={[styles.indicator, { transform: [{ scale: pulseAnim }] }]}>
         <View style={styles.dot} />
       </Animated.View>
       <Text style={styles.text}>Live</Text>
@@ -43,37 +43,37 @@ const LiveIndicator = ({ isLive }) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    bottom: 16,
-    right: 16,
+    bottom: 20,
+    right: 20,
     backgroundColor: '#22C55E',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderRadius: 20,
-    elevation: 4,
+    elevation: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 4,
     gap: 8,
   },
   indicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#fff',
   },
   dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: '#fff',
   },
   text: {
     color: '#fff',
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 

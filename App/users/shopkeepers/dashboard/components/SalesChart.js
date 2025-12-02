@@ -10,7 +10,7 @@ import { DASHBOARD_CONSTANTS } from '../constants';
 
 const { width } = Dimensions.get('window');
 const CHART_WIDTH = width - 32;
-const CHART_HEIGHT = 120;
+const CHART_HEIGHT = 140;
 const BAR_WIDTH = (CHART_WIDTH - 40) / 7; // 7 days, with padding
 
 const SalesChart = () => {
@@ -75,14 +75,20 @@ const SalesChart = () => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
     color: '#1F2937',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   chartContainer: {
     borderRadius: 16,
@@ -94,15 +100,15 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
   },
   chartGradient: {
-    padding: 12,
+    padding: 16,
   },
   chart: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     height: CHART_HEIGHT,
-    marginBottom: 12,
-    paddingHorizontal: 6,
+    marginBottom: 16,
+    paddingHorizontal: 8,
   },
   barContainer: {
     alignItems: 'center',
@@ -110,36 +116,36 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   barWrapper: {
-    borderRadius: 4,
+    borderRadius: 6,
     overflow: 'hidden',
   },
   bar: {
     width: BAR_WIDTH - 4,
-    borderRadius: 4,
+    borderRadius: 6,
     marginBottom: 8,
   },
   dayLabel: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#6B7280',
     fontWeight: '600',
   },
   legend: {
-    gap: 6,
+    gap: 8,
   },
   legendTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '700',
     color: '#1F2937',
-    marginBottom: 6,
+    marginBottom: 12,
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 6,
-    paddingHorizontal: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     backgroundColor: '#F8FAFC',
-    borderRadius: 8,
+    borderRadius: 10,
   },
   legendLeft: {
     flexDirection: 'row',
@@ -147,13 +153,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 8,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 10,
   },
   legendText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#374151',
     fontWeight: '600',
   },
@@ -161,12 +167,12 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   legendValue: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '700',
     color: '#1F2937',
   },
   legendUnit: {
-    fontSize: 9,
+    fontSize: 11,
     color: '#9CA3AF',
   },
 });

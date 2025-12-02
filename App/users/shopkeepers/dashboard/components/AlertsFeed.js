@@ -64,7 +64,7 @@ const AlertsFeed = ({ alerts }) => {
         <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
           <Ionicons
             name={isExpanded ? 'chevron-down' : 'chevron-forward'}
-            size={16}
+            size={18}
             color="#4A90E2"
           />
         </TouchableOpacity>
@@ -95,7 +95,7 @@ const AlertsFeed = ({ alerts }) => {
                   <View style={styles.alertContent}>
                     <Ionicons
                       name={getAlertIcon(alert.type)}
-                      size={14}
+                      size={16}
                       color={alertStyle.iconColor}
                       style={styles.alertIcon}
                     />
@@ -123,53 +123,59 @@ const AlertsFeed = ({ alerts }) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
     color: '#1F2937',
   },
   alertsList: {
-    gap: 6,
+    gap: 8,
   },
   alertWrapper: {
     flex: 1,
   },
   alertCard: {
-    borderRadius: 8,
-    borderLeftWidth: 3,
-    padding: 8,
+    borderRadius: 10,
+    borderLeftWidth: 4,
+    padding: 12,
   },
   alertContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
   alertIcon: {
-    marginTop: 1,
-    marginRight: 6,
+    marginTop: 2,
+    marginRight: 8,
   },
   alertText: {
     flex: 1,
   },
   alertTitle: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
-    marginBottom: 1,
-  },
-  alertMessage: {
-    fontSize: 10,
     marginBottom: 2,
   },
+  alertMessage: {
+    fontSize: 12,
+    marginBottom: 4,
+  },
   alertTime: {
-    fontSize: 9,
+    fontSize: 11,
     opacity: 0.8,
   },
 });
