@@ -39,15 +39,28 @@ const DeliverySchedule = ({ selectedDelivery, onDeliverySelect }) => {
                 color={isSelected ? option.activeTextColor : option.inactiveTextColor}
                 style={styles.deliveryIcon}
               />
-              <Text
-                style={[
-                  styles.deliveryText,
-                  isSelected && { color: option.activeTextColor },
-                  !isSelected && { color: option.inactiveTextColor },
-                ]}
-              >
-                {option.label}
-              </Text>
+              <View style={styles.deliveryInfo}>
+                <Text
+                  style={[
+                    styles.deliveryText,
+                    isSelected && { color: option.activeTextColor },
+                    !isSelected && { color: option.inactiveTextColor },
+                  ]}
+                >
+                  {option.label}
+                </Text>
+                {option.description && (
+                  <Text
+                    style={[
+                      styles.deliveryDescription,
+                      isSelected && { color: option.activeTextColor },
+                      !isSelected && { color: option.inactiveTextColor },
+                    ]}
+                  >
+                    {option.description}
+                  </Text>
+                )}
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -65,11 +78,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
   },
   title: {
     fontSize: 14,
@@ -85,9 +93,6 @@ const styles = StyleSheet.create({
   },
   deliveryButton: {
     width: '48%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
     paddingVertical: 12,
     paddingHorizontal: 8,
     borderRadius: 8,
@@ -95,9 +100,17 @@ const styles = StyleSheet.create({
   deliveryIcon: {
     marginRight: 6,
   },
+  deliveryInfo: {
+    flex: 1,
+  },
   deliveryText: {
     fontSize: 13,
     fontWeight: '500',
+    marginBottom: 2,
+  },
+  deliveryDescription: {
+    fontSize: 10,
+    opacity: 0.7,
   },
 });
 

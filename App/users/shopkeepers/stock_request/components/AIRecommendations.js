@@ -7,55 +7,56 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { STOCK_REQUEST_CONSTANTS } from '../constants';
 
 const AIRecommendations = ({ onAddRecommendation }) => {
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#FAF5FF', '#EFF6FF']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.gradientContainer}
+      <View style={styles.header}>
+        <Ionicons name="hardware-chip-outline" size={20} color="#9333EA" />
+        <Text style={styles.title}>AI Recommendations</Text>
+      </View>
+      
+      <ScrollView 
+        horizontal 
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.recommendationsContainer}
       >
-        <View style={styles.header}>
-          <Ionicons name="hardware-chip-outline" size={20} color="#9333EA" />
-          <Text style={styles.title}>AI Recommendations</Text>
-        </View>
-        
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.recommendationsContainer}
-        >
-          {STOCK_REQUEST_CONSTANTS.AI_RECOMMENDATIONS.map((recommendation) => (
-            <View key={recommendation.id} style={styles.recommendationCard}>
-              <View style={styles.recommendationContent}>
-                <View style={styles.recommendationInfo}>
-                  <View style={[styles.iconContainer, { backgroundColor: recommendation.iconBgColor }]}>
-                    <Ionicons 
-                      name={recommendation.icon} 
-                      size={20} 
-                      color={recommendation.iconColor} 
-                    />
-                  </View>
-                  <View style={styles.recommendationDetails}>
-                    <Text style={styles.recommendationName}>{recommendation.name}</Text>
-                    <Text style={styles.recommendationDescription}>{recommendation.description}</Text>
-                  </View>
+        {STOCK_REQUEST_CONSTANTS.AI_RECOMMENDATIONS.map((recommendation) => (
+          <View key={recommendation.id} style={styles.recommendationCard}>
+            <View style={styles.recommendationContent}>
+              <View style={styles.recommendationInfo}>
+                <View style={[styles.iconContainer, { backgroundColor: recommendation.iconBgColor }]}>
+                  <Ionicons 
+                    name={recommendation.icon} 
+                    size={20} 
+                    color={recommendation.iconColor} 
+                  />
                 </View>
-                <TouchableOpacity
-                  style={styles.addButton}
-                  onPress={() => onAddRecommendation(recommendation)}
-                >
-                  <Text style={styles.addButtonText}>Add</Text>
-                </TouchableOpacity>
+                <View style={styles.recommendationDetails}>
+                  <Text style={styles.recommendationName}>{recommendation.name}</Text>
+                  <Text style={styles.recommendationDescription}>{recommendation.description}</Text>
+                  {recommendation.reason && (
+                    <Text style={styles.recommendationReason}>{recommendation.reason}</Text>
+                  )}
+                  {recommendation.price && (
+                    <Text style={styles.recommendationPrice}>{recommendation.price}</Text>
+                  )}
+                </View>
               </View>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => onAddRecommendation(recommendation)}
+              >
+                <Text style={styles.addButtonText}>Add</Text>
+              </TouchableOpacity>
             </View>
-          ))}
-        </ScrollView>
-      </LinearGradient>
+            {recommendation.supplier && (
+              <Text style={styles.recommendationSupplier}>Supplier: {recommendation.supplier}</Text>
+            )}
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 };
@@ -65,14 +66,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 8,
     borderRadius: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  gradientContainer: {
+    backgroundColor: '#FAF5FF',
     padding: 16,
     borderWidth: 1,
     borderColor: '#E9D5FF',
@@ -98,7 +92,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    minWidth: 200,
+    minWidth: 220,
   },
   recommendationContent: {
     flexDirection: 'row',
@@ -130,6 +124,26 @@ const styles = StyleSheet.create({
   recommendationDescription: {
     fontSize: 12,
     color: '#6B7280',
+    marginBottom: 2,
+  },
+  recommendationReason: {
+    fontSize: 10,
+    color: '#9333EA',
+    fontStyle: 'italic',
+    marginBottom: 2,
+  },
+  recommendationPrice: {
+    fontSize: 11,
+    color: '#10B981',
+    fontWeight: '600',
+  },
+  recommendationSupplier: {
+    fontSize: 10,
+    color: '#8B5CF6',
+    marginTop: 8,
+    paddingTop: 6,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
   },
   addButton: {
     backgroundColor: '#9333EA',

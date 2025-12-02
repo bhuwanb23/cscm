@@ -13,15 +13,28 @@ const SelectedItems = ({ selectedItems, onRemoveItem, onSubmitRequest }) => {
     return null;
   }
 
+  // Calculate total items
+  const totalItems = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Selected Items ({selectedItems.length})</Text>
+      <Text style={styles.title}>Selected Items ({totalItems} total)</Text>
       
       <ScrollView style={styles.itemsList} showsVerticalScrollIndicator={false}>
         {selectedItems.map((item) => (
           <View key={item.id} style={styles.itemCard}>
             <View style={styles.itemInfo}>
-              <Text style={styles.itemName}>{item.name} × {item.quantity}</Text>
+              <Text style={styles.itemName}>{item.name}</Text>
+              <Text style={styles.itemQuantity}>Quantity: {item.quantity}</Text>
+              {item.category && (
+                <Text style={styles.itemCategory}>{item.category}</Text>
+              )}
+              {item.price && (
+                <Text style={styles.itemPrice}>Price: {item.price}</Text>
+              )}
+              {item.supplier && (
+                <Text style={styles.itemSupplier}>Supplier: {item.supplier}</Text>
+              )}
             </View>
             <TouchableOpacity
               style={styles.removeButton}
@@ -49,11 +62,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
   },
   title: {
     fontSize: 14,
@@ -62,7 +70,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   itemsList: {
-    maxHeight: 200,
+    maxHeight: 250,
     marginBottom: 16,
   },
   itemCard: {
@@ -79,7 +87,30 @@ const styles = StyleSheet.create({
   },
   itemName: {
     fontSize: 14,
+    fontWeight: '600',
     color: '#1F2937',
+    marginBottom: 2,
+  },
+  itemQuantity: {
+    fontSize: 12,
+    color: '#3B82F6',
+    fontWeight: '500',
+    marginBottom: 1,
+  },
+  itemCategory: {
+    fontSize: 11,
+    color: '#6B7280',
+    marginBottom: 1,
+  },
+  itemPrice: {
+    fontSize: 11,
+    color: '#10B981',
+    fontWeight: '500',
+    marginBottom: 1,
+  },
+  itemSupplier: {
+    fontSize: 11,
+    color: '#8B5CF6',
   },
   removeButton: {
     padding: 8,

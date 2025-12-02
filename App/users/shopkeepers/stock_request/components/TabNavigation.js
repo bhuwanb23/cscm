@@ -1,52 +1,20 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { STOCK_REQUEST_CONSTANTS } from '../constants';
 
 const TabNavigation = ({ activeTab, onTabChange }) => {
-  const fadeAnims = useRef(
-    STOCK_REQUEST_CONSTANTS.TABS.map(() => new Animated.Value(0))
-  ).current;
-
-  useEffect(() => {
-    const animations = STOCK_REQUEST_CONSTANTS.TABS.map((_, index) =>
-      Animated.timing(fadeAnims[index], {
-        toValue: 1,
-        duration: 400,
-        delay: index * 100,
-        useNativeDriver: true,
-      })
-    );
-    
-    Animated.parallel(animations).start();
-  }, []);
-
   return (
-    <LinearGradient
-      colors={['#FFFFFF', '#F8FAFC']}
-      style={styles.container}
-    >
-      {STOCK_REQUEST_CONSTANTS.TABS.map((tab, index) => (
-        <Animated.View
+    <View style={styles.container}>
+      {STOCK_REQUEST_CONSTANTS.TABS.map((tab) => (
+        <View
           key={tab.id}
-          style={[
-            styles.tabWrapper,
-            {
-              opacity: fadeAnims[index],
-              transform: [{
-                scale: fadeAnims[index].interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.9, 1],
-                }),
-              }],
-            }
-          ]}
+          style={styles.tabWrapper}
         >
           <TouchableOpacity
             style={styles.tab}
@@ -72,9 +40,9 @@ const TabNavigation = ({ activeTab, onTabChange }) => {
               </View>
             )}
           </TouchableOpacity>
-        </Animated.View>
+        </View>
       ))}
-    </LinearGradient>
+    </View>
   );
 };
 
@@ -84,11 +52,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     gap: 8,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    marginHorizontal: 16,
+    marginBottom: 8,
   },
   tabWrapper: {
     flex: 1,
@@ -96,11 +63,6 @@ const styles = StyleSheet.create({
   tab: {
     borderRadius: 12,
     overflow: 'hidden',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
   activeTabGradient: {
     paddingVertical: 8,

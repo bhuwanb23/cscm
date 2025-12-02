@@ -1,52 +1,16 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  Animated,
   TouchableOpacity,
-  RefreshControl,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { STOCK_REQUEST_CONSTANTS } from '../constants';
 
 const RequestHistory = () => {
-  const [refreshing, setRefreshing] = useState(false);
   const [expandedCards, setExpandedCards] = useState(new Set());
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const cardAnims = useRef(
-    STOCK_REQUEST_CONSTANTS.REQUEST_HISTORY.map(() => new Animated.Value(0))
-  ).current;
-
-  useEffect(() => {
-    const animations = [
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      ...STOCK_REQUEST_CONSTANTS.REQUEST_HISTORY.map((_, index) =>
-        Animated.timing(cardAnims[index], {
-          toValue: 1,
-          duration: 500,
-          delay: index * 100,
-          useNativeDriver: true,
-        })
-      ),
-    ];
-    
-    Animated.parallel(animations).start();
-  }, []);
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    // Simulate refresh
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
-  };
 
   const toggleCardExpansion = (requestId) => {
     const newExpanded = new Set(expandedCards);
@@ -73,36 +37,23 @@ const RequestHistory = () => {
     }
   };
 
-  const getStatusGradient = (status) => {
+  const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
       case 'approved':
-        return ['#22C55E', '#16A34A'];
+        return '#22C55E';
       case 'pending':
-        return ['#F59E0B', '#D97706'];
+        return '#F59E0B';
       case 'rejected':
-        return ['#EF4444', '#DC2626'];
+        return '#EF4444';
       case 'delivered':
-        return ['#3B82F6', '#1E40AF'];
+        return '#3B82F6';
       default:
-        return ['#6B7280', '#4B5563'];
+        return '#6B7280';
     }
   };
 
   return (
-    <Animated.View 
-      style={[
-        styles.container,
-        {
-          opacity: fadeAnim,
-          transform: [{
-            translateY: fadeAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [20, 0],
-            }),
-          }],
-        }
-      ]}
-    >
+    <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Request History</Text>
         <Text style={styles.headerSubtitle}>
@@ -113,39 +64,22 @@ const RequestHistory = () => {
       <ScrollView 
         style={styles.historyList} 
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
       >
         {STOCK_REQUEST_CONSTANTS.REQUEST_HISTORY.map((request, index) => {
           const isExpanded = expandedCards.has(request.id);
-          const statusGradient = getStatusGradient(request.statusLabel);
+          const statusColor = getStatusColor(request.statusLabel);
           
           return (
-            <Animated.View
+            <View
               key={request.id}
-              style={[
-                styles.cardWrapper,
-                {
-                  opacity: cardAnims[index],
-                  transform: [{
-                    translateY: cardAnims[index].interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [30, 0],
-                    }),
-                  }],
-                }
-              ]}
+              style={styles.cardWrapper}
             >
               <TouchableOpacity
                 style={styles.historyCard}
                 onPress={() => toggleCardExpansion(request.id)}
                 activeOpacity={0.9}
               >
-                <LinearGradient
-                  colors={['#FFFFFF', '#F8FAFC']}
-                  style={styles.cardGradient}
-                >
+                <View style={styles.cardContent}>
                   <View style={styles.historyHeader}>
                     <View style={styles.requestInfo}>
                       <Text style={styles.requestId}>Request #{request.id}</Text>
@@ -153,9 +87,8 @@ const RequestHistory = () => {
                     </View>
                     
                     <View style={styles.statusContainer}>
-                      <LinearGradient
-                        colors={statusGradient}
-                        style={styles.statusBadge}
+                      <View 
+                        style={[styles.statusBadge, { backgroundColor: statusColor }]}
                       >
                         <Ionicons 
                           name={getStatusIcon(request.statusLabel)} 
@@ -166,7 +99,7 @@ const RequestHistory = () => {
                         <Text style={styles.statusText}>
                           {request.statusLabel}
                         </Text>
-                      </LinearGradient>
+                      </View>
                       
                       <Ionicons 
                         name={isExpanded ? 'chevron-up' : 'chevron-down'} 
@@ -198,7 +131,7 @@ const RequestHistory = () => {
                   </View>
 
                   {isExpanded && (
-                    <Animated.View style={styles.expandedContent}>
+                    <View style={styles.expandedContent}>
                       <View style={styles.itemsHeader}>
                         <Text style={styles.itemsTitle}>Requested Items:</Text>
                       </View>
@@ -218,15 +151,15 @@ const RequestHistory = () => {
                           <Text style={styles.notesText}>{request.notes}</Text>
                         </View>
                       )}
-                    </Animated.View>
+                    </View>
                   )}
-                </LinearGradient>
+                </View>
               </TouchableOpacity>
-            </Animated.View>
+            </View>
           );
         })}
       </ScrollView>
-    </Animated.View>
+    </View>
   );
 };
 
@@ -257,14 +190,11 @@ const styles = StyleSheet.create({
   },
   historyCard: {
     borderRadius: 12,
-    overflow: 'hidden',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
-  cardGradient: {
+  cardContent: {
     padding: 12,
   },
   historyHeader: {

@@ -3,11 +3,12 @@ import { STOCK_REQUEST_CONSTANTS } from '../constants';
 
 export const useStockRequestData = () => {
   const [activeTab, setActiveTab] = useState('new_request');
-  const [selectedPriority, setSelectedPriority] = useState('normal');
-  const [selectedDelivery, setSelectedDelivery] = useState('asap');
+  const [selectedPriority, setSelectedPriority] = useState('low');
+  const [selectedDelivery, setSelectedDelivery] = useState('same_day');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItems, setSelectedItems] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [submittedRequest, setSubmittedRequest] = useState(null);
 
   // Filter searchable items based on search query
   const filteredItems = useMemo(() => {
@@ -15,23 +16,45 @@ export const useStockRequestData = () => {
     
     return STOCK_REQUEST_CONSTANTS.SEARCHABLE_ITEMS.filter(item =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchQuery.toLowerCase())
+      item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.supplier && item.supplier.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }, [searchQuery]);
 
   // Add item to selected items
   const addItem = (item) => {
+    // If quantity is negative, we're decreasing
+    if (item.quantity < 0) {
+      const existingItem = selectedItems.find(selected => selected.id === item.id);
+      if (existingItem) {
+        const newQuantity = existingItem.quantity + item.quantity;
+        if (newQuantity <= 0) {
+          removeItem(item.id);
+        } else {
+          setSelectedItems(prev => 
+            prev.map(selected => 
+              selected.id === item.id 
+                ? { ...selected, quantity: newQuantity }
+                : selected
+            )
+          );
+        }
+      }
+      return;
+    }
+    
     const existingItem = selectedItems.find(selected => selected.id === item.id);
     if (existingItem) {
       setSelectedItems(prev => 
         prev.map(selected => 
           selected.id === item.id 
-            ? { ...selected, quantity: selected.quantity + 1 }
+            ? { ...selected, quantity: selected.quantity + item.quantity }
             : selected
         )
       );
     } else {
-      setSelectedItems(prev => [...prev, { ...item, quantity: 1 }]);
+      setSelectedItems(prev => [...prev, { ...item, quantity: item.quantity }]);
     }
   };
 
@@ -59,11 +82,14 @@ export const useStockRequestData = () => {
       id: recommendation.id,
       name: recommendation.name,
       category: 'AI Recommended',
+      description: recommendation.description,
+      price: recommendation.price,
+      supplier: recommendation.supplier,
       icon: recommendation.icon,
       iconColor: recommendation.iconColor,
       iconBgColor: recommendation.iconBgColor,
     };
-    addItem(item);
+    addItem({ ...item, quantity: 1 });
   };
 
   // Submit request
@@ -73,13 +99,19 @@ export const useStockRequestData = () => {
       return;
     }
     
-    // Simulate API call
-    console.log('Submitting request:', {
+    // Create request object
+    const request = {
+      id: Math.floor(100000 + Math.random() * 900000),
       priority: selectedPriority,
       delivery: selectedDelivery,
       items: selectedItems,
-    });
+      timestamp: new Date().toISOString(),
+    };
     
+    // Simulate API call
+    console.log('Submitting request:', request);
+    
+    setSubmittedRequest(request);
     setIsModalVisible(true);
   };
 
@@ -87,8 +119,8 @@ export const useStockRequestData = () => {
   const closeModal = () => {
     setIsModalVisible(false);
     setSelectedItems([]);
-    setSelectedPriority('normal');
-    setSelectedDelivery('asap');
+    setSelectedPriority('low');
+    setSelectedDelivery('same_day');
   };
 
   return {
@@ -99,6 +131,7 @@ export const useStockRequestData = () => {
     searchQuery,
     selectedItems,
     isModalVisible,
+    submittedRequest,
     filteredItems,
     
     // Actions

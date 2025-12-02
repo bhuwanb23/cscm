@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -6,57 +6,13 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Animated,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
 const ItemSearch = ({ searchQuery, onSearchChange, filteredItems, onAddItem }) => {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const itemAnims = useRef(
-    filteredItems.map(() => new Animated.Value(0))
-  ).current;
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 400,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
-  useEffect(() => {
-    const animations = filteredItems.map((_, index) =>
-      Animated.timing(itemAnims[index], {
-        toValue: 1,
-        duration: 300,
-        delay: index * 50,
-        useNativeDriver: true,
-      })
-    );
-    
-    Animated.parallel(animations).start();
-  }, [filteredItems]);
-
   return (
-    <Animated.View 
-      style={[
-        styles.container,
-        {
-          opacity: fadeAnim,
-          transform: [{
-            scale: fadeAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0.95, 1],
-            }),
-          }],
-        }
-      ]}
-    >
-      <LinearGradient
-        colors={['#FFFFFF', '#F8FAFC']}
-        style={styles.gradientContainer}
-      >
+    <View style={styles.container}>
+      <View style={styles.gradientContainer}>
         <Text style={styles.title}>Search Items</Text>
         <View style={styles.searchContainer}>
           <Ionicons name="search-outline" size={16} color="#9CA3AF" style={styles.searchIcon} />
@@ -70,26 +26,12 @@ const ItemSearch = ({ searchQuery, onSearchChange, filteredItems, onAddItem }) =
         </View>
 
         <ScrollView style={styles.itemsList} showsVerticalScrollIndicator={false}>
-          {filteredItems.map((item, index) => (
-            <Animated.View
+          {filteredItems.map((item) => (
+            <View
               key={item.id}
-              style={[
-                styles.itemWrapper,
-                {
-                  opacity: itemAnims[index],
-                  transform: [{
-                    translateY: itemAnims[index].interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [20, 0],
-                    }),
-                  }],
-                }
-              ]}
+              style={styles.itemWrapper}
             >
-              <LinearGradient
-                colors={['#FFFFFF', '#F8FAFC']}
-                style={styles.itemCard}
-              >
+              <View style={styles.itemCard}>
                 <View style={styles.itemInfo}>
                   <View style={[styles.itemIcon, { backgroundColor: item.iconBgColor }]}>
                     <Ionicons name={item.icon} size={16} color={item.iconColor} />
@@ -97,6 +39,14 @@ const ItemSearch = ({ searchQuery, onSearchChange, filteredItems, onAddItem }) =
                   <View style={styles.itemDetails}>
                     <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
                     <Text style={styles.itemCategory}>{item.category}</Text>
+                    {item.description && (
+                      <Text style={styles.itemDescription} numberOfLines={1}>
+                        {item.description}
+                      </Text>
+                    )}
+                    {item.price && (
+                      <Text style={styles.itemPrice}>{item.price}</Text>
+                    )}
                   </View>
                 </View>
                 <View style={styles.quantityControls}>
@@ -114,12 +64,12 @@ const ItemSearch = ({ searchQuery, onSearchChange, filteredItems, onAddItem }) =
                     <Ionicons name="add" size={12} color="#FFFFFF" />
                   </TouchableOpacity>
                 </View>
-              </LinearGradient>
-            </Animated.View>
+              </View>
+            </View>
           ))}
         </ScrollView>
-      </LinearGradient>
-    </Animated.View>
+      </View>
+    </View>
   );
 };
 
@@ -131,11 +81,7 @@ const styles = StyleSheet.create({
   gradientContainer: {
     borderRadius: 12,
     padding: 12,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: '#FFFFFF',
   },
   title: {
     fontSize: 14,
@@ -161,7 +107,7 @@ const styles = StyleSheet.create({
     color: '#1F2937',
   },
   itemsList: {
-    maxHeight: 200,
+    maxHeight: 300,
   },
   itemWrapper: {
     marginBottom: 4,
@@ -172,11 +118,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 8,
     borderRadius: 8,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
   itemInfo: {
     flexDirection: 'row',
@@ -203,6 +147,17 @@ const styles = StyleSheet.create({
   itemCategory: {
     fontSize: 10,
     color: '#6B7280',
+  },
+  itemDescription: {
+    fontSize: 9,
+    color: '#9CA3AF',
+    marginTop: 2,
+  },
+  itemPrice: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#3B82F6',
+    marginTop: 2,
   },
   quantityControls: {
     flexDirection: 'row',
