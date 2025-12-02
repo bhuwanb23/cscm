@@ -1,83 +1,115 @@
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 
 // Components
-import ShopkeeperProfileHeader from './components/ShopkeeperProfileHeader';
-import ShopInformation from './components/ShopInformation';
-import PerformanceOverview from './components/PerformanceOverview';
-import InventoryMeshStatus from './components/InventoryMeshStatus';
-import SalesDemandInsights from './components/SalesDemandInsights';
-import ComplianceRisk from './components/ComplianceRisk';
-import TeamMembers from './components/TeamMembers';
-import SettingsIntegrations from './components/SettingsIntegrations';
-import Notifications from './components/Notifications';
+import ProfileHeader from './components/ProfileHeader';
+import BusinessInfo from './components/BusinessInfo';
+import ChannelsWarehouses from './components/ChannelsWarehouses';
+import SettingsSection from './components/SettingsSection';
 
 // Hooks
-import { useShopkeeperData } from './hooks/useShopkeeperData';
-import { useNotification } from './hooks/useNotification';
+import { useProfileData } from './hooks/useProfileData';
 
-const Profile = ({ onLogout }) => { // Add onLogout prop
+const ShopkeeperDashboard = () => {
   const {
-    shopkeeperProfile,
-    shopInformation,
-    performanceMetrics,
-    inventoryMeshStatus,
-    salesInsights,
-    complianceRisk,
-    teamMembers,
-    settingsIntegrations
-  } = useShopkeeperData();
-  
-  const { notifications, showNotification, removeNotification } = useNotification();
+    businessInfo,
+    channels,
+    warehouses,
+    stats,
+    shopInfo,
+    updateBusinessInfo
+  } = useProfileData();
 
   const handleEditProfile = () => {
-    showNotification('Profile edit functionality would open here', 'info');
+    console.log('Edit profile pressed');
+  };
+
+  const handleSave = () => {
+    console.log('Save pressed');
+  };
+
+  const handleCancel = () => {
+    console.log('Cancel pressed');
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <LinearGradient colors={['#F8F9FA', '#E9ECEF']} style={styles.container}>
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          {notifications.map((notification) => (
-            <Notifications 
-              key={notification.id} 
-              notification={notification} 
-              onDismiss={removeNotification} 
-            />
-          ))}
-          <ShopkeeperProfileHeader 
-            shopkeeperProfile={shopkeeperProfile} 
-            onEditProfile={handleEditProfile} 
-          />
-          <ShopInformation shopInformation={shopInformation} />
-          <PerformanceOverview performanceMetrics={performanceMetrics} />
-          <InventoryMeshStatus inventoryMeshStatus={inventoryMeshStatus} />
-          <SalesDemandInsights salesInsights={salesInsights} />
-          <ComplianceRisk complianceRisk={complianceRisk} />
-          <TeamMembers teamMembers={teamMembers} />
-          <SettingsIntegrations settingsIntegrations={settingsIntegrations} />
-        </ScrollView>
-      </LinearGradient>
-    </SafeAreaView>
+    <View style={styles.container}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ProfileHeader 
+          shopInfo={shopInfo} 
+          stats={stats} 
+          onEditProfile={handleEditProfile} 
+        />
+        
+        <BusinessInfo 
+          businessInfo={businessInfo} 
+          onEdit={handleEditProfile} 
+        />
+        
+        <ChannelsWarehouses 
+          channels={channels} 
+          warehouses={warehouses} 
+        />
+        
+        <SettingsSection />
+      </ScrollView>
+      
+      {/* Action Buttons */}
+      <View style={styles.actionButtons}>
+        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+          <Text style={styles.cancelButtonText}>Cancel</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <Text style={styles.saveButtonText}>Save</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
   },
   scrollView: {
     flex: 1,
     padding: 16,
   },
+  actionButtons: {
+    flexDirection: 'row',
+    padding: 16,
+    gap: 12,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+  },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#6b7280',
+  },
+  saveButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    backgroundColor: '#4f46e5',
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#fff',
+  },
 });
 
-export default Profile;
+export default ShopkeeperDashboard;

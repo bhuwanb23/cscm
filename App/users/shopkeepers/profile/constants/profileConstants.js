@@ -1,29 +1,37 @@
-export const PROFILE_CONSTANTS = {
-  SETTINGS_OPTIONS: [
-    { id: 1, title: 'Account Settings', icon: 'person-outline' },
-    { id: 2, title: 'Notification Preferences', icon: 'notifications-outline' },
-    { id: 3, title: 'Payment Methods', icon: 'card-outline' },
-    { id: 4, title: 'Security', icon: 'lock-closed-outline' },
-    { id: 5, title: 'Help & Support', icon: 'help-circle-outline' },
-  ],
+export const BUSINESS_INFO = {
+  businessName: 'Urban Outfitters Supply Co.',
+  contactPerson: 'Michael Chen',
+  phone: '+1 (555) 002-331',
+  email: 'contact@urbanoutfitters.supply',
+  address: '4521 Fashion Blvd, Suite 200, New York, NY 10012'
 };
 
-export const DEFAULT_USER_DATA = {
-  name: 'John Doe',
-  email: 'john.doe@store.com',
-  phone: '+1 234 567 8900',
-  storeName: 'Fresh Market',
-  storeId: 'ST-12345',
-  address: '123 Main Street, City, State 12345',
-  memberSince: 'January 2022',
-  totalOrders: 128,
-  totalSpent: '$12,450',
-  loyaltyPoints: 1250,
-};
-
-export const RECENT_ACTIVITY = [
-  { id: 1, action: 'Stock request submitted', time: '2 hours ago', status: 'Pending' },
-  { id: 2, action: 'Shipment received', time: '1 day ago', status: 'Completed' },
-  { id: 3, action: 'Inventory updated', time: '2 days ago', status: 'Completed' },
-  { id: 4, action: 'Analysis report generated', time: '3 days ago', status: 'Completed' },
+export const CHANNELS = [
+  { id: 1, name: 'Shopify', connected: true, lastSync: '2h ago' },
+  { id: 2, name: 'Amazon FBA', connected: true, lastSync: '2h ago' },
+  { id: 3, name: 'WooCommerce', connected: false, lastSync: 'N/A' }
 ];
+
+export const WAREHOUSES = [
+  { id: 1, name: 'West Retail', capacity: 42, location: 'CA' },
+  { id: 2, name: 'East Coast Hub', capacity: 85, location: 'NY' }
+];
+
+export const STATS = {
+  rating: 4.8,
+  orders: '1.2k',
+  joinDate: "Jan '23"
+};
+
+export const SETTINGS_OPTIONS = [
+  { id: 1, title: 'Team Members', subtitle: 'Manage access and permissions', icon: '👥' },
+  { id: 2, title: 'Account Settings', subtitle: 'Password, notifications, etc.', icon: '⚙️' }
+];
+
+export const SHOP_INFO = {
+  name: 'Urban Outfitters Supply',
+  id: '#CSCM-8821',
+  status: 'Active',
+  role: 'Retailer',
+  avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg'
+};
