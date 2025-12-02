@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const Header = ({ title, subtitle, onLogout }) => {
+const Header = ({ title, subtitle, onLogout, onProfilePress, onMessagesPress }) => {
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor="#4A90E2" />
@@ -25,9 +25,17 @@ const Header = ({ title, subtitle, onLogout }) => {
                 <Text style={styles.title}>{title}</Text>
                 {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
               </View>
-              <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-                <Ionicons name="log-out-outline" size={24} color="#fff" />
-              </TouchableOpacity>
+              <View style={styles.rightIcons}>
+                <TouchableOpacity style={styles.iconButton} onPress={onMessagesPress}>
+                  <Ionicons name="chatbubbles-outline" size={24} color="#fff" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.iconButton} onPress={onProfilePress}>
+                  <Ionicons name="person-circle-outline" size={24} color="#fff" />
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
+                  <Ionicons name="log-out-outline" size={24} color="#fff" />
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </SafeAreaView>
@@ -69,6 +77,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'rgba(255, 255, 255, 0.8)',
     marginTop: 2,
+  },
+  rightIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    marginRight: 8,
   },
   logoutButton: {
     padding: 8,

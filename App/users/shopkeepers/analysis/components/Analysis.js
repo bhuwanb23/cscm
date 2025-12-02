@@ -66,6 +66,9 @@ const AnimatedMetricCard = React.memo(({ metricKey, value, config }) => {
     return null;
   }
 
+  // Safely handle value formatting
+  const displayValue = typeof value === 'number' && value % 1 !== 0 ? value.toFixed(1) : value || '';
+
   return (
     <Animated.View style={[styles.metricCard, { transform: [{ scale: scaleAnim }] }]}>
       <View style={styles.metricHeader}>
@@ -76,7 +79,7 @@ const AnimatedMetricCard = React.memo(({ metricKey, value, config }) => {
       </View>
       <Text style={[styles.metricValue, config.color && { color: config.color }]}>
         {config.prefix || ''}
-        {typeof value === 'number' && value % 1 !== 0 ? value.toFixed(1) : value}
+        {displayValue}
         {config.suffix || ''}
       </Text>
     </Animated.View>
@@ -84,33 +87,67 @@ const AnimatedMetricCard = React.memo(({ metricKey, value, config }) => {
 });
 
 // Tab Button Component
-const TabButton = React.memo(({ title, isActive, onPress }) => (
-  <TouchableOpacity 
-    style={[styles.tabButton, isActive && styles.activeTabButton]} 
-    onPress={onPress}
-    activeOpacity={0.8}
-  >
-    <LinearGradient
-      colors={isActive ? ['#3B82F6', '#1E40AF'] : ['#F1F5F9', '#E2E8F0']}
-      style={[styles.tabGradient, isActive && styles.activeTabGradient]}
+const TabButton = React.memo(({ title, isActive, onPress }) => {
+  // Safety check for title
+  const displayTitle = title || 'Untitled';
+
+  return (
+    <TouchableOpacity 
+      style={[styles.tabButton, isActive && styles.activeTabButton]} 
+      onPress={onPress}
+      activeOpacity={0.8}
     >
-      <Text style={[styles.tabText, isActive && styles.activeTabText]}>
-        {title}
-      </Text>
-    </LinearGradient>
-  </TouchableOpacity>
-));
+      <LinearGradient
+        colors={isActive ? ['#3B82F6', '#1E40AF'] : ['#F1F5F9', '#E2E8F0']}
+        style={[styles.tabGradient, isActive && styles.activeTabGradient]}
+      >
+        <Text style={[styles.tabText, isActive && styles.activeTabText]}>
+          {displayTitle}
+        </Text>
+      </LinearGradient>
+    </TouchableOpacity>
+  );
+});
 
 // Modern Tab Content
-const ModernTabContent = React.memo(({ title, children }) => (
-  <ModernCard style={styles.tabContentCard}>
-    <View style={styles.tabContentHeader}>
-      <Text style={styles.tabContentTitle}>{title}</Text>
-      <View style={styles.divider} />
+const ModernTabContent = React.memo(({ title, children }) => {
+  // Safety check for title
+  const displayTitle = title || 'Untitled';
+
+  return (
+    <ModernCard style={styles.tabContentCard}>
+      <View style={styles.tabContentHeader}>
+        <Text style={styles.tabContentTitle}>{displayTitle}</Text>
+        <View style={styles.divider} />
+      </View>
+      {children}
+    </ModernCard>
+  );
+});
+
+// Module Progress Item
+const ModuleProgressItem = React.memo(({ moduleId, progress }) => {
+  // Safety check for moduleId
+  const displayName = moduleId ? (moduleId.charAt(0).toUpperCase() + moduleId.slice(1)) : 'Unknown Module';
+  const displayProgress = progress || 0;
+
+  return (
+    <View style={styles.moduleProgressItem}>
+      <View style={styles.moduleHeader}>
+        <Text style={styles.moduleName}>
+          {displayName}
+        </Text>
+        <Text style={styles.moduleProgressText}>{displayProgress}%</Text>
+      </View>
+      <View style={styles.progressBar}>
+        <LinearGradient
+          colors={['#3B82F6', '#1E40AF']}
+          style={[styles.progressFill, { width: `${displayProgress}%` }]}
+        />
+      </View>
     </View>
-    {children}
-  </ModernCard>
-));
+  );
+});
 
 // Insight Item Component
 const InsightItem = React.memo(({ insight, index }) => {
@@ -125,6 +162,9 @@ const InsightItem = React.memo(({ insight, index }) => {
     }).start();
   }, []);
 
+  // Safety check for insight
+  const displayInsight = insight || 'No insight available';
+
   return (
     <Animated.View style={[styles.insightItem, { opacity: fadeAnim }]}>
       <View style={styles.insightIconContainer}>
@@ -132,7 +172,7 @@ const InsightItem = React.memo(({ insight, index }) => {
       </View>
       <View style={styles.insightContent}>
         <Text style={styles.insightTitle}>AI Insight #{index + 1}</Text>
-        <Text style={styles.insightText}>{insight}</Text>
+        <Text style={styles.insightText}>{displayInsight}</Text>
       </View>
     </Animated.View>
   );
@@ -188,12 +228,14 @@ const Analysis = () => {
       case 'Digital Twins Explorer':
         return <TwinsTab />;
       default:
+        // Add safety check for activeTab
+        const tabTitle = activeTab || 'Unknown Tab';
         return (
-          <ModernTabContent title={activeTab}>
+          <ModernTabContent title={tabTitle}>
             <View style={styles.fullCard}>
               <Text style={styles.cardTitle}>Analysis Results</Text>
               <Text style={styles.cardDescription}>
-                Detailed insights and recommendations for {activeTab.toLowerCase()}.
+                Detailed insights and recommendations for {tabTitle.toLowerCase()}.
               </Text>
             </View>
           </ModernTabContent>
@@ -212,7 +254,7 @@ const Analysis = () => {
         style={styles.backgroundGradient}
       />
       
-      <Header /> {/* Use the Header component here */}
+      <Header />
       
       <ScrollView
         style={styles.scrollView}
@@ -265,20 +307,11 @@ const Analysis = () => {
               <Text style={styles.sectionTitle}>Analysis Modules</Text>
               <View style={styles.moduleProgressContainer}>
                 {memoizedModuleProgress.map(([moduleId, progress]) => (
-                  <View key={moduleId} style={styles.moduleProgressItem}>
-                    <View style={styles.moduleHeader}>
-                      <Text style={styles.moduleName}>
-                        {moduleId.charAt(0).toUpperCase() + moduleId.slice(1)}
-                      </Text>
-                      <Text style={styles.moduleProgressText}>{progress}%</Text>
-                    </View>
-                    <View style={styles.progressBar}>
-                      <LinearGradient
-                        colors={['#3B82F6', '#1E40AF']}
-                        style={[styles.progressFill, { width: `${progress}%` }]}
-                      />
-                    </View>
-                  </View>
+                  <ModuleProgressItem 
+                    key={moduleId} 
+                    moduleId={moduleId} 
+                    progress={progress} 
+                  />
                 ))}
               </View>
             </ModernCard>
@@ -347,15 +380,20 @@ const Analysis = () => {
 
         {/* Show initial message when no content is displayed */}
         {!showContent && status !== 'running' && (
-          <ModernCard style={styles.initialMessageCard}>
-            <View style={styles.initialMessageContainer}>
-              <Ionicons name="analytics" size={48} color="#3B82F6" />
-              <Text style={styles.initialMessageTitle}>Supply Chain Analysis</Text>
-              <Text style={styles.initialMessageText}>
-                Click "Run Analysis" to generate insights and recommendations for your supply chain operations.
-              </Text>
-            </View>
-          </ModernCard>
+          <View style={styles.initialMessageContainer}>
+            <LinearGradient
+              colors={['#FFFFFF', '#F8FAFC']}
+              style={styles.initialMessageCard}
+            >
+              <View style={styles.initialMessageContent}>
+                <Ionicons name="analytics" size={48} color="#3B82F6" />
+                <Text style={styles.initialMessageTitle}>Supply Chain Analysis</Text>
+                <Text style={styles.initialMessageText}>
+                  Click "Run Analysis" to generate insights and recommendations for your supply chain operations.
+                </Text>
+              </View>
+            </LinearGradient>
+          </View>
         )}
       </ScrollView>
     </View>
@@ -394,6 +432,11 @@ const styles = StyleSheet.create({
   runButton: {
     borderRadius: 12,
     overflow: 'hidden',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
   },
   runButtonGradient: {
     flexDirection: 'row',
@@ -420,20 +463,20 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 3,
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
     shadowRadius: 4,
   },
   modernCard: {
     borderRadius: 16,
     marginBottom: 15,
-    elevation: 4,
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
     overflow: 'hidden',
   },
   cardGradient: {
@@ -447,6 +490,13 @@ const styles = StyleSheet.create({
   },
   progressCard: {
     marginBottom: 15,
+    borderRadius: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    overflow: 'hidden',
   },
   moduleProgressContainer: {
     gap: 15,
@@ -481,6 +531,13 @@ const styles = StyleSheet.create({
   },
   metricsCard: {
     marginBottom: 15,
+    borderRadius: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    overflow: 'hidden',
   },
   metricsGrid: {
     flexDirection: 'row',
@@ -493,7 +550,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 15,
     marginBottom: 12,
-    elevation: 2,
+    elevation: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -538,10 +595,10 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   activeTabGradient: {
-    elevation: 3,
+    elevation: 2,
     shadowColor: '#1E40AF',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
     shadowRadius: 4,
   },
   tabText: {
@@ -554,6 +611,13 @@ const styles = StyleSheet.create({
   },
   tabContentCard: {
     marginBottom: 15,
+    borderRadius: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    overflow: 'hidden',
   },
   tabContentHeader: {
     marginBottom: 15,
@@ -751,11 +815,21 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 8,
   },
-  initialMessageCard: {
-    alignItems: 'center',
-    paddingVertical: 30,
-  },
   initialMessageContainer: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 15,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
+  initialMessageCard: {
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+  },
+  initialMessageContent: {
     alignItems: 'center',
   },
   initialMessageTitle: {

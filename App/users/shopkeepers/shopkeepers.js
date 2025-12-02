@@ -17,6 +17,7 @@ import Inventory from './inventory/inventory';
 import StockRequest from './stock_request/stock_request';
 import Shipment from './shipment/shipment';
 import Communication from './communication';
+import Profile from './profile/profile';
 
 const ShopkeeperDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -44,6 +45,14 @@ const ShopkeeperDashboard = ({ onLogout }) => {
     setActiveTab(tabId);
   };
 
+  const handleProfilePress = () => {
+    setActiveTab('profile');
+  };
+
+  const handleMessagesPress = () => {
+    setActiveTab('messages');
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
@@ -58,6 +67,8 @@ const ShopkeeperDashboard = ({ onLogout }) => {
         return <Shipment />;
       case 'messages':
         return <Communication />;
+      case 'profile':
+        return <Profile onLogout={onLogout} />; // Pass onLogout prop
       default:
         return <Dashboard />;
     }
@@ -76,6 +87,8 @@ const ShopkeeperDashboard = ({ onLogout }) => {
           title="Shopkeeper Dashboard" 
           subtitle="Store Management" 
           onLogout={onLogout}
+          onProfilePress={handleProfilePress}
+          onMessagesPress={handleMessagesPress}
         />
         <View style={styles.contentContainer}>
           {renderContent()}
