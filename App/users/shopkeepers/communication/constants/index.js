@@ -11,30 +11,48 @@ export const COMMUNICATION_CONSTANTS = {
       type: 'critical',
       icon: 'triangle-exclamation',
       title: 'Low Stock Warning',
-      message: 'Coca Cola 500ml - Only 5 units left',
+      message: 'Coca Cola 500ml - Only 5 units left in inventory. Please reorder immediately to avoid stockout.',
       priority: 'Critical',
       time: '2 min ago',
-      color: 'danger'
+      color: 'danger',
+      details: {
+        product: 'Coca Cola 500ml',
+        currentStock: 5,
+        reorderLevel: 10,
+        supplier: 'ABC Beverages'
+      }
     },
     {
       id: 2,
       type: 'moderate',
       icon: 'truck',
       title: 'Shipment Delay',
-      message: 'Order #1234 delayed by 2 hours',
+      message: 'Order #1234 delayed by 2 hours. New estimated arrival: 3:30 PM today.',
       priority: 'Moderate',
       time: '15 min ago',
-      color: 'warning'
+      color: 'warning',
+      details: {
+        orderId: '#1234',
+        delayReason: 'Traffic congestion',
+        newETA: '3:30 PM',
+        driver: 'John Smith'
+      }
     },
     {
       id: 3,
       type: 'suggestion',
       icon: 'lightbulb',
       title: 'AI Recommendation',
-      message: 'Consider restocking chips - demand up 30%',
+      message: 'Consider restocking chips - demand up 30% this week. Suggested order quantity: 50 units.',
       priority: 'Suggestion',
       time: '1 hour ago',
-      color: 'info'
+      color: 'info',
+      details: {
+        product: 'Potato Chips',
+        demandIncrease: '30%',
+        suggestedQuantity: 50,
+        lastRestock: '2 weeks ago'
+      }
     }
   ],
   
@@ -43,37 +61,57 @@ export const COMMUNICATION_CONSTANTS = {
       id: 1,
       name: 'Warehouse Manager',
       avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg',
-      lastMessage: 'Your order #1234 is ready for pickup...',
+      lastMessage: 'Your order #1234 is ready for pickup. Please confirm pickup time.',
       unreadCount: 3,
       time: '10:30 AM',
-      isOnline: true
+      isOnline: true,
+      details: {
+        role: 'Warehouse Manager',
+        lastSeen: 'online',
+        responseTime: 'within 1 hour'
+      }
     },
     {
       id: 2,
       name: 'Express Delivery',
       avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-3.jpg',
-      lastMessage: 'Delivery delayed due to traffic. ETA: 2 PM',
+      lastMessage: 'Delivery delayed due to traffic. ETA: 2 PM. Will notify when closer.',
       unreadCount: 2,
       time: '9:45 AM',
-      isOnline: false
+      isOnline: false,
+      details: {
+        company: 'Express Delivery Co.',
+        contact: '+1 234 567 890',
+        serviceArea: 'Metro City'
+      }
     },
     {
       id: 3,
       name: 'Local Supplier',
       avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-4.jpg',
-      lastMessage: 'New stock available. Check our latest...',
+      lastMessage: 'New stock available. Check our latest catalog for summer beverages collection.',
       unreadCount: 1,
       time: 'Yesterday',
-      isOnline: true
+      isOnline: true,
+      details: {
+        company: 'Local Supplier Inc.',
+        products: 'Beverages & Snacks',
+        rating: '4.8/5'
+      }
     },
     {
       id: 4,
       name: 'Customer Support',
       avatar: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg',
-      lastMessage: 'Your support ticket has been resolved',
+      lastMessage: 'Your support ticket #TKT-789 has been resolved. Please rate our service.',
       unreadCount: 1,
       time: '2 days ago',
-      isOnline: false
+      isOnline: false,
+      details: {
+        department: 'Customer Support',
+        availability: 'Mon-Fri 9AM-6PM',
+        avgResponseTime: '2 hours'
+      }
     }
   ],
   
@@ -82,19 +120,22 @@ export const COMMUNICATION_CONSTANTS = {
       id: 1,
       icon: 'circle-question',
       title: 'How to request stock?',
-      action: 'navigate'
+      action: 'navigate',
+      description: 'Learn how to create and submit stock requests to suppliers'
     },
     {
       id: 2,
       icon: 'truck',
       title: 'Track my shipment',
-      action: 'navigate'
+      action: 'navigate',
+      description: 'Track real-time location and status of your shipments'
     },
     {
       id: 3,
       icon: 'headset',
       title: 'Contact support',
-      action: 'navigate'
+      action: 'navigate',
+      description: 'Get help from our customer support team 24/7'
     }
   ],
   

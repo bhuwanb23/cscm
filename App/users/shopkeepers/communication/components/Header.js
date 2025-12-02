@@ -1,61 +1,12 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants';
 
 const Header = ({ unreadCount = 0, onNotificationPress, onProfilePress }) => {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
-
-    if (unreadCount > 0) {
-      const pulse = Animated.loop(
-        Animated.sequence([
-          Animated.timing(pulseAnim, {
-            toValue: 1.2,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseAnim, {
-            toValue: 1,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-        ])
-      );
-      pulse.start();
-      return () => pulse.stop();
-    }
-  }, [unreadCount]);
-
   return (
-    <Animated.View 
-      style={[
-        styles.container,
-        {
-          opacity: fadeAnim,
-          transform: [{
-            translateY: fadeAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [-20, 0],
-            }),
-          }],
-        }
-      ]}
-    >
-      <LinearGradient
-        colors={['#3B82F6', '#1E40AF']}
-        style={styles.header}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
+    <View style={styles.container}>
+      <View style={styles.header}>
         <View style={styles.leftSection}>
           <Ionicons name="chatbubbles" size={20} color="#FFFFFF" />
           <View>
@@ -71,16 +22,9 @@ const Header = ({ unreadCount = 0, onNotificationPress, onProfilePress }) => {
           >
             <Ionicons name="notifications" size={18} color="#FFFFFF" />
             {unreadCount > 0 && (
-              <Animated.View 
-                style={[
-                  styles.badge,
-                  {
-                    transform: [{ scale: pulseAnim }],
-                  }
-                ]}
-              >
+              <View style={styles.badge}>
                 <Text style={styles.badgeText}>{unreadCount}</Text>
-              </Animated.View>
+              </View>
             )}
           </TouchableOpacity>
           
@@ -88,16 +32,13 @@ const Header = ({ unreadCount = 0, onNotificationPress, onProfilePress }) => {
             style={styles.profileButton}
             onPress={onProfilePress}
           >
-            <LinearGradient
-              colors={['#FFFFFF', '#F3F4F6']}
-              style={styles.profileGradient}
-            >
+            <View style={styles.profileContainer}>
               <Ionicons name="person" size={14} color="#3B82F6" />
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
         </View>
-      </LinearGradient>
-    </Animated.View>
+      </View>
+    </View>
   );
 };
 
@@ -106,13 +47,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 10,
     marginBottom: 12,
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
-    elevation: 4,
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    backgroundColor: '#3B82F6',
   },
   header: {
     flexDirection: 'row',
@@ -168,11 +105,12 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     overflow: 'hidden',
   },
-  profileGradient: {
+  profileContainer: {
     width: '100%',
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
   },
 });
 

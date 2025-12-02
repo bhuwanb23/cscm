@@ -1,6 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { View, ScrollView, StyleSheet, Alert, Animated } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
+import { View, ScrollView, StyleSheet, Alert } from 'react-native';
 
 // Components
 import Header from './components/Header';
@@ -27,24 +26,6 @@ const Communication = () => {
     getUnreadCount,
     getActiveAlertsCount
   } = useCommunicationData();
-
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
 
   const handleNotificationPress = () => {
     Alert.alert('Notifications', 'You have new notifications');
@@ -87,20 +68,7 @@ const Communication = () => {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={['#EBF4FF', '#F8FAFC']}
-        style={styles.backgroundGradient}
-      />
-      
-      <Animated.View 
-        style={[
-          styles.content,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }],
-          }
-        ]}
-      >
+      <View style={styles.content}>
         <Header 
           unreadCount={getUnreadCount()}
           onNotificationPress={handleNotificationPress}
@@ -136,7 +104,7 @@ const Communication = () => {
         <FloatingChatButton 
           onPress={handleFloatingChatPress}
         />
-      </Animated.View>
+      </View>
     </View>
   );
 };
@@ -145,13 +113,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
-  },
-  backgroundGradient: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
   },
   content: {
     flex: 1,

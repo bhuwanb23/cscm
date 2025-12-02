@@ -1,43 +1,10 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, ALERT_TYPES } from '../constants';
 
 const AlertItem = ({ alert, onPress, index }) => {
-  const scaleAnim = useRef(new Animated.Value(0.95)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 400,
-        delay: index * 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 400,
-        delay: index * 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
-
   const handlePress = () => {
-    Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 0.98,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
     onPress(alert);
   };
 
@@ -54,16 +21,16 @@ const AlertItem = ({ alert, onPress, index }) => {
     }
   };
 
-  const getAlertGradient = (color) => {
+  const getAlertBackgroundColor = (color) => {
     switch (color) {
       case 'danger':
-        return ['#FEF2F2', '#FECACA'];
+        return '#FEF2F2';
       case 'warning':
-        return ['#FFFBEB', '#FED7AA'];
+        return '#FFFBEB';
       case 'info':
-        return ['#EFF6FF', '#DBEAFE'];
+        return '#EFF6FF';
       default:
-        return ['#F9FAFB', '#F3F4F6'];
+        return '#F9FAFB';
     }
   };
 
@@ -81,39 +48,37 @@ const AlertItem = ({ alert, onPress, index }) => {
   };
 
   return (
-    <Animated.View
-      style={[
-        styles.alertWrapper,
-        {
-          opacity: fadeAnim,
-          transform: [{ scale: scaleAnim }],
-        }
-      ]}
-    >
+    <View style={styles.alertWrapper}>
       <TouchableOpacity 
         style={styles.alertCard}
         onPress={handlePress}
         activeOpacity={0.9}
       >
-        <LinearGradient
-          colors={getAlertGradient(alert.color)}
-          style={styles.alertGradient}
-        >
+        <View style={[styles.alertGradient, { backgroundColor: getAlertBackgroundColor(alert.color) }]}>
           <View style={styles.alertContent}>
-            <LinearGradient
-              colors={[getAlertColor(alert.color), `${getAlertColor(alert.color)}CC`]}
-              style={styles.alertIcon}
+            <View 
+              style={[styles.alertIcon, { backgroundColor: getAlertColor(alert.color) }]}
             >
               <Ionicons 
                 name={getAlertIcon(alert.type)} 
                 size={16} 
                 color="#FFFFFF" 
               />
-            </LinearGradient>
+            </View>
             
             <View style={styles.alertDetails}>
               <Text style={styles.alertTitle} numberOfLines={1}>{alert.title}</Text>
-              <Text style={styles.alertMessage} numberOfLines={2}>{alert.message}</Text>
+              <Text style={styles.alertMessage} numberOfLines={3}>{alert.message}</Text>
+              
+              {/* Detailed information */}
+              <View style={styles.detailsContainer}>
+                {alert.details && Object.keys(alert.details).map((key, idx) => (
+                  <View key={idx} style={styles.detailRow}>
+                    <Text style={styles.detailKey}>{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:</Text>
+                    <Text style={styles.detailValue}>{alert.details[key]}</Text>
+                  </View>
+                ))}
+              </View>
               
               <View style={styles.alertFooter}>
                 <View style={[styles.priorityBadge, { backgroundColor: `${getAlertColor(alert.color)}20` }]}>
@@ -125,55 +90,26 @@ const AlertItem = ({ alert, onPress, index }) => {
               </View>
             </View>
           </View>
-        </LinearGradient>
+        </View>
       </TouchableOpacity>
-    </Animated.View>
+    </View>
   );
 };
 
 const AlertsSection = ({ alerts, onAlertPress, onViewAllPress }) => {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
   return (
-    <Animated.View 
-      style={[
-        styles.container,
-        {
-          opacity: fadeAnim,
-          transform: [{
-            translateY: fadeAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [20, 0],
-            }),
-          }],
-        }
-      ]}
-    >
-      <LinearGradient
-        colors={['#FFFFFF', '#F8FAFC']}
-        style={styles.gradientContainer}
-      >
+    <View style={styles.container}>
+      <View style={styles.gradientContainer}>
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <Ionicons name="warning" size={16} color="#EF4444" />
             <Text style={styles.sectionTitle}>Priority Alerts</Text>
           </View>
           <TouchableOpacity onPress={onViewAllPress} style={styles.viewAllButton}>
-            <LinearGradient
-              colors={['#3B82F6', '#1E40AF']}
-              style={styles.viewAllGradient}
-            >
+            <View style={styles.viewAllGradient}>
               <Text style={styles.viewAllText}>View All</Text>
               <Ionicons name="chevron-forward" size={12} color="#FFFFFF" />
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
         </View>
         
@@ -187,8 +123,8 @@ const AlertsSection = ({ alerts, onAlertPress, onViewAllPress }) => {
             />
           ))}
         </View>
-      </LinearGradient>
-    </Animated.View>
+      </View>
+    </View>
   );
 };
 
@@ -200,11 +136,7 @@ const styles = StyleSheet.create({
   gradientContainer: {
     borderRadius: 12,
     padding: 12,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
@@ -232,6 +164,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     gap: 4,
+    backgroundColor: '#3B82F6',
   },
   viewAllText: {
     fontSize: 10,
@@ -247,11 +180,6 @@ const styles = StyleSheet.create({
   alertCard: {
     borderRadius: 10,
     overflow: 'hidden',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
   alertGradient: {
     padding: 10,
@@ -281,6 +209,27 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     marginBottom: 6,
     lineHeight: 14,
+  },
+  detailsContainer: {
+    marginBottom: 6,
+    paddingVertical: 4,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  detailRow: {
+    flexDirection: 'row',
+    marginBottom: 2,
+  },
+  detailKey: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginRight: 4,
+  },
+  detailValue: {
+    fontSize: 9,
+    color: '#4B5563',
+    flex: 1,
   },
   alertFooter: {
     flexDirection: 'row',

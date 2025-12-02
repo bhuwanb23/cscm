@@ -31,7 +31,14 @@ const HelpItem = ({ item, onPress }) => {
           />
         </View>
         
-        <Text style={styles.helpTitle}>{item.title}</Text>
+        <View style={styles.helpTextContainer}>
+          <Text style={styles.helpTitle}>{item.title}</Text>
+          {item.description && (
+            <Text style={styles.helpDescription} numberOfLines={2}>
+              {item.description}
+            </Text>
+          )}
+        </View>
         
         <Ionicons 
           name="chevron-forward" 
@@ -68,49 +75,54 @@ const QuickHelpSection = ({ helpItems, onHelpItemPress, onViewAllPress }) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: COLORS.gray[50],
+    marginHorizontal: 16,
+    marginVertical: 4,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
     color: COLORS.gray[900],
   },
   viewAllText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '500',
     color: COLORS.primary,
   },
   helpList: {
-    gap: 8,
+    gap: 6,
   },
   helpCard: {
     backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: COLORS.gray[200],
-    borderRadius: 8,
+    borderRadius: 10,
     padding: 12,
   },
   helpContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
   },
   helpIcon: {
     marginRight: 12,
   },
-  helpTitle: {
+  helpTextContainer: {
     flex: 1,
-    fontSize: 14,
-    fontWeight: '500',
+    marginRight: 8,
+  },
+  helpTitle: {
+    fontSize: 12,
+    fontWeight: '600',
     color: COLORS.gray[900],
+    marginBottom: 2,
+  },
+  helpDescription: {
+    fontSize: 10,
+    color: COLORS.gray[600],
+    lineHeight: 14,
   },
 });
 

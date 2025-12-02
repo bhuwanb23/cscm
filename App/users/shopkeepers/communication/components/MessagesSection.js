@@ -1,74 +1,33 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, Animated } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
+import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../constants';
 
 const MessageItem = ({ message, onPress, index }) => {
-  const scaleAnim = useRef(new Animated.Value(0.95)).current;
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 400,
-        delay: index * 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 400,
-        delay: index * 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
-
   const handlePress = () => {
-    Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 0.98,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
     onPress(message);
   };
 
+  const getStatusColor = (isOnline) => {
+    return isOnline ? '#22C55E' : '#9CA3AF';
+  };
+
   return (
-    <Animated.View
-      style={[
-        styles.messageWrapper,
-        {
-          opacity: fadeAnim,
-          transform: [{ scale: scaleAnim }],
-        }
-      ]}
-    >
+    <View style={styles.messageWrapper}>
       <TouchableOpacity 
         style={styles.messageCard}
         onPress={handlePress}
         activeOpacity={0.9}
       >
-        <LinearGradient
-          colors={['#FFFFFF', '#F8FAFC']}
-          style={styles.messageGradient}
-        >
+        <View style={styles.messageGradient}>
           <View style={styles.messageContent}>
             <View style={styles.avatarContainer}>
               <Image 
                 source={{ uri: message.avatar }} 
                 style={styles.avatar}
               />
-              <LinearGradient
-                colors={message.isOnline ? ['#22C55E', '#16A34A'] : ['#9CA3AF', '#6B7280']}
-                style={styles.statusIndicator}
+              <View 
+                style={[styles.statusIndicator, { backgroundColor: getStatusColor(message.isOnline) }]}
               />
             </View>
             
@@ -77,12 +36,9 @@ const MessageItem = ({ message, onPress, index }) => {
                 <Text style={styles.messageName} numberOfLines={1}>{message.name}</Text>
                 <View style={styles.messageMeta}>
                   {message.unreadCount > 0 && (
-                    <LinearGradient
-                      colors={['#EF4444', '#DC2626']}
-                      style={styles.unreadBadge}
-                    >
+                    <View style={styles.unreadBadge}>
                       <Text style={styles.unreadText}>{message.unreadCount}</Text>
-                    </LinearGradient>
+                    </View>
                   )}
                   <Text style={styles.messageTime}>{message.time}</Text>
                 </View>
@@ -90,57 +46,40 @@ const MessageItem = ({ message, onPress, index }) => {
               <Text style={styles.lastMessage} numberOfLines={2}>
                 {message.lastMessage}
               </Text>
+              
+              {/* Detailed information */}
+              {message.details && (
+                <View style={styles.detailsContainer}>
+                  {Object.keys(message.details).map((key, idx) => (
+                    <View key={idx} style={styles.detailRow}>
+                      <Text style={styles.detailKey}>{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:</Text>
+                      <Text style={styles.detailValue}>{message.details[key]}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
             </View>
           </View>
-        </LinearGradient>
+        </View>
       </TouchableOpacity>
-    </Animated.View>
+    </View>
   );
 };
 
 const MessagesSection = ({ messages, onMessagePress, onNewChatPress }) => {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
   return (
-    <Animated.View 
-      style={[
-        styles.container,
-        {
-          opacity: fadeAnim,
-          transform: [{
-            translateY: fadeAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [20, 0],
-            }),
-          }],
-        }
-      ]}
-    >
-      <LinearGradient
-        colors={['#FFFFFF', '#F8FAFC']}
-        style={styles.gradientContainer}
-      >
+    <View style={styles.container}>
+      <View style={styles.gradientContainer}>
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <Ionicons name="chatbubbles" size={16} color="#3B82F6" />
             <Text style={styles.sectionTitle}>Messages</Text>
           </View>
           <TouchableOpacity onPress={onNewChatPress} style={styles.newChatButton}>
-            <LinearGradient
-              colors={['#22C55E', '#16A34A']}
-              style={styles.newChatGradient}
-            >
+            <View style={styles.newChatGradient}>
               <Ionicons name="add" size={12} color="#FFFFFF" />
               <Text style={styles.newChatText}>New Chat</Text>
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
         </View>
         
@@ -154,54 +93,71 @@ const MessagesSection = ({ messages, onMessagePress, onNewChatPress }) => {
             />
           ))}
         </View>
-      </LinearGradient>
-    </Animated.View>
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    marginHorizontal: 16,
+    marginVertical: 4,
+  },
+  gradientContainer: {
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.gray[900],
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1F2937',
+  },
+  newChatButton: {
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  newChatGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    gap: 4,
+    backgroundColor: '#22C55E',
   },
   newChatText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.primary,
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   messagesList: {
-    gap: 12,
+    gap: 6,
+  },
+  messageWrapper: {
+    marginBottom: 2,
   },
   messageCard: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: COLORS.gray[200],
-    borderRadius: 8,
-    padding: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+  },
+  messageGradient: {
+    padding: 10,
   },
   messageContent: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    gap: 10,
   },
   avatarContainer: {
     position: 'relative',
@@ -231,9 +187,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   messageName: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.gray[900],
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1F2937',
   },
   messageMeta: {
     flexDirection: 'row',
@@ -241,7 +197,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   unreadBadge: {
-    backgroundColor: COLORS.danger,
+    backgroundColor: '#EF4444',
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -254,12 +210,34 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   messageTime: {
-    fontSize: 12,
-    color: COLORS.gray[500],
+    fontSize: 10,
+    color: '#9CA3AF',
   },
   lastMessage: {
-    fontSize: 12,
-    color: COLORS.gray[600],
+    fontSize: 11,
+    color: '#6B7280',
+    lineHeight: 14,
+    marginBottom: 4,
+  },
+  detailsContainer: {
+    paddingVertical: 4,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
+  },
+  detailRow: {
+    flexDirection: 'row',
+    marginBottom: 2,
+  },
+  detailKey: {
+    fontSize: 9,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginRight: 4,
+  },
+  detailValue: {
+    fontSize: 9,
+    color: '#4B5563',
+    flex: 1,
   },
 });
 

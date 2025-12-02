@@ -13,6 +13,12 @@ export const useCommunicationData = () => {
     setLoading(true);
     // Simulate API call
     setTimeout(() => {
+      // Update with fresh data
+      setQuickStats(prev => ({
+        ...prev,
+        UNREAD: prev.UNREAD + Math.floor(Math.random() * 3),
+        ALERTS: prev.ALERTS + Math.floor(Math.random() * 2)
+      }));
       setLoading(false);
     }, 1000);
   };
