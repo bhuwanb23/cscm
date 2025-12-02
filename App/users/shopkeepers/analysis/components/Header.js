@@ -4,19 +4,28 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
 const Header = () => {
-  return null; // Header is now integrated into the main Analysis component
+  return (
+    <View style={styles.header}>
+      <LinearGradient
+        colors={['#3B82F6', '#1E40AF']}
+        style={styles.headerGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+      >
+        <Text style={styles.headerTitle}>CSCM Analysis</Text>
+        <Text style={styles.headerSubtitle}>Central brain of the Cognitive Supply Chain Mesh</Text>
+      </LinearGradient>
+    </View>
+  );
 };
 
 export default Header;
 
 const styles = StyleSheet.create({
-  headerContainer: {
-    width: '100%',
-  },
   header: {
     marginTop: 10,
     marginHorizontal: 16,
-    marginBottom: 8,
+    marginBottom: 12,
     borderRadius: 16,
     overflow: 'hidden',
     elevation: 4,

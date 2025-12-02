@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, Title, Paragraph, Button } from 'react-native-paper';
@@ -78,7 +77,9 @@ const ShopkeeperDashboard = ({ onLogout }) => {
           subtitle="Store Management" 
           onLogout={onLogout}
         />
-        {renderContent()}
+        <View style={styles.contentContainer}>
+          {renderContent()}
+        </View>
         <BottomNavbar activeTab={activeTab} onTabPress={handleTabPress} />
       </LinearGradient>
     </SafeAreaView>
@@ -90,6 +91,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   container: {
+    flex: 1,
+  },
+  contentContainer: {
     flex: 1,
   },
   scrollView: {

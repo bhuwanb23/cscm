@@ -156,7 +156,7 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
                     transform: [{ rotate: iconRotateInterpolate }],
                   }}
                 >
-                  <Ionicons name="storefront" size={32} color="#FFFFFF" />
+                  <Ionicons name="storefront" size={28} color="#FFFFFF" />
                 </Animated.View>
               </LinearGradient>
               <Text style={styles.title}>CSCM</Text>
@@ -178,7 +178,7 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
                   colors={['#EBF4FF', '#DBEAFE']}
                   style={styles.demoGradient}
                 >
-                  <Ionicons name="information-circle" size={16} color="#3B82F6" />
+                  <Ionicons name="information-circle" size={14} color="#3B82F6" />
                   <Text style={styles.demoText}>Demo Mode: Select role and click Sign In</Text>
                 </LinearGradient>
               </Animated.View>
@@ -201,7 +201,7 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
                     >
                       <Ionicons 
                         name="storefront-outline" 
-                        size={18} 
+                        size={16} 
                         color={userRole === 'shopkeeper' ? '#FFFFFF' : '#6B7280'} 
                       />
                       <Text style={[
@@ -227,7 +227,7 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
                     >
                       <Ionicons 
                         name="car-outline" 
-                        size={18} 
+                        size={16} 
                         color={userRole === 'transporter' ? '#FFFFFF' : '#6B7280'} 
                       />
                       <Text style={[
@@ -251,7 +251,7 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   style={styles.input}
-                  left={<TextInput.Icon icon="email" size={16} />}
+                  left={<TextInput.Icon icon="email" size={14} />}
                   placeholder="Leave empty for demo"
                   dense
                   theme={{
@@ -272,7 +272,7 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
                   mode="outlined"
                   secureTextEntry={!showPassword}
                   style={styles.input}
-                  left={<TextInput.Icon icon="lock" size={16} />}
+                  left={<TextInput.Icon icon="lock" size={14} />}
                   placeholder="Leave empty for demo"
                   dense
                   theme={{
@@ -284,7 +284,7 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
                   right={
                     <TextInput.Icon
                       icon={showPassword ? "eye-off" : "eye"}
-                      size={16}
+                      size={14}
                       onPress={() => setShowPassword(!showPassword)}
                     />
                   }
@@ -314,13 +314,13 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
                           }
                         ]}
                       >
-                        <Ionicons name="refresh" size={18} color="#FFFFFF" />
+                        <Ionicons name="refresh" size={16} color="#FFFFFF" />
                       </Animated.View>
                       <Text style={styles.loginButtonText}>Signing In...</Text>
                     </View>
                   ) : (
                     <View style={styles.buttonContent}>
-                      <Ionicons name="log-in" size={18} color="#FFFFFF" />
+                      <Ionicons name="log-in" size={16} color="#FFFFFF" />
                       <Text style={styles.loginButtonText}>Sign In</Text>
                     </View>
                   )}
@@ -330,7 +330,7 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
               {/* Forgot Password */}
               <TouchableOpacity style={styles.forgotPassword} activeOpacity={0.7}>
                 <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-                <Ionicons name="arrow-forward" size={12} color="#3B82F6" />
+                <Ionicons name="arrow-forward" size={10} color="#3B82F6" />
               </TouchableOpacity>
             </View>
           </LinearGradient>
@@ -347,78 +347,78 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingVertical: 20,
     minHeight: '100%',
   },
   cardWrapper: {
-    maxWidth: 380,
+    maxWidth: 340,
     alignSelf: 'center',
     width: '100%',
   },
   card: {
-    borderRadius: 20,
-    padding: 28,
-    elevation: 15,
+    borderRadius: 16,
+    padding: 20,
+    elevation: 10,
     shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 15,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 28,
+    marginBottom: 20,
   },
   iconContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
-    elevation: 5,
+    marginBottom: 12,
+    elevation: 4,
     shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '800',
     color: '#1F2937',
-    letterSpacing: 1,
-    marginBottom: 4,
+    letterSpacing: 0.5,
+    marginBottom: 2,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 11,
     color: '#6B7280',
     marginTop: 2,
     textAlign: 'center',
     fontWeight: '500',
   },
   decorativeLine: {
-    width: 60,
-    height: 3,
+    width: 50,
+    height: 2,
     backgroundColor: '#3B82F6',
-    borderRadius: 2,
-    marginTop: 12,
+    borderRadius: 1,
+    marginTop: 10,
   },
   form: {
-    gap: 18,
+    gap: 14,
   },
   demoNotice: {
-    borderRadius: 12,
+    borderRadius: 10,
     overflow: 'hidden',
     marginBottom: 4,
   },
   demoGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
-    gap: 8,
+    padding: 10,
+    gap: 6,
   },
   demoText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#3B82F6',
     fontWeight: '600',
     flex: 1,
@@ -427,18 +427,18 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   roleLabel: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '700',
     color: '#1F2937',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   roleOptions: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
   },
   roleOption: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: 10,
     overflow: 'hidden',
     elevation: 2,
     shadowColor: '#000',
@@ -450,12 +450,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    gap: 6,
   },
   roleText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     color: '#6B7280',
   },
@@ -467,39 +467,39 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: '#F9FAFB',
-    fontSize: 14,
+    fontSize: 13,
   },
   loginButtonWrapper: {
-    marginTop: 8,
-    borderRadius: 14,
+    marginTop: 6,
+    borderRadius: 12,
     overflow: 'hidden',
-    elevation: 4,
+    elevation: 3,
     shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
   },
   loginButton: {
-    paddingVertical: 16,
-    paddingHorizontal: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
   loadingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   loginButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
     color: '#FFFFFF',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
   },
   loadingDot: {
     alignItems: 'center',
@@ -509,12 +509,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 16,
+    marginTop: 12,
     gap: 4,
   },
   forgotPasswordText: {
     color: '#3B82F6',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
   },
 });

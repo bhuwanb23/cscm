@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   Animated,
   Easing,
+  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAnalysis } from '../hooks/useAnalysis';
 import { METRIC_CONFIG, ANALYSIS_TABS } from '../constants';
+import Header from './Header'; // Import the Header component
 
 // Import individual tab components
 import InventoryTab from './tabs/InventoryTab';
@@ -22,6 +24,9 @@ import SkuTab from './tabs/SkuTab';
 import ProcurementTab from './tabs/ProcurementTab';
 import RiskTab from './tabs/RiskTab';
 import TwinsTab from './tabs/TwinsTab';
+
+// Get screen dimensions
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 // Modern Card Component
 const ModernCard = React.memo(({ children, style }) => (
@@ -203,17 +208,12 @@ const Analysis = () => {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#1E3A8A', '#3B82F6']}
-        style={styles.headerGradient}
-      >
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>CSCM Analysis</Text>
-          <Text style={styles.headerSubtitle}>
-            Central brain of the Cognitive Supply Chain Mesh
-          </Text>
-        </View>
-      </LinearGradient>
-
+        colors={['#EBF4FF', '#F8FAFC']}
+        style={styles.backgroundGradient}
+      />
+      
+      <Header /> {/* Use the Header component here */}
+      
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -316,7 +316,9 @@ const Analysis = () => {
             </ScrollView>
 
             {/* Tab Content */}
-            {renderActiveTabContent()}
+            <View style={styles.tabContentWrapper}>
+              {renderActiveTabContent()}
+            </View>
 
             {/* Insights Feed */}
             <ModernCard style={styles.insightsCard}>
@@ -365,31 +367,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F1F5F9',
   },
-  headerGradient: {
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  headerContent: {
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    color: '#DBEAFE',
-    textAlign: 'center',
+  backgroundGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 30,
+    paddingBottom: 20,
     paddingHorizontal: 16,
   },
   actionBar: {
@@ -439,7 +428,7 @@ const styles = StyleSheet.create({
   },
   modernCard: {
     borderRadius: 16,
-    marginBottom: 20,
+    marginBottom: 15,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -578,6 +567,9 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#E2E8F0',
     marginTop: 10,
+  },
+  tabContentWrapper: {
+    marginBottom: 15,
   },
   contentRow: {
     flexDirection: 'row',

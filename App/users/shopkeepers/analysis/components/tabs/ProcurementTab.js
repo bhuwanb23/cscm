@@ -254,7 +254,7 @@ export default ProcurementTab;
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    // Removed padding to prevent pushing navbar up
   },
   section: {
     marginBottom: 16,
