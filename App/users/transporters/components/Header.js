@@ -12,7 +12,7 @@ const Header = ({ title, subtitle, onLogout, onProfilePress }) => {
   return (
     <>
       <LinearGradient
-        colors={['#4A90E2', '#357ABD']}
+        colors={['#2563EB', '#1E40AF']}
         style={styles.gradient}
       >
         <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   safeArea: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: '#2563EB',
   },
   header: {
     backgroundColor: 'transparent',

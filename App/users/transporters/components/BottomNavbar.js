@@ -10,11 +10,10 @@ import { Ionicons } from '@expo/vector-icons';
 
 const BottomNavbar = ({ activeTab, onTabPress }) => {
   const tabs = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'home-outline', activeIcon: 'home' },
+    { id: 'dashboard', label: 'Home', icon: 'home-outline', activeIcon: 'home' },
     { id: 'navigation', label: 'Navigation', icon: 'navigate-outline', activeIcon: 'navigate' },
     { id: 'tasks', label: 'Tasks', icon: 'list-outline', activeIcon: 'list' },
-    { id: 'taskDetail', label: 'Task Detail', icon: 'document-text-outline', activeIcon: 'document-text' },
-    { id: 'shipments', label: 'Shipments', icon: 'car-outline', activeIcon: 'car' },
+    { id: 'profile', label: 'Profile', icon: 'person-outline', activeIcon: 'person' },
   ];
 
   return (
@@ -31,7 +30,7 @@ const BottomNavbar = ({ activeTab, onTabPress }) => {
               <Ionicons
                 name={isActive ? tab.activeIcon : tab.icon}
                 size={24}
-                color={isActive ? '#4A90E2' : '#7F8C8D'}
+                color={isActive ? '#2563EB' : '#6B7280'}
               />
               <Text style={[styles.tabLabel, isActive && styles.activeTabLabel]}>
                 {tab.label}
@@ -55,7 +54,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 8,
     borderTopWidth: 1,
-    borderTopColor: '#E5E5E5',
+    borderTopColor: '#E5E7EB',
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
@@ -71,16 +70,16 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   activeTab: {
-    backgroundColor: 'rgba(74, 144, 226, 0.1)',
+    backgroundColor: 'rgba(37, 99, 235, 0.1)',
     borderRadius: 8,
   },
   tabLabel: {
     fontSize: 10,
-    color: '#7F8C8D',
+    color: '#6B7280',
     marginTop: 4,
   },
   activeTabLabel: {
-    color: '#4A90E2',
+    color: '#2563EB',
     fontWeight: '500',
   },
   activeIndicator: {
@@ -89,7 +88,7 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#4A90E2',
+    backgroundColor: '#2563EB',
   },
 });
 
