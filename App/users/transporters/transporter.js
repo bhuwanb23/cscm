@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,9 +10,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, Title, Paragraph, Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import Header from '../../components/Header';
+import Header from './components/Header';
+import BottomNavbar from './components/BottomNavbar';
 
 const TransporterDashboard = ({ onLogout }) => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+
   const currentDeliveries = [
     {
       id: 'DEL001',
@@ -55,6 +58,15 @@ const TransporterDashboard = ({ onLogout }) => {
     }
   };
 
+  const handleTabPress = (tabId) => {
+    setActiveTab(tabId);
+    // Navigation logic would go here
+  };
+
+  const handleProfilePress = () => {
+    // Profile navigation logic would go here
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <LinearGradient colors={['#F8F9FA', '#E9ECEF']} style={styles.container}>
@@ -62,6 +74,7 @@ const TransporterDashboard = ({ onLogout }) => {
           title="Transporter Dashboard" 
           subtitle="Delivery Management" 
           onLogout={onLogout}
+          onProfilePress={handleProfilePress}
         />
         <ScrollView style={styles.scrollView}>
 
@@ -182,6 +195,7 @@ const TransporterDashboard = ({ onLogout }) => {
           </Card>
         </View>
         </ScrollView>
+        <BottomNavbar activeTab={activeTab} onTabPress={handleTabPress} />
       </LinearGradient>
     </SafeAreaView>
   );
