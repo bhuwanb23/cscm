@@ -9,7 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Header from './components/Header';
 import BottomNavbar from './components/BottomNavbar';
 import Dashboard from './dashboard/dashboard';
-
+import Tasks from './tasks/tasks';
 const TransporterDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -27,6 +27,8 @@ const TransporterDashboard = ({ onLogout }) => {
       <LinearGradient colors={['#F8F9FA', '#E9ECEF']} style={styles.container}>
         {activeTab === 'dashboard' ? (
           <Dashboard onLogout={onLogout} />
+        ) : activeTab === 'tasks' ? (
+          <Tasks onLogout={onLogout} />
         ) : (
           <>
             <Header 
