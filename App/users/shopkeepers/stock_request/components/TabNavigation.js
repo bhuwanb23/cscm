@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { STOCK_REQUEST_CONSTANTS } from '../constants';
 
 const TabNavigation = ({ activeTab, onTabChange }) => {
@@ -22,16 +21,11 @@ const TabNavigation = ({ activeTab, onTabChange }) => {
             activeOpacity={0.8}
           >
             {activeTab === tab.id ? (
-              <LinearGradient
-                colors={['#3B82F6', '#1E40AF']}
-                style={styles.activeTabGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
+              <View style={styles.activeTab}>
                 <Text style={styles.activeTabText}>
                   {tab.label}
                 </Text>
-              </LinearGradient>
+              </View>
             ) : (
               <View style={styles.inactiveTab}>
                 <Text style={styles.tabText}>
@@ -64,10 +58,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: 'hidden',
   },
-  activeTabGradient: {
+  activeTab: {
     paddingVertical: 8,
     paddingHorizontal: 12,
     alignItems: 'center',
+    backgroundColor: '#3B82F6',
   },
   inactiveTab: {
     paddingVertical: 8,

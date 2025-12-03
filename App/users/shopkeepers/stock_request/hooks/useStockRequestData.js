@@ -18,7 +18,8 @@ export const useStockRequestData = () => {
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (item.supplier && item.supplier.toLowerCase().includes(searchQuery.toLowerCase()))
+      (item.supplier && item.supplier.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.sku && item.sku.toLowerCase().includes(searchQuery.toLowerCase()))
     );
   }, [searchQuery]);
 
@@ -81,13 +82,16 @@ export const useStockRequestData = () => {
     const item = {
       id: recommendation.id,
       name: recommendation.name,
-      category: 'AI Recommended',
+      category: recommendation.category || 'AI Recommended',
       description: recommendation.description,
       price: recommendation.price,
       supplier: recommendation.supplier,
       icon: recommendation.icon,
       iconColor: recommendation.iconColor,
       iconBgColor: recommendation.iconBgColor,
+      sku: recommendation.sku,
+      brand: recommendation.brand,
+      shelfLife: recommendation.shelfLife,
     };
     addItem({ ...item, quantity: 1 });
   };
@@ -99,6 +103,15 @@ export const useStockRequestData = () => {
       return;
     }
     
+    // Calculate total value
+    const totalValue = selectedItems.reduce((sum, item) => {
+      if (item.price) {
+        const price = parseFloat(item.price.replace(/[^0-9.-]+/g, ""));
+        return sum + (price * item.quantity);
+      }
+      return sum;
+    }, 0);
+    
     // Create request object
     const request = {
       id: Math.floor(100000 + Math.random() * 900000),
@@ -106,6 +119,9 @@ export const useStockRequestData = () => {
       delivery: selectedDelivery,
       items: selectedItems,
       timestamp: new Date().toISOString(),
+      totalAmount: `$${totalValue.toFixed(2)}`,
+      deliveryDate: getEstimatedDeliveryDate(selectedDelivery),
+      supplier: 'Mixed Suppliers', // In a real app, this would be determined based on items
     };
     
     // Simulate API call
@@ -115,12 +131,34 @@ export const useStockRequestData = () => {
     setIsModalVisible(true);
   };
 
+  // Get estimated delivery date based on selection
+  const getEstimatedDeliveryDate = (deliveryOption) => {
+    const today = new Date();
+    switch (deliveryOption) {
+      case 'asap':
+        return 'Within 2 hours';
+      case 'same_day':
+        return `Today by ${today.getHours() >= 12 ? '6 PM' : 'Closing'}`;
+      case 'tomorrow':
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return tomorrow.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+      case 'this_week':
+        return 'Within 3-5 business days';
+      case 'next_week':
+        return 'Next week (Mon-Fri)';
+      default:
+        return 'TBD';
+    }
+  };
+
   // Close modal and reset form
   const closeModal = () => {
     setIsModalVisible(false);
     setSelectedItems([]);
     setSelectedPriority('low');
     setSelectedDelivery('same_day');
+    setActiveTab('history'); // Switch to history tab after submission
   };
 
   return {

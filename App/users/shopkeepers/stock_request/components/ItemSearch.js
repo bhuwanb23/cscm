@@ -18,7 +18,7 @@ const ItemSearch = ({ searchQuery, onSearchChange, filteredItems, onAddItem }) =
           <Ionicons name="search-outline" size={16} color="#9CA3AF" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search items..."
+            placeholder="Search items by name, category, or supplier..."
             placeholderTextColor="#9CA3AF"
             value={searchQuery}
             onChangeText={onSearchChange}
@@ -40,12 +40,20 @@ const ItemSearch = ({ searchQuery, onSearchChange, filteredItems, onAddItem }) =
                     <Text style={styles.itemName} numberOfLines={1}>{item.name}</Text>
                     <Text style={styles.itemCategory}>{item.category}</Text>
                     {item.description && (
-                      <Text style={styles.itemDescription} numberOfLines={1}>
+                      <Text style={styles.itemDescription} numberOfLines={2}>
                         {item.description}
                       </Text>
                     )}
-                    {item.price && (
-                      <Text style={styles.itemPrice}>{item.price}</Text>
+                    <View style={styles.itemMeta}>
+                      {item.price && (
+                        <Text style={styles.itemPrice}>{item.price}</Text>
+                      )}
+                      {item.sku && (
+                        <Text style={styles.itemSku}>SKU: {item.sku}</Text>
+                      )}
+                    </View>
+                    {item.shelfLife && (
+                      <Text style={styles.itemShelfLife}>Shelf Life: {item.shelfLife}</Text>
                     )}
                   </View>
                 </View>
@@ -147,17 +155,31 @@ const styles = StyleSheet.create({
   itemCategory: {
     fontSize: 10,
     color: '#6B7280',
+    marginBottom: 2,
   },
   itemDescription: {
     fontSize: 9,
     color: '#9CA3AF',
-    marginTop: 2,
+    marginBottom: 2,
+  },
+  itemMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 2,
   },
   itemPrice: {
     fontSize: 10,
     fontWeight: '600',
     color: '#3B82F6',
-    marginTop: 2,
+  },
+  itemSku: {
+    fontSize: 9,
+    color: '#6B7280',
+  },
+  itemShelfLife: {
+    fontSize: 9,
+    color: '#F59E0B',
+    fontStyle: 'italic',
   },
   quantityControls: {
     flexDirection: 'row',

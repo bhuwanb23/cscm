@@ -31,6 +31,7 @@ const RequestHistory = () => {
       case 'rejected':
         return 'close-circle';
       case 'delivered':
+      case 'dispatched':
         return 'cube';
       default:
         return 'help-circle';
@@ -46,6 +47,7 @@ const RequestHistory = () => {
       case 'rejected':
         return '#EF4444';
       case 'delivered':
+      case 'dispatched':
         return '#3B82F6';
       default:
         return '#6B7280';
@@ -122,13 +124,21 @@ const RequestHistory = () => {
                       <View style={[
                         styles.priorityDot, 
                         { backgroundColor: request.priority === 'high' ? '#EF4444' : 
-                                          request.priority === 'medium' ? '#F59E0B' : '#22C55E' }
+                                          request.priority === 'medium' ? '#F59E0B' : 
+                                          request.priority === 'urgent' ? '#DC2626' : 
+                                          request.priority === 'critical' ? '#F97316' : '#22C55E' }
                       ]} />
                       <Text style={styles.priorityText}>
                         {request.priority || 'normal'} priority
                       </Text>
                     </View>
                   </View>
+
+                  {request.totalAmount && (
+                    <View style={styles.amountRow}>
+                      <Text style={styles.amountText}>Total: {request.totalAmount}</Text>
+                    </View>
+                  )}
 
                   {isExpanded && (
                     <View style={styles.expandedContent}>
@@ -149,6 +159,20 @@ const RequestHistory = () => {
                         <View style={styles.notesSection}>
                           <Text style={styles.notesTitle}>Notes:</Text>
                           <Text style={styles.notesText}>{request.notes}</Text>
+                        </View>
+                      )}
+                      
+                      {request.supplier && (
+                        <View style={styles.supplierSection}>
+                          <Text style={styles.supplierTitle}>Supplier:</Text>
+                          <Text style={styles.supplierText}>{request.supplier}</Text>
+                        </View>
+                      )}
+                      
+                      {request.deliveryDate && (
+                        <View style={styles.deliverySection}>
+                          <Text style={styles.deliveryTitle}>Delivery Date:</Text>
+                          <Text style={styles.deliveryText}>{request.deliveryDate}</Text>
                         </View>
                       )}
                     </View>
@@ -270,6 +294,14 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontWeight: '500',
   },
+  amountRow: {
+    marginBottom: 8,
+  },
+  amountText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#3B82F6',
+  },
   expandedContent: {
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
@@ -286,6 +318,7 @@ const styles = StyleSheet.create({
   },
   itemsList: {
     gap: 4,
+    marginBottom: 8,
   },
   itemRow: {
     flexDirection: 'row',
@@ -311,10 +344,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   notesSection: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#F3F4F6',
+    marginBottom: 8,
   },
   notesTitle: {
     fontSize: 11,
@@ -326,6 +356,34 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#6B7280',
     lineHeight: 14,
+  },
+  supplierSection: {
+    marginBottom: 8,
+  },
+  supplierTitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  supplierText: {
+    fontSize: 10,
+    color: '#8B5CF6',
+    fontWeight: '500',
+  },
+  deliverySection: {
+    marginBottom: 4,
+  },
+  deliveryTitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 4,
+  },
+  deliveryText: {
+    fontSize: 10,
+    color: '#3B82F6',
+    fontWeight: '500',
   },
 });
 

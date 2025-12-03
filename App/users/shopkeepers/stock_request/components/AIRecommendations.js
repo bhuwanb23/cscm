@@ -39,9 +39,19 @@ const AIRecommendations = ({ onAddRecommendation }) => {
                   {recommendation.reason && (
                     <Text style={styles.recommendationReason}>{recommendation.reason}</Text>
                   )}
-                  {recommendation.price && (
-                    <Text style={styles.recommendationPrice}>{recommendation.price}</Text>
-                  )}
+                  <View style={styles.priceRow}>
+                    {recommendation.price && (
+                      <Text style={styles.recommendationPrice}>{recommendation.price}</Text>
+                    )}
+                    {recommendation.currentStock !== undefined && (
+                      <Text style={[
+                        styles.stockIndicator,
+                        { color: recommendation.currentStock < recommendation.reorderLevel ? '#EF4444' : '#22C55E' }
+                      ]}>
+                        Stock: {recommendation.currentStock}
+                      </Text>
+                    )}
+                  </View>
                 </View>
               </View>
               <TouchableOpacity
@@ -53,6 +63,9 @@ const AIRecommendations = ({ onAddRecommendation }) => {
             </View>
             {recommendation.supplier && (
               <Text style={styles.recommendationSupplier}>Supplier: {recommendation.supplier}</Text>
+            )}
+            {recommendation.lastOrdered && (
+              <Text style={styles.lastOrdered}>Last Ordered: {recommendation.lastOrdered}</Text>
             )}
           </View>
         ))}
@@ -92,7 +105,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    minWidth: 220,
+    minWidth: 240,
   },
   recommendationContent: {
     flexDirection: 'row',
@@ -132,9 +145,18 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginBottom: 2,
   },
+  priceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
   recommendationPrice: {
     fontSize: 11,
     color: '#10B981',
+    fontWeight: '600',
+  },
+  stockIndicator: {
+    fontSize: 11,
     fontWeight: '600',
   },
   recommendationSupplier: {
@@ -144,6 +166,11 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
+  },
+  lastOrdered: {
+    fontSize: 10,
+    color: '#6B7280',
+    marginTop: 4,
   },
   addButton: {
     backgroundColor: '#9333EA',

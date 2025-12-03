@@ -13,12 +13,22 @@ const SelectedItems = ({ selectedItems, onRemoveItem, onSubmitRequest }) => {
     return null;
   }
 
-  // Calculate total items
+  // Calculate total items and total value
   const totalItems = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
+  const totalValue = selectedItems.reduce((sum, item) => {
+    if (item.price) {
+      const price = parseFloat(item.price.replace(/[^0-9.-]+/g, ""));
+      return sum + (price * item.quantity);
+    }
+    return sum;
+  }, 0);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Selected Items ({totalItems} total)</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Selected Items ({totalItems} total)</Text>
+        <Text style={styles.totalValue}>Estimated Total: ${totalValue.toFixed(2)}</Text>
+      </View>
       
       <ScrollView style={styles.itemsList} showsVerticalScrollIndicator={false}>
         {selectedItems.map((item) => (
@@ -34,6 +44,9 @@ const SelectedItems = ({ selectedItems, onRemoveItem, onSubmitRequest }) => {
               )}
               {item.supplier && (
                 <Text style={styles.itemSupplier}>Supplier: {item.supplier}</Text>
+              )}
+              {item.sku && (
+                <Text style={styles.itemSku}>SKU: {item.sku}</Text>
               )}
             </View>
             <TouchableOpacity
@@ -63,11 +76,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   title: {
     fontSize: 14,
     fontWeight: '600',
     color: '#1F2937',
-    marginBottom: 12,
+  },
+  totalValue: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#3B82F6',
   },
   itemsList: {
     maxHeight: 250,
@@ -111,6 +134,11 @@ const styles = StyleSheet.create({
   itemSupplier: {
     fontSize: 11,
     color: '#8B5CF6',
+    marginBottom: 1,
+  },
+  itemSku: {
+    fontSize: 10,
+    color: '#6B7280',
   },
   removeButton: {
     padding: 8,

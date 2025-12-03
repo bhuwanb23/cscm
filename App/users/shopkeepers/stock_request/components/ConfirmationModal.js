@@ -13,11 +13,11 @@ const ConfirmationModal = ({ isVisible, onClose, submittedRequest }) => {
   // Get delivery option details
   const getDeliveryOption = (deliveryId) => {
     const options = {
-      asap: { label: 'ASAP (1-2 hours)', time: '1-2 hours' },
-      same_day: { label: 'Same Day', time: 'Today by closing' },
-      tomorrow: { label: 'Tomorrow', time: 'Tomorrow' },
-      this_week: { label: 'This Week', time: '3-5 business days' },
-      next_week: { label: 'Next Week', time: 'Next week' },
+      asap: { label: 'ASAP (1-2 hours)', time: '1-2 hours', description: 'Highest priority delivery' },
+      same_day: { label: 'Same Day', time: 'Today by closing', description: 'Delivered today by closing time' },
+      tomorrow: { label: 'Tomorrow', time: 'Tomorrow', description: 'Next business day delivery' },
+      this_week: { label: 'This Week', time: '3-5 business days', description: 'Delivery within 3-5 business days' },
+      next_week: { label: 'Next Week', time: 'Next week', description: 'Scheduled for next week' },
     };
     return options[deliveryId] || options.same_day;
   };
@@ -25,11 +25,11 @@ const ConfirmationModal = ({ isVisible, onClose, submittedRequest }) => {
   // Get priority details
   const getPriorityDetails = (priorityId) => {
     const priorities = {
-      low: { label: 'Low', nextStep: 'Routine Processing' },
-      normal: { label: 'Normal', nextStep: 'Standard Review' },
-      high: { label: 'High', nextStep: 'Priority Review' },
-      urgent: { label: 'Urgent', nextStep: 'Immediate Review' },
-      critical: { label: 'Critical', nextStep: 'Emergency Processing' },
+      low: { label: 'Low', nextStep: 'Routine Processing', description: 'Routine restocking for non-essential items' },
+      normal: { label: 'Normal', nextStep: 'Standard Review', description: 'Standard priority for regular inventory needs' },
+      high: { label: 'High', nextStep: 'Priority Review', description: 'Important items needed within 2-3 days' },
+      urgent: { label: 'Urgent', nextStep: 'Immediate Review', description: 'Critical items needed within 24 hours' },
+      critical: { label: 'Critical', nextStep: 'Emergency Processing', description: 'Emergency restocking - out of stock items' },
     };
     return priorities[priorityId] || priorities.normal;
   };
@@ -98,6 +98,22 @@ const ConfirmationModal = ({ isVisible, onClose, submittedRequest }) => {
               <Text style={styles.detailLabel}>Delivery Option:</Text>
               <Text style={styles.detailValue}>{deliveryInfo.label}</Text>
             </View>
+            
+            {submittedRequest && submittedRequest.totalAmount && (
+              <View style={styles.detailRow}>
+                <Ionicons name="cash-outline" size={16} color="#6B7280" />
+                <Text style={styles.detailLabel}>Estimated Total:</Text>
+                <Text style={styles.detailValue}>{submittedRequest.totalAmount}</Text>
+              </View>
+            )}
+            
+            {submittedRequest && submittedRequest.deliveryDate && (
+              <View style={styles.detailRow}>
+                <Ionicons name="calendar-number-outline" size={16} color="#6B7280" />
+                <Text style={styles.detailLabel}>Delivery Date:</Text>
+                <Text style={styles.detailValue}>{submittedRequest.deliveryDate}</Text>
+              </View>
+            )}
           </View>
           
           <TouchableOpacity style={styles.button} onPress={onClose}>

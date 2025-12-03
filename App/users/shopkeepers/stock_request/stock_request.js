@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -37,8 +37,21 @@ const StockRequest = () => {
     closeModal,
   } = useStockRequestData();
 
+  const scrollViewRef = useRef();
+
+  // Scroll to top when switching tabs
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({ y: 0, animated: true });
+    }
+  }, [activeTab]);
+
   const renderNewRequest = () => (
-    <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      ref={scrollViewRef}
+      style={styles.scrollView} 
+      showsVerticalScrollIndicator={false}
+    >
       <AIRecommendations onAddRecommendation={addRecommendation} />
       <PrioritySelector 
         selectedPriority={selectedPriority} 
@@ -63,7 +76,13 @@ const StockRequest = () => {
   );
 
   const renderHistory = () => (
-    <RequestHistory />
+    <ScrollView 
+      ref={scrollViewRef}
+      style={styles.scrollView}
+      showsVerticalScrollIndicator={false}
+    >
+      <RequestHistory />
+    </ScrollView>
   );
 
   return (
