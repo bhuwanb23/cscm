@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -20,6 +21,17 @@ const SearchFilters = () => {
     { id: 'deliveries', label: 'Deliveries' },
   ];
 
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      Alert.alert('Search', `Searching for: ${searchQuery}`);
+    }
+  };
+
+  const handleFilterPress = (filterId) => {
+    setActiveFilter(filterId);
+    Alert.alert('Filter Applied', `Filter set to: ${filterChips.find(f => f.id === filterId)?.label || filterId}`);
+  };
+
   return (
     <View style={styles.container}>
       {/* Search Bar */}
@@ -32,8 +44,9 @@ const SearchFilters = () => {
             placeholderTextColor="#94A3B8"
             value={searchQuery}
             onChangeText={setSearchQuery}
+            onSubmitEditing={handleSearch}
           />
-          <TouchableOpacity style={styles.filterButton}>
+          <TouchableOpacity style={styles.filterButton} onPress={handleSearch}>
             <Ionicons name="filter" size={20} color="#64748B" />
           </TouchableOpacity>
         </View>
@@ -53,7 +66,7 @@ const SearchFilters = () => {
               styles.chip, 
               activeFilter === chip.id ? styles.activeChip : styles.inactiveChip
             ]}
-            onPress={() => setActiveFilter(chip.id)}
+            onPress={() => handleFilterPress(chip.id)}
           >
             <Text style={[
               styles.chipText,

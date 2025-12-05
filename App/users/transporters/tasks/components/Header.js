@@ -5,10 +5,15 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const Header = ({ title, subtitle, onLogout }) => {
+  const handleNotificationPress = () => {
+    Alert.alert('Notifications', 'Viewing notifications');
+  };
+
   return (
     <View style={styles.headerContainer}>
       <View style={styles.header}>
@@ -21,7 +26,7 @@ const Header = ({ title, subtitle, onLogout }) => {
             <View style={styles.notificationBadge}>
               <Text style={styles.badgeText}>2</Text>
             </View>
-            <TouchableOpacity onPress={onLogout} style={styles.profileButton}>
+            <TouchableOpacity onPress={handleNotificationPress} style={styles.profileButton}>
               <Image 
                 source={{ uri: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg' }} 
                 style={styles.profileImage} 

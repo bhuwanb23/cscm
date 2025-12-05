@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,19 +37,28 @@ const UpcomingStops = () => {
     },
   ];
 
+  const handleStopPress = (stopName) => {
+    Alert.alert('Stop Details', `Viewing details for ${stopName}`);
+  };
+
+  const handleSeeAll = () => {
+    Alert.alert('All Stops', 'Viewing all upcoming stops');
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Upcoming Stops</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleSeeAll}>
           <Text style={styles.seeAll}>See All</Text>
         </TouchableOpacity>
       </View>
 
       <Card style={styles.stopsCard}>
         {stops.map((stop, index) => (
-          <View 
+          <TouchableOpacity 
             key={index} 
+            onPress={() => handleStopPress(stop.name)}
             style={[
               styles.stopItem, 
               index !== stops.length - 1 && styles.stopBorder
@@ -76,7 +86,7 @@ const UpcomingStops = () => {
               color="#D1D5DB" 
               style={styles.chevron} 
             />
-          </View>
+          </TouchableOpacity>
         ))}
       </Card>
     </View>

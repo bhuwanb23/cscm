@@ -3,6 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import TaskCard from './TaskCard';
 
@@ -63,11 +64,22 @@ const TaskList = () => {
     }
   ];
 
+  const handleTaskPress = (task) => {
+    Alert.alert(
+      'Task Selected',
+      `You selected task ${task.orderId}`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'View Details', onPress: () => console.log('View task details') }
+      ]
+    );
+  };
+
   return (
     <View style={styles.container}>
       {tasks.map((task) => (
         <View key={task.id} style={styles.taskCardWrapper}>
-          <TaskCard task={task} />
+          <TaskCard task={task} onPress={() => handleTaskPress(task)} />
         </View>
       ))}
     </View>

@@ -4,42 +4,55 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const AlertsSection = () => {
+  const handleAlertPress = (alertType) => {
+    Alert.alert('Alert', `Viewing details for: ${alertType}`);
+  };
+
+  const handleViewDetails = () => {
+    Alert.alert('Details', 'Viewing alert details');
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Alerts & Updates</Text>
       <View style={styles.alertsList}>
         {/* Alert Item */}
-        <View style={styles.alertItem}>
-          <View style={styles.alertIconContainer}>
-            <Ionicons name="warning" size={20} color="#EF4444" />
+        <TouchableOpacity onPress={() => handleAlertPress('Traffic Delay')}>
+          <View style={styles.alertItem}>
+            <View style={styles.alertIconContainer}>
+              <Ionicons name="warning" size={20} color="#EF4444" />
+            </View>
+            <View style={styles.alertContent}>
+              <Text style={styles.alertTitle}>Traffic Delay Detected</Text>
+              <Text style={styles.alertDescription}>
+                Estimated +15 mins on I-5 South. Rerouting recommended.
+              </Text>
+            </View>
           </View>
-          <View style={styles.alertContent}>
-            <Text style={styles.alertTitle}>Traffic Delay Detected</Text>
-            <Text style={styles.alertDescription}>
-              Estimated +15 mins on I-5 South. Rerouting recommended.
-            </Text>
-          </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Update Item */}
-        <View style={[styles.alertItem, styles.updateItem]}>
-          <View style={[styles.alertIconContainer, styles.updateIconContainer]}>
-            <Ionicons name="information-circle" size={20} color="#2563EB" />
+        <TouchableOpacity onPress={() => handleAlertPress('New Pickup')}>
+          <View style={[styles.alertItem, styles.updateItem]}>
+            <View style={[styles.alertIconContainer, styles.updateIconContainer]}>
+              <Ionicons name="information-circle" size={20} color="#2563EB" />
+            </View>
+            <View style={styles.alertContent}>
+              <Text style={styles.alertTitle}>New Pickup Added</Text>
+              <Text style={styles.alertDescription}>
+                Stop added to route: TechHub Logistics (Order #993)
+              </Text>
+              <TouchableOpacity onPress={handleViewDetails}>
+                <Text style={styles.viewDetails}>View Details</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <View style={styles.alertContent}>
-            <Text style={styles.alertTitle}>New Pickup Added</Text>
-            <Text style={styles.alertDescription}>
-              Stop added to route: TechHub Logistics (Order #993)
-            </Text>
-            <TouchableOpacity>
-              <Text style={styles.viewDetails}>View Details</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        </TouchableOpacity>
       </View>
     </View>
   );

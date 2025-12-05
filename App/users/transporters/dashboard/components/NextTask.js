@@ -5,11 +5,28 @@ import {
   StyleSheet,
   ImageBackground,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Card, Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 const NextTask = () => {
+  const handleNavigatePress = () => {
+    Alert.alert('Navigation', 'Starting navigation to destination');
+  };
+
+  const handleCallPress = () => {
+    Alert.alert('Call', 'Calling customer');
+  };
+
+  const handleStartRoute = () => {
+    Alert.alert('Route Started', 'Beginning delivery route');
+  };
+
+  const handleViewDetails = () => {
+    Alert.alert('Task Details', 'Viewing task details');
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -33,7 +50,7 @@ const NextTask = () => {
             </View>
             <Text style={styles.mapTextBold}>ETA: 10:45 AM</Text>
           </View>
-          <TouchableOpacity style={styles.navigateButton}>
+          <TouchableOpacity style={styles.navigateButton} onPress={handleNavigatePress}>
             <Ionicons name="navigate" size={20} color="#2563EB" />
           </TouchableOpacity>
         </ImageBackground>
@@ -65,7 +82,7 @@ const NextTask = () => {
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <Text style={styles.statLabel}>Contact</Text>
-              <TouchableOpacity style={styles.callButton}>
+              <TouchableOpacity style={styles.callButton} onPress={handleCallPress}>
                 <Ionicons name="call-outline" size={16} color="#2563EB" />
                 <Text style={styles.callButtonText}>Call</Text>
               </TouchableOpacity>
@@ -73,10 +90,10 @@ const NextTask = () => {
           </View>
 
           <View style={styles.actionButtons}>
-            <Button mode="contained" style={styles.startButton}>
+            <Button mode="contained" style={styles.startButton} onPress={handleStartRoute}>
               Start Route
             </Button>
-            <Button mode="outlined" style={styles.detailsButton}>
+            <Button mode="outlined" style={styles.detailsButton} onPress={handleViewDetails}>
               Details
             </Button>
           </View>

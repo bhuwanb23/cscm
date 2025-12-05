@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const TaskCard = ({ task }) => {
+const TaskCard = ({ task, onPress }) => {
   // Get status color based on task status
   const getStatusColor = (status) => {
     switch (status) {
@@ -218,6 +218,7 @@ const TaskCard = ({ task }) => {
         task.status === 'completed' && styles.completedCard
       ]}
       activeOpacity={0.7}
+      onPress={onPress}
     >
       <View style={[styles.statusBorder, { backgroundColor: getStatusColor(task.status) }]} />
       {renderCardContent()}

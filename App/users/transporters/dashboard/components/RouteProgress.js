@@ -3,28 +3,36 @@ import {
   View,
   Text,
   StyleSheet,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Card } from 'react-native-paper';
 
 const RouteProgress = () => {
+  const handleRoutePress = () => {
+    Alert.alert('Route Details', 'Viewing route completion details');
+  };
+
   return (
-    <Card style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Route Completion</Text>
-        <Text style={styles.subtitle}>4/16 Stops</Text>
-      </View>
-      
-      <View style={styles.chartContainer}>
-        <View style={styles.chart}>
-          {/* Circular progress chart representation */}
-          <View style={styles.circleBackground} />
-          <View style={styles.circleProgress} />
-          <View style={styles.centerText}>
-            <Text style={styles.percentage}>25%</Text>
+    <TouchableOpacity onPress={handleRoutePress}>
+      <Card style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Route Completion</Text>
+          <Text style={styles.subtitle}>4/16 Stops</Text>
+        </View>
+        
+        <View style={styles.chartContainer}>
+          <View style={styles.chart}>
+            {/* Circular progress chart representation */}
+            <View style={styles.circleBackground} />
+            <View style={styles.circleProgress} />
+            <View style={styles.centerText}>
+              <Text style={styles.percentage}>25%</Text>
+            </View>
           </View>
         </View>
-      </View>
-    </Card>
+      </Card>
+    </TouchableOpacity>
   );
 };
 

@@ -10,20 +10,20 @@ import Header from './components/Header';
 import BottomNavbar from './components/BottomNavbar';
 import Dashboard from './dashboard/dashboard';
 import Tasks from './tasks/tasks';
+
 const TransporterDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   const handleTabPress = (tabId) => {
     setActiveTab(tabId);
-    // Navigation logic would go here
   };
 
   const handleProfilePress = () => {
-    // Profile navigation logic would go here
+    setActiveTab('profile');
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <LinearGradient colors={['#F8F9FA', '#E9ECEF']} style={styles.container}>
         {activeTab === 'dashboard' ? (
           <Dashboard onLogout={onLogout} />

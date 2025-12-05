@@ -4,11 +4,8 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Card, Button } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
 import Header from './components/Header';
 import QuickStats from './components/QuickStats';
 import NextTask from './components/NextTask';
@@ -18,14 +15,14 @@ import UpcomingStops from './components/UpcomingStops';
 
 const Dashboard = ({ onLogout }) => {
   return (
-    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <View style={styles.container}>
         <Header 
           title="Driver Dashboard" 
           subtitle="Transporter Management" 
           onLogout={onLogout}
         />
-        <ScrollView style={styles.scrollView}>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           <QuickStats />
           <NextTask />
           <RouteProgress />

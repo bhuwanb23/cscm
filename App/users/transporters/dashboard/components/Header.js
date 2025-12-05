@@ -4,11 +4,16 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 const Header = ({ title, subtitle, onLogout }) => {
+  const handleNotificationPress = () => {
+    Alert.alert('Notifications', 'Viewing notifications');
+  };
+
   return (
     <>
       <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -27,7 +32,7 @@ const Header = ({ title, subtitle, onLogout }) => {
                 <Text style={styles.truckId}>Truck ID: #TR-4092</Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.notificationButton} onPress={onLogout}>
+            <TouchableOpacity style={styles.notificationButton} onPress={handleNotificationPress}>
               <Ionicons name="notifications-outline" size={24} color="#7F8C8D" />
               <View style={styles.notificationBadge} />
             </TouchableOpacity>

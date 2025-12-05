@@ -16,6 +16,11 @@ const BottomNavbar = ({ activeTab, onTabPress }) => {
     { id: 'profile', label: 'Profile', icon: 'person-outline', activeIcon: 'person' },
   ];
 
+  const handleTabPress = (tabId) => {
+    console.log(`Navigating to ${tabId}`);
+    onTabPress(tabId);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <View style={styles.navbar}>
@@ -25,7 +30,7 @@ const BottomNavbar = ({ activeTab, onTabPress }) => {
             <TouchableOpacity
               key={tab.id}
               style={[styles.tab, isActive && styles.activeTab]}
-              onPress={() => onTabPress(tab.id)}
+              onPress={() => handleTabPress(tab.id)}
             >
               <Ionicons
                 name={isActive ? tab.activeIcon : tab.icon}

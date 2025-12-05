@@ -3,45 +3,55 @@ import {
   View,
   Text,
   StyleSheet,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
 const QuickStats = () => {
+  const handleStatPress = (statType) => {
+    Alert.alert('Statistics', `Viewing details for ${statType}`);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.statsRow}>
-        <Card style={styles.statCard}>
-          <View style={styles.statContent}>
-            <View style={styles.statHeader}>
-              <View style={styles.iconContainer}>
-                <Ionicons name="cube-outline" size={20} color="#2563EB" />
+        <TouchableOpacity onPress={() => handleStatPress('Deliveries')} style={styles.statCardTouchable}>
+          <Card style={styles.statCard}>
+            <View style={styles.statContent}>
+              <View style={styles.statHeader}>
+                <View style={styles.iconContainer}>
+                  <Ionicons name="cube-outline" size={20} color="#2563EB" />
+                </View>
+                <Text style={styles.statLabel}>Today</Text>
               </View>
-              <Text style={styles.statLabel}>Today</Text>
+              <Text style={styles.statValue}>12</Text>
+              <Text style={styles.statDescription}>Deliveries Pending</Text>
+              <View style={styles.progressBarBackground}>
+                <View style={[styles.progressBar, { width: '45%' }]} />
+              </View>
             </View>
-            <Text style={styles.statValue}>12</Text>
-            <Text style={styles.statDescription}>Deliveries Pending</Text>
-            <View style={styles.progressBarBackground}>
-              <View style={[styles.progressBar, { width: '45%' }]} />
-            </View>
-          </View>
-        </Card>
+          </Card>
+        </TouchableOpacity>
 
-        <Card style={styles.statCard}>
-          <View style={styles.statContent}>
-            <View style={styles.statHeader}>
-              <View style={[styles.iconContainer, styles.iconContainerSecondary]}>
-                <Ionicons name="cart-outline" size={20} color="#F59E0B" />
+        <TouchableOpacity onPress={() => handleStatPress('Pickups')} style={styles.statCardTouchable}>
+          <Card style={styles.statCard}>
+            <View style={styles.statContent}>
+              <View style={styles.statHeader}>
+                <View style={[styles.iconContainer, styles.iconContainerSecondary]}>
+                  <Ionicons name="cart-outline" size={20} color="#F59E0B" />
+                </View>
+                <Text style={styles.statLabel}>Pickups</Text>
               </View>
-              <Text style={styles.statLabel}>Pickups</Text>
+              <Text style={styles.statValue}>4</Text>
+              <Text style={styles.statDescription}>Scheduled Pickups</Text>
+              <View style={styles.progressBarBackground}>
+                <View style={[styles.progressBar, styles.progressBarSecondary, { width: '25%' }]} />
+              </View>
             </View>
-            <Text style={styles.statValue}>4</Text>
-            <Text style={styles.statDescription}>Scheduled Pickups</Text>
-            <View style={styles.progressBarBackground}>
-              <View style={[styles.progressBar, styles.progressBarSecondary, { width: '25%' }]} />
-            </View>
-          </View>
-        </Card>
+          </Card>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -54,6 +64,9 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     gap: 12,
+  },
+  statCardTouchable: {
+    flex: 1,
   },
   statCard: {
     flex: 1,
