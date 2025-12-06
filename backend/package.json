@@ -15,7 +15,8 @@
     "test-sqlite": "node src/storage/testSqlite.js",
     "demo-sqlite": "node src/storage/demoSqlite.js",
     "test-features": "node src/features/testFeatures.js",
-    "demo-features": "node src/features/demoFeatures.js"
+    "demo-features": "node src/features/demoFeatures.js",
+    "test-knowledge-graph": "node src/knowledge-graph/testGraph.js"
   },
   "keywords": [
     "supply-chain",
@@ -27,6 +28,7 @@
   "author": "CSCM Team",
   "license": "MIT",
   "dependencies": {
+    "@datastructures-js/graph": "^5.3.1",
     "ajv": "^8.17.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
