@@ -7,7 +7,9 @@
     "start": "node src/api/server.js",
     "dev": "nodemon src/api/server.js",
     "test": "jest",
-    "lint": "eslint src/**/*.js"
+    "lint": "eslint src/**/*.js",
+    "agents": "node src/agents/startAgents.js",
+    "verify-agents": "node src/agents/verifyAgents.js"
   },
   "keywords": [
     "supply-chain",
