@@ -1,11 +1,17 @@
+import logging
 from typing import List, Optional
 import sys
 import os
+from datetime import datetime
 
 # Add the models directory to the path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'models'))
 
 from routing_models import RoutingOptimizeRequest, RoutingOptimizeResponse, RoutingStatusRequest, RoutingStatusResponse
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class RoutingOptimizationService:
     """
@@ -23,23 +29,40 @@ class RoutingOptimizationService:
         Returns:
             RoutingOptimizeResponse with optimal route
         """
-        # This would integrate with the actual routing optimization model
-        # For now, returning mock data
-        return RoutingOptimizeResponse(
-            vehicle_id=request.vehicle_id,
-            route_sequence=["depot", "loc1", "loc2", "loc3", "depot"],
-            total_distance=125.5,
-            total_time=180.0,
-            route_details=[
-                {"location": "depot", "arrival_time": "08:00", "departure_time": "08:00"},
-                {"location": "loc1", "arrival_time": "08:30", "departure_time": "08:45"},
-                {"location": "loc2", "arrival_time": "09:15", "departure_time": "09:30"},
-                {"location": "loc3", "arrival_time": "10:00", "departure_time": "10:15"},
-                {"location": "depot", "arrival_time": "11:00", "departure_time": "11:00"}
-            ],
-            model_version="1.0.0",
-            timestamp="2023-01-01T00:00:00Z"
-        )
+        try:
+            logger.info(f"Optimizing route for vehicle: {request.vehicle_id}")
+            
+            # Validate input parameters
+            if request.vehicle_capacity <= 0:
+                raise ValueError("Vehicle capacity must be positive")
+            if request.max_route_time <= 0:
+                raise ValueError("Max route time must be positive")
+            if not request.delivery_locations:
+                raise ValueError("Delivery locations cannot be empty")
+            
+            # This would integrate with the actual routing optimization model
+            # For now, returning mock data
+            response = RoutingOptimizeResponse(
+                vehicle_id=request.vehicle_id,
+                route_sequence=["depot", "loc1", "loc2", "loc3", "depot"],
+                total_distance=125.5,
+                total_time=180.0,
+                route_details=[
+                    {"location": "depot", "arrival_time": "08:00", "departure_time": "08:00"},
+                    {"location": "loc1", "arrival_time": "08:30", "departure_time": "08:45"},
+                    {"location": "loc2", "arrival_time": "09:15", "departure_time": "09:30"},
+                    {"location": "loc3", "arrival_time": "10:00", "departure_time": "10:15"},
+                    {"location": "depot", "arrival_time": "11:00", "departure_time": "11:00"}
+                ],
+                model_version="1.0.0",
+                timestamp=datetime.utcnow().isoformat() + "Z"
+            )
+            
+            logger.info(f"Successfully optimized route for vehicle: {request.vehicle_id}")
+            return response
+        except Exception as e:
+            logger.error(f"Error optimizing route: {str(e)}")
+            raise
     
     @staticmethod
     def get_route_status(request: RoutingStatusRequest) -> RoutingStatusResponse:
@@ -52,14 +75,23 @@ class RoutingOptimizationService:
         Returns:
             RoutingStatusResponse with route status information
         """
-        # This would integrate with the actual route tracking system
-        # For now, returning mock data
-        return RoutingStatusResponse(
-            route_id=request.route_id,
-            status="IN_TRANSIT",
-            current_location={"lat": 40.7128, "lng": -74.0060},
-            estimated_completion_time="2023-01-01T11:30:00Z",
-            delays=["Traffic delay on Highway 1"],
-            model_version="1.0.0",
-            timestamp="2023-01-01T00:00:00Z"
-        )
+        try:
+            logger.info(f"Getting route status for route: {request.route_id}")
+            
+            # This would integrate with the actual route tracking system
+            # For now, returning mock data
+            response = RoutingStatusResponse(
+                route_id=request.route_id,
+                status="IN_TRANSIT",
+                current_location={"lat": 40.7128, "lng": -74.0060},
+                estimated_completion_time="2023-01-01T11:30:00Z",
+                delays=["Traffic delay on Highway 1"],
+                model_version="1.0.0",
+                timestamp=datetime.utcnow().isoformat() + "Z"
+            )
+            
+            logger.info(f"Successfully retrieved route status for route: {request.route_id}")
+            return response
+        except Exception as e:
+            logger.error(f"Error getting route status: {str(e)}")
+            raise
