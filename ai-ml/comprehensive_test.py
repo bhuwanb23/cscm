@@ -95,22 +95,29 @@ def main():
     print("\n--- Testing Customer Demand ---")
     customer_data = {
         "customer_segment": "PREMIUM",
-        "historical_purchases": [100, 120, 110, 130, 125],
-        "demographic_features": {"age": 35, "income": 75000, "location": "urban"},
-        "seasonal_factors": [1.1, 1.0, 0.9, 1.2]
+        "historical_data": [
+            {"date": "2023-01-01", "purchase_amount": 100, "product_category": "electronics"},
+            {"date": "2023-01-02", "purchase_amount": 120, "product_category": "clothing"}
+        ],
+        "external_factors": {
+            "marketing_campaigns": ["campaign1", "campaign2"],
+            "economic_indicators": {"gdp_growth": 0.02, "inflation": 0.03}
+        },
+        "time_horizon_days": 30
     }
     test_endpoint(f"{BASE_URL}/api/v1/customer/analyze", "POST", customer_data)
-    test_endpoint(f"{BASE_URL}/api/v1/customer/trends/PREMIUM")
+    test_endpoint(f"{BASE_URL}/api/v1/customer/trends/PREMIUM?start_date=2023-01-01&end_date=2023-01-07")
     
     # Test Anomaly Detection endpoints
     print("\n--- Testing Anomaly Detection ---")
     anomaly_data = {
-        "metric_name": "server_cpu",
-        "values": [0.7, 0.75, 0.68, 0.8, 0.72, 0.78, 5.2, 0.71, 0.76, 0.69],
-        "timestamps": ["2023-01-01T00:00:00Z", "2023-01-01T01:00:00Z", "2023-01-01T02:00:00Z", 
-                      "2023-01-01T03:00:00Z", "2023-01-01T04:00:00Z", "2023-01-01T05:00:00Z",
-                      "2023-01-01T06:00:00Z", "2023-01-01T07:00:00Z", "2023-01-01T08:00:00Z", 
-                      "2023-01-01T09:00:00Z"],
+        "data": [
+            [0.5, 0.3, 0.7],
+            [0.6, 0.4, 0.8],
+            [0.4, 0.5, 0.6]
+        ],
+        "feature_names": ["cpu_utilization", "memory_usage", "network_traffic"],
+        "contamination": 0.1,
         "threshold": 3.0
     }
     test_endpoint(f"{BASE_URL}/api/v1/anomaly/detect", "POST", anomaly_data)
@@ -119,11 +126,18 @@ def main():
     # Test Multi-Agent Coordination endpoints
     print("\n--- Testing Multi-Agent Coordination ---")
     coordination_data = {
-        "scenario_id": "SCEN001",
-        "agents": ["agent1", "agent2", "agent3"],
-        "initial_states": {"agent1": {"pos": [0, 0]}, "agent2": {"pos": [10, 10]}, "agent3": {"pos": [20, 20]}},
+        "agent_states": [
+            {"agent_id": "agent1", "battery": 100, "status": "active", "position": [0, 0]},
+            {"agent_id": "agent2", "battery": 80, "status": "active", "position": [10, 10]},
+            {"agent_id": "agent3", "battery": 90, "status": "charging", "position": [20, 20]}
+        ],
+        "environment_state": {
+            "obstacles": [[5, 5], [15, 15]],
+            "weather": "clear"
+        },
         "objectives": ["goal1", "goal2"],
-        "constraints": ["constraint1", "constraint2"]
+        "constraints": ["constraint1", "constraint2"],
+        "time_horizon": 100
     }
     test_endpoint(f"{BASE_URL}/api/v1/coordination/plan", "POST", coordination_data)
     test_endpoint(f"{BASE_URL}/api/v1/coordination/status/PLAN123")
@@ -135,7 +149,15 @@ def main():
         "model_type": "WAREHOUSE",
         "parameters": {"temperature": 22, "humidity": 45, "occupancy": 0.7},
         "duration": 3600,
-        "steps": 100
+        "steps": 100,
+        "simulation_parameters": {
+            "physics_engine": "ode",
+            "time_step": 0.01
+        },
+        "initial_conditions": {
+            "robot_positions": [[0, 0], [10, 10]],
+            "item_locations": [[5, 5], [15, 15]]
+        }
     }
     test_endpoint(f"{BASE_URL}/api/v1/simulation/run", "POST", simulation_data)
     test_endpoint(f"{BASE_URL}/api/v1/simulation/results/SIM001")
@@ -144,8 +166,10 @@ def main():
     print("\n--- Testing Explainability ---")
     explanation_data = {
         "model_id": "MODEL123",
-        "input_data": {"feature1": 0.5, "feature2": 0.8, "feature3": 0.3},
-        "method": "SHAP"
+        "instance": [0.5, 0.8, 0.3],
+        "feature_names": ["price", "quality", "brand_recognition"],
+        "method": "shap",
+        "num_samples": 200
     }
     test_endpoint(f"{BASE_URL}/api/v1/explain/prediction", "POST", explanation_data)
     test_endpoint(f"{BASE_URL}/api/v1/explain/features/MODEL123")
