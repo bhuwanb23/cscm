@@ -8,6 +8,9 @@ const ajv = new Ajv({
   strict: false
 });
 
+// Add format support
+ajv.addFormat('date-time', true);
+
 // Telemetry event schema
 const telemetryEventSchema = {
   type: 'object',

@@ -28,8 +28,9 @@ class MessagingLayer {
       
       logger.info('Messaging layer initialized successfully');
     } catch (error) {
-      logger.error('Failed to initialize messaging layer:', error);
-      throw error;
+      logger.warn('Failed to initialize messaging layer (Kafka/MQTT services may not be running):', error.message);
+      // Don't throw error, allow application to continue running
+      // Messaging will be disabled but API will still work
     }
   }
 
@@ -48,11 +49,13 @@ class MessagingLayer {
         mqttClient.publishMessage(topic, message);
         trackMqttMessage(topic);
       } else {
-        throw new Error(`Unsupported protocol or not connected: ${protocol}`);
+        // If messaging isn't connected, log a warning but don't throw an error
+        logger.warn(`Messaging not connected, skipping message publish to ${topic} via ${protocol}`);
+        return;
       }
     } catch (error) {
       logger.error(`Failed to publish message to ${protocol}:`, error);
-      throw error;
+      // Don't throw error, allow application to continue running
     }
   }
 
@@ -80,11 +83,13 @@ class MessagingLayer {
         mqttClient.subscribeToTopic(topic);
         mqttClient.handleMessage(callback);
       } else {
-        throw new Error(`Unsupported protocol or not connected: ${protocol}`);
+        // If messaging isn't connected, log a warning but don't throw an error
+        logger.warn(`Messaging not connected, skipping subscription to ${topic} via ${protocol}`);
+        return;
       }
     } catch (error) {
       logger.error(`Failed to subscribe to topic ${topic} on ${protocol}:`, error);
-      throw error;
+      // Don't throw error, allow application to continue running
     }
   }
 
