@@ -13,7 +13,9 @@
     "test-redis": "node src/messaging/testRedis.js",
     "check-redis": "node src/messaging/checkRedis.js",
     "test-sqlite": "node src/storage/testSqlite.js",
-    "demo-sqlite": "node src/storage/demoSqlite.js"
+    "demo-sqlite": "node src/storage/demoSqlite.js",
+    "test-features": "node src/features/testFeatures.js",
+    "demo-features": "node src/features/demoFeatures.js"
   },
   "keywords": [
     "supply-chain",
