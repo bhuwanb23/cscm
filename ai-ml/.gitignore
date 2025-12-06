@@ -45,3 +45,4 @@ __pycache__/
 *.jsonl.tar.tar.gz
 *.jsonl.tar.tar.bz2
 logs/
+catboost_info
