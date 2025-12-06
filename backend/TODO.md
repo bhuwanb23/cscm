@@ -1,65 +1,73 @@
-# CSCM Backend Development Roadmap
+# CSCM Backend Development Roadmap (Local Prototype Edition)
 
-## Phase 1: Foundation & Core Infrastructure
+## Goal
+Run all core CSCM components locally so you can develop, test, and demo the core logic without any real-world infrastructure.
+
+This setup gives:
+- Federated agents running as local processes
+- A simple local message bus
+- Local digital twin simulation
+- A basic dashboard
+- Ability to test optimization, communication, and decision flows
+
+## Phase 1: Foundation & Core Infrastructure (Local Setup)
 
 ### 1.1 System Setup & Configuration
 - ✅ Set up development environment with required tools
 - ✅ Configure version control and branching strategy
 - ✅ Establish coding standards and documentation guidelines
-- ✅ Set up CI/CD pipelines for backend services
+- [ ] Set up local development environment with Python, Node.js, and React
 
-### 1.2 Core Architecture Components
-- ✅ Implement API Gateway (Kong/Envoy)
-  - ✅ Configure REST/gRPC endpoints
-  - ✅ Set up authentication and authorization middleware
-  - ✅ Implement rate limiting and security policies
-- ✅ Set up Event & Messaging Layer
-  - ✅ Deploy Kafka/Redpanda cluster for cloud
-  - ✅ Configure NATS/MQTT for edge communication
-  - ✅ Implement event schemas for telemetry, orders, inventory
-- ✅ Establish Observability Stack
-  - ✅ Deploy Prometheus for metrics collection
-  - ✅ Set up Grafana for dashboards
-  - ✅ Configure ELK/Loki for log aggregation
-  - ✅ Implement Jaeger for distributed tracing
+### 1.2 Local Agent Framework
+- [ ] Implement standalone agent processes
+  - [ ] Store agent (store_agent.py)
+  - [ ] Warehouse agent (warehouse_agent.py)
+  - [ ] Transport agent (transport_agent.py)
+  - [ ] Central planner agent (central_planner_agent.py)
+  - [ ] Simulation agent (simulation_agent.py)
+- [ ] Add local state storage (SQLite/JSON)
+- [ ] Implement local optimization engines
+- [ ] Add lightweight ML models for decision making
 
-## Phase 2: Data Infrastructure & Storage
+### 1.3 Local Message Bus
+- [ ] Set up Redis for local pub/sub messaging
+  - [ ] Configure Redis server locally
+  - [ ] Implement publish/subscribe patterns
+  - [ ] Create message schemas for:
+    - inventory.update
+    - demand.forecast
+    - shipment.status
+    - alerts
+    - decisions
 
-### 2.1 Data Lake & Object Storage
-- [ ] Set up S3-compatible storage (MinIO for edge, AWS S3 for cloud)
-- [ ] Implement data partitioning and retention policies
-- [ ] Configure backup and disaster recovery procedures
+## Phase 2: Data Infrastructure & Storage (Local)
 
-### 2.2 Feature Store & Time-Series Database
-- [ ] Deploy Feast or custom feature store
-  - [ ] Implement feature definitions and transformations
-  - [ ] Set up online and offline feature storage
-  - [ ] Configure feature versioning and monitoring
-- [ ] Deploy TimescaleDB/InfluxDB for telemetry
-  - [ ] Design schema for sensor and event data
-  - [ ] Implement data compression and archiving
-  - [ ] Set up continuous aggregates for performance
+### 2.1 Local Data Storage
+- [ ] Set up SQLite databases for local data storage
+- [ ] Implement data models for inventory, orders, shipments
+- [ ] Create simple data access layers
 
-### 2.3 Knowledge Graph & Metadata
-- [ ] Deploy Neo4j/Amazon Neptune graph database
-  - [ ] Design schema for SKU-store-supplier relationships
-  - [ ] Implement data ingestion pipelines
-  - [ ] Set up graph algorithms for relationship analysis
-- [ ] Set up metadata catalog (Amundsen/DataHub)
-  - [ ] Configure metadata extraction from sources
-  - [ ] Implement search and discovery features
+### 2.2 Local Feature Storage
+- [ ] Implement in-memory feature storage
+- [ ] Create simple feature transformation functions
+- [ ] Add basic feature versioning
 
-## Phase 3: Agent Orchestration & Runtime
+### 2.3 Local Knowledge Graph
+- [ ] Implement simple graph structures using NetworkX
+- [ ] Create entity relationship models for SKU-store-supplier
+- [ ] Add basic graph algorithms for relationship analysis
 
-### 3.1 Agent Runtime Environment
-- [ ] Set up Kubernetes clusters for agent orchestration
-  - [ ] Configure control plane for cloud agents
-  - [ ] Set up edge runtimes (k3s) for store/warehouse agents
-  - [ ] Implement KubeEdge for edge-cloud coordination
-- [ ] Develop Agent Supervisor & Sidecar
+## Phase 3: Agent Orchestration & Runtime (Local Processes)
+
+### 3.1 Local Agent Runtime
+- [ ] Set up process management for agents
+  - [ ] Create startup scripts for all agents
+  - [ ] Implement inter-agent communication via Redis
+  - [ ] Add health monitoring for local agents
+- [ ] Develop agent supervisor
   - [ ] Implement connectivity management
-  - [ ] Add policy enforcement capabilities
-  - [ ] Create health monitoring and reporting
+  - [ ] Add restart capabilities
+  - [ ] Create status reporting
 
 ### 3.2 Agent Implementation
 - [ ] Store Inventory Agent
@@ -72,8 +80,8 @@
   - [ ] Create shipment consolidation logic
 - [ ] Transport Routing Agent
   - [ ] Implement dynamic route optimization
-  - [ ] Add real-time traffic integration
-  - [ ] Create delivery scheduling algorithms
+  - [ ] Add delivery scheduling algorithms
+  - [ ] Create tracking update mechanisms
 - [ ] Supplier Lead-Time Agent
   - [ ] Implement supplier performance tracking
   - [ ] Add risk assessment capabilities
@@ -83,188 +91,100 @@
   - [ ] Add trend analysis and prediction
   - [ ] Create promotional impact modeling
 
-## Phase 4: Machine Learning & Model Serving
+## Phase 4: Machine Learning & Model Serving (Local)
 
-### 4.1 Model Serving Infrastructure
-- [ ] Deploy model server (Triton/KFServing/TorchServe)
-  - [ ] Configure inference gateway
-  - [ ] Implement A/B testing capabilities
-  - [ ] Set up canary deployment workflows
-- [ ] Set up local inference on edge
-  - [ ] Implement ONNX runtime for edge devices
-  - [ ] Configure TensorRT for GPU optimization
-  - [ ] Create model synchronization mechanisms
+### 4.1 Local Model Serving
+- [ ] Set up local model loading and inference
+  - [ ] Implement model serialization/deserialization
+  - [ ] Create simple API for model predictions
+  - [ ] Add model versioning support
+- [ ] Implement lightweight models
+  - [ ] Use scikit-learn for ML models
+  - [ ] Implement simple neural networks with TensorFlow Lite
+  - [ ] Add model evaluation metrics
 
-### 4.2 Federated Learning System
-- [ ] Implement Federated Learning Orchestrator
-  - [ ] Deploy Flower/FedML coordinator
-  - [ ] Implement secure aggregation protocols
-  - [ ] Add differential privacy mechanisms
-- [ ] Create edge training capabilities
+### 4.2 Local Learning System
+- [ ] Implement simple federated learning simulation
+  - [ ] Create model aggregation functions
+  - [ ] Add basic privacy mechanisms
   - [ ] Implement local training workflows
-  - [ ] Add model update compression
-  - [ ] Configure secure communication channels
+- [ ] Add model update mechanisms
+  - [ ] Create model synchronization between agents
+  - [ ] Implement update validation
 
-### 4.3 MLOps & Model Management
-- [ ] Set up Model Registry (MLflow)
-  - [ ] Implement model versioning
-  - [ ] Add metadata tracking
-  - [ ] Configure access controls
-- [ ] Implement Model Monitoring
-  - [ ] Set up drift detection
-  - [ ] Implement performance tracking
-  - [ ] Create automated retraining triggers
+## Phase 5: Digital Twin & Simulation Engine (Local)
 
-## Phase 5: Digital Twin & Simulation Engine
-
-### 5.1 Digital Twin Framework
+### 5.1 Local Digital Twin Framework
 - [ ] Implement twin creation and management
-  - [ ] Store digital twins
-  - [ ] Warehouse digital twins
-  - [ ] Inventory unit twins
-  - [ ] Transport fleet twins
-  - [ ] Supplier node twins
-- [ ] Develop real-time data synchronization
-  - [ ] Implement streaming data ingestion
+  - [ ] Store digital twins (store, warehouse, transport)
+  - [ ] Create inventory unit twins
+  - [ ] Implement simple state synchronization
+- [ ] Develop real-time data simulation
+  - [ ] Implement event generation
   - [ ] Add predictive state modeling
-  - [ ] Create twin validation mechanisms
+  - [ ] Create validation mechanisms
 
-### 5.2 Simulation Engine
-- [ ] Build batch/interactive simulation framework
-  - [ ] Implement SimPy/AnyLogic integration
-  - [ ] Add scenario management
+### 5.2 Local Simulation Engine
+- [ ] Build simulation framework
+  - [ ] Implement scenario management
+  - [ ] Add interactive simulation controls
   - [ ] Create sandbox environments
 - [ ] Develop what-if analysis capabilities
   - [ ] Implement counterfactual modeling
   - [ ] Add impact assessment tools
-  - [ ] Create visualization dashboards
+  - [ ] Create visualization components
 
-## Phase 6: Security & Governance
+## Phase 6: Local API Server & Dashboard
 
-### 6.1 Authentication & Authorization
-- [ ] Implement OAuth2/OpenID Connect
-  - [ ] Set up identity providers
-  - [ ] Configure token management
-  - [ ] Implement session handling
-- [ ] Establish Role-Based Access Control (RBAC)
-  - [ ] Define roles and permissions
-  - [ ] Implement policy enforcement
-  - [ ] Add audit logging
+### 6.1 Local API Server (FastAPI)
+- [ ] Implement REST API endpoints
+  - [ ] Create agent status endpoints
+  - [ ] Add inventory data APIs
+  - [ ] Implement simulation control APIs
+  - [ ] Add dashboard data endpoints
+- [ ] Add basic authentication
+  - [ ] Implement simple token-based auth
+  - [ ] Add endpoint protection
 
-### 6.2 Data Protection
-- [ ] Implement encryption at rest and in transit
-  - [ ] Configure TLS v1.3
-  - [ ] Set up mTLS between services
-  - [ ] Implement key management
-- [ ] Establish data governance policies
-  - [ ] Implement data minimization
-  - [ ] Configure retention policies
-  - [ ] Add compliance monitoring
+### 6.2 Local Dashboard (React)
+- [ ] Create basic dashboard UI
+  - [ ] Implement inventory visualization
+  - [ ] Add stock-out alerts display
+  - [ ] Create agent decision logs
+  - [ ] Add simulation controls
+- [ ] Implement real-time updates
+  - [ ] Use WebSocket for live data
+  - [ ] Add auto-refresh capabilities
 
-## Phase 7: Explainable AI & Human-in-the-Loop
+## Phase 7: Testing & Validation (Local)
 
-### 7.1 XAI Dashboard
-- [ ] Implement explainability endpoints
-  - [ ] Add model interpretation APIs
-  - [ ] Create decision rationale storage
-  - [ ] Implement confidence scoring
-- [ ] Develop visualization components
-  - [ ] Build decision flow diagrams
-  - [ ] Add tradeoff analysis views
-  - [ ] Create alternative recommendation displays
-
-### 7.2 Human Approval Systems
-- [ ] Implement approval workflows
-  - [ ] Create policy-based approval rules
-  - [ ] Add exception handling
-  - [ ] Implement escalation procedures
-- [ ] Develop operator interfaces
-  - [ ] Build dashboard for monitoring
-  - [ ] Add override capabilities
-  - [ ] Create alert management
-
-## Phase 8: Integration & Deployment
-
-### 8.1 System Integration
-- [ ] Integrate with existing retail systems
-  - [ ] Connect to IoT sensors and RFID systems
-  - [ ] Integrate with forecasting APIs
-  - [ ] Implement ERP system connectors
-- [ ] Test interoperability
-  - [ ] Validate data exchange formats
-  - [ ] Test failure scenarios
-  - [ ] Optimize performance
-
-### 8.2 Deployment & Scaling
-- [ ] Implement deployment strategies
-  - [ ] Configure blue-green deployments
-  - [ ] Set up rolling updates
-  - [ ] Implement rollback procedures
-- [ ] Optimize for scalability
-  - [ ] Configure auto-scaling policies
-  - [ ] Implement circuit breakers
-  - [ ] Add caching layers
-
-## Phase 9: Testing & Validation
-
-### 9.1 Unit & Integration Testing
+### 7.1 Unit & Integration Testing
 - [ ] Implement unit tests for all components
 - [ ] Create integration test suites
 - [ ] Set up automated testing pipelines
 
-### 9.2 Performance & Load Testing
-- [ ] Conduct stress testing
-- [ ] Optimize bottlenecks
-- [ ] Validate scalability targets
+### 7.2 Scenario Testing
+- [ ] Conduct stress testing with simulation
+- [ ] Test multi-agent coordination
+- [ ] Validate decision flows
 
-### 9.3 Security Testing
-- [ ] Perform penetration testing
-- [ ] Validate encryption implementations
-- [ ] Test access controls
-
-## Phase 10: Documentation & Knowledge Transfer
-
-### 10.1 Technical Documentation
-- [ ] Create API documentation
-- [ ] Document architecture decisions
-- [ ] Write operational procedures
-
-### 10.2 User Guides
-- [ ] Create administrator guides
-- [ ] Develop operator manuals
-- [ ] Build troubleshooting documentation
-
-## Success Metrics & KPIs
+## Success Metrics & KPIs (Prototype)
 
 ### System Performance
-- [ ] 99.9% availability for core services
-- [ ] <200ms response time for edge decisions
-- [ ] Support for thousands of agents
-- [ ] Handle millions of inventory records
+- [ ] All agents running locally without errors
+- [ ] Message bus functioning correctly
+- [ ] Dashboard displaying real-time data
+- [ ] Simulation running interactively
 
-### Business Impact
-- [ ] Reduce stockouts by X%
-- [ ] Improve forecast accuracy by Y%
-- [ ] Decrease transportation costs by Z%
-- [ ] Increase warehouse efficiency by A%
-
-## Risk Mitigation
-
-### Technical Risks
-- [ ] Data privacy compliance
-- [ ] Model drift detection
-- [ ] Network reliability at edge
-- [ ] Integration complexity with legacy systems
-
-### Operational Risks
-- [ ] Change management adoption
-- [ ] Training requirements for operators
-- [ ] Incident response procedures
-- [ ] Regulatory compliance maintenance
+### Business Impact (Demonstrated)
+- [ ] Inventory optimization showing improvements
+- [ ] Demand forecasting with reasonable accuracy
+- [ ] Transport routing efficiency gains
+- [ ] Risk detection and mitigation
 
 ## Next Steps
-
-1. Begin Phase 1 implementation with core infrastructure setup
-2. Establish cross-functional team alignment
-3. Set up project tracking and reporting mechanisms
-4. Initiate proof-of-concept for critical components
+1. [ ] Begin with local agent implementation
+2. [ ] Set up Redis message bus
+3. [ ] Implement basic dashboard
+4. [ ] Create digital twin simulator
+5. [ ] Test multi-agent interactions

@@ -21,14 +21,28 @@ class MessagingLayer {
    */
   async initialize() {
     try {
-      // Connect to Kafka
-      await kafkaClient.connectProducer();
-      await kafkaClient.connectConsumer();
-      this.kafkaConnected = true;
+      // Only connect to Kafka if brokers are configured
+      if (process.env.KAFKA_BROKERS && process.env.KAFKA_BROKERS.trim() !== '') {
+        await kafkaClient.connectProducer();
+        await kafkaClient.connectConsumer();
+        this.kafkaConnected = true;
+        logger.info('Kafka messaging initialized successfully');
+      } else {
+        logger.info('Kafka messaging disabled (no brokers configured)');
+      }
+      
+      // Only connect to MQTT if URL is configured
+      if (process.env.MQTT_URL && process.env.MQTT_URL.trim() !== '') {
+        // MQTT connection is handled automatically by the client
+        this.mqttConnected = true;
+        logger.info('MQTT messaging initialized successfully');
+      } else {
+        logger.info('MQTT messaging disabled (no URL configured)');
+      }
       
       logger.info('Messaging layer initialized successfully');
     } catch (error) {
-      logger.warn('Failed to initialize messaging layer (Kafka/MQTT services may not be running):', error.message);
+      logger.warn('Failed to initialize messaging layer:', error.message);
       // Don't throw error, allow application to continue running
       // Messaging will be disabled but API will still work
     }
@@ -50,7 +64,7 @@ class MessagingLayer {
         trackMqttMessage(topic);
       } else {
         // If messaging isn't connected, log a warning but don't throw an error
-        logger.warn(`Messaging not connected, skipping message publish to ${topic} via ${protocol}`);
+        logger.debug(`Messaging not connected, skipping message publish to ${topic} via ${protocol}`);
         return;
       }
     } catch (error) {
@@ -84,7 +98,7 @@ class MessagingLayer {
         mqttClient.handleMessage(callback);
       } else {
         // If messaging isn't connected, log a warning but don't throw an error
-        logger.warn(`Messaging not connected, skipping subscription to ${topic} via ${protocol}`);
+        logger.debug(`Messaging not connected, skipping subscription to ${topic} via ${protocol}`);
         return;
       }
     } catch (error) {

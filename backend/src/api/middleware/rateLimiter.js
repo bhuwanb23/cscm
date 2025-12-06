@@ -6,8 +6,8 @@ const rateLimitStore = new Map();
 
 const rateLimiter = (req, res, next) => {
   const clientId = req.ip;
-  const windowMs = config.security.rateLimitWindowMs;
-  const maxRequests = config.security.rateLimitMaxRequests;
+  const windowMs = parseInt(config.security.rateLimitWindowMs);
+  const maxRequests = parseInt(config.security.rateLimitMaxRequests);
   
   const currentTime = Date.now();
   const clientData = rateLimitStore.get(clientId) || { count: 0, startTime: currentTime };
@@ -33,8 +33,8 @@ const rateLimiter = (req, res, next) => {
   
   // Add rate limit info to response headers
   res.setHeader('X-RateLimit-Limit', maxRequests);
-  res.setHeader('X-RateLimit-Remaining', maxRequests - clientData.count);
-  res.setHeader('X-RateLimit-Reset', new Date(clientData.startTime + windowMs).toISOString());
+  res.setHeader('X-RateLimit-Remaining', Math.max(0, maxRequests - clientData.count));
+  res.setHeader('X-RateLimit-Reset', new Date(clientData.startTime + windowMs).toUTCString());
   
   next();
 };

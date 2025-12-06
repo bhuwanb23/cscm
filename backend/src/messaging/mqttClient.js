@@ -2,23 +2,37 @@ const mqtt = require('mqtt');
 const config = require('../config');
 const logger = require('../utils/logger');
 
-// Create MQTT client
-const client = mqtt.connect(config.mqtt.url);
+// Only create MQTT client if URL is configured
+let client;
 
-// Handle connection
-client.on('connect', () => {
-  logger.info('MQTT client connected to broker');
-});
+if (config.mqtt.url && config.mqtt.url.trim() !== '') {
+  // Create MQTT client
+  client = mqtt.connect(config.mqtt.url);
 
-// Handle errors
-client.on('error', (error) => {
-  logger.error('MQTT client error:', error);
-});
+  // Handle connection
+  client.on('connect', () => {
+    logger.info('MQTT client connected to broker');
+  });
 
-// Handle disconnect
-client.on('close', () => {
-  logger.info('MQTT client disconnected from broker');
-});
+  // Handle errors
+  client.on('error', (error) => {
+    logger.error('MQTT client error:', error);
+  });
+
+  // Handle disconnect
+  client.on('close', () => {
+    logger.info('MQTT client disconnected from broker');
+  });
+} else {
+  logger.info('MQTT client skipped (no URL configured)');
+  client = {
+    connected: false,
+    publish: () => {},
+    subscribe: () => {},
+    on: () => {},
+    end: () => {}
+  };
+}
 
 // Publish message
 const publishMessage = (topic, message) => {
@@ -26,31 +40,39 @@ const publishMessage = (topic, message) => {
     client.publish(topic, JSON.stringify(message));
     logger.info(`Message published to topic ${topic}`);
   } else {
-    logger.warn('MQTT client not connected, unable to publish message');
+    logger.debug('MQTT client not connected, unable to publish message');
   }
 };
 
 // Subscribe to topic
 const subscribeToTopic = (topic) => {
-  client.subscribe(topic, (err) => {
-    if (err) {
-      logger.error(`Failed to subscribe to topic ${topic}:`, err);
-    } else {
-      logger.info(`Subscribed to topic ${topic}`);
-    }
-  });
+  if (client.connected) {
+    client.subscribe(topic, (err) => {
+      if (err) {
+        logger.error(`Failed to subscribe to topic ${topic}:`, err);
+      } else {
+        logger.info(`Subscribed to topic ${topic}`);
+      }
+    });
+  } else {
+    logger.debug('MQTT client not connected, unable to subscribe to topic');
+  }
 };
 
 // Handle incoming messages
 const handleMessage = (callback) => {
-  client.on('message', (topic, message) => {
-    try {
-      const parsedMessage = JSON.parse(message.toString());
-      callback(topic, parsedMessage);
-    } catch (error) {
-      logger.error('Failed to parse MQTT message:', error);
-    }
-  });
+  if (client.connected) {
+    client.on('message', (topic, message) => {
+      try {
+        const parsedMessage = JSON.parse(message.toString());
+        callback(topic, parsedMessage);
+      } catch (error) {
+        logger.error('Failed to parse MQTT message:', error);
+      }
+    });
+  } else {
+    logger.debug('MQTT client not connected, unable to handle messages');
+  }
 };
 
 module.exports = {

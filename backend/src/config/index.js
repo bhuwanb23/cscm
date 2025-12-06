@@ -16,13 +16,13 @@ const config = {
 
   // Kafka configuration
   kafka: {
-    brokers: process.env.KAFKA_BROKERS ? process.env.KAFKA_BROKERS.split(',') : ['localhost:9092'],
+    brokers: process.env.KAFKA_BROKERS ? process.env.KAFKA_BROKERS.split(',').filter(broker => broker.trim() !== '') : [],
     clientId: process.env.KAFKA_CLIENT_ID || 'cscm-backend'
   },
 
   // MQTT configuration
   mqtt: {
-    url: process.env.MQTT_URL || 'mqtt://localhost:1883'
+    url: process.env.MQTT_URL || ''
   },
 
   // Authentication

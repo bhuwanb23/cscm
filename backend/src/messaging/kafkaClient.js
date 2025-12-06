@@ -3,20 +3,30 @@ const config = require('../config');
 const logger = require('../utils/logger');
 const { trackError } = require('../utils/metrics');
 
-// Create Kafka client
-const kafka = new Kafka({
-  clientId: config.kafka.clientId,
-  brokers: config.kafka.brokers
-});
+// Only create Kafka client if brokers are configured
+let kafka, producer, consumer;
 
-// Create producer
-const producer = kafka.producer();
+if (config.kafka.brokers.length > 0) {
+  // Create Kafka client
+  kafka = new Kafka({
+    clientId: config.kafka.clientId,
+    brokers: config.kafka.brokers
+  });
 
-// Create consumer
-const consumer = kafka.consumer({ groupId: 'cscm-backend-group' });
+  // Create producer
+  producer = kafka.producer();
+
+  // Create consumer
+  consumer = kafka.consumer({ groupId: 'cscm-backend-group' });
+}
 
 // Connect producer
 const connectProducer = async () => {
+  if (!producer) {
+    logger.info('Kafka producer skipped (no brokers configured)');
+    return;
+  }
+  
   try {
     await producer.connect();
     logger.info('Kafka producer connected');
@@ -29,6 +39,11 @@ const connectProducer = async () => {
 
 // Connect consumer
 const connectConsumer = async () => {
+  if (!consumer) {
+    logger.info('Kafka consumer skipped (no brokers configured)');
+    return;
+  }
+  
   try {
     await consumer.connect();
     logger.info('Kafka consumer connected');
@@ -41,6 +56,11 @@ const connectConsumer = async () => {
 
 // Disconnect producer
 const disconnectProducer = async () => {
+  if (!producer) {
+    logger.info('Kafka producer disconnect skipped (no brokers configured)');
+    return;
+  }
+  
   try {
     await producer.disconnect();
     logger.info('Kafka producer disconnected');
@@ -52,6 +72,11 @@ const disconnectProducer = async () => {
 
 // Disconnect consumer
 const disconnectConsumer = async () => {
+  if (!consumer) {
+    logger.info('Kafka consumer disconnect skipped (no brokers configured)');
+    return;
+  }
+  
   try {
     await consumer.disconnect();
     logger.info('Kafka consumer disconnected');
@@ -62,6 +87,11 @@ const disconnectConsumer = async () => {
 
 // Send message to topic
 const sendMessage = async (topic, message) => {
+  if (!producer) {
+    logger.debug('Kafka message send skipped (no brokers configured)');
+    return;
+  }
+  
   try {
     await producer.send({
       topic,
