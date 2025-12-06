@@ -1,12 +1,13 @@
 const kafkaClient = require('./kafkaClient');
 const mqttClient = require('./mqttClient');
+const redisClient = require('./redisClient');
 const logger = require('../utils/logger');
 const { trackKafkaMessage, trackMqttMessage } = require('../utils/metrics');
 
 /**
  * Messaging Layer
  * 
- * This module provides a unified interface for both Kafka and MQTT messaging systems.
+ * This module provides a unified interface for Kafka, MQTT, and Redis messaging systems.
  * It handles connection management, message publishing, and subscription handling.
  */
 
@@ -14,6 +15,7 @@ class MessagingLayer {
   constructor() {
     this.kafkaConnected = false;
     this.mqttConnected = false;
+    this.redisConnected = false;
   }
 
   /**
@@ -40,6 +42,15 @@ class MessagingLayer {
         logger.info('MQTT messaging disabled (no URL configured)');
       }
       
+      // Connect to Redis for local development
+      try {
+        await redisClient.connect();
+        this.redisConnected = true;
+        logger.info('Redis messaging initialized successfully');
+      } catch (redisError) {
+        logger.warn('Redis messaging initialization failed (local development may be limited):', redisError.message);
+      }
+      
       logger.info('Messaging layer initialized successfully');
     } catch (error) {
       logger.warn('Failed to initialize messaging layer:', error.message);
@@ -52,7 +63,7 @@ class MessagingLayer {
    * Publish message to appropriate messaging system
    * @param {string} topic - Message topic
    * @param {Object} message - Message payload
-   * @param {string} protocol - Messaging protocol ('kafka' or 'mqtt')
+   * @param {string} protocol - Messaging protocol ('kafka', 'mqtt', or 'redis')
    */
   async publishMessage(topic, message, protocol = 'kafka') {
     try {
@@ -62,6 +73,10 @@ class MessagingLayer {
       } else if (protocol === 'mqtt' && this.mqttConnected) {
         mqttClient.publishMessage(topic, message);
         trackMqttMessage(topic);
+      } else if (protocol === 'redis' && this.redisConnected) {
+        await redisClient.sendMessage(topic, message);
+        // Reusing Kafka tracking for Redis messages
+        trackKafkaMessage(topic);
       } else {
         // If messaging isn't connected, log a warning but don't throw an error
         logger.debug(`Messaging not connected, skipping message publish to ${topic} via ${protocol}`);
@@ -77,7 +92,7 @@ class MessagingLayer {
    * Subscribe to messages from appropriate messaging system
    * @param {string} topic - Message topic
    * @param {Function} callback - Callback function to handle messages
-   * @param {string} protocol - Messaging protocol ('kafka' or 'mqtt')
+   * @param {string} protocol - Messaging protocol ('kafka', 'mqtt', or 'redis')
    */
   async subscribeToTopic(topic, callback, protocol = 'kafka') {
     try {
@@ -96,6 +111,8 @@ class MessagingLayer {
       } else if (protocol === 'mqtt' && this.mqttConnected) {
         mqttClient.subscribeToTopic(topic);
         mqttClient.handleMessage(callback);
+      } else if (protocol === 'redis' && this.redisConnected) {
+        await redisClient.subscribeToTopic(topic, callback);
       } else {
         // If messaging isn't connected, log a warning but don't throw an error
         logger.debug(`Messaging not connected, skipping subscription to ${topic} via ${protocol}`);
@@ -121,6 +138,11 @@ class MessagingLayer {
       if (this.mqttConnected) {
         mqttClient.client.end();
         this.mqttConnected = false;
+      }
+      
+      if (this.redisConnected) {
+        await redisClient.disconnect();
+        this.redisConnected = false;
       }
       
       logger.info('Messaging layer shutdown successfully');

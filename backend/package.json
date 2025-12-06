@@ -9,7 +9,9 @@
     "test": "jest",
     "lint": "eslint src/**/*.js",
     "agents": "node src/agents/startAgents.js",
-    "verify-agents": "node src/agents/verifyAgents.js"
+    "verify-agents": "node src/agents/verifyAgents.js",
+    "test-redis": "node src/messaging/testRedis.js",
+    "check-redis": "node src/messaging/checkRedis.js"
   },
   "keywords": [
     "supply-chain",
@@ -33,6 +35,7 @@
     "mqtt": "^4.3.8",
     "nodemon": "^3.1.11",
     "prom-client": "^14.2.0",
+    "redis": "^4.6.13",
     "winston": "^3.18.3"
   },
   "devDependencies": {
