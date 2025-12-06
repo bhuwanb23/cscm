@@ -16,7 +16,9 @@
     "demo-sqlite": "node src/storage/demoSqlite.js",
     "test-features": "node src/features/testFeatures.js",
     "demo-features": "node src/features/demoFeatures.js",
-    "test-knowledge-graph": "node src/knowledge-graph/testGraph.js"
+    "test-knowledge-graph": "node src/knowledge-graph/testGraph.js",
+    "agent-runtime": "node src/agent-runtime/startRuntime.js",
+    "test-agent-runtime": "node src/agent-runtime/testRuntime.js"
   },
   "keywords": [
     "supply-chain",
