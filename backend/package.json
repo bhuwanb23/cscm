@@ -11,7 +11,9 @@
     "agents": "node src/agents/startAgents.js",
     "verify-agents": "node src/agents/verifyAgents.js",
     "test-redis": "node src/messaging/testRedis.js",
-    "check-redis": "node src/messaging/checkRedis.js"
+    "check-redis": "node src/messaging/checkRedis.js",
+    "test-sqlite": "node src/storage/testSqlite.js",
+    "demo-sqlite": "node src/storage/demoSqlite.js"
   },
   "keywords": [
     "supply-chain",
@@ -36,6 +38,7 @@
     "nodemon": "^3.1.11",
     "prom-client": "^14.2.0",
     "redis": "^4.6.13",
+    "sqlite3": "^5.1.7",
     "winston": "^3.18.3"
   },
   "devDependencies": {
