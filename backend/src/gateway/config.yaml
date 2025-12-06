@@ -1,0 +1,58 @@
+# API Gateway Configuration for CSCM
+
+# Service definitions
+services:
+  - name: cscm-api
+    url: http://localhost:3000
+  
+  - name: agent-service
+    url: http://localhost:3001
+    
+  - name: model-service
+    url: http://localhost:3002
+    
+  - name: analytics-service
+    url: http://localhost:3003
+
+# Routes
+routes:
+  - path: /api/v1/*
+    service: cscm-api
+    strip_prefix: /api/v1
+    
+  - path: /agents/*
+    service: agent-service
+    strip_prefix: /agents
+    
+  - path: /models/*
+    service: model-service
+    strip_prefix: /models
+    
+  - path: /analytics/*
+    service: analytics-service
+    strip_prefix: /analytics
+
+# Security settings
+security:
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 1000
+    
+  authentication:
+    enabled: true
+    jwt_secret: ${JWT_SECRET}
+    
+  cors:
+    enabled: true
+    origins:
+      - "*"
+      
+# Logging
+logging:
+  level: info
+  format: json
+
+# Health checks
+health_checks:
+  interval: 30s
+  timeout: 5s

@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package events;
+
+// Event service definition
+service EventService {
+  // Publish a telemetry event
+  rpc PublishTelemetryEvent (TelemetryEventRequest) returns (EventResponse);
+  
+  // Publish an inventory event
+  rpc PublishInventoryEvent (InventoryEventRequest) returns (EventResponse);
+  
+  // Publish an order event
+  rpc PublishOrderEvent (OrderEventRequest) returns (EventResponse);
+}
+
+// Telemetry event request
+message TelemetryEventRequest {
+  string source_id = 1;
+  string event_type = 2;
+  map<string, string> payload = 3;
+  string timestamp = 4;
+}
+
+// Inventory event request
+message InventoryEventRequest {
+  string product_id = 1;
+  string store_id = 2;
+  int32 quantity = 3;
+  string event_type = 4;
+  string timestamp = 5;
+}
+
+// Order event request
+message OrderEventRequest {
+  string order_id = 1;
+  string customer_id = 2;
+  repeated OrderItem items = 3;
+  double total_amount = 4;
+  string status = 5;
+  string timestamp = 6;
+}
+
+// Order item
+message OrderItem {
+  string product_id = 1;
+  int32 quantity = 2;
+  double price = 3;
+}
+
+// Generic event response
+message EventResponse {
+  bool success = 1;
+  string message = 2;
+  string event_id = 3;
+}
