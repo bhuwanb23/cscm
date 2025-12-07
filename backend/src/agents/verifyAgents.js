@@ -10,6 +10,8 @@ const {
   StoreAgent, 
   WarehouseAgent, 
   TransportAgent, 
+  SupplierAgent, 
+  CustomerDemandAgent, 
   CentralPlannerAgent, 
   SimulationAgent 
 } = require('./index');
@@ -30,11 +32,19 @@ try {
   const transportAgent = new TransportAgent('VERIFICATION-TRANSPORT');
   console.log('   ✓ Transport Agent imported and instantiated successfully\n');
   
-  console.log('4. Testing Central Planner Agent...');
+  console.log('4. Testing Supplier Agent...');
+  const supplierAgent = new SupplierAgent('VERIFICATION-SUPPLIER');
+  console.log('   ✓ Supplier Agent imported and instantiated successfully\n');
+  
+  console.log('5. Testing Customer Demand Agent...');
+  const customerDemandAgent = new CustomerDemandAgent();
+  console.log('   ✓ Customer Demand Agent imported and instantiated successfully\n');
+  
+  console.log('6. Testing Central Planner Agent...');
   const centralPlannerAgent = new CentralPlannerAgent();
   console.log('   ✓ Central Planner Agent imported and instantiated successfully\n');
   
-  console.log('5. Testing Simulation Agent...');
+  console.log('7. Testing Simulation Agent...');
   const simulationAgent = new SimulationAgent();
   console.log('   ✓ Simulation Agent imported and instantiated successfully\n');
   
@@ -43,6 +53,8 @@ try {
   console.log('  - Store Agent: Ready');
   console.log('  - Warehouse Agent: Ready');
   console.log('  - Transport Agent: Ready');
+  console.log('  - Supplier Agent: Ready');
+  console.log('  - Customer Demand Agent: Ready');
   console.log('  - Central Planner Agent: Ready');
   console.log('  - Simulation Agent: Ready');
   console.log('\nThe agent framework is properly configured and ready for use.');

@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const messagingLayer = require('../messaging');
+const messagingLayer = require('../../messaging');
 
 /**
  * Simulation Agent
@@ -19,7 +19,7 @@ class SimulationAgent {
       isRunning: false,
       lastUpdated: new Date()
     };
-    this.storagePath = path.join(__dirname, '..', '..', 'data', 'simulation_state.json');
+    this.storagePath = path.join(__dirname, '..', '..', '..', 'data', 'simulation_state.json');
     this.loadState();
     this.eventInterval = null;
   }

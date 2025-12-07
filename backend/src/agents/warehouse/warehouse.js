@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const messagingLayer = require('../messaging');
+const messagingLayer = require('../../messaging');
+const WarehouseApiService = require('./services/apiService');
 
 /**
  * Warehouse Agent
@@ -12,6 +13,7 @@ const messagingLayer = require('../messaging');
 class WarehouseAgent {
   constructor(warehouseId) {
     this.warehouseId = warehouseId;
+    this.apiService = new WarehouseApiService();
     this.state = {
       inventory: {},
       shipments: {},
@@ -29,7 +31,7 @@ class WarehouseAgent {
       packingConfigurations: {},
       lastUpdated: new Date()
     };
-    this.storagePath = path.join(__dirname, '..', '..', 'data', `warehouse_${warehouseId}_state.json`);
+    this.storagePath = path.join(__dirname, '..', '..', '..', 'data', `warehouse_${warehouseId}_state.json`);
     this.loadState();
   }
 
@@ -268,8 +270,19 @@ class WarehouseAgent {
       
       console.log(`Warehouse Agent ${this.warehouseId}: Processing ${this.state.pickingQueue.length} shipment requests`);
       
-      // Optimize picking sequence
-      const optimizedQueue = this.optimizePickingSequence([...this.state.pickingQueue]);
+      // Prepare data for AI/ML optimization API
+      const optimizationData = {
+        warehouse_id: this.warehouseId,
+        picking_queue: [...this.state.pickingQueue],
+        warehouse_layout: this.state.warehouseLayout,
+        inventory: this.state.inventory
+      };
+      
+      // Call the AI/ML routing optimization API for picking sequence
+      const optimizationResult = await this.apiService.routingOptimization(optimizationData);
+      
+      // Use optimized queue from AI/ML API
+      const optimizedQueue = optimizationResult.optimized_picking_sequence || [...this.state.pickingQueue];
       
       // Process one item at a time
       const pickingTask = optimizedQueue.shift();
@@ -281,8 +294,15 @@ class WarehouseAgent {
       this.state.shipments[shipmentId].status = 'picking';
       this.saveState();
       
-      // Generate optimized picking route
-      const pickingRoute = this.generateOptimizedPickingRoute(pickingTask);
+      // Generate optimized picking route using AI/ML API
+      const pickingRouteData = {
+        warehouse_id: this.warehouseId,
+        picking_task: pickingTask,
+        warehouse_layout: this.state.warehouseLayout
+      };
+      
+      const pickingRouteResult = await this.apiService.routingOptimization(pickingRouteData);
+      const pickingRoute = pickingRouteResult.picking_route;
       
       // Simulate picking process with optimized route
       await this.simulatePickingProcess(pickingTask, pickingRoute);
@@ -291,8 +311,15 @@ class WarehouseAgent {
       this.state.shipments[shipmentId].status = 'packing';
       this.saveState();
       
-      // Generate optimized packing plan
-      const packingPlan = this.generateOptimizedPackingPlan(pickingTask);
+      // Generate optimized packing plan using AI/ML API
+      const packingPlanData = {
+        warehouse_id: this.warehouseId,
+        picking_task: pickingTask,
+        packing_configurations: this.state.packingConfigurations
+      };
+      
+      const packingPlanResult = await this.apiService.inventoryOptimization(packingPlanData);
+      const packingPlan = packingPlanResult.packing_plan;
       
       // Simulate packing process with optimized plan
       await this.simulatePackingProcess(pickingTask, packingPlan);
@@ -900,5 +927,7 @@ if (require.main === module) {
     }, 45000); // Every 45 seconds
   });
 }
+
+module.exports = WarehouseAgent;
 
 module.exports = WarehouseAgent;

@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const messagingLayer = require('../messaging');
+const messagingLayer = require('../../messaging');
 
 /**
  * Customer Demand Agent
@@ -18,7 +18,7 @@ class CustomerDemandAgent {
       externalFactors: {},
       lastUpdated: new Date()
     };
-    this.storagePath = path.join(__dirname, '..', '..', 'data', 'customer_demand_state.json');
+    this.storagePath = path.join(__dirname, '..', '..', '..', 'data', 'customer_demand_state.json');
     this.loadState();
   }
 

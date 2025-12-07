@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const messagingLayer = require('../messaging');
+const messagingLayer = require('../../messaging');
+const TransportApiService = require('./services/apiService');
 
 /**
  * Transport Agent
@@ -12,6 +13,7 @@ const messagingLayer = require('../messaging');
 class TransportAgent {
   constructor(transportId) {
     this.transportId = transportId;
+    this.apiService = new TransportApiService();
     this.state = {
       vehicles: {},
       routes: {},
@@ -19,7 +21,7 @@ class TransportAgent {
       deliveryAnalytics: {},
       lastUpdated: new Date()
     };
-    this.storagePath = path.join(__dirname, '..', '..', 'data', `transport_${transportId}_state.json`);
+    this.storagePath = path.join(__dirname, '..', '..', '..', 'data', `transport_${transportId}_state.json`);
     this.loadState();
   }
 

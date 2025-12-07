@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const messagingLayer = require('../messaging');
+const messagingLayer = require('../../messaging');
 
 /**
  * Supplier Agent
@@ -29,7 +29,7 @@ class SupplierAgent {
       sourcingRecommendations: [],
       lastUpdated: new Date()
     };
-    this.storagePath = path.join(__dirname, '..', '..', 'data', `supplier_${supplierId}_state.json`);
+    this.storagePath = path.join(__dirname, '..', '..', '..', 'data', `supplier_${supplierId}_state.json`);
     this.loadState();
   }
 

@@ -10,6 +10,8 @@ const {
   StoreAgent, 
   WarehouseAgent, 
   TransportAgent, 
+  SupplierAgent, 
+  CustomerDemandAgent, 
   CentralPlannerAgent, 
   SimulationAgent 
 } = require('./index');
@@ -48,6 +50,18 @@ async function startAgents() {
     await transport1.initialize();
     agents.push({ name: 'Transport 1', instance: transport1 });
     console.log('✓ Transport Agent 1 started');
+    
+    // Initialize Supplier Agents
+    const supplier1 = new SupplierAgent('SUPPLIER-1');
+    await supplier1.initialize();
+    agents.push({ name: 'Supplier 1', instance: supplier1 });
+    console.log('✓ Supplier Agent 1 started');
+    
+    // Initialize Customer Demand Agents
+    const customerDemand = new CustomerDemandAgent();
+    await customerDemand.initialize();
+    agents.push({ name: 'Customer Demand', instance: customerDemand });
+    console.log('✓ Customer Demand Agent started');
     
     // Initialize Simulation Agent
     const simulation = new SimulationAgent();

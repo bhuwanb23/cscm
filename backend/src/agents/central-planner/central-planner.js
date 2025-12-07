@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const messagingLayer = require('../messaging');
+const messagingLayer = require('../../messaging');
 
 /**
  * Central Planner Agent
@@ -18,7 +18,7 @@ class CentralPlannerAgent {
       plans: {},
       lastUpdated: new Date()
     };
-    this.storagePath = path.join(__dirname, '..', '..', 'data', 'central_planner_state.json');
+    this.storagePath = path.join(__dirname, '..', '..', '..', 'data', 'central_planner_state.json');
     this.loadState();
   }
 

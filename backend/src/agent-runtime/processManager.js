@@ -48,40 +48,53 @@ class ProcessManager {
       // Register store agents
       agentSupervisor.registerAgent(
         'StoreAgent1', 
-        path.join(__dirname, '..', 'agents', 'store_agent.js'),
+        path.join(__dirname, '..', 'agents', 'store', 'store.js'),
         { storeId: 'STORE-1' }
       );
       
       agentSupervisor.registerAgent(
         'StoreAgent2', 
-        path.join(__dirname, '..', 'agents', 'store_agent.js'),
+        path.join(__dirname, '..', 'agents', 'store', 'store.js'),
         { storeId: 'STORE-2' }
       );
       
       // Register warehouse agents
       agentSupervisor.registerAgent(
         'WarehouseAgent1', 
-        path.join(__dirname, '..', 'agents', 'warehouse_agent.js'),
+        path.join(__dirname, '..', 'agents', 'warehouse', 'warehouse.js'),
         { warehouseId: 'WAREHOUSE-1' }
       );
       
       // Register transport agents
       agentSupervisor.registerAgent(
         'TransportAgent1', 
-        path.join(__dirname, '..', 'agents', 'transport_agent.js'),
+        path.join(__dirname, '..', 'agents', 'transport', 'transport.js'),
         { transportId: 'TRANSPORT-1' }
+      );
+      
+      // Register supplier agents
+      agentSupervisor.registerAgent(
+        'SupplierAgent1', 
+        path.join(__dirname, '..', 'agents', 'supplier', 'supplier.js'),
+        { supplierId: 'SUPPLIER-1' }
+      );
+      
+      // Register customer demand agents
+      agentSupervisor.registerAgent(
+        'CustomerDemandAgent', 
+        path.join(__dirname, '..', 'agents', 'customer-demand', 'customer-demand.js')
       );
       
       // Register central planner agent
       agentSupervisor.registerAgent(
         'CentralPlannerAgent', 
-        path.join(__dirname, '..', 'agents', 'central_planner_agent.js')
+        path.join(__dirname, '..', 'agents', 'central-planner', 'central-planner.js')
       );
       
       // Register simulation agent
       agentSupervisor.registerAgent(
         'SimulationAgent', 
-        path.join(__dirname, '..', 'agents', 'simulation_agent.js')
+        path.join(__dirname, '..', 'agents', 'simulation', 'simulation.js')
       );
       
       logger.info('All agents registered successfully');

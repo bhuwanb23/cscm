@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const messagingLayer = require('../messaging');
+const messagingLayer = require('../../messaging');
+const StoreApiService = require('./services/apiService');
 
 /**
  * Store Agent
@@ -12,6 +13,7 @@ const messagingLayer = require('../messaging');
 class StoreAgent {
   constructor(storeId) {
     this.storeId = storeId;
+    this.apiService = new StoreApiService();
     this.state = {
       inventory: {},
       demandForecast: {},
@@ -25,7 +27,7 @@ class StoreAgent {
       // Add restocking history for analysis
       restockingHistory: []
     };
-    this.storagePath = path.join(__dirname, '..', '..', 'data', `store_${storeId}_state.json`);
+    this.storagePath = path.join(__dirname, '..', '..', '..', 'data', `store_${storeId}_state.json`);
     this.loadState();
   }
 
@@ -291,69 +293,24 @@ class StoreAgent {
         return;
       }
       
-      // In a real implementation, this would call the AI/ML service
-      // For now, we'll simulate the ML forecast with a more sophisticated approach
+      // Prepare data for AI/ML API call
+      const requestData = {
+        product_id: productId,
+        sales_data: salesData,
+        forecast_days: 7
+      };
       
-      // Calculate basic statistics
-      const recentSales = salesData.slice(-30); // Last 30 days
-      const avgSales = recentSales.reduce((sum, record) => sum + record.sales, 0) / recentSales.length;
-      const salesVariance = recentSales.reduce((sum, record) => sum + Math.pow(record.sales - avgSales, 2), 0) / recentSales.length;
-      const stdDev = Math.sqrt(salesVariance);
+      // Call the AI/ML demand forecasting API
+      const forecastResult = await this.apiService.demandForecast(requestData);
       
-      // Check for trends
-      const firstHalf = recentSales.slice(0, 15);
-      const secondHalf = recentSales.slice(15);
-      const firstAvg = firstHalf.reduce((sum, record) => sum + record.sales, 0) / firstHalf.length;
-      const secondAvg = secondHalf.reduce((sum, record) => sum + record.sales, 0) / secondHalf.length;
-      const trend = secondAvg > firstAvg ? 'increasing' : (secondAvg < firstAvg ? 'decreasing' : 'stable');
-      
-      // Adjust forecast based on trend
-      let forecastMultiplier = 1.0;
-      if (trend === 'increasing') {
-        forecastMultiplier = 1.1;
-      } else if (trend === 'decreasing') {
-        forecastMultiplier = 0.9;
-      }
-      
-      // Check for promotions
-      const recentPromotions = recentSales.filter(record => record.promotion).length;
-      const promotionImpact = recentPromotions > 0 ? 1.2 : 1.0;
-      
-      // Generate forecast for next 7 days
-      const forecastPeriod = 7;
-      const dailyForecasts = [];
-      let cumulativeForecast = 0;
-      
-      for (let i = 1; i <= forecastPeriod; i++) {
-        // Apply trend and promotion factors
-        const baseForecast = avgSales * forecastMultiplier * promotionImpact;
-        
-        // Add some randomness based on standard deviation
-        const randomFactor = 1 + (Math.random() - 0.5) * 0.2; // ±10%
-        const dailyForecast = Math.max(0, baseForecast * randomFactor);
-        
-        dailyForecasts.push({
-          date: new Date(Date.now() + i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-          forecast: dailyForecast
-        });
-        
-        cumulativeForecast += dailyForecast;
-      }
-      
-      // Calculate safety stock (2 standard deviations)
-      const safetyStock = Math.ceil(stdDev * 2);
-      
-      // Create forecast object
+      // Extract forecast data from API response
       const forecast = {
         productId: productId,
-        expectedDemand: Math.ceil(cumulativeForecast),
-        dailyForecasts: dailyForecasts,
-        safetyStock: safetyStock,
-        confidenceInterval: {
-          lower: Math.max(0, Math.ceil(cumulativeForecast - stdDev)),
-          upper: Math.ceil(cumulativeForecast + stdDev)
-        },
-        trend: trend,
+        expectedDemand: forecastResult.expected_demand,
+        dailyForecasts: forecastResult.daily_forecasts,
+        safetyStock: forecastResult.safety_stock,
+        confidenceInterval: forecastResult.confidence_interval,
+        trend: forecastResult.trend,
         lastUpdated: new Date()
       };
       
@@ -383,7 +340,7 @@ class StoreAgent {
   /**
    * Make restocking decisions based on inventory and demand forecast
    */
-  makeRestockingDecision(productId) {
+  async makeRestockingDecision(productId) {
     try {
       const inventory = this.state.inventory[productId] || { quantity: 0 };
       const forecast = this.state.demandForecast[productId];
@@ -395,33 +352,35 @@ class StoreAgent {
       
       // Get product attributes for cost information
       const productAttrs = this.state.productAttributes[productId] || {};
-      const holdingCost = productAttrs.holdingCost || 0.5; // Cost to hold one unit per period
-      const shortageCost = productAttrs.shortageCost || 2.0; // Cost of stockout per unit
       
-      // Calculate optimal order quantity using enhanced Newsvendor model
-      const optimalOrderInfo = this.calculateOptimalOrderQuantityWithNewsvendor(
-        productId, 
-        forecast, 
-        inventory.quantity || 0,
-        holdingCost,
-        shortageCost
-      );
+      // Prepare data for AI/ML inventory optimization API
+      const optimizationData = {
+        product_id: productId,
+        current_stock: inventory.quantity || 0,
+        forecast: forecast,
+        product_attributes: productAttrs,
+        suppliers: this.state.suppliers
+      };
       
-      const { optimalQuantity, reorderPoint, serviceLevel } = optimalOrderInfo;
+      // Call the AI/ML inventory optimization API
+      const optimizationResult = await this.apiService.inventoryOptimization(optimizationData);
+      
+      // Extract optimization results
+      const { optimal_quantity, reorder_point, service_level } = optimizationResult;
       
       // If stock is below reorder point, trigger restock
       const currentStock = inventory.quantity || 0;
-      if (currentStock < reorderPoint) {
+      if (currentStock < reorder_point) {
         // Generate restocking recommendation
         const recommendation = this.generateRestockingRecommendation(
           productId,
-          optimalQuantity,
-          reorderPoint,
+          optimal_quantity,
+          reorder_point,
           forecast,
           productAttrs
         );
         
-        console.log(`Store Agent ${this.storeId}: Low stock for product ${productId}. Current: ${currentStock}, Reorder Point: ${reorderPoint}. Requesting ${optimalQuantity} units`);
+        console.log(`Store Agent ${this.storeId}: Low stock for product ${productId}. Current: ${currentStock}, Reorder Point: ${reorder_point}. Requesting ${optimal_quantity} units`);
         
         // Publish restock request with recommendation
         messagingLayer.publishMessage(
@@ -429,13 +388,13 @@ class StoreAgent {
           {
             storeId: this.storeId,
             productId: productId,
-            quantity: optimalQuantity,
-            urgency: currentStock < (reorderPoint / 2) ? 'high' : 'normal',
+            quantity: optimal_quantity,
+            urgency: currentStock < (reorder_point / 2) ? 'high' : 'normal',
             forecastPeriod: 7,
             expectedDemand: forecast.expectedDemand,
             safetyStock: forecast.safetyStock,
-            serviceLevel: serviceLevel,
-            reorderPoint: reorderPoint,
+            serviceLevel: service_level,
+            reorderPoint: reorder_point,
             recommendation: recommendation
           },
           'kafka'
