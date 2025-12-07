@@ -15,7 +15,9 @@ from data_models import SalesDataModel, PriceDataModel, StoreAttributeModel, Pro
 # Import data validation utility
 from data_validator import DataValidator
 
-from ..models.demand_models import DemandForecastRequest, DemandForecastResponse, DemandMetricsRequest, DemandMetricsResponse
+# Use absolute imports instead of relative imports
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'models'))
+import demand_models
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -55,7 +57,7 @@ class DemandForecastingService:
             raise
     
     @staticmethod
-    def get_forecast(request: DemandForecastRequest) -> DemandForecastResponse:
+    def get_forecast(request: demand_models.DemandForecastRequest) -> demand_models.DemandForecastResponse:
         """
         Generate demand forecast for a specific SKU and store
         
@@ -74,7 +76,7 @@ class DemandForecastingService:
             
             # This would integrate with the actual demand forecasting model
             # For now, returning mock data
-            response = DemandForecastResponse(
+            response = demand_models.DemandForecastResponse(
                 sku_id=request.sku_id,
                 store_id=request.store_id,
                 forecast_dates=["2023-01-01", "2023-01-02", "2023-01-03"],
@@ -95,7 +97,7 @@ class DemandForecastingService:
             raise
     
     @staticmethod
-    def get_metrics(request: DemandMetricsRequest) -> DemandMetricsResponse:
+    def get_metrics(request: demand_models.DemandMetricsRequest) -> demand_models.DemandMetricsResponse:
         """
         Calculate demand forecasting metrics for a specific SKU and store
         
@@ -117,7 +119,7 @@ class DemandForecastingService:
             
             # This would integrate with the actual metrics calculation
             # For now, returning mock data
-            response = DemandMetricsResponse(
+            response = demand_models.DemandMetricsResponse(
                 sku_id=request.sku_id,
                 store_id=request.store_id,
                 mape=0.15,

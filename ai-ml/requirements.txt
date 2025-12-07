@@ -60,6 +60,7 @@ airflow>=2.2.0
 # Monitoring
 prometheus-client>=0.11.0
 grafana-api>=1.0.0
+psutil>=5.8.0
 
 # Utilities
 pyyaml>=5.4.0

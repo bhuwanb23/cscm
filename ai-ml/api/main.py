@@ -1,31 +1,42 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
+from fastapi.responses import JSONResponse
+import time
+import sys
+import os
 
-# Initialize rate limiter
-limiter = Limiter(key_func=get_remote_address)
+# Add the utils directory to the path
+sys.path.append(os.path.join(os.path.dirname(__file__), 'utils'))
 
-# Create FastAPI app
-app = FastAPI(
-    title="Cognitive Supply Chain Mesh - AI/ML API",
-    description="RESTful API for serving all AI/ML models in the CSCM project",
-    version="1.0.0"
-)
+# Import monitoring utilities
+from monitoring import APIMonitor, get_health_status
 
-# Add rate limiter to app
-app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+# Import job queue utilities
+from job_queue import job_queue
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Create app
+app = FastAPI(title="Cognitive Supply Chain Mesh - AI/ML API")
+
+# Global instances
+api_monitor = APIMonitor()
+
+# Store request start times for monitoring
+@app.middleware("http")
+async def add_process_time_header(request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+    response.headers["X-Process-Time"] = str(process_time)
+    
+    # Log the request
+    api_monitor.log_request(
+        request.method,
+        request.url.path,
+        response.status_code,
+        process_time
+    )
+    
+    return response
 
 # Import routers
 from .routers import (
@@ -65,6 +76,19 @@ app.include_router(continual_learning.router, prefix="/api/v1/learning", tags=["
 app.include_router(uncertainty_quantification.router, prefix="/api/v1/uncertainty", tags=["Uncertainty Quantification"])
 app.include_router(model_monitoring.router, prefix="/api/v1/monitoring", tags=["Model Monitoring"])
 
+# Startup event to initialize job queue
+@app.on_event("startup")
+async def startup_event():
+    """Initialize job queue on startup"""
+    await job_queue.start()
+    print("Job queue started")
+
+# Shutdown event to stop job queue
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Shutdown job queue on shutdown"""
+    await job_queue.stop()
+    print("Job queue stopped")
 
 @app.get("/")
 async def root():
@@ -72,8 +96,14 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    """Enhanced health check endpoint"""
+    return get_health_status()
+
+@app.get("/metrics")
+async def metrics():
+    """Performance metrics endpoint"""
+    return api_monitor.get_performance_metrics()
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("api.main:app", host="0.0.0.0", port=8000, reload=True)

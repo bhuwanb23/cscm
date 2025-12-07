@@ -7,7 +7,9 @@ from datetime import datetime
 # Add the models directory to the path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'models'))
 
-from ..routers.customer_demand import CustomerAnalyzeRequest, CustomerAnalyzeResponse, CustomerTrendsRequest, CustomerTrendsResponse
+# Fix the import by importing from the models directory directly
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'routers'))
+from customer_models import CustomerAnalyzeRequest, CustomerAnalyzeResponse, CustomerTrendsRequest, CustomerTrendsResponse
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
