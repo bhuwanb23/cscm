@@ -1,0 +1,37 @@
+{
+  "totalTests": 6,
+  "passedTests": 3,
+  "failedTests": 3,
+  "testDetails": [
+    {
+      "testName": "API Server Connectivity",
+      "passed": true,
+      "details": "Status: 200"
+    },
+    {
+      "testName": "Demand Forecasting API Call",
+      "passed": true,
+      "details": "Status: 200, SKU: TEST-SKU-001, Forecast days: 3"
+    },
+    {
+      "testName": "Inventory Optimization API Call",
+      "passed": true,
+      "details": "Status: 200, SKU: TEST-SKU-001, Reorder Point: 150, Order Qty: 200"
+    },
+    {
+      "testName": "Routing Optimization API Call",
+      "passed": false,
+      "details": "Error: Request failed with status code 422"
+    },
+    {
+      "testName": "Supplier Risk Assessment API Call",
+      "passed": false,
+      "details": "Error: Request failed with status code 422"
+    },
+    {
+      "testName": "Anomaly Detection API Call",
+      "passed": false,
+      "details": "Error: Request failed with status code 422"
+    }
+  ]
+}
