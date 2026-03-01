@@ -30,6 +30,8 @@ const TransporterDashboard = ({ onLogout }) => {
           <Dashboard onLogout={onLogout} />
         ) : activeTab === 'tasks' ? (
           <Tasks onLogout={onLogout} />
+        ) : activeTab === 'profile' ? (
+          <Profile onLogout={onLogout} />
         ) : (
           <>
             <Header 
