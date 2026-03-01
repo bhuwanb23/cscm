@@ -10,6 +10,7 @@ import Header from './components/Header';
 import BottomNavbar from './components/BottomNavbar';
 import Dashboard from './dashboard/dashboard';
 import Tasks from './tasks/tasks';
+import Profile from './profile/profile';
 
 const TransporterDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
