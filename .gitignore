@@ -35,3 +35,4 @@ __pycache__/
 *.db2
 logs/
 catboost_info/
+datasets/

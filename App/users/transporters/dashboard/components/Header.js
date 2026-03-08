@@ -6,7 +6,6 @@ import {
   Image,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 const Header = ({ title, subtitle, onLogout }) => {
@@ -16,8 +15,7 @@ const Header = ({ title, subtitle, onLogout }) => {
 
   return (
     <>
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <View style={styles.header}>
+      <View style={styles.header}>
           <View style={styles.headerContent}>
             <View style={styles.driverInfo}>
               <View style={styles.avatarContainer}>
@@ -53,7 +51,6 @@ const Header = ({ title, subtitle, onLogout }) => {
             </View>
           </View>
         </View>
-      </SafeAreaView>
     </>
   );
 };
