@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const NavigationControls = () => {
   const handleStartNavigation = () => {
@@ -24,8 +25,15 @@ const NavigationControls = () => {
             style={[styles.controlButton, styles.startButton]} 
             onPress={handleStartNavigation}
           >
-            <Ionicons name="play" size={24} color="#fff" />
-            <Text style={styles.controlButtonText}>Start</Text>
+            <LinearGradient
+              colors={['#3B82F6', '#1E40AF']}
+              style={styles.controlButtonGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Ionicons name="play" size={20} color="#fff" />
+              <Text style={styles.controlButtonText}>Start</Text>
+            </LinearGradient>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -65,16 +73,17 @@ const styles = StyleSheet.create({
   },
   controlButton: {
     flex: 1,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  controlButtonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
-    borderRadius: 8,
     gap: 8,
   },
   startButton: {
-    backgroundColor: '#2563EB',
-    marginRight: 8,
   },
   muteButton: {
     backgroundColor: 'rgba(37, 99, 235, 0.1)',

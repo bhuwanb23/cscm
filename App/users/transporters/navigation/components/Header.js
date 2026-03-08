@@ -7,6 +7,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Header = ({ title, subtitle, onLogout }) => {
   const handleNotificationPress = () => {
@@ -21,7 +22,14 @@ const Header = ({ title, subtitle, onLogout }) => {
     <View style={styles.header}>
       <View style={styles.headerContent}>
         <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
-          <Ionicons name="arrow-back" size={24} color="#2563EB" />
+          <LinearGradient
+            colors={['#3B82F6', '#1E40AF']}
+            style={styles.backButtonGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Ionicons name="arrow-back" size={18} color="#fff" />
+          </LinearGradient>
         </TouchableOpacity>
         
         <View style={styles.titleContainer}>
@@ -57,9 +65,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   backButton: {
-    padding: 8,
-    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+    padding: 2,
     borderRadius: 8,
+    overflow: 'hidden',
+  },
+  backButtonGradient: {
+    padding: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   titleContainer: {
     flex: 1,

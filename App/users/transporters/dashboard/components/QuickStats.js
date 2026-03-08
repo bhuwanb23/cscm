@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const QuickStats = () => {
   const handleStatPress = (statType) => {
@@ -21,9 +22,14 @@ const QuickStats = () => {
           <Card style={styles.statCard}>
             <View style={styles.statContent}>
               <View style={styles.statHeader}>
-                <View style={styles.iconContainer}>
-                  <Ionicons name="cube-outline" size={20} color="#2563EB" />
-                </View>
+                <LinearGradient
+                  colors={['#3B82F6', '#1E40AF']}
+                  style={styles.iconContainer}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <Ionicons name="cube" size={20} color="#fff" />
+                </LinearGradient>
                 <Text style={styles.statLabel}>Today</Text>
               </View>
               <Text style={styles.statValue}>12</Text>
@@ -39,9 +45,14 @@ const QuickStats = () => {
           <Card style={styles.statCard}>
             <View style={styles.statContent}>
               <View style={styles.statHeader}>
-                <View style={[styles.iconContainer, styles.iconContainerSecondary]}>
-                  <Ionicons name="cart-outline" size={20} color="#F59E0B" />
-                </View>
+                <LinearGradient
+                  colors={['#F59E0B', '#D97706']}
+                  style={[styles.iconContainer, styles.iconContainerSecondary]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <Ionicons name="cart" size={20} color="#fff" />
+                </LinearGradient>
                 <Text style={styles.statLabel}>Pickups</Text>
               </View>
               <Text style={styles.statValue}>4</Text>
@@ -90,12 +101,10 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#DBEAFE',
     justifyContent: 'center',
     alignItems: 'center',
   },
   iconContainerSecondary: {
-    backgroundColor: '#FEF3C7',
   },
   statLabel: {
     fontSize: 12,

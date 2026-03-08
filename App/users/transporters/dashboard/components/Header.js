@@ -7,6 +7,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Header = ({ title, subtitle, onLogout }) => {
   const handleNotificationPress = () => {
@@ -31,24 +32,32 @@ const Header = ({ title, subtitle, onLogout }) => {
               </View>
             </View>
             <TouchableOpacity style={styles.notificationButton} onPress={handleNotificationPress}>
-              <Ionicons name="notifications-outline" size={24} color="#7F8C8D" />
+              <Ionicons name="notifications-outline" size={24} color="#3B82F6" />
               <View style={styles.notificationBadge} />
             </TouchableOpacity>
           </View>
           
           {/* Shift Status */}
           <View style={styles.shiftStatusContainer}>
-            <View style={styles.shiftStatus}>
-              <Text style={styles.shiftStatusLabel}>SHIFT STATUS</Text>
+            <LinearGradient
+              colors={['#3B82F6', '#1E40AF']}
+              style={styles.shiftStatus}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <View style={styles.shiftStatusLeft}>
+                <Ionicons name="shield-checkmark" size={16} color="#fff" />
+                <Text style={styles.shiftStatusLabel}>SHIFT STATUS</Text>
+              </View>
               <View style={styles.shiftToggle}>
                 <Text style={styles.shiftStatusText}>On Duty</Text>
-                <TouchableOpacity style={styles.toggleSwitch}>
+                <View style={styles.toggleSwitch}>
                   <View style={styles.switchTrack}>
                     <View style={styles.switchThumb} />
                   </View>
-                </TouchableOpacity>
+                </View>
               </View>
-            </View>
+            </LinearGradient>
           </View>
         </View>
     </>
@@ -115,6 +124,8 @@ const styles = StyleSheet.create({
   notificationButton: {
     padding: 8,
     position: 'relative',
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    borderRadius: 8,
   },
   notificationBadge: {
     position: 'absolute',
@@ -129,12 +140,16 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   shiftStatus: {
-    backgroundColor: '#F3F4F6',
-    borderRadius: 8,
-    padding: 8,
+    borderRadius: 10,
+    padding: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  shiftStatusLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   shiftStatusLabel: {
     fontSize: 10,

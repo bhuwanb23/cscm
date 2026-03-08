@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const UpcomingTurns = () => {
   const upcomingTurns = [
@@ -35,11 +36,22 @@ const UpcomingTurns = () => {
                 styles.turnIconContainer,
                 index === 0 && styles.nextTurnIcon
               ]}>
-                <Ionicons 
-                  name={turn.icon} 
-                  size={20} 
-                  color={index === 0 ? '#fff' : '#2563EB'} 
-                />
+                {index === 0 ? (
+                  <LinearGradient
+                    colors={['#3B82F6', '#1E40AF']}
+                    style={styles.turnIconGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                  >
+                    <Ionicons name={turn.icon} size={16} color="#fff" />
+                  </LinearGradient>
+                ) : (
+                  <Ionicons 
+                    name={turn.icon} 
+                    size={20} 
+                    color="#3B82F6" 
+                  />
+                )}
               </View>
               
               <View style={styles.turnInfo}>
@@ -116,13 +128,18 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(37, 99, 235, 0.1)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
+  turnIconGradient: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   nextTurnIcon: {
-    backgroundColor: '#2563EB',
   },
   turnInfo: {
     flex: 1,
