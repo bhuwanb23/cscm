@@ -11,6 +11,7 @@ import BottomNavbar from './components/BottomNavbar';
 import Dashboard from './dashboard/dashboard';
 import Tasks from './tasks/tasks';
 import Profile from './profile/profile';
+import Navigation from './navigation/navigation';
 
 const TransporterDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -32,6 +33,8 @@ const TransporterDashboard = ({ onLogout }) => {
           <Tasks onLogout={onLogout} />
         ) : activeTab === 'profile' ? (
           <Profile onLogout={onLogout} />
+        ) : activeTab === 'navigation' ? (
+          <Navigation onLogout={onLogout} />
         ) : (
           <>
             <Header 
