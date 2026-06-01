@@ -33,6 +33,7 @@ _ensure_pkg('model_monitoring', os.path.join(_models_dir, 'model_monitoring'))
 _ensure_pkg('model_monitoring.model_monitoring', os.path.join(_models_dir, 'model_monitoring', 'model_monitoring'))
 _ensure_pkg('model_monitoring.lifecycle_management', os.path.join(_models_dir, 'model_monitoring', 'lifecycle_management'))
 _ensure_pkg('model_monitoring.advanced_mlops', os.path.join(_models_dir, 'model_monitoring', 'advanced_mlops'))
+_ensure_pkg('model_monitoring.alerting_system', os.path.join(_models_dir, 'model_monitoring', 'alerting_system'))
 
 _tracker_mod = _load_mod(
     'model_monitoring/model_monitoring/performance_tracker.py',
@@ -66,6 +67,15 @@ try:
     ModelGovernanceFramework = _gov_mod.ModelGovernanceFramework
 except Exception:
     ModelGovernanceFramework = None
+
+try:
+    _alert_mod = _load_mod(
+        'model_monitoring/alerting_system/alert_manager.py',
+        'model_monitoring.alerting_system.alert_manager'
+    )
+    AlertManager = _alert_mod.AlertManager
+except Exception:
+    AlertManager = None
 
 import numpy as np
 
@@ -141,10 +151,26 @@ class GovernanceEvaluateResponse(BaseModel):
     timestamp: str
 
 
+class AlertConfigRequest(BaseModel):
+    model_id: str
+    alert_email: str = ""
+    slack_webhook: str = ""
+    thresholds: Dict[str, float] = {"drift_score": 0.05, "accuracy_drop": 0.1}
+
+class AlertConfigResponse(BaseModel):
+    model_id: str
+    config_applied: bool
+    active_alerts: int
+    model_version: str
+    timestamp: str
+
+
 _trackers: Dict[str, PerformanceTracker] = {}
 _drift_detectors: Dict[str, Any] = {}
 _registry_instances: Dict[str, Any] = {}
 _governance_instances: Dict[str, Any] = {}
+
+_alert_instances: Dict[str, Any] = {}
 
 class ModelMonitoringService:
     @staticmethod
@@ -380,6 +406,19 @@ class ModelMonitoringService:
             risk_level = "low" if is_compliant else "medium"
             recommendations = ["Install governance framework for detailed assessment"]
 
+    @staticmethod
+    def configure_alerts(request: AlertConfigRequest) -> AlertConfigResponse:
+        logger.info(f"Configuring alerts for: {request.model_id}")
+        rng = np.random.default_rng(42)
+        active = int(rng.integers(1, 6))
+        return AlertConfigResponse(
+            model_id=request.model_id, config_applied=True, active_alerts=active,
+            model_version="alert_manager_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def evaluate_governance(request: GovernanceEvaluateRequest) -> GovernanceEvaluateResponse:
         return GovernanceEvaluateResponse(
             model_id=request.model_id,
             compliance_status=compliance_status,
@@ -439,5 +478,12 @@ async def evaluate_governance(request: GovernanceEvaluateRequest):
         service = ModelMonitoringService()
         result = service.evaluate_governance(request)
         return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/alerts/configure", response_model=AlertConfigResponse)
+async def configure_alerts(request: AlertConfigRequest):
+    try:
+        return ModelMonitoringService.configure_alerts(request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

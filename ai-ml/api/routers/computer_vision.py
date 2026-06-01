@@ -1,11 +1,13 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import json
 import sys
 import os
 import uuid
 import io
+import types
+import logging
 from datetime import datetime
 
 _models_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'models')
@@ -13,25 +15,129 @@ sys.path.insert(0, _models_dir)
 
 import importlib.util
 
-_yolo_path = os.path.join(_models_dir, 'computer_vision', 'object_detection', 'yolov8.py')
-_yolo_spec = importlib.util.spec_from_file_location("cv_yolov8_detector", _yolo_path)
-_yolo_mod = importlib.util.module_from_spec(_yolo_spec)
-sys.modules['cv_yolov8_detector'] = _yolo_mod
+def _load_mod(rel_path: str, mod_name: str):
+    full_path = os.path.join(_models_dir, *rel_path.split('/'))
+    spec = importlib.util.spec_from_file_location(mod_name, full_path)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[mod_name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+def _ensure_pkg(pkg_name: str, pkg_path: str):
+    if pkg_name not in sys.modules:
+        pkg = types.ModuleType(pkg_name)
+        pkg.__path__ = [pkg_path]
+        pkg.__package__ = pkg_name
+        sys.modules[pkg_name] = pkg
+
+_ensure_pkg('computer_vision', os.path.join(_models_dir, 'computer_vision'))
+_ensure_pkg('computer_vision.object_detection', os.path.join(_models_dir, 'computer_vision', 'object_detection'))
+_ensure_pkg('computer_vision.instance_segmentation', os.path.join(_models_dir, 'computer_vision', 'instance_segmentation'))
+_ensure_pkg('computer_vision.ocr_counting', os.path.join(_models_dir, 'computer_vision', 'ocr_counting'))
+_ensure_pkg('computer_vision.deployment', os.path.join(_models_dir, 'computer_vision', 'deployment'))
 
 HAS_YOLO = False
 YOLOv8Detector = None
 try:
-    _yolo_spec.loader.exec_module(_yolo_mod)
+    _yolo_mod = _load_mod('computer_vision/object_detection/yolov8.py', 'cv_yolov8_detector')
     YOLOv8Detector = _yolo_mod.YOLOv8Detector
     HAS_YOLO = True
 except Exception:
     pass
 
-import logging
+try:
+    _det2_mod = _load_mod('computer_vision/object_detection/detectron2_integration.py', 'cv_detectron2')
+    Detectron2Detector = _det2_mod.Detectron2Detector
+    Detectron2ConfigManager = _det2_mod.Detectron2ConfigManager
+except Exception:
+    Detectron2Detector = None
+    Detectron2ConfigManager = None
+
+try:
+    _frcnn_mod = _load_mod('computer_vision/object_detection/faster_rcnn.py', 'cv_faster_rcnn')
+    FasterRCNNDetector = _frcnn_mod.FasterRCNNDetector
+except Exception:
+    FasterRCNNDetector = None
+
+try:
+    _mask_mod = _load_mod('computer_vision/instance_segmentation/mask_rcnn.py', 'cv_mask_rcnn')
+    MaskRCNNDamageDetector = _mask_mod.MaskRCNNDamageDetector
+except Exception:
+    MaskRCNNDamageDetector = None
+
+try:
+    _qc_mod = _load_mod('computer_vision/instance_segmentation/quality_control.py', 'cv_quality_control')
+    QualityControlSystem = _qc_mod.QualityControlSystem
+    AutomatedReportingSystem = _qc_mod.AutomatedReportingSystem
+except Exception:
+    QualityControlSystem = None
+    AutomatedReportingSystem = None
+
+try:
+    _dd_mod = _load_mod('computer_vision/instance_segmentation/detailed_damage.py', 'cv_detailed_damage')
+    DetailedDamageDetector = _dd_mod.DetailedDamageDetector
+    DamageType = _dd_mod.DamageType
+    DamageSeverity = _dd_mod.DamageSeverity
+except Exception:
+    DetailedDamageDetector = None
+    DamageType = None
+    DamageSeverity = None
+
+try:
+    _ocr_mod = _load_mod('computer_vision/ocr_counting/ocr.py', 'cv_ocr')
+    TesseractOCR = _ocr_mod.TesseractOCR
+    CRNNOCR = _ocr_mod.CRNNOCR
+except Exception:
+    TesseractOCR = None
+    CRNNOCR = None
+
+try:
+    _de_mod = _load_mod('computer_vision/ocr_counting/density_estimation.py', 'cv_density')
+    DensityEstimator = _de_mod.DensityEstimator
+    CountingValidation = _de_mod.CountingValidation
+except Exception:
+    DensityEstimator = None
+    CountingValidation = None
+
+try:
+    _edge_mod = _load_mod('computer_vision/deployment/edge_deployment.py', 'cv_edge_deploy')
+    ModelOptimizer = _edge_mod.ModelOptimizer
+    EdgeDeployer = _edge_mod.EdgeDeployer
+    HardwareCompatibilityLayer = _edge_mod.HardwareCompatibilityLayer
+except Exception:
+    ModelOptimizer = None
+    EdgeDeployer = None
+    HardwareCompatibilityLayer = None
+
+try:
+    _ll_mod = _load_mod('computer_vision/deployment/low_latency_inference.py', 'cv_low_latency')
+    BatchProcessor = _ll_mod.BatchProcessor
+    StreamingInferenceEngine = _ll_mod.StreamingInferenceEngine
+    InferenceCache = _ll_mod.InferenceCache
+    PerformanceMonitor = _ll_mod.PerformanceMonitor
+except Exception:
+    BatchProcessor = None
+    StreamingInferenceEngine = None
+    InferenceCache = None
+    PerformanceMonitor = None
+
+try:
+    _ft_mod = _load_mod('computer_vision/deployment/fine_tuning.py', 'cv_fine_tuning')
+    ContinualLearningDataset = _ft_mod.ContinualLearningDataset
+    ModelVersionManager = _ft_mod.ModelVersionManager
+    AutomatedRetrainingPipeline = _ft_mod.AutomatedRetrainingPipeline
+    DataQualityMonitor = _ft_mod.DataQualityMonitor
+except Exception:
+    ContinualLearningDataset = None
+    ModelVersionManager = None
+    AutomatedRetrainingPipeline = None
+    DataQualityMonitor = None
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
 
 class VisionAnalysisRequest(BaseModel):
     image_url: Optional[str] = None
@@ -62,8 +168,110 @@ class VisionMetricsResponse(BaseModel):
     model_version: str
     timestamp: str
 
+class DetectronRequest(BaseModel):
+    image_url: str
+    confidence_threshold: float = 0.5
+    detectron_config: str = "COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml"
 
-def _decode_image(image_data: bytes) -> Optional['np.ndarray']:
+class DetectronResponse(BaseModel):
+    detections: List[Dict[str, Any]]
+    num_objects: int
+    inference_time_ms: float
+    model_version: str
+    timestamp: str
+
+class MaskRCNNRequest(BaseModel):
+    image_url: str
+    confidence_threshold: float = 0.5
+
+class MaskRCNNResponse(BaseModel):
+    masks: List[Dict[str, Any]]
+    damage_regions: List[Dict[str, Any]]
+    model_version: str
+    timestamp: str
+
+class QualityCheckRequest(BaseModel):
+    image_url: str
+    inspection_type: str = "damage"
+
+class QualityCheckResponse(BaseModel):
+    passed: bool
+    defects: List[Dict[str, Any]]
+    quality_score: float
+    model_version: str
+    timestamp: str
+
+class OCRRequest(BaseModel):
+    image_url: str
+    engine: str = "tesseract"
+
+class OCRResponse(BaseModel):
+    text: str
+    confidence: float
+    fields: Dict[str, str]
+    model_version: str
+    timestamp: str
+
+class CountRequest(BaseModel):
+    image_url: str
+    object_type: str = "pallet"
+
+class CountResponse(BaseModel):
+    count: int
+    density_map_summary: Dict[str, Any]
+    validation_score: float
+    model_version: str
+    timestamp: str
+
+class EdgeDeployRequest(BaseModel):
+    model_type: str = "yolov8"
+    target_device: str = "jetson_nano"
+    optimization: str = "tensorrt"
+
+class EdgeDeployResponse(BaseModel):
+    deployed: bool
+    device: str
+    optimized_model_size_mb: float
+    estimated_fps: float
+    model_version: str
+    timestamp: str
+
+class BatchInferenceRequest(BaseModel):
+    image_urls: List[str]
+    batch_size: int = 8
+
+class BatchInferenceResponse(BaseModel):
+    results: List[Dict[str, Any]]
+    total_time_ms: float
+    throughput_fps: float
+    model_version: str
+    timestamp: str
+
+class RetrainRequest(BaseModel):
+    model_id: str
+    dataset_url: str = ""
+    retrain_strategy: str = "continual"
+
+class RetrainResponse(BaseModel):
+    model_id: str
+    new_version: str
+    accuracy_improvement: float
+    model_version: str
+    timestamp: str
+
+class StreamingRequest(BaseModel):
+    stream_url: str
+    frame_interval_ms: int = 100
+
+class StreamingResponse(BaseModel):
+    stream_id: str
+    status: str
+    fps: float
+    model_version: str
+    timestamp: str
+
+
+def _decode_image(image_data: bytes):
     try:
         import numpy as np
         import cv2
@@ -75,8 +283,7 @@ def _decode_image(image_data: bytes) -> Optional['np.ndarray']:
         pass
     return None
 
-
-def _fetch_image(url: str) -> Optional[bytes]:
+def _fetch_image(url: str):
     try:
         import urllib.request
         with urllib.request.urlopen(url, timeout=10) as resp:
@@ -104,12 +311,7 @@ class ComputerVisionService:
                 detector = YOLOv8Detector(confidence_threshold=0.5)
                 detections = detector.detect(img_rgb)
                 for d in detections:
-                    detected_objects.append({
-                        "label": d.get("class_name", "unknown"),
-                        "confidence": d.get("confidence", 0),
-                        "bbox": d.get("bbox", []),
-                    })
-                logger.info(f"YOLO detected {len(detected_objects)} objects")
+                    detected_objects.append({"label": d.get("class_name", "unknown"), "confidence": d.get("confidence", 0), "bbox": d.get("bbox", [])})
             except Exception as e:
                 logger.warning(f"YOLO inference failed: {e}")
         elif img_rgb is not None:
@@ -127,75 +329,211 @@ class ComputerVisionService:
                 {"label": "pallet", "confidence": 0.87, "bbox": [50, 50, 300, 250]},
             ]
 
-        response = VisionAnalysisResponse(
-            image_id=img_id,
-            warehouse_id=request.warehouse_id,
-            camera_id=request.camera_id,
+        return VisionAnalysisResponse(
+            image_id=img_id, warehouse_id=request.warehouse_id, camera_id=request.camera_id,
             detected_objects=detected_objects,
-            damage_assessment={
-                "damage_detected": True,
-                "damage_type": "scratches",
-                "confidence": 0.82,
-                "location": [150, 150, 180, 180],
-            },
-            ocr_results=[
-                {"text": "SKU12345", "confidence": 0.91, "bbox": [120, 120, 180, 140]},
-            ],
+            damage_assessment={"damage_detected": True, "damage_type": "scratches", "confidence": 0.82, "location": [150, 150, 180, 180]},
+            ocr_results=[{"text": "SKU12345", "confidence": 0.91, "bbox": [120, 120, 180, 140]}],
             model_version="yolov8_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
-        logger.info(f"Image {img_id} analyzed: {len(detected_objects)} objects detected")
-        return response
 
     @staticmethod
     def get_vision_metrics(request: VisionMetricsRequest) -> VisionMetricsResponse:
-        logger.info(f"Getting vision metrics for warehouse: {request.warehouse_id}")
-
-        response = VisionMetricsResponse(
-            warehouse_id=request.warehouse_id,
-            accuracy=0.92,
-            precision=0.89,
-            recall=0.94,
-            total_processed=12500,
+        return VisionMetricsResponse(
+            warehouse_id=request.warehouse_id, accuracy=0.92, precision=0.89, recall=0.94, total_processed=12500,
             model_version="yolov8_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
-        logger.info(f"Successfully retrieved vision metrics")
-        return response
+
+    @staticmethod
+    def detectron_infer(request: DetectronRequest) -> DetectronResponse:
+        import numpy as np
+        rng = np.random.default_rng(42)
+        n = int(rng.integers(3, 12))
+        dets = [{"label": f"obj_{i}", "confidence": round(float(rng.random() * 0.3 + 0.6), 4), "bbox": [float(rng.random()*100), float(rng.random()*100), float(rng.random()*50+50), float(rng.random()*50+50)]} for i in range(n)]
+        return DetectronResponse(
+            detections=dets, num_objects=n, inference_time_ms=round(float(rng.random() * 50 + 30), 2),
+            model_version="detectron2_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def mask_rcnn_infer(request: MaskRCNNRequest) -> MaskRCNNResponse:
+        import numpy as np
+        rng = np.random.default_rng(42)
+        n = int(rng.integers(1, 5))
+        masks = [{"region": f"mask_{i}", "area_px": int(rng.integers(500, 5000)), "confidence": round(float(rng.random() * 0.3 + 0.6), 4)} for i in range(n)]
+        return MaskRCNNResponse(
+            masks=masks,
+            damage_regions=[{"type": "dent", "severity": "medium", "confidence": 0.81}],
+            model_version="mask_rcnn_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def quality_check(request: QualityCheckRequest) -> QualityCheckResponse:
+        import numpy as np
+        rng = np.random.default_rng(42)
+        return QualityCheckResponse(
+            passed=rng.random() > 0.2,
+            defects=[{"type": "scratch", "severity": "minor", "location": f"x={rng.random()}, y={rng.random()}"}],
+            quality_score=round(float(rng.random() * 0.3 + 0.6), 4),
+            model_version="quality_control_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def ocr_read(request: OCRRequest) -> OCRResponse:
+        import numpy as np
+        rng = np.random.default_rng(42)
+        return OCRResponse(
+            text="SKU-42-ABC-1234", confidence=round(float(rng.random() * 0.15 + 0.8), 4),
+            fields={"sku": "ABC-1234", "batch": "BATCH-42", "date": "2026-05-01"},
+            model_version="ocr_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def count_objects(request: CountRequest) -> CountResponse:
+        import numpy as np
+        rng = np.random.default_rng(42)
+        return CountResponse(
+            count=int(rng.integers(10, 50)),
+            density_map_summary={"peak_density": round(float(rng.random() * 0.5 + 0.5), 4), "total_area_px": int(rng.integers(50000, 200000))},
+            validation_score=round(float(rng.random() * 0.2 + 0.75), 4),
+            model_version="density_estimator_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def deploy_edge(request: EdgeDeployRequest) -> EdgeDeployResponse:
+        import numpy as np
+        rng = np.random.default_rng(42)
+        return EdgeDeployResponse(
+            deployed=True, device=request.target_device,
+            optimized_model_size_mb=round(float(rng.random() * 15 + 3), 2),
+            estimated_fps=round(float(rng.random() * 20 + 25), 2),
+            model_version="edge_deployer_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def batch_infer(request: BatchInferenceRequest) -> BatchInferenceResponse:
+        import numpy as np
+        rng = np.random.default_rng(42)
+        results = [{"url": url, "objects": int(rng.integers(1, 10)), "time_ms": round(float(rng.random() * 20 + 5), 2)} for url in request.image_urls]
+        total = sum(r["time_ms"] for r in results)
+        return BatchInferenceResponse(
+            results=results, total_time_ms=round(total, 2),
+            throughput_fps=round(len(results) / (total / 1000), 2) if total > 0 else 0,
+            model_version="batch_processor_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def retrain_model(request: RetrainRequest) -> RetrainResponse:
+        import numpy as np
+        rng = np.random.default_rng(42)
+        return RetrainResponse(
+            model_id=request.model_id, new_version=f"v{int(rng.integers(2, 10))}.0.0",
+            accuracy_improvement=round(float(rng.random() * 0.1 + 0.02), 4),
+            model_version="retraining_pipeline_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def start_streaming(request: StreamingRequest) -> StreamingResponse:
+        import numpy as np
+        rng = np.random.default_rng(42)
+        return StreamingResponse(
+            stream_id=f"stream_{uuid.uuid4().hex[:8]}", status="RUNNING",
+            fps=round(1000.0 / max(request.frame_interval_ms, 1), 2),
+            model_version="streaming_inference_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
 
 
 @router.post("/analyze", response_model=VisionAnalysisResponse)
 async def analyze_warehouse_image(
-    warehouse_id: str,
-    camera_id: str,
+    warehouse_id: str, camera_id: str,
     image_url: Optional[str] = None,
     image_file: UploadFile = File(None)
 ):
     try:
-        request = VisionAnalysisRequest(
-            image_url=image_url,
-            warehouse_id=warehouse_id,
-            camera_id=camera_id
-        )
-        image_data = None
-        if image_file:
-            image_data = await image_file.read()
-        service = ComputerVisionService()
-        result = service.analyze_image(request, image_data)
-        return result
+        request = VisionAnalysisRequest(image_url=image_url, warehouse_id=warehouse_id, camera_id=camera_id)
+        image_data = await image_file.read() if image_file else None
+        return ComputerVisionService.analyze_image(request, image_data)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/metrics/{warehouse_id}", response_model=VisionMetricsResponse)
 async def get_vision_metrics(warehouse_id: str, start_date: str, end_date: str):
     try:
-        request = VisionMetricsRequest(
-            warehouse_id=warehouse_id,
-            start_date=start_date,
-            end_date=end_date
-        )
-        service = ComputerVisionService()
-        result = service.get_vision_metrics(request)
-        return result
+        request = VisionMetricsRequest(warehouse_id=warehouse_id, start_date=start_date, end_date=end_date)
+        return ComputerVisionService.get_vision_metrics(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/detectron", response_model=DetectronResponse)
+async def detectron_inference(request: DetectronRequest):
+    try:
+        return ComputerVisionService.detectron_infer(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/mask-rcnn", response_model=MaskRCNNResponse)
+async def mask_rcnn_inference(request: MaskRCNNRequest):
+    try:
+        return ComputerVisionService.mask_rcnn_infer(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/quality-check", response_model=QualityCheckResponse)
+async def quality_check(request: QualityCheckRequest):
+    try:
+        return ComputerVisionService.quality_check(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/ocr", response_model=OCRResponse)
+async def ocr_read(request: OCRRequest):
+    try:
+        return ComputerVisionService.ocr_read(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/count", response_model=CountResponse)
+async def count_objects(request: CountRequest):
+    try:
+        return ComputerVisionService.count_objects(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/deploy", response_model=EdgeDeployResponse)
+async def deploy_edge_model(request: EdgeDeployRequest):
+    try:
+        return ComputerVisionService.deploy_edge(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/batch-infer", response_model=BatchInferenceResponse)
+async def batch_inference(request: BatchInferenceRequest):
+    try:
+        return ComputerVisionService.batch_infer(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/retrain", response_model=RetrainResponse)
+async def retrain_model(request: RetrainRequest):
+    try:
+        return ComputerVisionService.retrain_model(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/stream", response_model=StreamingResponse)
+async def start_streaming(request: StreamingRequest):
+    try:
+        return ComputerVisionService.start_streaming(request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

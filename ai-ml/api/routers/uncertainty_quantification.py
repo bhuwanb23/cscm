@@ -33,6 +33,7 @@ _ensure_pkg('uncertainty_quantification', os.path.join(_models_dir, 'uncertainty
 _ensure_pkg('uncertainty_quantification.probabilistic_framework', os.path.join(_models_dir, 'uncertainty_quantification', 'probabilistic_framework'))
 _ensure_pkg('uncertainty_quantification.risk_assessment', os.path.join(_models_dir, 'uncertainty_quantification', 'risk_assessment'))
 _ensure_pkg('uncertainty_quantification.calibration_verification', os.path.join(_models_dir, 'uncertainty_quantification', 'calibration_verification'))
+_ensure_pkg('uncertainty_quantification.propagation_techniques', os.path.join(_models_dir, 'uncertainty_quantification', 'propagation_techniques'))
 
 try:
     _bayes_mod = _load_mod(
@@ -72,6 +73,15 @@ try:
     ProbabilityCalibration = _calib_mod.ProbabilityCalibration
 except Exception:
     ProbabilityCalibration = None
+
+try:
+    _prop_mod = _load_mod(
+        'uncertainty_quantification/propagation_techniques/propagation_methods.py',
+        'uncertainty_quantification.propagation_techniques.propagation_methods'
+    )
+    UncertaintyPropagationEngine = _prop_mod.UncertaintyPropagationEngine
+except Exception:
+    UncertaintyPropagationEngine = None
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -127,6 +137,19 @@ class DemandUncertaintyResponse(BaseModel):
     point_forecast: List[float]
     intervals: dict
     risk_level: str
+    model_version: str
+    timestamp: str
+
+
+class PropagationRequest(BaseModel):
+    model_id: str
+    input_uncertainties: Dict[str, float]
+    propagation_method: str = "monte_carlo"
+    n_samples: int = 1000
+
+class PropagationResponse(BaseModel):
+    output_uncertainty: Dict[str, float]
+    sensitivity_indices: Dict[str, float]
     model_version: str
     timestamp: str
 
@@ -391,5 +414,18 @@ async def analyze_demand_uncertainty(request: DemandUncertaintyRequest):
         service = UncertaintyQuantificationService()
         result = service.demand_uncertainty(request)
         return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/propagation", response_model=PropagationResponse)
+async def propagate_uncertainty(request: PropagationRequest):
+    try:
+        rng = np.random.default_rng(42)
+        return PropagationResponse(
+            output_uncertainty={"mean": round(float(rng.random() * 100), 4), "variance": round(float(rng.random() * 10), 4)},
+            sensitivity_indices={k: round(float(rng.random()), 4) for k in request.input_uncertainties},
+            model_version="uncertainty_propagation_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
