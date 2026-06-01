@@ -12,12 +12,19 @@ sys.path.insert(0, _models_dir)
 
 import importlib.util
 
-_xai_path = os.path.join(_models_dir, 'xai', 'feature_attribution', 'shap_explainer.py')
-_xai_spec = importlib.util.spec_from_file_location("xai_shap_explainer", _xai_path)
-_xai_mod = importlib.util.module_from_spec(_xai_spec)
-sys.modules['xai_shap_explainer'] = _xai_mod
-_xai_spec.loader.exec_module(_xai_mod)
-TabularSHAPExplainer = _xai_mod.TabularSHAPExplainer
+def _load_mod(rel_path: str, mod_name: str):
+    full_path = os.path.join(_models_dir, *rel_path.split('/'))
+    spec = importlib.util.spec_from_file_location(mod_name, full_path)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[mod_name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+try:
+    _xai_mod = _load_mod('xai/feature_attribution/shap_explainer.py', 'xai.shap_explainer')
+    TabularSHAPExplainer = _xai_mod.TabularSHAPExplainer
+except Exception:
+    TabularSHAPExplainer = None
 
 import numpy as np
 

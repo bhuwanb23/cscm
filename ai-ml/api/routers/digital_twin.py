@@ -11,13 +11,22 @@ _models_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'models')
 sys.path.insert(0, _models_dir)
 
 import importlib.util
-_wh_path = os.path.join(_models_dir, 'digital_twin', 'physics_based', 'warehouse_process.py')
-_wh_spec = importlib.util.spec_from_file_location("warehouse_process", _wh_path)
-_wh_mod = importlib.util.module_from_spec(_wh_spec)
-sys.modules['warehouse_process'] = _wh_mod
-_wh_spec.loader.exec_module(_wh_mod)
-WarehouseProcessSimulator = _wh_mod.WarehouseProcessSimulator
-Zone = _wh_mod.Zone
+
+def _load_mod(rel_path: str, mod_name: str):
+    full_path = os.path.join(_models_dir, *rel_path.split('/'))
+    spec = importlib.util.spec_from_file_location(mod_name, full_path)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[mod_name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+try:
+    _wh_mod = _load_mod('digital_twin/physics_based/warehouse_process.py', 'digital_twin.warehouse_process')
+    WarehouseProcessSimulator = _wh_mod.WarehouseProcessSimulator
+    Zone = _wh_mod.Zone
+except Exception:
+    WarehouseProcessSimulator = None
+    Zone = None
 
 router = APIRouter()
 

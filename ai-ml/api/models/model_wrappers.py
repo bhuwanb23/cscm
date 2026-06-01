@@ -14,18 +14,62 @@ import pandas as pd
 # Add the models directory to the path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', 'models'))
 
-# Import model classes
-from demand_forecasting.model import DemandForecaster
-from inventory_optimization.stochastic_models.newsvendor import EnhancedNewsvendorModel
-from routing_logistics.classical_optimization.cvrptw_solver import CVRPTWSolver
-from supplier_risk.gradient_boosted.risk_predictor import GradientBoostRiskModel
-from anomaly_detection.unsupervised.isolation_forest import IsolationForestDetector
-from multi_agent_coordination.multi_agent_framework.maddpg import MADDPGAgent
-from digital_twin.physics_based.warehouse_process import WarehouseProcessSimulator
-from xai.feature_attribution.shap_explainer import TabularSHAPExplainer
-from nlp.conversational.chatops_agent import ChatOpsAgent
-from knowledge_graph.graph_db.neo4j_adapter import Neo4jAdapter
-from causal_inference.framework.dowhy_integration import CausalModel
+# Import model classes with fallbacks
+try:
+    from demand_forecasting.model import DemandForecaster
+except Exception:
+    DemandForecaster = None
+
+try:
+    from inventory_optimization.stochastic_models.newsvendor import EnhancedNewsvendorModel
+except Exception:
+    EnhancedNewsvendorModel = None
+
+try:
+    from routing_logistics.classical_optimization.cvrptw_solver import CVRPTWSolver
+except Exception:
+    CVRPTWSolver = None
+
+try:
+    from supplier_risk.gradient_boosted.risk_predictor import GradientBoostRiskModel
+except Exception:
+    GradientBoostRiskModel = None
+
+try:
+    from anomaly_detection.unsupervised.isolation_forest import IsolationForestDetector
+except Exception:
+    IsolationForestDetector = None
+
+try:
+    from multi_agent_coordination.multi_agent_framework.maddpg import MADDPGAgent
+except Exception:
+    MADDPGAgent = None
+
+try:
+    from digital_twin.physics_based.warehouse_process import WarehouseProcessSimulator
+except Exception:
+    WarehouseProcessSimulator = None
+
+try:
+    from xai.feature_attribution.shap_explainer import TabularSHAPExplainer
+except Exception:
+    TabularSHAPExplainer = None
+
+try:
+    from nlp.conversational.chatops_agent import ChatOpsAgent
+except Exception:
+    ChatOpsAgent = None
+
+try:
+    from knowledge_graph.graph_db.neo4j_adapter import Neo4jAdapter
+except Exception:
+    Neo4jAdapter = None
+
+try:
+    from causal_inference.framework.dowhy_integration import CausalModel
+except Exception:
+    CausalModel = None
+
 try:
     from computer_vision.object_detection.yolov8 import YOLOv8Detector
     HAS_CV = True

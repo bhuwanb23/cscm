@@ -21,12 +21,16 @@ def _load_mod(rel_path: str, mod_name: str):
     spec.loader.exec_module(mod)
     return mod
 
-_maddpg_mod = _load_mod(
-    'multi_agent_coordination/multi_agent_framework/maddpg.py',
-    'multi_agent_maddpg'
-)
-MADDPGAgent = _maddpg_mod.MADDPGAgent
-HAS_TORCH = _maddpg_mod.HAS_TORCH
+try:
+    _maddpg_mod = _load_mod(
+        'multi_agent_coordination/multi_agent_framework/maddpg.py',
+        'multi_agent_maddpg'
+    )
+    MADDPGAgent = _maddpg_mod.MADDPGAgent
+    HAS_TORCH = _maddpg_mod.HAS_TORCH
+except Exception:
+    MADDPGAgent = None
+    HAS_TORCH = False
 
 import numpy as np
 

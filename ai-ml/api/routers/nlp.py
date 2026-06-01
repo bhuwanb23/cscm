@@ -20,14 +20,23 @@ def _load_mod(rel_path: str, mod_name: str):
     spec.loader.exec_module(mod)
     return mod
 
-_chatops_mod = _load_mod('nlp/conversational/chatops_agent.py', 'nlp_chatops_agent')
-ChatOpsAgent = _chatops_mod.ChatOpsAgent
+try:
+    _chatops_mod = _load_mod('nlp/conversational/chatops_agent.py', 'nlp_chatops_agent')
+    ChatOpsAgent = _chatops_mod.ChatOpsAgent
+except Exception:
+    ChatOpsAgent = None
 
-_t5_mod = _load_mod('nlp/summarization/t5_summarizer.py', 'nlp_t5_summarizer')
-T5Summarizer = _t5_mod.T5Summarizer if hasattr(_t5_mod, 'T5Summarizer') else None
+try:
+    _t5_mod = _load_mod('nlp/summarization/t5_summarizer.py', 'nlp_t5_summarizer')
+    T5Summarizer = _t5_mod.T5Summarizer if hasattr(_t5_mod, 'T5Summarizer') else None
+except Exception:
+    T5Summarizer = None
 
-_ner_mod = _load_mod('nlp/document_processing/ner_processor.py', 'nlp_ner_processor')
-NERProcessor = _ner_mod.NERProcessor if hasattr(_ner_mod, 'NERProcessor') else None
+try:
+    _ner_mod = _load_mod('nlp/document_processing/ner_processor.py', 'nlp_ner_processor')
+    NERProcessor = _ner_mod.NERProcessor if hasattr(_ner_mod, 'NERProcessor') else None
+except Exception:
+    NERProcessor = None
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

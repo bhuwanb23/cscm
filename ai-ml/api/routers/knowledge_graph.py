@@ -32,12 +32,19 @@ def _ensure_pkg(pkg_name: str, pkg_path: str):
 _ensure_pkg('knowledge_graph', os.path.join(_models_dir, 'knowledge_graph'))
 _ensure_pkg('knowledge_graph.graph_db', os.path.join(_models_dir, 'knowledge_graph', 'graph_db'))
 
-_schema_mod = _load_mod('knowledge_graph/graph_db/schema.py', 'knowledge_graph.graph_db.schema')
-Entity = _schema_mod.Entity
-Relationship = _schema_mod.Relationship
+try:
+    _schema_mod = _load_mod('knowledge_graph/graph_db/schema.py', 'knowledge_graph.graph_db.schema')
+    Entity = _schema_mod.Entity
+    Relationship = _schema_mod.Relationship
+except Exception:
+    Entity = None
+    Relationship = None
 
-_store_mod = _load_mod('knowledge_graph/graph_db/graph_store.py', 'knowledge_graph.graph_db.graph_store')
-GraphStore = _store_mod.GraphStore
+try:
+    _store_mod = _load_mod('knowledge_graph/graph_db/graph_store.py', 'knowledge_graph.graph_db.graph_store')
+    GraphStore = _store_mod.GraphStore
+except Exception:
+    GraphStore = None
 
 import numpy as np
 

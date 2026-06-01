@@ -32,12 +32,16 @@ def _ensure_pkg(pkg_name: str, pkg_path: str):
 _ensure_pkg('causal_inference', os.path.join(_models_dir, 'causal_inference'))
 _ensure_pkg('causal_inference.framework', os.path.join(_models_dir, 'causal_inference', 'framework'))
 
-_dowhy_mod = _load_mod(
-    'causal_inference/framework/dowhy_integration.py',
-    'causal_inference.framework.dowhy_integration'
-)
-CausalGraph = _dowhy_mod.CausalGraph
-CausalModel = _dowhy_mod.CausalModel
+try:
+    _dowhy_mod = _load_mod(
+        'causal_inference/framework/dowhy_integration.py',
+        'causal_inference.framework.dowhy_integration'
+    )
+    CausalGraph = _dowhy_mod.CausalGraph
+    CausalModel = _dowhy_mod.CausalModel
+except Exception:
+    CausalGraph = None
+    CausalModel = None
 
 import numpy as np
 import pandas as pd
