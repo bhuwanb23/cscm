@@ -151,6 +151,7 @@ class RoutingOptimizationService:
                 total_time=180.0,
                 route_details=[
                     {"location": "depot", "arrival_time": "08:00", "departure_time": "08:00"},
+                ] + [
                     {"location": loc.get('id', f"loc{i}"), "arrival_time": "08:30", "departure_time": "08:45"}
                     for i, loc in enumerate(request.delivery_locations[:1])
                 ] + [{"location": "depot", "arrival_time": "11:00", "departure_time": "11:00"}],

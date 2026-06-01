@@ -6,11 +6,19 @@ in deep learning models through Monte Carlo dropout and variational inference.
 """
 
 import numpy as np
-import tensorflow as tf
-from tensorflow_probability import distributions as tfd
-import tensorflow_probability as tfp
 import logging
 from typing import Tuple, Optional, Dict, Any
+
+HAS_TF = False
+try:
+    import tensorflow as tf
+    from tensorflow_probability import distributions as tfd
+    import tensorflow_probability as tfp
+    HAS_TF = True
+except ImportError:
+    tf = None
+    tfd = None
+    tfp = None
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -48,6 +56,9 @@ class BayesianNeuralNetwork:
         
     def _build_model(self):
         """Build the Bayesian neural network model."""
+        if not HAS_TF:
+            raise ImportError("TensorFlow and TensorFlow Probability are required for BayesianNeuralNetwork. "
+                            "Install with: pip install tensorflow tensorflow-probability")
         inputs = tf.keras.Input(shape=(self.input_dim,))
         x = inputs
         
