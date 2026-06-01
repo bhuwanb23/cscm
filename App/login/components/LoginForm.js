@@ -84,33 +84,19 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
   const handleLogin = async () => {
     setLoading(true);
     
-    // Simulate API call - no validation needed for demo
+    // Simulate API call - shopkeeper only
     setTimeout(() => {
       setLoading(false);
       onLogin({ 
-        email: email || `${userRole}@cscm.com`, 
+        email: email || 'shopkeeper@cscm.com', 
         password: password || 'demo123', 
-        role: userRole 
+        role: 'shopkeeper' 
       });
     }, 1000);
   };
 
-  const handleRolePress = (role) => {
-    // Add press animation
-    Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 0.98,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-    
-    setUserRole(role);
+  const handleRolePress = () => {
+    // Role is fixed to shopkeeper only
   };
 
   const iconRotateInterpolate = iconRotateAnim.interpolate({
@@ -185,56 +171,26 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
 
               {/* Role Selection */}
               <View style={styles.roleContainer}>
-                <Text style={styles.roleLabel}>Select Your Role:</Text>
+                <Text style={styles.roleLabel}>Your Role:</Text>
                 <View style={styles.roleOptions}>
                   <TouchableOpacity
                     style={[
                       styles.roleOption,
-                      userRole === 'shopkeeper' && styles.roleOptionSelected
+                      styles.roleOptionSelected
                     ]}
-                    onPress={() => handleRolePress('shopkeeper')}
                     activeOpacity={0.8}
                   >
                     <LinearGradient
-                      colors={userRole === 'shopkeeper' ? ['#3B82F6', '#1E40AF'] : ['#F9FAFB', '#F3F4F6']}
+                      colors={['#3B82F6', '#1E40AF']}
                       style={styles.roleGradient}
                     >
                       <Ionicons 
-                        name="storefront-outline" 
+                        name="storefront" 
                         size={16} 
-                        color={userRole === 'shopkeeper' ? '#FFFFFF' : '#6B7280'} 
+                        color="#FFFFFF"
                       />
-                      <Text style={[
-                        styles.roleText,
-                        userRole === 'shopkeeper' && styles.roleTextSelected
-                      ]}>
+                      <Text style={styles.roleTextSelected}>
                         Shopkeeper
-                      </Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.roleOption,
-                      userRole === 'transporter' && styles.roleOptionSelected
-                    ]}
-                    onPress={() => handleRolePress('transporter')}
-                    activeOpacity={0.8}
-                  >
-                    <LinearGradient
-                      colors={userRole === 'transporter' ? ['#3B82F6', '#1E40AF'] : ['#F9FAFB', '#F3F4F6']}
-                      style={styles.roleGradient}
-                    >
-                      <Ionicons 
-                        name="car-outline" 
-                        size={16} 
-                        color={userRole === 'transporter' ? '#FFFFFF' : '#6B7280'} 
-                      />
-                      <Text style={[
-                        styles.roleText,
-                        userRole === 'transporter' && styles.roleTextSelected
-                      ]}>
-                        Transporter
                       </Text>
                     </LinearGradient>
                   </TouchableOpacity>

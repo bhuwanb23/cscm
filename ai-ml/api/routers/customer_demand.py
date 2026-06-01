@@ -19,7 +19,7 @@ async def analyze_customer_demand(request: CustomerAnalyzeRequest):
     """
     try:
         service = CustomerDemandService()
-        result = service.analyze_customer_demand(request)
+        result = service.analyze_customer(request)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

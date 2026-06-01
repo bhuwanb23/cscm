@@ -27,6 +27,9 @@ from monitoring import APIMonitor, get_health_status
 # Import job queue utilities
 from job_queue import job_queue
 
+# Import model registry
+from model_registry import init_registry
+
 # Create app
 app = FastAPI(title="Cognitive Supply Chain Mesh - AI/ML API")
 
@@ -107,6 +110,14 @@ async def startup_event():
     
     await job_queue.start()
     logger.info("Job queue started successfully")
+
+    # Initialize model registry (loads data, pre-trains models)
+    try:
+        init_registry()
+        logger.info("Model registry initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize model registry: {e}")
+        logger.warning("API will run with mock/fallback data for model services")
     
     # Log all registered endpoints
     routes = [route.path for route in app.routes if hasattr(route, 'path')]
