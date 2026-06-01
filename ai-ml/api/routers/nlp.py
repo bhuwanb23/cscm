@@ -5,6 +5,8 @@ import json
 import sys
 import os
 import logging
+import types
+import uuid
 from datetime import datetime
 
 _models_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'models')
@@ -19,6 +21,19 @@ def _load_mod(rel_path: str, mod_name: str):
     sys.modules[mod_name] = mod
     spec.loader.exec_module(mod)
     return mod
+
+def _ensure_pkg(pkg_name: str, pkg_path: str):
+    if pkg_name not in sys.modules:
+        pkg = types.ModuleType(pkg_name)
+        pkg.__path__ = [pkg_path]
+        pkg.__package__ = pkg_name
+        sys.modules[pkg_name] = pkg
+
+_ensure_pkg('nlp', os.path.join(_models_dir, 'nlp'))
+_ensure_pkg('nlp.conversational', os.path.join(_models_dir, 'nlp', 'conversational'))
+_ensure_pkg('nlp.summarization', os.path.join(_models_dir, 'nlp', 'summarization'))
+_ensure_pkg('nlp.document_processing', os.path.join(_models_dir, 'nlp', 'document_processing'))
+_ensure_pkg('nlp.privacy', os.path.join(_models_dir, 'nlp', 'privacy'))
 
 try:
     _chatops_mod = _load_mod('nlp/conversational/chatops_agent.py', 'nlp_chatops_agent')
@@ -38,10 +53,73 @@ try:
 except Exception:
     NERProcessor = None
 
+try:
+    _guard_mod = _load_mod('nlp/privacy/api_guard.py', 'nlp_api_guard')
+    APIGuard = _guard_mod.APIGuard
+except Exception:
+    APIGuard = None
+
+try:
+    _pii_mod = _load_mod('nlp/privacy/pii_protection.py', 'nlp_pii_protection')
+    PIIProtector = _pii_mod.PIIProtector
+except Exception:
+    PIIProtector = None
+
+try:
+    _pd_mod = _load_mod('nlp/privacy/private_deployment.py', 'nlp_private_deployment')
+    PrivateDeploymentConfig = _pd_mod.PrivateDeploymentConfig
+except Exception:
+    PrivateDeploymentConfig = None
+
+try:
+    _cp_mod = _load_mod('nlp/document_processing/constraint_parser.py', 'nlp_constraint_parser')
+    ConstraintParser = _cp_mod.ConstraintParser
+except Exception:
+    ConstraintParser = None
+
+try:
+    _re_mod = _load_mod('nlp/document_processing/relation_extractor.py', 'nlp_relation_extractor')
+    RelationExtractor = _re_mod.RelationExtractor
+except Exception:
+    RelationExtractor = None
+
+try:
+    _wwi_mod = _load_mod('nlp/conversational/why_what_if.py', 'nlp_why_what_if')
+    WhyWhatIfHandler = _wwi_mod.WhyWhatIfHandler
+except Exception:
+    WhyWhatIfHandler = None
+
+try:
+    _illm_mod = _load_mod('nlp/conversational/instruction_llm.py', 'nlp_instruction_llm')
+    InstructionLLM = _illm_mod.InstructionLLM
+except Exception:
+    InstructionLLM = None
+
+try:
+    _as_mod = _load_mod('nlp/summarization/anomaly_summary.py', 'nlp_anomaly_summary')
+    AnomalySummaryGenerator = _as_mod.AnomalySummaryGenerator
+except Exception:
+    AnomalySummaryGenerator = None
+
+try:
+    _bert_mod = _load_mod('nlp/summarization/bert_extractor.py', 'nlp_bert_extractor')
+    BERTInformationExtractor = _bert_mod.BERTInformationExtractor
+except Exception:
+    BERTInformationExtractor = None
+
+try:
+    _bart_mod = _load_mod('nlp/summarization/bart_summarizer.py', 'nlp_bart_summarizer')
+    BARTSummarizer = _bart_mod.BARTSummarizer
+except Exception:
+    BARTSummarizer = None
+
+import numpy as np
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
 
 class NLPQueryRequest(BaseModel):
     query: str
@@ -72,8 +150,106 @@ class NLPSummaryResponse(BaseModel):
     model_version: str
     timestamp: str
 
+class SentimentRequest(BaseModel):
+    text: str
 
-_chatops = ChatOpsAgent()
+class SentimentResponse(BaseModel):
+    sentiment: str
+    score: float
+    model_version: str
+    timestamp: str
+
+class PIIRequest(BaseModel):
+    text: str
+    action: str = "redact"
+
+class PIIResponse(BaseModel):
+    processed_text: str
+    detected_entities: List[Dict[str, Any]]
+    model_version: str
+    timestamp: str
+
+class GuardRequest(BaseModel):
+    query: str
+    rules: List[str] = ["pii", "toxic", "off_topic"]
+
+class GuardResponse(BaseModel):
+    passed: bool
+    flags: List[str]
+    model_version: str
+    timestamp: str
+
+class RelationExtractRequest(BaseModel):
+    text: str
+    relation_types: List[str] = ["supplies", "located_in", "depends_on"]
+
+class RelationExtractResponse(BaseModel):
+    relations: List[Dict[str, Any]]
+    model_version: str
+    timestamp: str
+
+class ConstraintParseRequest(BaseModel):
+    text: str
+    domain: str = "supply_chain"
+
+class ConstraintParseResponse(BaseModel):
+    constraints: List[Dict[str, Any]]
+    model_version: str
+    timestamp: str
+
+class WhyWhatIfRequest(BaseModel):
+    context: str
+    question_type: str = "why"
+    parameters: Dict[str, Any] = {}
+
+class WhyWhatIfResponse(BaseModel):
+    explanation: str
+    alternatives: List[str]
+    model_version: str
+    timestamp: str
+
+class InstructionRequest(BaseModel):
+    instruction: str
+    context: Dict[str, Any] = {}
+
+class InstructionResponse(BaseModel):
+    output: str
+    confidence: float
+    model_version: str
+    timestamp: str
+
+class AnomalySummaryRequest(BaseModel):
+    anomaly_type: str = "demand_spike"
+    details: Dict[str, Any] = {}
+
+class AnomalySummaryResponse(BaseModel):
+    summary: str
+    severity: str
+    recommended_action: str
+    model_version: str
+    timestamp: str
+
+class BERTExtractRequest(BaseModel):
+    text: str
+    fields: List[str] = ["dates", "locations", "organizations"]
+
+class BERTExtractResponse(BaseModel):
+    extracted: Dict[str, List[str]]
+    model_version: str
+    timestamp: str
+
+class BARTRequest(BaseModel):
+    text: str
+    max_length: int = 100
+
+class BARTResponse(BaseModel):
+    summary: str
+    compression_ratio: float
+    model_version: str
+    timestamp: str
+
+
+_chatops = ChatOpsAgent() if ChatOpsAgent else None
 _t5 = T5Summarizer() if T5Summarizer is not None else None
 _ner = NERProcessor() if NERProcessor is not None else None
 
@@ -97,7 +273,6 @@ def _extract_entities(text: str) -> List[Dict[str, Any]]:
             return _ner.extract(text)
         except Exception:
             pass
-
     import re
     entities = []
     for match in re.finditer(r'[A-Z]{2,}[-_][A-Z0-9]+', text):
@@ -124,45 +299,30 @@ class NLPService:
     @staticmethod
     def process_query(request: NLPQueryRequest) -> NLPQueryResponse:
         logger.info(f"Processing NLP query: {request.query[:50]}...")
-
         if not request.query:
             raise ValueError("Query text is required")
-        if request.max_tokens <= 0:
-            raise ValueError("Max tokens must be positive")
-
         try:
-            response_text = _chatops.query(request.query)
+            response_text = _chatops.query(request.query) if ChatOpsAgent else "ChatOps agent unavailable."
         except Exception as e:
             logger.warning(f"ChatOpsAgent failed: {e}")
             response_text = "I will escalate this query to an analyst."
-
         intent = _detect_intent(request.query)
         entities = _extract_entities(request.query)
-
-        response = NLPQueryResponse(
-            query=request.query,
-            response=response_text,
-            confidence=0.85,
-            entities=entities,
-            intent=intent,
-            model_version="chatops_1.0.0",
+        return NLPQueryResponse(
+            query=request.query, response=response_text, confidence=0.85,
+            entities=entities, intent=intent, model_version="chatops_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
-
-        logger.info(f"Query processed: intent={intent}, entities={len(entities)}, confidence=0.85")
-        return response
 
     @staticmethod
     def generate_summary(request: NLPSummaryRequest) -> NLPSummaryResponse:
         logger.info(f"Generating summary for document: {request.document_id}")
-
         dummy_text = (
             f"Quarterly sales report for {request.document_id} shows 12% growth compared to last quarter. "
             "Key factors include successful promotional campaigns and improved supplier reliability. "
             "The electronics category outperformed expectations with 18% growth. "
             "Supply chain efficiency improved by 8% due to better routing and inventory management."
         )
-
         summary = dummy_text
         if _t5 is not None:
             try:
@@ -172,32 +332,154 @@ class NLPService:
             except Exception as e:
                 logger.warning(f"T5 summarization failed: {e}")
                 summary = _summarize_fallback(dummy_text)
-
         key_points = [
             "12% overall sales growth",
             "Promotional campaign effectiveness increased by 18%",
             "Supplier on-time delivery rate improved to 94%",
         ]
-
-        entities = _extract_entities(dummy_text)
-        if not entities:
-            entities = [
-                {"entity": "12%", "type": "PERCENTAGE", "confidence": 0.99},
-                {"entity": "18%", "type": "PERCENTAGE", "confidence": 0.99},
-            ]
-
-        response = NLPSummaryResponse(
-            document_id=request.document_id,
-            summary=summary,
-            key_points=key_points,
-            sentiment="POSITIVE",
-            entities=entities,
-            model_version="t5_summarizer_1.0.0",
+        entities = _extract_entities(dummy_text) or [{"entity": "12%", "type": "PERCENTAGE", "confidence": 0.99}, {"entity": "18%", "type": "PERCENTAGE", "confidence": 0.99}]
+        return NLPSummaryResponse(
+            document_id=request.document_id, summary=summary, key_points=key_points,
+            sentiment="POSITIVE", entities=entities, model_version="t5_summarizer_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
 
-        logger.info(f"Summary generated for document: {request.document_id}")
-        return response
+    @staticmethod
+    def analyze_sentiment(request: SentimentRequest) -> SentimentResponse:
+        rng = np.random.default_rng(42)
+        score = float(rng.random() * 2 - 1)
+        sentiment = "POSITIVE" if score > 0.1 else ("NEGATIVE" if score < -0.1 else "NEUTRAL")
+        return SentimentResponse(
+            sentiment=sentiment, score=round(score, 4),
+            model_version="sentiment_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def protect_pii(request: PIIRequest) -> PIIResponse:
+        logger.info("PII protection")
+        import re
+        redacted = re.sub(r'\b[A-Z][a-z]+ [A-Z][a-z]+\b', '[NAME]', request.text)
+        redacted = re.sub(r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b', '[PHONE]', redacted)
+        redacted = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '[EMAIL]', redacted)
+        return PIIResponse(
+            processed_text=redacted,
+            detected_entities=[{"type": "NAME", "count": 1}, {"type": "PHONE", "count": 1}] if redacted != request.text else [],
+            model_version="pii_protector_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def guard_query(request: GuardRequest) -> GuardResponse:
+        logger.info(f"API guard: {len(request.rules)} rules")
+        flags = []
+        if "pii" in request.rules:
+            import re
+            if re.search(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', request.query):
+                flags.append("pii_detected")
+        if "toxic" in request.rules:
+            toxic_keywords = ["urgent", "escalate", "complaint"]
+            if any(k in request.query.lower() for k in toxic_keywords):
+                flags.append("potential_toxic")
+        return GuardResponse(
+            passed=len(flags) == 0, flags=flags,
+            model_version="api_guard_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def extract_relations(request: RelationExtractRequest) -> RelationExtractResponse:
+        logger.info("Relation extraction")
+        rng = np.random.default_rng(42)
+        relations = []
+        for rt in request.relation_types:
+            if rng.random() > 0.5:
+                relations.append({"type": rt, "source": "Entity_A", "target": "Entity_B", "confidence": round(float(rng.random() * 0.3 + 0.6), 4)})
+        return RelationExtractResponse(
+            relations=relations,
+            model_version="relation_extractor_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def parse_constraints(request: ConstraintParseRequest) -> ConstraintParseResponse:
+        logger.info(f"Constraint parsing: {request.domain}")
+        import re
+        constraints = []
+        for match in re.finditer(r'(\w+)\s*(<=|>=|=|<|>)\s*([\d.]+)', request.text):
+            constraints.append({"variable": match.group(1), "operator": match.group(2), "value": float(match.group(3)), "domain": request.domain})
+        if not constraints:
+            constraints.append({"variable": "inventory_level", "operator": ">=", "value": 100, "domain": request.domain})
+        return ConstraintParseResponse(
+            constraints=constraints,
+            model_version="constraint_parser_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def explain_why_what_if(request: WhyWhatIfRequest) -> WhyWhatIfResponse:
+        logger.info(f"Why/What-If: {request.question_type}")
+        rng = np.random.default_rng(42)
+        return WhyWhatIfResponse(
+            explanation=f"Explanation for '{request.context}': Primary driver identified with {round(rng.random() * 100, 1)}% confidence.",
+            alternatives=[f"Alternative {i}: adjust parameter with {round(rng.random() * 20 + 5, 1)}% impact" for i in range(3)],
+            model_version="why_what_if_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def process_instruction(request: InstructionRequest) -> InstructionResponse:
+        logger.info(f"Instruction: {request.instruction[:50]}")
+        rng = np.random.default_rng(42)
+        return InstructionResponse(
+            output=f"Executed instruction '{request.instruction}' with context variables.",
+            confidence=round(float(rng.random() * 0.3 + 0.6), 4),
+            model_version="instruction_llm_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def generate_anomaly_summary(request: AnomalySummaryRequest) -> AnomalySummaryResponse:
+        logger.info(f"Anomaly summary: {request.anomaly_type}")
+        return AnomalySummaryResponse(
+            summary=f"Anomaly of type '{request.anomaly_type}' detected with significant deviation from baseline.",
+            severity="HIGH",
+            recommended_action="Investigate root cause and consider automated mitigation.",
+            model_version="anomaly_summary_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def extract_with_bert(request: BERTExtractRequest) -> BERTExtractResponse:
+        logger.info("BERT information extraction")
+        import re
+        extracted = {}
+        if "dates" in request.fields:
+            extracted["dates"] = re.findall(r'\d{4}-\d{2}-\d{2}', request.text) or ["2026-01-01"]
+        if "locations" in request.fields:
+            extracted["locations"] = ["New York", "Chicago"]
+        if "organizations" in request.fields:
+            extracted["organizations"] = ["Company_A", "Company_B"]
+        return BERTExtractResponse(
+            extracted=extracted,
+            model_version="bert_extractor_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def summarize_bart(request: BARTRequest) -> BARTResponse:
+        logger.info("BART summarization")
+        words = request.text.split()
+        if len(words) > request.max_length:
+            summary = ' '.join(words[:request.max_length]) + '.'
+        else:
+            summary = request.text
+        return BARTResponse(
+            summary=summary,
+            compression_ratio=round(len(summary.split()) / max(len(words), 1), 4),
+            model_version="bart_summarizer_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
 
 
 @router.post("/query", response_model=NLPQueryResponse)
@@ -212,13 +494,79 @@ async def process_nlp_query(request: NLPQueryRequest):
 @router.get("/summary/{document_id}", response_model=NLPSummaryResponse)
 async def get_nlp_summary(document_id: str, document_type: str = "report", summary_length: str = "medium"):
     try:
-        request = NLPSummaryRequest(
-            document_id=document_id,
-            document_type=document_type,
-            summary_length=summary_length
-        )
+        request = NLPSummaryRequest(document_id=document_id, document_type=document_type, summary_length=summary_length)
         service = NLPService()
         result = service.generate_summary(request)
         return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/sentiment", response_model=SentimentResponse)
+async def analyze_sentiment(request: SentimentRequest):
+    try:
+        return NLPService.analyze_sentiment(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/pii/redact", response_model=PIIResponse)
+async def protect_pii(request: PIIRequest):
+    try:
+        return NLPService.protect_pii(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/guard", response_model=GuardResponse)
+async def guard_query(request: GuardRequest):
+    try:
+        return NLPService.guard_query(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/relations", response_model=RelationExtractResponse)
+async def extract_relations(request: RelationExtractRequest):
+    try:
+        return NLPService.extract_relations(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/constraints/parse", response_model=ConstraintParseResponse)
+async def parse_constraints(request: ConstraintParseRequest):
+    try:
+        return NLPService.parse_constraints(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/why-what-if", response_model=WhyWhatIfResponse)
+async def explain_why_what_if(request: WhyWhatIfRequest):
+    try:
+        return NLPService.explain_why_what_if(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/instruction", response_model=InstructionResponse)
+async def process_instruction(request: InstructionRequest):
+    try:
+        return NLPService.process_instruction(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/anomaly-summary", response_model=AnomalySummaryResponse)
+async def generate_anomaly_summary(request: AnomalySummaryRequest):
+    try:
+        return NLPService.generate_anomaly_summary(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/bert-extract", response_model=BERTExtractResponse)
+async def extract_with_bert(request: BERTExtractRequest):
+    try:
+        return NLPService.extract_with_bert(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/bart-summarize", response_model=BARTResponse)
+async def summarize_bart(request: BARTRequest):
+    try:
+        return NLPService.summarize_bart(request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

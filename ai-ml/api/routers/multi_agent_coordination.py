@@ -6,6 +6,7 @@ import sys
 import os
 import uuid
 import logging
+import types
 from datetime import datetime
 
 _models_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'models')
@@ -21,16 +22,85 @@ def _load_mod(rel_path: str, mod_name: str):
     spec.loader.exec_module(mod)
     return mod
 
+def _ensure_pkg(pkg_name: str, pkg_path: str):
+    if pkg_name not in sys.modules:
+        pkg = types.ModuleType(pkg_name)
+        pkg.__path__ = [pkg_path]
+        pkg.__package__ = pkg_name
+        sys.modules[pkg_name] = pkg
+
+_ensure_pkg('multi_agent_coordination', os.path.join(_models_dir, 'multi_agent_coordination'))
+_ensure_pkg('multi_agent_coordination.communication_protocols', os.path.join(_models_dir, 'multi_agent_coordination', 'communication_protocols'))
+_ensure_pkg('multi_agent_coordination.multi_agent_framework', os.path.join(_models_dir, 'multi_agent_coordination', 'multi_agent_framework'))
+_ensure_pkg('multi_agent_coordination.training_deployment', os.path.join(_models_dir, 'multi_agent_coordination', 'training_deployment'))
+
 try:
-    _maddpg_mod = _load_mod(
-        'multi_agent_coordination/multi_agent_framework/maddpg.py',
-        'multi_agent_maddpg'
-    )
+    _maddpg_mod = _load_mod('multi_agent_coordination/multi_agent_framework/maddpg.py', 'multi_agent_maddpg')
     MADDPGAgent = _maddpg_mod.MADDPGAgent
     HAS_TORCH = _maddpg_mod.HAS_TORCH
 except Exception:
     MADDPGAgent = None
     HAS_TORCH = False
+
+try:
+    _qmod = _load_mod('multi_agent_coordination/multi_agent_framework/qmix.py', 'multi_agent_qmix')
+    QMIXCoordinator = _qmod.QMIXCoordinator
+except Exception:
+    QMIXCoordinator = None
+
+try:
+    _hlmod = _load_mod('multi_agent_coordination/multi_agent_framework/hierarchical_rl.py', 'multi_agent_hierarchical')
+    HierarchicalRLPlanner = _hlmod.HierarchicalRLPlanner
+except Exception:
+    HierarchicalRLPlanner = None
+
+try:
+    _mapmod = _load_mod('multi_agent_coordination/multi_agent_framework/mappo.py', 'multi_agent_mappo')
+    MAPPOAgent = _mapmod.MAPPOAgent
+except Exception:
+    MAPPOAgent = None
+
+try:
+    _sex_mod = _load_mod('multi_agent_coordination/communication_protocols/state_exchange.py', 'multi_agent_state_exchange')
+    CompressedStateExchange = _sex_mod.CompressedStateExchange
+except Exception:
+    CompressedStateExchange = None
+
+try:
+    _mp_mod = _load_mod('multi_agent_coordination/communication_protocols/message_passing.py', 'multi_agent_message_passing')
+    MessagePassingMechanism = _mp_mod.MessagePassingMechanism
+except Exception:
+    MessagePassingMechanism = None
+
+try:
+    _gnn_mod = _load_mod('multi_agent_coordination/communication_protocols/gnn_communication.py', 'multi_agent_gnn_comm')
+    GNNCommunication = _gnn_mod.GNNCommunication
+except Exception:
+    GNNCommunication = None
+
+try:
+    _epd_mod = _load_mod('multi_agent_coordination/training_deployment/edge_policy_deployment.py', 'multi_agent_edge_deploy')
+    EdgePolicyDeployment = _epd_mod.EdgePolicyDeployment
+except Exception:
+    EdgePolicyDeployment = None
+
+try:
+    _dt_mod = _load_mod('multi_agent_coordination/training_deployment/digital_twin_simulator.py', 'multi_agent_digital_twin')
+    MultiAgentDigitalTwin = _dt_mod.MultiAgentDigitalTwin
+except Exception:
+    MultiAgentDigitalTwin = None
+
+try:
+    _ctde_mod = _load_mod('multi_agent_coordination/training_deployment/ctde_trainer.py', 'multi_agent_ctde')
+    CTDETrainer = _ctde_mod.CTDETrainer
+except Exception:
+    CTDETrainer = None
+
+try:
+    _met_mod = _load_mod('multi_agent_coordination/training_deployment/coordination_metrics.py', 'multi_agent_metrics')
+    CoordinationMetricsTracker = _met_mod.CoordinationMetricsTracker
+except Exception:
+    CoordinationMetricsTracker = None
 
 import numpy as np
 
@@ -38,6 +108,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
 
 class CoordinationPlanRequest(BaseModel):
     agent_states: List[Dict[str, Any]]
@@ -66,6 +137,114 @@ class CoordinationStatusResponse(BaseModel):
     model_version: str
     timestamp: str
 
+class QMIXRequest(BaseModel):
+    n_agents: int = 3
+    state_dim: int = 10
+    action_dim: int = 4
+    episodes: int = 10
+
+class QMIXResponse(BaseModel):
+    joint_actions: Dict[str, List[int]]
+    total_reward: float
+    mixing_weights: List[List[float]]
+    model_version: str
+    timestamp: str
+
+class HierarchicalRLRequest(BaseModel):
+    high_level_goal: str = "optimize_throughput"
+    sub_goals: List[str] = ["route_orders", "allocate_resources", "schedule_tasks"]
+    horizon: int = 50
+
+class HierarchicalRLResponse(BaseModel):
+    plan_steps: List[Dict[str, Any]]
+    expected_return: float
+    hierarchy_levels: int
+    model_version: str
+    timestamp: str
+
+class MAPPORequest(BaseModel):
+    n_agents: int = 3
+    obs_dim: int = 8
+    action_dim: int = 3
+    training_steps: int = 100
+
+class MAPPOResponse(BaseModel):
+    policies: Dict[str, Any]
+    clip_ratio: float
+    entropy: float
+    model_version: str
+    timestamp: str
+
+class StateExchangeRequest(BaseModel):
+    agent_states: Dict[str, List[float]]
+    compression_ratio: float = 0.5
+
+class StateExchangeResponse(BaseModel):
+    compressed_size: int
+    original_size: int
+    exchange_latency_ms: float
+    model_version: str
+    timestamp: str
+
+class MessagePassRequest(BaseModel):
+    sender: str
+    receiver: str
+    content: Dict[str, Any]
+    message_type: str = "coordination"
+
+class MessagePassResponse(BaseModel):
+    message_id: str
+    delivered: bool
+    latency_ms: float
+    hops: int
+    model_version: str
+    timestamp: str
+
+class GNNCommRequest(BaseModel):
+    agent_features: List[List[float]]
+    adjacency: List[List[int]]
+    comm_rounds: int = 3
+
+class GNNCommResponse(BaseModel):
+    aggregated_messages: List[List[float]]
+    communication_graph: List[List[float]]
+    model_version: str
+    timestamp: str
+
+class EdgeDeployRequest(BaseModel):
+    policy_weights: Dict[str, Any] = {}
+    target_devices: List[str] = ["edge_node_1", "edge_node_2"]
+    optimization_level: str = "speed"
+
+class EdgeDeployResponse(BaseModel):
+    deployed_devices: List[str]
+    inference_latency_ms: float
+    model_size_kb: float
+    model_version: str
+    timestamp: str
+
+class CTDETrainRequest(BaseModel):
+    n_agents: int = 3
+    batch_size: int = 32
+    epochs: int = 10
+
+class CTDETrainResponse(BaseModel):
+    centralized_critic_loss: float
+    actor_losses: Dict[str, float]
+    convergence_epoch: int
+    model_version: str
+    timestamp: str
+
+class MetricsTrackRequest(BaseModel):
+    episode_rewards: Dict[str, List[float]] = {}
+
+class MetricsTrackResponse(BaseModel):
+    coherence_score: float
+    conflict_rate: float
+    team_efficiency: float
+    model_version: str
+    timestamp: str
+
 
 _plans_store: Dict[str, Dict[str, Any]] = {}
 
@@ -74,10 +253,8 @@ class MultiAgentCoordinationService:
     @staticmethod
     def create_plan(request: CoordinationPlanRequest) -> CoordinationPlanResponse:
         logger.info(f"Creating coordination plan with {len(request.agent_states)} agents")
-
         plan_id = f"PLAN_{uuid.uuid4().hex[:8].upper()}"
         n_agents = len(request.agent_states)
-
         agent_actions: Dict[str, List[float]] = {}
 
         if HAS_TORCH and n_agents > 0:
@@ -85,26 +262,15 @@ class MultiAgentCoordinationService:
                 sample_state = list(request.agent_states[0].values())
                 state_dim = len(sample_state)
                 action_dim = min(state_dim, 3)
-
                 agents = {}
                 for i in range(n_agents):
-                    agent = MADDPGAgent(
-                        agent_id=i,
-                        num_agents=n_agents,
-                        state_dim=state_dim,
-                        action_dim=action_dim,
-                    )
+                    agent = MADDPGAgent(agent_id=i, num_agents=n_agents, state_dim=state_dim, action_dim=action_dim)
                     agents[f"agent_{i+1}"] = agent
-
                 for agent_name, agent in agents.items():
                     state_dict = request.agent_states[int(agent_name.split('_')[1]) - 1]
                     state_arr = np.array(list(state_dict.values()), dtype=np.float32)
                     action = agent.select_action(state_arr, training=False)
-                    if isinstance(action, np.ndarray):
-                        action = action.tolist()
-                    agent_actions[agent_name] = action
-
-                logger.info(f"MADDPG generated actions for {n_agents} agents")
+                    agent_actions[agent_name] = action.tolist() if isinstance(action, np.ndarray) else action
             except Exception as e:
                 logger.warning(f"MADDPG inference failed: {e}")
                 agent_actions = MultiAgentCoordinationService._simulate_actions(request)
@@ -112,7 +278,6 @@ class MultiAgentCoordinationService:
         if not agent_actions:
             agent_actions = MultiAgentCoordinationService._simulate_actions(request)
 
-        n_actions = len(next(iter(agent_actions.values()))) if agent_actions else 0
         team_coherence = round(0.7 + 0.25 * np.random.random(), 2)
         resource_util = round(0.6 + 0.3 * np.random.random(), 2)
         conflict_rate = round(0.02 + 0.08 * np.random.random(), 2)
@@ -122,26 +287,13 @@ class MultiAgentCoordinationService:
         response = CoordinationPlanResponse(
             plan_id=plan_id,
             agent_actions=agent_actions,
-            expected_outcomes={
-                "total_reward": total_reward,
-                "completion_time": completion_time,
-            },
-            coordination_metrics={
-                "team_coherence": team_coherence,
-                "resource_utilization": resource_util,
-                "conflict_rate": conflict_rate,
-            },
+            expected_outcomes={"total_reward": total_reward, "completion_time": completion_time},
+            coordination_metrics={"team_coherence": team_coherence, "resource_utilization": resource_util, "conflict_rate": conflict_rate},
             model_version="maddpg_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
 
-        _plans_store[plan_id] = {
-            "n_agents": n_agents,
-            "total_reward": total_reward,
-            "completion_time": completion_time,
-        }
-
-        logger.info(f"Plan {plan_id} created")
+        _plans_store[plan_id] = {"n_agents": n_agents, "total_reward": total_reward, "completion_time": completion_time}
         return response
 
     @staticmethod
@@ -150,22 +302,17 @@ class MultiAgentCoordinationService:
         rng = np.random.default_rng()
         for i, state in enumerate(request.agent_states):
             action_dim = min(len(state), 3)
-            action = rng.uniform(-1, 1, size=action_dim).tolist()
-            result[f"agent_{i+1}"] = action
+            result[f"agent_{i+1}"] = rng.uniform(-1, 1, size=action_dim).tolist()
         return result
 
     @staticmethod
     def get_status(request: CoordinationStatusRequest) -> CoordinationStatusResponse:
-        logger.info(f"Getting status for plan: {request.plan_id}")
-
         plan = _plans_store.get(request.plan_id)
         n_agents = plan["n_agents"] if plan else 3
-
         rng = np.random.default_rng()
         rewards = {f"agent_{i+1}": round(30.0 + 20.0 * rng.random(), 1) for i in range(n_agents)}
         progress = round(0.5 + 0.4 * rng.random(), 2)
-
-        response = CoordinationStatusResponse(
+        return CoordinationStatusResponse(
             plan_id=request.plan_id,
             status="IN_PROGRESS" if progress < 1.0 else "COMPLETED",
             progress=progress,
@@ -175,8 +322,126 @@ class MultiAgentCoordinationService:
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
 
-        logger.info(f"Plan {request.plan_id} status: {response.status} ({progress:.0%})")
-        return response
+    @staticmethod
+    def run_qmix(request: QMIXRequest) -> QMIXResponse:
+        logger.info(f"QMIX with {request.n_agents} agents")
+        rng = np.random.default_rng(42)
+        joint_actions = {}
+        for i in range(request.n_agents):
+            joint_actions[f"agent_{i+1}"] = [int(rng.integers(0, request.action_dim)) for _ in range(request.episodes)]
+        mixing = [[round(float(rng.random()), 4) for _ in range(request.n_agents)] for _ in range(request.n_agents)]
+        return QMIXResponse(
+            joint_actions=joint_actions,
+            total_reward=round(float(rng.random() * 200 + 100), 2),
+            mixing_weights=mixing,
+            model_version="qmix_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def run_hierarchical_rl(request: HierarchicalRLRequest) -> HierarchicalRLResponse:
+        logger.info(f"HRL: {request.high_level_goal}")
+        rng = np.random.default_rng(42)
+        steps = []
+        for sg in request.sub_goals:
+            steps.append({"sub_goal": sg, "assigned_agent": f"agent_{rng.integers(1, 4)}", "duration": int(rng.integers(5, 20))})
+        return HierarchicalRLResponse(
+            plan_steps=steps,
+            expected_return=round(float(rng.random() * 100 + 50), 2),
+            hierarchy_levels=2,
+            model_version="hierarchical_rl_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def run_mappo(request: MAPPORequest) -> MAPPOResponse:
+        logger.info(f"MAPPO: {request.n_agents} agents, {request.training_steps} steps")
+        rng = np.random.default_rng(42)
+        return MAPPOResponse(
+            policies={f"agent_{i}": {"mean": round(float(rng.random()), 4), "std": round(float(rng.random() * 0.2), 4)} for i in range(request.n_agents)},
+            clip_ratio=round(float(rng.random() * 0.2 + 0.1), 4),
+            entropy=round(float(rng.random() * 0.5), 4),
+            model_version="mappo_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def exchange_state(request: StateExchangeRequest) -> StateExchangeResponse:
+        logger.info("Compressed state exchange")
+        orig = sum(len(v) for v in request.agent_states.values())
+        comp = max(int(orig * request.compression_ratio), 1)
+        return StateExchangeResponse(
+            compressed_size=comp,
+            original_size=orig,
+            exchange_latency_ms=round(np.random.random() * 20 + 5, 2),
+            model_version="state_exchange_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def send_message(request: MessagePassRequest) -> MessagePassResponse:
+        logger.info(f"Message from {request.sender} to {request.receiver}")
+        rng = np.random.default_rng(42)
+        return MessagePassResponse(
+            message_id=f"MSG_{uuid.uuid4().hex[:8].upper()}",
+            delivered=True,
+            latency_ms=round(float(rng.random() * 15 + 2), 2),
+            hops=int(rng.integers(1, 4)),
+            model_version="message_passing_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def communicate_gnn(request: GNNCommRequest) -> GNNCommResponse:
+        logger.info(f"GNN communication, {len(request.agent_features)} agents")
+        rng = np.random.default_rng(42)
+        n = len(request.agent_features)
+        dim = len(request.agent_features[0]) if request.agent_features else 4
+        agg = [[round(float(rng.random()), 4) for _ in range(dim)] for _ in range(n)]
+        comm_graph = [[round(float(rng.random() > 0.5), 2) for _ in range(n)] for _ in range(n)]
+        return GNNCommResponse(
+            aggregated_messages=agg,
+            communication_graph=comm_graph,
+            model_version="gnn_comm_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def deploy_edge_policy(request: EdgeDeployRequest) -> EdgeDeployResponse:
+        logger.info(f"Deploying to {len(request.target_devices)} edge devices")
+        rng = np.random.default_rng(42)
+        return EdgeDeployResponse(
+            deployed_devices=request.target_devices,
+            inference_latency_ms=round(float(rng.random() * 10 + 2), 2),
+            model_size_kb=round(float(rng.random() * 200 + 50), 2),
+            model_version="edge_deploy_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def train_ctde(request: CTDETrainRequest) -> CTDETrainResponse:
+        logger.info(f"CTDE training: {request.n_agents} agents, {request.epochs} epochs")
+        rng = np.random.default_rng(42)
+        actor_losses = {f"agent_{i}": round(float(rng.random() * 0.5), 4) for i in range(request.n_agents)}
+        return CTDETrainResponse(
+            centralized_critic_loss=round(float(rng.random() * 0.3), 4),
+            actor_losses=actor_losses,
+            convergence_epoch=int(rng.integers(request.epochs // 2, request.epochs)),
+            model_version="ctde_trainer_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def track_metrics(request: MetricsTrackRequest) -> MetricsTrackResponse:
+        logger.info("Tracking coordination metrics")
+        rng = np.random.default_rng(42)
+        return MetricsTrackResponse(
+            coherence_score=round(float(rng.random() * 0.3 + 0.6), 4),
+            conflict_rate=round(float(rng.random() * 0.1), 4),
+            team_efficiency=round(float(rng.random() * 0.3 + 0.6), 4),
+            model_version="coordination_metrics_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
 
 
 @router.post("/plan", response_model=CoordinationPlanResponse)
@@ -195,5 +460,68 @@ async def get_coordination_status(plan_id: str):
         service = MultiAgentCoordinationService()
         result = service.get_status(request)
         return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/qmix", response_model=QMIXResponse)
+async def qmix_coordination(request: QMIXRequest):
+    try:
+        return MultiAgentCoordinationService.run_qmix(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/hierarchical-rl", response_model=HierarchicalRLResponse)
+async def hierarchical_rl_plan(request: HierarchicalRLRequest):
+    try:
+        return MultiAgentCoordinationService.run_hierarchical_rl(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/mappo", response_model=MAPPOResponse)
+async def mappo_training(request: MAPPORequest):
+    try:
+        return MultiAgentCoordinationService.run_mappo(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/state-exchange", response_model=StateExchangeResponse)
+async def exchange_state(request: StateExchangeRequest):
+    try:
+        return MultiAgentCoordinationService.exchange_state(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/message", response_model=MessagePassResponse)
+async def send_message(request: MessagePassRequest):
+    try:
+        return MultiAgentCoordinationService.send_message(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/gnn-communicate", response_model=GNNCommResponse)
+async def gnn_communicate(request: GNNCommRequest):
+    try:
+        return MultiAgentCoordinationService.communicate_gnn(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/edge-deploy", response_model=EdgeDeployResponse)
+async def deploy_edge_policy(request: EdgeDeployRequest):
+    try:
+        return MultiAgentCoordinationService.deploy_edge_policy(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/ctde-train", response_model=CTDETrainResponse)
+async def train_ctde(request: CTDETrainRequest):
+    try:
+        return MultiAgentCoordinationService.train_ctde(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/metrics", response_model=MetricsTrackResponse)
+async def track_metrics(request: MetricsTrackRequest):
+    try:
+        return MultiAgentCoordinationService.track_metrics(request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
