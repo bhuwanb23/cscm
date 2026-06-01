@@ -65,6 +65,7 @@ async def add_process_time_header(request, call_next):
 # Import routers
 from .routers import (
     demand_forecasting,
+    demand_planning,
     inventory_optimization,
     routing_logistics,
     supplier_risk,
@@ -84,6 +85,7 @@ from .routers import (
 
 # Register routers
 app.include_router(demand_forecasting.router, prefix="/api/v1/demand", tags=["Demand Forecasting"])
+app.include_router(demand_planning.router, prefix="/api/v1", tags=["Demand Planning"])
 app.include_router(inventory_optimization.router, prefix="/api/v1/inventory", tags=["Inventory Optimization"])
 app.include_router(routing_logistics.router, prefix="/api/v1/routing", tags=["Routing & Logistics"])
 app.include_router(supplier_risk.router, prefix="/api/v1/supplier", tags=["Supplier Risk"])
