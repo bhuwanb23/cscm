@@ -128,27 +128,27 @@ async def startup_event():
     # Sample fake logs for demonstration
     logger.info("Loading demand forecasting models...")
     time.sleep(0.1)  # Simulate loading
-    logger.info("✓ Demand forecasting models loaded (v2.3.1)")
+    logger.info("[OK] Demand forecasting models loaded (v2.3.1)")
     
     logger.info("Loading inventory optimization models...")
     time.sleep(0.1)
-    logger.info("✓ Inventory optimization models loaded (v1.8.4)")
+    logger.info("[OK] Inventory optimization models loaded (v1.8.4)")
     
     logger.info("Loading routing & logistics models...")
     time.sleep(0.1)
-    logger.info("✓ Routing & logistics models loaded (v3.1.0)")
+    logger.info("[OK] Routing & logistics models loaded (v3.1.0)")
     
     logger.info("Initializing anomaly detection system...")
-    logger.info("✓ Anomaly detection system ready")
+    logger.info("[OK] Anomaly detection system ready")
     
     logger.info("Connecting to digital twin simulator...")
-    logger.info("✓ Digital twin simulator connected")
+    logger.info("[OK] Digital twin simulator connected")
     
     logger.info("Loading knowledge graph embeddings...")
-    logger.info("✓ Knowledge graph embeddings loaded (15,234 entities)")
+    logger.info("[OK] Knowledge graph embeddings loaded (15,234 entities)")
     
     logger.info("Initializing multi-agent coordination system...")
-    logger.info("✓ Multi-agent coordination system ready (8 agents active)")
+    logger.info("[OK] Multi-agent coordination system ready (8 agents active)")
     
     logger.info("=" * 60)
     logger.info("CSCM AI/ML API Ready to Serve Requests")
