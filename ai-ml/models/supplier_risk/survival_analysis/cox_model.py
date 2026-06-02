@@ -63,7 +63,7 @@ class CoxRiskModel:
             feature_cols = [col for col in data.columns if col not in {self.duration_col, self.event_col}]
 
         df = data[[self.duration_col, self.event_col] + feature_cols].dropna()
-        self.categorical_cols = [col for col in feature_cols if df[col].dtype == object]
+        self.categorical_cols = [col for col in feature_cols if isinstance(df[col].dtype, pd.CategoricalDtype) or df[col].dtype == object or pd.api.types.is_string_dtype(df[col])]
         if self.categorical_cols:
             df = pd.get_dummies(df, columns=self.categorical_cols, drop_first=True)
             feature_cols = [col for col in df.columns if col not in {self.duration_col, self.event_col}]

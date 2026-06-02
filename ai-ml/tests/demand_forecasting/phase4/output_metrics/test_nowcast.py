@@ -29,7 +29,7 @@ def test_generate_nowcast():
     
     # Create historical data
     dates = pd.date_range(start=datetime.now() - timedelta(days=30), 
-                          end=datetime.now(), freq='H')
+                          end=datetime.now(), freq='h')
     historical_data = pd.DataFrame({
         'timestamp': dates,
         'sku_id': 1,
@@ -69,7 +69,7 @@ def test_batch_nowcast():
     
     # Create historical data for multiple SKUs
     dates = pd.date_range(start=datetime.now() - timedelta(days=7),
-                         end=datetime.now(), freq='H')
+                         end=datetime.now(), freq='h')
     historical_data = pd.DataFrame({
         'timestamp': np.tile(dates, 2),
         'sku_id': [1] * len(dates) + [2] * len(dates),

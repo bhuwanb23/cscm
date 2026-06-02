@@ -115,7 +115,7 @@ class GradientBoostRiskModel:
             feature_cols = [c for c in data.columns if c not in {self.target_col, "supplier_id", "failure_date"}]
 
         df = data[feature_cols + [self.target_col]].dropna()
-        self.categorical_cols = [col for col in feature_cols if df[col].dtype == object]
+        self.categorical_cols = [col for col in feature_cols if isinstance(df[col].dtype, pd.CategoricalDtype) or df[col].dtype == object or pd.api.types.is_string_dtype(df[col])]
         if self.categorical_cols:
             df = pd.get_dummies(df, columns=self.categorical_cols, drop_first=True)
             feature_cols = [c for c in df.columns if c != self.target_col]

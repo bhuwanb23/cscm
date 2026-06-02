@@ -58,7 +58,7 @@ def test_generate_nowcast():
     
     # Create sample data
     dates = pd.date_range(start=datetime.now() - timedelta(days=7),
-                         end=datetime.now(), freq='H')
+                         end=datetime.now(), freq='h')
     historical_data = pd.DataFrame({
         'timestamp': dates,
         'sku_id': [1] * len(dates),
