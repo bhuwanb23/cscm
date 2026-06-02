@@ -1,0 +1,1013 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@144,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: #0a0a12; font-family: 'Space Grotesk', sans-serif; color: #e8e8ed; }
+      
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+      }
+      
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        pointer-events: none;
+      }
+      
+      .scene-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        padding: 80px 100px;
+        gap: 16px;
+        box-sizing: border-box;
+        position: relative;
+        z-index: 2;
+      }
+      
+      .scene-content.top { justify-content: flex-start; }
+      .scene-content.bottom { justify-content: flex-end; }
+      
+      .bg-layer {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+      }
+      
+      .grid-bg {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+        background-size: 80px 80px;
+        z-index: 1;
+      }
+      
+      .radial-glow {
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 1;
+      }
+      
+      .scene-label {
+        position: absolute;
+        bottom: 24px;
+        left: 32px;
+        font-size: 11px;
+        font-weight: 500;
+        color: #8888a0;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        z-index: 10;
+      }
+      
+      .corner-coord {
+        position: absolute;
+        bottom: 24px;
+        right: 32px;
+        font-size: 10px;
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 400;
+        color: rgba(99,99,122,0.4);
+        letter-spacing: 0.04em;
+        z-index: 10;
+      }
+      
+      .headline { font-family: 'Fraunces', serif; font-weight: 800; font-size: 72px; color: #e8e8ed; line-height: 1.05; letter-spacing: -0.03em; }
+      .headline-sm { font-family: 'Fraunces', serif; font-weight: 800; font-size: 52px; color: #e8e8ed; line-height: 1.1; letter-spacing: -0.02em; }
+      .headline-lg { font-family: 'Fraunces', serif; font-weight: 800; font-size: 88px; color: #e8e8ed; line-height: 1; letter-spacing: -0.03em; }
+      .body { font-size: 20px; font-weight: 400; line-height: 1.5; color: #e8e8ed; }
+      .body-muted { font-size: 18px; font-weight: 400; line-height: 1.5; color: #8888a0; }
+      .body-mono { font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 400; color: #8888a0; letter-spacing: 0.02em; }
+      .label-text { font-size: 11px; font-weight: 600; color: #8888a0; text-transform: uppercase; letter-spacing: 0.12em; }
+      .accent { color: #06b6d4; }
+      .stat-num { font-family: 'Fraunces', serif; font-weight: 800; font-size: 72px; color: #06b6d4; line-height: 1; font-variant-numeric: tabular-nums; }
+      .stat-num-lg { font-family: 'Fraunces', serif; font-weight: 800; font-size: 88px; color: #06b6d4; line-height: 1; font-variant-numeric: tabular-nums; }
+      .stat-num-sm { font-family: 'Fraunces', serif; font-weight: 800; font-size: 56px; color: #06b6d4; line-height: 1; font-variant-numeric: tabular-nums; }
+      
+      .card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 4px;
+        padding: 20px 24px;
+      }
+      
+      .badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+      }
+      .badge-cyan { background: rgba(6,182,212,0.15); color: #06b6d4; border: 1px solid rgba(6,182,212,0.3); }
+      .badge-green { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.25); }
+      
+      .divider {
+        height: 1px;
+        background: rgba(255,255,255,0.06);
+        width: 100%;
+      }
+      
+      .status-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 6px;
+      }
+      .status-dot.active { background: #06b6d4; box-shadow: 0 0 8px rgba(6,182,212,0.5); }
+      .status-dot.online { background: #4ade80; box-shadow: 0 0 8px rgba(74,222,128,0.4); }
+      
+      /* Scene-specific styles */
+      #s1 { opacity: 1; }
+      #s2, #s3, #s4, #s5, #s6 { opacity: 0; }
+      
+      .shelf-line {
+        position: absolute;
+        left: 10%;
+        right: 10%;
+        top: 55%;
+        height: 1px;
+        background: rgba(255,255,255,0.08);
+        z-index: 2;
+      }
+      
+      .product-box {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 60px;
+        height: 80px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 4px;
+        transform: translate(-50%, -120%);
+        z-index: 3;
+      }
+      .product-box .sku-label {
+        position: absolute;
+        bottom: -28px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 9px;
+        color: #8888a0;
+        white-space: nowrap;
+        letter-spacing: 0.04em;
+      }
+      
+      .hand-silhouette {
+        position: absolute;
+        right: 30%;
+        top: 40%;
+        width: 40px;
+        height: 60px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 20px 20px 4px 4px;
+        border: 1px solid rgba(255,255,255,0.08);
+        z-index: 4;
+        opacity: 0;
+      }
+      
+      .pulse-ring {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(6,182,212,0.4);
+        border-radius: 50%;
+        transform: translate(-50%, -120%);
+        z-index: 3;
+        opacity: 0;
+      }
+      
+      .inventory-counter {
+        position: absolute;
+        right: 100px;
+        top: 35%;
+        text-align: right;
+        z-index: 5;
+      }
+      
+      /* Node styles for network scenes */
+      .node {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        z-index: 3;
+      }
+      .node-store { background: #06b6d4; box-shadow: 0 0 12px rgba(6,182,212,0.3); }
+      .node-warehouse { background: #ea580c; box-shadow: 0 0 12px rgba(234,88,12,0.3); }
+      .node-planner { 
+        width: 20px; height: 20px; 
+        background: rgba(6,182,212,0.2); 
+        border: 2px solid #06b6d4; 
+        box-shadow: 0 0 20px rgba(6,182,212,0.2);
+      }
+      .node-label {
+        position: absolute;
+        font-size: 9px;
+        font-weight: 500;
+        color: #8888a0;
+        white-space: nowrap;
+        letter-spacing: 0.04em;
+      }
+      
+      .connection-line {
+        position: absolute;
+        z-index: 2;
+        opacity: 0.1;
+      }
+      
+      .signal-pulse {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: #06b6d4;
+        border-radius: 50%;
+        box-shadow: 0 0 16px rgba(6,182,212,0.6);
+        z-index: 4;
+        opacity: 0;
+      }
+      
+      .data-stream {
+        position: absolute;
+        z-index: 2;
+        opacity: 0;
+      }
+      
+      /* Picking list */
+      .pick-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 0;
+        font-size: 16px;
+        font-weight: 400;
+        color: #e8e8ed;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+      }
+      .pick-item .check { 
+        width: 18px; height: 24px; 
+        border: 1px solid rgba(255,255,255,0.15); 
+        border-radius: 3px; 
+        flex-shrink: 0;
+        opacity: 0;
+      }
+      .pick-item .check.done { background: rgba(6,182,212,0.2); border-color: #06b6d4; opacity: 1; display: flex; align-items: center; justify-content: center; color: #06b6d4; font-size: 12px; }
+      
+      .progress-track {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+      }
+      .progress-step {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 10px;
+        font-weight: 500;
+        color: #8888a0;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .progress-step .circle {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        border: 1px solid #8888a0;
+      }
+      .progress-step.active .circle { background: #06b6d4; border-color: #06b6d4; box-shadow: 0 0 8px rgba(6,182,212,0.4); }
+      .progress-step.active { color: #06b6d4; }
+      .progress-step.done .circle { background: #4ade80; border-color: #4ade80; }
+      .progress-step.done { color: #4ade80; }
+      .progress-line { width: 40px; height: 1px; background: #8888a0; }
+      .progress-line.done { background: #4ade80; }
+      
+      /* Map style */
+      .map-road {
+        position: absolute;
+        border-radius: 1px;
+        z-index: 2;
+      }
+      
+      .route-line {
+        position: absolute;
+        height: 2px;
+        background: #06b6d4;
+        z-index: 3;
+        opacity: 0.15;
+        transform-origin: left center;
+      }
+      
+      .truck-icon {
+        position: absolute;
+        width: 24px;
+        height: 16px;
+        background: #06b6d4;
+        border-radius: 3px;
+        z-index: 5;
+        opacity: 0;
+      }
+      .truck-icon::after {
+        content: '';
+        position: absolute;
+        bottom: -3px;
+        left: 3px;
+        width: 6px;
+        height: 3px;
+        background: rgba(255,255,255,0.3);
+        border-radius: 0 0 2px 2px;
+      }
+      .truck-icon::before {
+        content: '';
+        position: absolute;
+        bottom: -3px;
+        right: 3px;
+        width: 6px;
+        height: 3px;
+        background: rgba(255,255,255,0.3);
+        border-radius: 0 0 2px 2px;
+      }
+      
+      .destination-pin {
+        position: absolute;
+        z-index: 4;
+        font-size: 20px;
+        color: #06b6d4;
+        opacity: 0;
+      }
+      
+      .eta-display {
+        font-family: 'Fraunces', serif;
+        font-weight: 800;
+        font-size: 72px;
+        color: #06b6d4;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+      }
+      
+      .notification-card {
+        position: absolute;
+        bottom: 80px;
+        right: 100px;
+        background: rgba(6,182,212,0.08);
+        border: 1px solid rgba(6,182,212,0.2);
+        border-radius: 4px;
+        padding: 16px 20px;
+        z-index: 5;
+        opacity: 0;
+      }
+      
+      .agent-tag {
+        display: inline-block;
+        padding: 4px 10px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 4px;
+        font-size: 11px;
+        color: #8888a0;
+        font-weight: 500;
+        letter-spacing: 0.02em;
+      }
+      
+      .conveyor-belt {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: rgba(255,255,255,0.06);
+        z-index: 2;
+      }
+      .conveyor-dot {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: rgba(6,182,212,0.3);
+        border-radius: 50%;
+      }
+      
+      .pack-box {
+        width: 48px;
+        height: 48px;
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 4px;
+        position: relative;
+      }
+      .pack-box .lid {
+        position: absolute;
+        top: -1px;
+        left: -1px;
+        right: -1px;
+        height: 8px;
+        background: rgba(255,255,255,0.06);
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        border-radius: 4px 4px 0 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="62" data-width="1920" data-height="1080">
+      
+      <!-- ======== SCENE 1: The Trigger (0-7.5s) ======== -->
+      <div id="s1" class="scene">
+        <div class="bg-layer">
+          <div class="grid-bg"></div>
+          <div class="radial-glow" style="width:800px;height:800px;left:50%;top:50%;transform:translate(-50%,-60%);background:radial-gradient(circle,rgba(6,182,212,0.04) 0%,transparent 70%);"></div>
+        </div>
+        
+        <div class="shelf-line"></div>
+        
+        <div class="product-box">
+          <div class="sku-label">SKU-042</div>
+        </div>
+        
+        <div class="hand-silhouette"></div>
+        
+        <div class="pulse-ring"></div>
+        
+        <div class="inventory-counter">
+          <div class="label-text" style="margin-bottom:4px;">STOCK LEVEL</div>
+          <div class="stat-num-sm" style="font-size:64px;" id="stock-counter">42</div>
+        </div>
+        
+        <div class="scene-label">Inventory Running Low · Shelf #284</div>
+        <div class="corner-coord">N 40.7128° W 74.0060°</div>
+      </div>
+      
+      <!-- ======== SCENE 2: Store Agent Senses (7-16s) ======== -->
+      <div id="s2" class="scene">
+        <div class="bg-layer">
+          <div class="grid-bg"></div>
+          <div class="radial-glow" style="width:600px;height:600px;left:20%;top:60%;background:radial-gradient(circle,rgba(6,182,212,0.05) 0%,transparent 70%);"></div>
+        </div>
+        
+        <div class="scene-content top" style="padding-top:60px;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+            <div class="status-dot online" id="s2-dot"></div>
+            <span style="font-size:13px;font-weight:500;color:#8888a0;letter-spacing:0.04em;">STORE AGENT · ACTIVE</span>
+          </div>
+          
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:20px;max-width:600px;">
+            <div class="headline-sm">Demand Detected</div>
+            <div class="body-muted" style="max-width:500px;">Shelf #284 is running low on SKU-042. Forecasting models indicate rising demand.</div>
+          </div>
+          
+          <div style="display:flex;gap:24px;margin-top:20px;flex-wrap:wrap;">
+            <div id="s2-card-stock" class="card" style="min-width:160px;">
+              <div class="label-text" style="margin-bottom:4px;">Current Stock</div>
+              <div class="stat-num-sm" style="font-size:56px;" id="s2-stock">38</div>
+              <div class="body-mono" style="margin-top:2px;">units remaining</div>
+            </div>
+            <div id="s2-card-reorder" class="card" style="min-width:160px;">
+              <div class="label-text" style="margin-bottom:4px;">Reorder Point</div>
+              <div class="stat-num-sm" style="font-size:56px;color:#8888a0;">40</div>
+              <div class="body-mono" style="margin-top:2px;">threshold crossed</div>
+            </div>
+            <div id="s2-card-forecast" class="card" style="min-width:180px;">
+              <div class="label-text" style="margin-bottom:4px;">Demand Forecast</div>
+              <div class="stat-num-sm" style="font-size:40px;color:#ea580c;">+23%</div>
+              <div class="body-mono" style="margin-top:2px;">next 7 days</div>
+            </div>
+          </div>
+          
+          <div style="display:flex;align-items:center;gap:20px;" id="s2-decision">
+            <div class="badge badge-cyan" style="font-size:14px;padding:8px 20px;">RESTOCK TRIGGERED</div>
+            <div class="body-mono">Qty: 240 units • Priority: High</div>
+          </div>
+        </div>
+        
+        <!-- Data stream lines (decorative SVG) -->
+        <svg class="data-stream" id="s2-stream" style="position:absolute;right:80px;top:40%;width:180px;height:300px;z-index:2;" viewBox="0 0 180 300">
+          <line class="stream-path" x1="0" y1="300" x2="30" y2="0" stroke="rgba(6,182,212,0.08)" stroke-width="1"/>
+          <line class="stream-path" x1="60" y1="300" x2="80" y2="0" stroke="rgba(6,182,212,0.06)" stroke-width="1"/>
+          <line class="stream-path" x1="120" y1="300" x2="140" y2="0" stroke="rgba(6,182,212,0.04)" stroke-width="1"/>
+          <line class="stream-path" x1="170" y1="300" x2="180" y2="0" stroke="rgba(6,182,212,0.06)" stroke-width="1"/>
+        </svg>
+        
+        <div class="scene-label">Store Agent · Demand Sensing</div>
+        <div class="corner-coord">NODE: store-284</div>
+      </div>
+      
+      <!-- ======== SCENE 3: The Network Routes (16-26s) ======== -->
+      <div id="s3" class="scene">
+        <div class="bg-layer">
+          <div class="grid-bg"></div>
+          <div class="radial-glow" style="width:700px;height:700px;left:50%;top:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(6,182,212,0.03) 0%,transparent 70%);"></div>
+        </div>
+        
+        <!-- Network nodes -->
+        <div class="node node-planner" id="n3-planner" style="left:50%;top:50%;transform:translate(-50%,-50%);"></div>
+        <div class="node-label" style="left:calc(50% + 28px);top:calc(50% + 10px);">Central Planner</div>
+        
+        <div class="node node-store" id="n3-store" style="left:15%;top:35%;"></div>
+        <div class="node-label" style="left:calc(15% + 18px);top:calc(35% + 6px);">Store #284</div>
+        
+        <div class="node node-warehouse" id="n3-wh" style="right:15%;top:30%;"></div>
+        <div class="node-label" style="right:calc(15% - 50px);top:calc(30% + 18px);">Warehouse WH-03</div>
+        
+        <div class="node node-store" style="left:12%;top:65%;opacity:0.3;"></div>
+        <div class="node node-store" style="left:25%;top:25%;opacity:0.3;"></div>
+        <div class="node node-store" style="right:25%;top:20%;opacity:0.3;"></div>
+        <div class="node node-warehouse" style="right:20%;top:65%;opacity:0.3;"></div>
+        <div class="node node-store" style="right:10%;top:55%;opacity:0.3;"></div>
+        <div class="node node-warehouse" style="left:20%;top:70%;opacity:0.3;"></div>
+        
+        <!-- Connection lines (SVG) -->
+        <svg style="position:absolute;inset:0;width:100%;height:100%;z-index:2;" id="s3-svg">
+          <line class="conn-line" x1="288" y1="378" x2="960" y2="540" stroke="rgba(6,182,212,0.08)" stroke-width="1"/>
+          <line class="conn-line" x1="960" y1="540" x2="1632" y2="324" stroke="rgba(6,182,212,0.08)" stroke-width="1"/>
+          <line class="conn-line" x1="960" y1="540" x2="384" y2="756" stroke="rgba(6,182,212,0.04)" stroke-width="1"/>
+          <line class="conn-line" x1="960" y1="540" x2="1536" y2="702" stroke="rgba(6,182,212,0.04)" stroke-width="1"/>
+        </svg>
+        
+        <!-- Animated route: store → planner → warehouse -->
+        <div style="position:absolute;left:0;top:0;width:100%;height:100%;z-index:4;" id="s3-route">
+          <svg style="position:absolute;left:0;top:0;width:1920px;height:1080px;">
+            <line id="route-1" x1="288" y1="378" x2="960" y2="540" stroke="#06b6d4" stroke-width="2" stroke-dasharray="800" stroke-dashoffset="800" opacity="0"/>
+            <line id="route-2" x1="960" y1="540" x2="1632" y2="324" stroke="#06b6d4" stroke-width="2" stroke-dasharray="800" stroke-dashoffset="800" opacity="0"/>
+          </svg>
+        </div>
+        
+        <div class="signal-pulse" id="s3-pulse"></div>
+        
+        <!-- Stats panel -->
+        <div class="card" style="position:absolute;top:60px;right:60px;z-index:5;">
+          <div class="label-text" style="margin-bottom:6px;">Network Stats</div>
+          <div style="display:flex;gap:24px;">
+            <div><div class="stat-num-sm" style="font-size:36px;">47</div><div class="body-mono">Warehouses</div></div>
+            <div><div class="stat-num-sm" style="font-size:36px;">2.8K</div><div class="body-mono">Stores</div></div>
+          </div>
+        </div>
+        
+        <div class="progress-track" style="position:absolute;bottom:70px;left:50%;transform:translateX(-50%);z-index:5;" id="s3-progress">
+          <div class="progress-step active"><div class="circle"></div>SEARCHING</div>
+          <div class="progress-line"></div>
+          <div class="progress-step"><div class="circle"></div>ROUTING</div>
+          <div class="progress-line"></div>
+          <div class="progress-step"><div class="circle"></div>ASSIGNED</div>
+        </div>
+        
+        <div class="scene-label">Central Planner · Intelligent Routing</div>
+        <div class="corner-coord">MESH: active</div>
+        
+        <div id="s3-route-info" class="card" style="position:absolute;bottom:70px;right:60px;z-index:5;opacity:0;">
+          <div class="body-mono" style="color:#06b6d4;">Route: Store #284 → WH-03 (14.2 km)</div>
+        </div>
+      </div>
+      
+      <!-- ======== SCENE 4: Warehouse in Action (26-36s) ======== -->
+      <div id="s4" class="scene">
+        <div class="bg-layer">
+          <div class="grid-bg"></div>
+          <div class="radial-glow" style="width:500px;height:500px;right:10%;bottom:10%;background:radial-gradient(circle,rgba(234,88,12,0.04) 0%,transparent 70%);"></div>
+        </div>
+        
+        <div class="scene-content" style="flex-direction:row;justify-content:flex-start;gap:60px;padding-top:60px;">
+          <!-- Left: Picking list -->
+          <div style="flex:1;max-width:450px;" id="s4-list">
+            <div class="label-text" style="margin-bottom:12px;">PICKING QUEUE · ORDER #4421</div>
+            <div class="pick-item"><div class="check" id="pi-1"></div><span>SKU-042 — Smart Shelf Tag</span></div>
+            <div class="pick-item"><div class="check" id="pi-2"></div><span>SKU-118 — RFID Reader</span></div>
+            <div class="pick-item"><div class="check" id="pi-3"></div><span>SKU-203 — Temp Sensor</span></div>
+            <div class="pick-item"><div class="check" id="pi-4"></div><span>SKU-076 — Display Mount</span></div>
+            <div class="pick-item"><div class="check" id="pi-5"></div><span>SKU-311 — Cable Kit</span></div>
+          </div>
+          
+          <!-- Right: Stats + progress -->
+          <div style="flex:0 0 300px;display:flex;flex-direction:column;gap:24px;">
+            <div id="s4-card-progress" class="card" style="text-align:center;">
+              <div class="label-text" style="margin-bottom:4px;">Picking Progress</div>
+              <div id="s4-progress-bar" style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:12px;overflow:hidden;">
+                <div id="s4-progress-fill" style="height:100%;width:0%;background:#06b6d4;border-radius:2px;"></div>
+              </div>
+              <div class="body-mono" style="margin-top:8px;" id="s4-progress-text">0 / 5 items</div>
+            </div>
+            
+            <div id="s4-card-timer" class="card" style="text-align:center;">
+              <div class="label-text" style="margin-bottom:4px;">Elapsed</div>
+              <div class="stat-num-sm" id="s4-timer" style="font-size:48px;">00:00</div>
+            </div>
+            
+            <div id="s4-card-pack" class="card" style="display:flex;align-items:center;gap:12px;">
+              <div class="pack-box"><div class="lid"></div></div>
+              <div>
+                <div class="body-mono" style="font-size:12px;">Pack Station</div>
+                <div class="body-mono" style="color:#06b6d4;" id="s4-packed">0 boxes</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Conveyor belt -->
+        <div class="conveyor-belt" style="top:55%;"></div>
+        
+        <div class="scene-label">Warehouse Agent · Picking & Packing</div>
+        <div class="corner-coord">FACILITY: WH-03</div>
+      </div>
+      
+      <!-- ======== SCENE 5: Last Mile (36-46s) ======== -->
+      <div id="s5" class="scene">
+        <div class="bg-layer">
+          <div class="grid-bg"></div>
+          <div class="radial-glow" style="width:600px;height:600px;left:40%;top:50%;background:radial-gradient(circle,rgba(6,182,212,0.04) 0%,transparent 70%);"></div>
+        </div>
+        
+        <!-- Map roads (decorative) -->
+        <div class="map-road" style="left:8%;top:25%;width:60%;height:1px;background:rgba(255,255,255,0.03);"></div>
+        <div class="map-road" style="left:20%;top:40%;width:50%;height:1px;background:rgba(255,255,255,0.03);"></div>
+        <div class="map-road" style="left:35%;top:55%;width:55%;height:1px;background:rgba(255,255,255,0.03);"></div>
+        <div class="map-road" style="left:25%;top:20%;width:1px;height:50%;background:rgba(255,255,255,0.02);"></div>
+        <div class="map-road" style="left:55%;top:30%;width:1px;height:45%;background:rgba(255,255,255,0.02);"></div>
+        <div class="map-road" style="left:75%;top:15%;width:1px;height:55%;background:rgba(255,255,255,0.02);"></div>
+        
+        <!-- Route line: WH-03 to Store #284 -->
+        <div id="s5-route-wrap" style="position:absolute;left:0;top:0;width:1920px;height:1080px;z-index:3;">
+          <svg style="position:absolute;left:0;top:0;width:1920px;height:1080px;">
+            <line id="s5-route-path" x1="1400" y1="200" x2="400" y2="700" stroke="#06b6d4" stroke-width="2" stroke-dasharray="900" stroke-dashoffset="900" opacity="0.3"/>
+          </svg>
+        </div>
+        
+        <div class="truck-icon" id="s5-truck"></div>
+        
+        <div class="destination-pin" id="s5-pin">📍</div>
+        
+        <!-- ETA Display -->
+        <div style="position:absolute;left:80px;bottom:200px;z-index:5;">
+          <div class="label-text" style="margin-bottom:4px;">ESTIMATED ARRIVAL</div>
+          <div class="eta-display" id="s5-eta">14:32</div>
+          <div class="body-mono" style="margin-top:4px;">WH-03 → Store #284</div>
+        </div>
+        
+        <!-- Customer notification -->
+        <div class="notification-card" id="s5-notification">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:24px;height:24px;background:rgba(74,222,128,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#4ade80;font-size:14px;">✓</div>
+            <div>
+              <div style="font-size:13px;font-weight:500;color:#e8e8ed;">Delivery Arriving</div>
+              <div class="body-mono" style="font-size:11px;">Your shipment has arrived at Store #284</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Progress tracker -->
+        <div class="progress-track" style="position:absolute;bottom:70px;left:50%;transform:translateX(-50%);z-index:5;" id="s5-progress">
+          <div class="progress-step done"><div class="circle"></div>PICKED</div>
+          <div class="progress-line done"></div>
+          <div class="progress-step" id="s5-step-packed"><div class="circle"></div>PACKED</div>
+          <div class="progress-line" id="s5-line-dispatched"></div>
+          <div class="progress-step" id="s5-step-dispatched"><div class="circle"></div>DISPATCHED</div>
+          <div class="progress-line" id="s5-line-delivered"></div>
+          <div class="progress-step" id="s5-step-delivered"><div class="circle"></div>DELIVERED</div>
+        </div>
+        
+        <div class="scene-label">Transport Agent · Last Mile Delivery</div>
+        <div class="corner-coord">ETA: real-time</div>
+      </div>
+      
+      <!-- ======== SCENE 6: The Big Picture (46-62s) ======== -->
+      <div id="s6" class="scene">
+        <div class="bg-layer">
+          <div class="grid-bg"></div>
+          <div class="radial-glow" style="width:900px;height:900px;left:50%;top:50%;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(6,182,212,0.05) 0%,transparent 70%);"></div>
+        </div>
+        
+        <!-- Big network visualization -->
+        <div id="s6-network" style="position:absolute;inset:0;z-index:1;">
+          <svg style="position:absolute;left:0;top:0;width:1920px;height:1080px;" id="s6-svg">
+            <circle cx="960" cy="540" r="300" fill="none" stroke="rgba(6,182,212,0.03)" stroke-width="1"/>
+            <circle cx="960" cy="540" r="200" fill="none" stroke="rgba(6,182,212,0.04)" stroke-width="1"/>
+            <circle cx="960" cy="540" r="100" fill="none" stroke="rgba(6,182,212,0.06)" stroke-width="1"/>
+          </svg>
+        </div>
+        
+        <div class="scene-content" style="z-index:5;">
+          <!-- Stats row -->
+          <div style="display:flex;justify-content:space-between;gap:40px;margin-top:40px;">
+            <div>
+              <div class="stat-num-lg" id="s6-stat-1">3.2M+</div>
+              <div class="body-muted" style="margin-top:4px;">shipments optimized</div>
+            </div>
+            <div style="text-align:center;">
+              <div class="stat-num-lg" id="s6-stat-2">99.7%</div>
+              <div class="body-muted" style="margin-top:4px;">fulfillment accuracy</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="stat-num-lg" id="s6-stat-3">7</div>
+              <div class="body-muted" style="margin-top:4px;">intelligent agents</div>
+            </div>
+          </div>
+          
+          <!-- Agent types -->
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:20px;" id="s6-agents">
+            <span class="agent-tag">Store</span>
+            <span class="agent-tag">Warehouse</span>
+            <span class="agent-tag">Transport</span>
+            <span class="agent-tag">Supplier</span>
+            <span class="agent-tag">Demand</span>
+            <span class="agent-tag">Planner</span>
+            <span class="agent-tag">Simulation</span>
+          </div>
+          
+          <div style="margin-top:40px;text-align:center;" id="s6-brand">
+            <div style="display:flex;justify-content:center;gap:12px;">
+              <div style="width:3px;height:40px;background:#06b6d4;"></div>
+              <div class="headline-sm" style="font-size:40px;">Cognitive Supply Chain Mesh</div>
+            </div>
+            <div class="body-muted" style="margin-top:8px;font-size:22px;letter-spacing:0.02em;">Supply Chain. Reimagined.</div>
+            <div id="s6-cta" style="margin-top:24px;font-size:14px;color:#8888a0;letter-spacing:0.06em;text-transform:uppercase;">The best supply chain is invisible.</div>
+          </div>
+        </div>
+        
+        <div class="scene-label">CSCM · Full Mesh</div>
+        <div class="corner-coord">v2.4.1 · all systems operational</div>
+      </div>
+      
+    </div>
+    
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      
+      // ═══════════════════════════════════════════════
+      // SCENE 1: The Trigger (0-7.5s)
+      // ═══════════════════════════════════════════════
+      
+      // Shelf line draws in
+      tl.from(".shelf-line", { scaleX: 0, transformOrigin: "center center", duration: 0.7, ease: "power3.out" }, 0.3);
+      
+      // Product fades in
+      tl.fromTo(".product-box", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.5);
+      
+      // Inventory counter fades in
+      tl.fromTo(".inventory-counter", { opacity: 0, x: 20 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 0.7);
+      
+      // Stock counts down
+      tl.to("#stock-counter", { textContent: "38", duration: 2, ease: "steps(4)", snap: { textContent: 1 } }, 1.0);
+      
+      // Hand enters from right
+      tl.fromTo(".hand-silhouette", { x: 300, opacity: 0 }, { x: 0, opacity: 1, duration: 0.8, ease: "power3.out" }, 1.5);
+      tl.to(".hand-silhouette", { x: -200, opacity: 0, duration: 0.6, ease: "power2.in" }, 3.0);
+      
+      // Product disappears with hand
+      tl.to(".product-box", { opacity: 0, duration: 0.3 }, 3.2);
+      
+      // Pulse ring expands from empty space
+      tl.fromTo(".pulse-ring", { scale: 0.2, opacity: 0.6 }, { scale: 3, opacity: 0, duration: 0.8, ease: "expo.out" }, 3.3);
+      tl.fromTo(".pulse-ring", { scale: 0.2, opacity: 0.4 }, { scale: 2.5, opacity: 0, duration: 0.6, ease: "expo.out" }, 4.1);
+      
+      // Grid background ambient pulse
+      tl.to(".grid-bg", { opacity: 0.6, duration: 3, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0);
+      
+      // Scene label fades in
+      tl.fromTo(".scene-label", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 0.8);
+      tl.fromTo(".corner-coord", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 0.9);
+      
+      // ── Crossfade out Scene 1 (t=6.5-7.0) ──
+      tl.to("#s1", { opacity: 0, duration: 0.5, ease: "sine.inOut" }, 6.5);
+      
+      // ═══════════════════════════════════════════════
+      // SCENE 2: Store Agent Senses (7-15.5s)
+      // ═══════════════════════════════════════════════
+      
+      // Crossfade IN Scene 2 (t=6.5-7.0)
+      tl.to("#s2", { opacity: 1, duration: 0.5, ease: "sine.inOut" }, 6.5);
+      
+      // Agent status
+      tl.fromTo("#s2-dot", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(2)" }, 7.2);
+      tl.fromTo("#s2-dot", { boxShadow: "0 0 0px rgba(74,222,128,0)" }, { boxShadow: "0 0 12px rgba(74,222,128,0.6)", duration: 1, ease: "sine.inOut", yoyo: true, repeat: 4 }, 7.2);
+      
+      // Headline
+      tl.fromTo("#s2 .headline-sm", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 7.5);
+      tl.fromTo("#s2 .body-muted", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 7.8);
+      
+      // Stats cards
+      tl.fromTo("#s2-card-stock", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "expo.out" }, 8.2);
+      tl.fromTo("#s2-card-reorder", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "expo.out" }, 8.5);
+      tl.fromTo("#s2-card-forecast", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "expo.out" }, 8.8);
+      
+      // Stock counter decreases
+      tl.to("#s2-stock", { textContent: "35", duration: 1.5, ease: "steps(3)", snap: { textContent: 1 } }, 8.5);
+      
+      // Data streams animate
+      tl.fromTo("#s2-stream", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "sine.inOut" }, 9.0);
+      
+      // Decision badge slams in
+      tl.fromTo("#s2-decision", { scale: 1.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "expo.out" }, 10.5);
+      
+      // Ambient glow pulse
+      tl.to("#s2 .radial-glow", { scale: 1.1, opacity: 0.6, duration: 2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 9.0);
+      
+      // ── Crossfade out Scene 2 (t=14.7-15.2) ──
+      tl.to("#s2", { opacity: 0, duration: 0.5, ease: "sine.inOut" }, 14.7);
+      
+      // ═══════════════════════════════════════════════
+      // SCENE 3: The Network Routes (15.5-25.5s)
+      // ═══════════════════════════════════════════════
+      
+      // Crossfade IN Scene 3
+      tl.to("#s3", { opacity: 1, duration: 0.5, ease: "sine.inOut" }, 14.7);
+      
+      // Nodes fade and scale in
+      tl.fromTo("#n3-planner", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(1.4)" }, 15.8);
+      tl.fromTo("#n3-store", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.4)" }, 16.0);
+      tl.fromTo("#n3-wh", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: "back.out(1.4)" }, 16.2);
+      
+      // Connection lines glow
+      tl.to(".conn-line", { opacity: 0.1, duration: 0.8, ease: "sine.inOut" }, 16.5);
+      
+      // Stats panel slides in
+      tl.fromTo("#s3 .card", { x: 40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 16.5);
+      
+      // Route lines draw
+      tl.to("#route-1", { strokeDashoffset: 0, opacity: 0.6, duration: 0.8, ease: "power2.inOut" }, 17.0);
+      tl.to("#route-2", { strokeDashoffset: 0, opacity: 0.6, duration: 0.8, ease: "power2.inOut" }, 17.5);
+      
+      // Signal pulse travels from store to planner to warehouse
+      tl.fromTo("#s3-pulse", { opacity: 0 }, { opacity: 1, duration: 0.1 }, 17.0);
+      tl.to("#s3-pulse", { left: "960px", top: "540px", duration: 0.6, ease: "none" }, 17.1);
+      tl.to("#s3-pulse", { left: "1632px", top: "324px", duration: 0.6, ease: "none" }, 17.8);
+      tl.to("#s3-pulse", { opacity: 0, duration: 0.1 }, 18.5);
+      
+      // Progress steps
+      tl.to("#s3-progress .progress-step:nth-child(1) .circle", { background: "#4ade80", borderColor: "#4ade80", duration: 0.2 }, 16.5);
+      tl.to("#s3-progress .progress-line:nth-child(2)", { background: "#4ade80", duration: 0.3 }, 17.5);
+      tl.to("#s3-progress .progress-step:nth-child(3)", { color: "#06b6d4", duration: 0.2 }, 17.5);
+      tl.to("#s3-progress .progress-step:nth-child(3) .circle", { background: "#06b6d4", borderColor: "#06b6d4", boxShadow: "0 0 8px rgba(6,182,212,0.4)", duration: 0.2 }, 17.5);
+      tl.to("#s3-progress .progress-line:nth-child(4)", { background: "#06b6d4", duration: 0.3 }, 18.2);
+      tl.to("#s3-progress .progress-step:nth-child(5)", { color: "#4ade80", duration: 0.2 }, 18.2);
+      tl.to("#s3-progress .progress-step:nth-child(5) .circle", { background: "#4ade80", borderColor: "#4ade80", duration: 0.2 }, 18.2);
+      
+      // Route info card
+      tl.fromTo("#s3-route-info", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 18.5);
+      
+      // Ambient: node breathing
+      tl.to("#n3-planner", { scale: 1.05, duration: 2, ease: "sine.inOut", yoyo: true, repeat: 2 }, 17.0);
+      tl.to("#n3-store", { scale: 1.15, duration: 1.5, ease: "sine.inOut", yoyo: true, repeat: 3 }, 17.0);
+      tl.to("#n3-wh", { scale: 1.15, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: 2 }, 17.0);
+      
+      // ── Crossfade out Scene 3 (t=24.7-25.2) ──
+      tl.to("#s3", { opacity: 0, duration: 0.5, ease: "sine.inOut" }, 24.7);
+      
+      // ═══════════════════════════════════════════════
+      // SCENE 4: Warehouse in Action (25.5-35.5s)
+      // ═══════════════════════════════════════════════
+      
+      // Crossfade IN Scene 4
+      tl.to("#s4", { opacity: 1, duration: 0.5, ease: "sine.inOut" }, 24.7);
+      
+      // Picking list slides in from left
+      tl.fromTo("#s4-list", { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 25.8);
+      
+      // Right panel cards slide in
+      tl.fromTo("#s4-card-progress", { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: "power3.out" }, 26.2);
+      tl.fromTo("#s4-card-timer", { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 26.5);
+      tl.fromTo("#s4-card-pack", { x: 30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 26.8);
+      
+      // Items check off one by one
+      var checkTimes = [27.0, 27.8, 28.6, 29.4, 30.2];
+      var pickItems = ["#pi-1", "#pi-2", "#pi-3", "#pi-4", "#pi-5"];
+      pickItems.forEach(function(sel, i) {
+        tl.to(sel, { borderColor: "#06b6d4", background: "rgba(6,182,212,0.2)", duration: 0.2, ease: "none" }, checkTimes[i]);
+        tl.to(sel, { opacity: 1, duration: 0.1 }, checkTimes[i]);
+        tl.set(sel, { innerHTML: "✓" });
+      });
+      
+      // Progress bar fills
+      var progressSteps = [0, 20, 40, 60, 80, 100];
+      progressSteps.forEach(function(pct, i) {
+        if (i === 0) return;
+        tl.to("#s4-progress-fill", { width: pct + "%", duration: 0.3, ease: "power2.out" }, checkTimes[i-1] + 0.3);
+        tl.to("#s4-progress-text", { textContent: i + " / 5 items", duration: 0.05, ease: "none" }, checkTimes[i-1] + 0.3);
+      });
+      
+      // Timer counts up
+      var timerProxy = { v: 0 };
+      tl.to(timerProxy, { 
+        v: 42, duration: 5, ease: "none",
+        onUpdate: function() {
+          var secs = Math.round(timerProxy.v);
+          document.getElementById("s4-timer").textContent = "00:" + String(secs).padStart(2, "0");
+        }
+      }, 26.5);
+      
+      // Packed counter increases
+      var packProxy = { n: 0 };
+      tl.to(packProxy, {
+        n: 5, duration: 4, ease: "none",
+        onUpdate: function() {
+          document.getElementById("s4-packed").textContent = Math.round(packProxy.n) + " boxes";
+        }
+      }, 27.5);
+      
+      // ── Crossfade out Scene 4 (t=34.7-35.2) ──
+      tl.to("#s4", { opacity: 0, duration: 0.5, ease: "sine.inOut" }, 34.7);
+      
+      // ═══════════════════════════════════════════════
+      // SCENE 5: Last Mile (35.5-45.5s)
+      // ═══════════════════════════════════════════════
+      
+      // Crossfade IN Scene 5
+      tl.to("#s5", { opacity: 1, duration: 0.5, ease: "sine.inOut" }, 34.7);
+      
+      // ETA counter
+      tl.fromTo("#s5-eta", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 35.8);
+      
+      // ETA countdown from 14:32 to 00:00
+      var etaSecs = { v: 14 * 60 + 32 };
+      tl.to(etaSecs, {
+        v: 0, duration: 5.5, ease: "steps(1)",
+        onUpdate: function() {
+          var total = Math.round(etaSecs.v);
+          var m = Math.floor(total / 60);
+          var s = total % 60;
+          document.getElementById("s5-eta").textContent = String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+        }
+      }, 36.5);
+      
+      // Truck icon moves along route
+      tl.set("#s5-truck", { opacity: 1, left: "1370px", top: "180px", rotation: -45 }, 36.5);
+      tl.to("#s5-truck", { left: "430px", top: "670px", duration: 4, ease: "none" }, 36.5);
+      tl.to("#s5-truck", { opacity: 0, duration: 0.3 }, 40.8);
+      
+      // Route path draws
+      tl.to("#s5-route-path", { strokeDashoffset: 0, duration: 3.5, ease: "none" }, 36.5);
+      
+      // Destination pin
+      tl.set("#s5-pin", { opacity: 1, left: "380px", top: "650px" }, 40.5);
+      tl.to("#s5-pin", { scale: 1.2, duration: 0.4, ease: "back.out(2)", yoyo: true, repeat: 2 }, 40.5);
+      
+      // Progress track updates
+      tl.to("#s5-step-packed", { color: "#4ade80", duration: 0.2 }, 36.5);
+      tl.to("#s5-step-packed .circle", { background: "#4ade80", borderColor: "#4ade80", duration: 0.2 }, 36.5);
+      tl.to("#s5-line-dispatched", { background: "#4ade80", duration: 0.3 }, 37.5);
+      tl.to("#s5-step-dispatched", { color: "#06b6d4", duration: 0.2 }, 37.5);
+      tl.to("#s5-step-dispatched .circle", { background: "#06b6d4", borderColor: "#06b6d4", boxShadow: "0 0 8px rgba(6,182,212,0.4)", duration: 0.2 }, 37.5);
+      tl.to("#s5-line-delivered", { background: "#06b6d4", duration: 0.3 }, 40.5);
+      tl.to("#s5-step-delivered", { color: "#4ade80", duration: 0.2 }, 40.5);
+      tl.to("#s5-step-delivered .circle", { background: "#4ade80", borderColor: "#4ade80", duration: 0.2 }, 40.5);
+      
+      // Customer notification
+      tl.to("#s5-notification", { opacity: 1, y: -10, duration: 0.5, ease: "power3.out" }, 41.0);
+      
+      // ── Crossfade out Scene 5 (t=44.7-45.2) ──
+      tl.to("#s5", { opacity: 0, duration: 0.5, ease: "sine.inOut" }, 44.7);
+      
+      // ═══════════════════════════════════════════════
+      // SCENE 6: The Big Picture (45.5-62s)
+      // ═══════════════════════════════════════════════
+      
+      // Crossfade IN Scene 6
+      tl.to("#s6", { opacity: 1, duration: 0.5, ease: "sine.inOut" }, 44.7);
+      
+      // Network circles draw
+      tl.fromTo("#s6-svg circle", { strokeDashoffset: 2000, strokeDasharray: 2000 }, { strokeDashoffset: 0, duration: 1.5, ease: "power2.out" }, 45.8);
+      
+      // Stat 1 slides from left
+      tl.fromTo("#s6-stat-1", { x: -60, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: "expo.out" }, 46.5);
+      
+      // Stat 2 scales in
+      tl.fromTo("#s6-stat-2", { scale: 2, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.6)" }, 47.5);
+      
+      // Stat 3 slides from right
+      tl.fromTo("#s6-stat-3", { x: 60, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: "expo.out" }, 48.5);
+      
+      // Agent tags stagger in
+      var agentTags = document.querySelectorAll("#s6-agents .agent-tag");
+      agentTags.forEach(function(tag, i) {
+        tl.fromTo(tag, { y: 15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 49.5 + i * 0.15);
+      });
+      
+      // Brand name fades in
+      tl.fromTo("#s6-brand .headline-sm", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 51.5);
+      tl.fromTo("#s6-brand .body-muted", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power2.out" }, 52.5);
+      
+      // CTA
+      tl.fromTo("#s6-cta", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5, ease: "sine.out" }, 54.0);
+      
+      // Final fade to black (t=56-60)
+      tl.to("#s6", { opacity: 0, duration: 3, ease: "power2.in" }, 57.0);
+      
+      // Register timeline
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
