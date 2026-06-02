@@ -37,3 +37,4 @@ logs/
 catboost_info/
 datasets/
 weights/
+*.mp4
