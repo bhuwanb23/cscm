@@ -263,7 +263,7 @@ class ModelMonitoringService:
                 elif m == "accuracy":
                     perf[m] = round(float(1.0 - sum(abs(v) for v in [0.5]) * 0.1), 4)
                 elif m == "latency":
-                    perf[m] = round(0.042 + 0.01 * np.random.random(), 4)
+                    perf[m] = round(0.042, 4)
                 else:
                     perf[m] = 0.0
 
@@ -275,7 +275,7 @@ class ModelMonitoringService:
                 pass
         except Exception as e:
             logger.warning(f"Performance tracking failed: {e}, using fallback")
-            perf = {m: round(0.85 + 0.1 * np.random.random(), 4) for m in request.metrics}
+            perf = {m: 0.85 for m in request.metrics}
             alerts = []
 
         if not perf:
@@ -409,10 +409,8 @@ class ModelMonitoringService:
     @staticmethod
     def configure_alerts(request: AlertConfigRequest) -> AlertConfigResponse:
         logger.info(f"Configuring alerts for: {request.model_id}")
-        rng = np.random.default_rng(42)
-        active = int(rng.integers(1, 6))
         return AlertConfigResponse(
-            model_id=request.model_id, config_applied=True, active_alerts=active,
+            model_id=request.model_id, config_applied=True, active_alerts=3,
             model_version="alert_manager_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )

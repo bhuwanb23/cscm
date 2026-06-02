@@ -219,11 +219,11 @@ class DemandPlanningService:
                 forecasts = [float(p) for p in preds]
             except Exception as e:
                 logger.warning(f"Forecast predict failed: {e}, using fallback")
-                base = np.random.randn() * 20 + 100
-                forecasts = [float(max(base + i * 0.5 + np.random.randn() * 8, 0)) for i in range(request.forecast_days)]
+                base = float(np.mean([d.get('sales', 0) for d in (request.historical_data or [])])) if request.historical_data else 100.0
+                forecasts = [float(max(base + i * 0.5, 0)) for i in range(request.forecast_days)]
         else:
-            base = np.random.randn() * 20 + 100
-            forecasts = [float(max(base + i * 0.5 + np.random.randn() * 8, 0)) for i in range(request.forecast_days)]
+            base = float(np.mean([d.get('sales', 0) for d in (request.historical_data or [])])) if request.historical_data else 100.0
+            forecasts = [float(max(base + i * 0.5, 0)) for i in range(request.forecast_days)]
 
         metrics = {"mae": round(np.mean(np.abs(forecasts)), 4)}
 

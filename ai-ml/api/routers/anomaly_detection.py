@@ -216,13 +216,11 @@ class AnomalyDetectionService:
                     predictions, scores, info = model.detect_anomalies(X)
                     anomaly_probs = model.predict_proba(X)
                 except Exception:
-                    rng = np.random.default_rng(42)
-                    predictions = np.array([1 if rng.random() > request.contamination else -1 for _ in range(len(X))])
-                    anomaly_probs = np.random.default_rng(42).random(len(X))
+                    predictions = np.ones(len(X), dtype=int)
+                    anomaly_probs = np.zeros(len(X))
             else:
-                rng = np.random.default_rng(42)
-                predictions = np.array([1 if rng.random() > request.contamination else -1 for _ in range(len(X))])
-                anomaly_probs = np.random.default_rng(42).random(len(X))
+                predictions = np.ones(len(X), dtype=int)
+                anomaly_probs = np.zeros(len(X))
 
             anomaly_indices = np.where(predictions == -1)[0]
             return AnomalyDetectResponse(
@@ -271,13 +269,37 @@ async def detect_anomalies_dl(request: AnomalyDetectDLRequest):
     try:
         logger.info(f"DL anomaly detection, model: {request.model_type}")
         X = np.array(request.data, dtype=float)
-        rng = np.random.default_rng(42)
-        n = len(X)
-        predictions = np.array([1 if rng.random() > 0.1 else -1 for _ in range(n)])
-        scores = rng.random(n).tolist()
-        indices = np.where(predictions == -1)[0].tolist()
+        if request.model_type == "autoencoder" and AutoencoderDetector is not None:
+            try:
+                model = AutoencoderDetector(input_dim=X.shape[1])
+                model.fit(X, epochs=min(request.epochs, 5))
+                predictions, scores, info = model.detect_anomalies(X)
+                return AnomalyDetectDLResponse(
+                    predictions=predictions.tolist(), anomaly_scores=scores.tolist(),
+                    anomaly_indices=np.where(predictions == -1)[0].tolist(),
+                    model_version=f"anomaly_dl_{request.model_type}_1.0.0",
+                    timestamp=datetime.utcnow().isoformat() + "Z",
+                )
+            except Exception:
+                pass
+        elif request.model_type == "vae" and VAEDetector is not None:
+            try:
+                model = VAEDetector(input_dim=X.shape[1])
+                model.fit(X, epochs=min(request.epochs, 5))
+                predictions, scores, info = model.detect_anomalies(X)
+                return AnomalyDetectDLResponse(
+                    predictions=predictions.tolist(), anomaly_scores=scores.tolist(),
+                    anomaly_indices=np.where(predictions == -1)[0].tolist(),
+                    model_version=f"anomaly_dl_{request.model_type}_1.0.0",
+                    timestamp=datetime.utcnow().isoformat() + "Z",
+                )
+            except Exception:
+                pass
+
+        predictions = np.ones(len(X), dtype=int)
+        scores = np.zeros(len(X))
         return AnomalyDetectDLResponse(
-            predictions=predictions.tolist(), anomaly_scores=scores, anomaly_indices=indices,
+            predictions=predictions.tolist(), anomaly_scores=scores.tolist(), anomaly_indices=[],
             model_version=f"anomaly_dl_{request.model_type}_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
@@ -290,12 +312,26 @@ async def graph_anomaly(request: GraphAnomalyRequest):
         logger.info("Graph anomaly detection")
         adj = np.array(request.adjacency)
         features = np.array(request.node_features)
-        rng = np.random.default_rng(42)
         n = features.shape[0]
-        scores = rng.random(n).tolist()
-        anomaly_nodes = [i for i, s in enumerate(scores) if s > 1 - request.contamination]
+
+        if GraphAnomalyDetector is not None:
+            try:
+                detector = GraphAnomalyDetector()
+                result = detector.detect(adj, features, contamination=request.contamination)
+                return GraphAnomalyResponse(
+                    anomaly_nodes=result.get("anomaly_nodes", []),
+                    scores=result.get("scores", [0.0] * n),
+                    model_version="graph_anomaly_1.0.0",
+                    timestamp=datetime.utcnow().isoformat() + "Z",
+                )
+            except Exception:
+                pass
+
+        node_degrees = np.sum(adj, axis=1) if adj.ndim == 2 else np.ones(n)
+        scores = (node_degrees.max() - node_degrees) / (node_degrees.max() - node_degrees.min() + 1e-8)
+        anomaly_nodes = [int(i) for i, s in enumerate(scores) if s > 1 - request.contamination]
         return GraphAnomalyResponse(
-            anomaly_nodes=anomaly_nodes, scores=scores,
+            anomaly_nodes=anomaly_nodes, scores=[round(float(s), 4) for s in scores],
             model_version="graph_anomaly_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
@@ -338,13 +374,27 @@ async def calibrate_threshold(request: ThresholdCalibrateRequest):
 async def one_class_svm_detect(request: AnomalyDetectRequest):
     try:
         X = np.array(request.data, dtype=float)
-        rng = np.random.default_rng(42)
-        predictions = np.array([1 if rng.random() > request.contamination else -1 for _ in range(len(X))])
-        scores = rng.random(len(X)).tolist()
-        indices = np.where(predictions == -1)[0].tolist()
+        if OneClassSVMDetector is not None:
+            try:
+                model = OneClassSVMDetector(contamination=request.contamination)
+                model.fit(X, feature_names=request.feature_names)
+                predictions, scores, info = model.detect_anomalies(X)
+                anomaly_probs = model.predict_proba(X)
+                indices = np.where(predictions == -1)[0].tolist()
+                return AnomalyDetectResponse(
+                    predictions=predictions.tolist(), anomaly_scores=anomaly_probs.tolist(),
+                    anomaly_indices=indices, anomaly_rate=len(indices) / len(X),
+                    model_version="one_class_svm_1.0.0",
+                    timestamp=datetime.utcnow().isoformat() + "Z",
+                )
+            except Exception:
+                pass
+
+        predictions = np.ones(len(X), dtype=int)
+        indices = []
         return AnomalyDetectResponse(
-            predictions=predictions.tolist(), anomaly_scores=scores, anomaly_indices=indices,
-            anomaly_rate=len(indices) / len(X),
+            predictions=predictions.tolist(), anomaly_scores=[0.0] * len(X), anomaly_indices=indices,
+            anomaly_rate=0.0,
             model_version="one_class_svm_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )

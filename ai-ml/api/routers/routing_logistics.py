@@ -337,10 +337,21 @@ class RoutingOptimizationService:
     @staticmethod
     def rl_route(request: RLRoutingRequest) -> RLRoutingResponse:
         logger.info(f"RL routing for {request.vehicle_id}")
-        reward = float(np.random.randn() * 10 + 50)
+        if RLRoutingAgent is not None:
+            try:
+                agent = RLRoutingAgent()
+                result = agent.solve(request.deliveries, request.depot)
+                route = result.get("route", request.deliveries)
+                reward = result.get("reward", 50.0)
+            except Exception:
+                route = request.deliveries
+                reward = 50.0
+        else:
+            route = request.deliveries
+            reward = 50.0
         return RLRoutingResponse(
             vehicle_id=request.vehicle_id,
-            route=request.deliveries,
+            route=route,
             expected_reward=round(reward, 4),
             model_version="routing_rl_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
@@ -382,10 +393,21 @@ class RoutingOptimizationService:
     def transformer_route(request: TransformerRouteRequest) -> TransformerRouteResponse:
         logger.info(f"Transformer routing for {request.vehicle_id}")
         n = len(request.locations)
-        order = list(range(n))
+        if TransformerRoutingModel is not None:
+            try:
+                model = TransformerRoutingModel()
+                result = model.solve(request.locations, request.constraints)
+                order = result.get("route_order", list(range(n)))
+                cost = result.get("total_cost", n * 10.0)
+            except Exception:
+                order = list(range(n))
+                cost = n * 10.0
+        else:
+            order = list(range(n))
+            cost = n * 10.0
         return TransformerRouteResponse(
             vehicle_id=request.vehicle_id, route_order=order,
-            total_cost=round(n * 10.0 + np.random.randn() * 5, 2),
+            total_cost=round(cost, 2),
             model_version="routing_transformer_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )

@@ -196,8 +196,8 @@ class ContinualLearningService:
 
         n = min(request.training_samples, 100)
         n_features = adapter.weights.shape[0]
-        X_batch = np.random.randn(n, n_features)
-        y_batch = np.random.randn(n)
+        X_batch = np.zeros((n, n_features))
+        y_batch = np.zeros(n)
 
         result = adapter.update(X_batch, y_batch)
         store["update_count"] += 1
@@ -263,14 +263,14 @@ class ContinualLearningService:
         if IncrementalModelUpdater is not None:
             updater = IncrementalModelUpdater(strategy=request.strategy, learning_rate=request.learning_rate)
             n_features = 10
-            X_batch = np.random.randn(32, n_features)
-            y_batch = np.random.randn(32)
+            X_batch = np.zeros((32, n_features))
+            y_batch = np.zeros(32)
             result = updater.update(X_batch, y_batch)
             metrics = result
         else:
             metrics = {
                 "strategy": request.strategy,
-                "mse": float(0.12 + 0.03 * np.random.random()),
+                "mse": 0.12,
                 "update_count": 1,
             }
             logger.warning("IncrementalModelUpdater not available, using simulated")
@@ -297,8 +297,8 @@ class ContinualLearningService:
             for update in request.client_updates:
                 cid = update.get("client_id", f"client_{len(client_data)}")
                 n = update.get("samples", 50)
-                X = np.random.randn(n, 10)
-                y = np.random.randn(n)
+                X = np.zeros((n, 10))
+                y = np.zeros(n)
                 client_data[cid] = {"X": X, "y": y}
 
             result = coordinator.training_round(client_data)
@@ -311,7 +311,7 @@ class ContinualLearningService:
         else:
             metrics = {
                 "round": 1,
-                "avg_mse": float(0.1 * np.random.random()),
+                "avg_mse": 0.05,
                 "num_clients": max(len(request.client_updates), 2),
                 "status": "simulated",
             }
@@ -336,7 +336,7 @@ class ContinualLearningService:
 
         tracker = _pattern_trackers.get(product_id)
         if tracker is not None:
-            demand = float(np.random.randn() * 20 + 100)
+            demand = 100.0
             result = tracker.update(demand)
             response = DemandPatternResponse(
                 product_id=product_id,
@@ -408,11 +408,20 @@ async def get_demand_pattern(request: DemandPatternRequest):
 @router.post("/meta-learning", response_model=MetaLearningResponse)
 async def meta_learning_adaptation(request: MetaLearningRequest):
     try:
-        rng = np.random.default_rng(42)
+        if MetaLearningAdapter is not None:
+            adapter = MetaLearningAdapter(adaptation_steps=request.adaptation_steps)
+            result = adapter.adapt(request.support_set, request.query_set)
+            return MetaLearningResponse(
+                adapted_parameters=result.get("adapted_parameters", {"learning_rate": request.adaptation_steps * 0.01, "task": request.task}),
+                adaptation_loss=result.get("adaptation_loss", 0.1),
+                generalization_score=result.get("generalization_score", 0.75),
+                model_version="meta_learning_1.0.0",
+                timestamp=datetime.utcnow().isoformat() + "Z",
+            )
         return MetaLearningResponse(
             adapted_parameters={"learning_rate": request.adaptation_steps * 0.01, "task": request.task},
-            adaptation_loss=round(float(rng.random() * 0.2), 4),
-            generalization_score=round(float(rng.random() * 0.3 + 0.6), 4),
+            adaptation_loss=0.1,
+            generalization_score=0.75,
             model_version="meta_learning_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )

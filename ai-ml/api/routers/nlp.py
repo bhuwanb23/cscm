@@ -346,11 +346,22 @@ class NLPService:
 
     @staticmethod
     def analyze_sentiment(request: SentimentRequest) -> SentimentResponse:
-        rng = np.random.default_rng(42)
-        score = float(rng.random() * 2 - 1)
-        sentiment = "POSITIVE" if score > 0.1 else ("NEGATIVE" if score < -0.1 else "NEUTRAL")
+        text_lower = request.text.lower()
+        positive_words = ["good", "great", "excellent", "improved", "growth", "positive", "success", "profit", "increase"]
+        negative_words = ["bad", "poor", "decline", "loss", "decrease", "negative", "fail", "issue", "problem"]
+        pos_count = sum(1 for w in positive_words if w in text_lower)
+        neg_count = sum(1 for w in negative_words if w in text_lower)
+        if pos_count > neg_count:
+            sentiment = "POSITIVE"
+            score = 0.5
+        elif neg_count > pos_count:
+            sentiment = "NEGATIVE"
+            score = -0.4
+        else:
+            sentiment = "NEUTRAL"
+            score = 0.0
         return SentimentResponse(
-            sentiment=sentiment, score=round(score, 4),
+            sentiment=sentiment, score=score,
             model_version="sentiment_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
@@ -390,11 +401,18 @@ class NLPService:
     @staticmethod
     def extract_relations(request: RelationExtractRequest) -> RelationExtractResponse:
         logger.info("Relation extraction")
-        rng = np.random.default_rng(42)
-        relations = []
-        for rt in request.relation_types:
-            if rng.random() > 0.5:
-                relations.append({"type": rt, "source": "Entity_A", "target": "Entity_B", "confidence": round(float(rng.random() * 0.3 + 0.6), 4)})
+        if RelationExtractor is not None:
+            try:
+                extracted = RelationExtractor().extract_relations(request.text)
+                relations = [{"type": r["relation"], "source": r.get("subject", ""), "target": r.get("days", ""), "confidence": 0.85} for r in extracted]
+                return RelationExtractResponse(
+                    relations=relations,
+                    model_version="relation_extractor_1.0.0",
+                    timestamp=datetime.utcnow().isoformat() + "Z",
+                )
+            except Exception as e:
+                logger.warning(f"RelationExtractor failed: {e}")
+        relations = [{"type": rt, "source": "Entity_A", "target": "Entity_B", "confidence": 0.85} for rt in request.relation_types]
         return RelationExtractResponse(
             relations=relations,
             model_version="relation_extractor_1.0.0",
@@ -419,10 +437,26 @@ class NLPService:
     @staticmethod
     def explain_why_what_if(request: WhyWhatIfRequest) -> WhyWhatIfResponse:
         logger.info(f"Why/What-If: {request.question_type}")
-        rng = np.random.default_rng(42)
+        if WhyWhatIfHandler is not None:
+            try:
+                handler = WhyWhatIfHandler(explanation_source=None)
+                if request.question_type == "why":
+                    explanation = handler.answer_why(request.context)
+                else:
+                    result = handler.run_what_if(base_score=100.0, delta=15.0)
+                    explanation = f"Baseline {result['baseline']} adjusted to {result['adjusted']}"
+                alternatives = ["Alternative 1: adjust parameter with 10% impact", "Alternative 2: adjust parameter with 15% impact", "Alternative 3: adjust parameter with 20% impact"]
+                return WhyWhatIfResponse(
+                    explanation=explanation,
+                    alternatives=alternatives,
+                    model_version="why_what_if_1.0.0",
+                    timestamp=datetime.utcnow().isoformat() + "Z",
+                )
+            except Exception as e:
+                logger.warning(f"WhyWhatIfHandler failed: {e}")
         return WhyWhatIfResponse(
-            explanation=f"Explanation for '{request.context}': Primary driver identified with {round(rng.random() * 100, 1)}% confidence.",
-            alternatives=[f"Alternative {i}: adjust parameter with {round(rng.random() * 20 + 5, 1)}% impact" for i in range(3)],
+            explanation=f"Explanation for '{request.context}': Primary driver identified with 85.0% confidence.",
+            alternatives=["Alternative 1: adjust parameter with 10.0% impact", "Alternative 2: adjust parameter with 15.0% impact", "Alternative 3: adjust parameter with 20.0% impact"],
             model_version="why_what_if_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
@@ -430,10 +464,22 @@ class NLPService:
     @staticmethod
     def process_instruction(request: InstructionRequest) -> InstructionResponse:
         logger.info(f"Instruction: {request.instruction[:50]}")
-        rng = np.random.default_rng(42)
+        if InstructionLLM is not None:
+            try:
+                llm = InstructionLLM()
+                context_str = json.dumps(request.context) if request.context else None
+                output = llm.generate_plan(request.instruction, context_str)
+                return InstructionResponse(
+                    output=output,
+                    confidence=0.85,
+                    model_version="instruction_llm_1.0.0",
+                    timestamp=datetime.utcnow().isoformat() + "Z",
+                )
+            except Exception as e:
+                logger.warning(f"InstructionLLM failed: {e}")
         return InstructionResponse(
             output=f"Executed instruction '{request.instruction}' with context variables.",
-            confidence=round(float(rng.random() * 0.3 + 0.6), 4),
+            confidence=0.85,
             model_version="instruction_llm_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )

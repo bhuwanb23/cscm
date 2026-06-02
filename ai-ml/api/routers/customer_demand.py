@@ -88,7 +88,7 @@ def _extract_features(historical: List[Dict[str, Any]]) -> np.ndarray:
         if vals:
             features.append(vals[:5])
     if not features:
-        return np.random.randn(20, 5)
+        return np.zeros((20, 5))
     max_len = max(len(f) for f in features)
     padded = [f + [0.0] * (max_len - len(f)) if len(f) < max_len else f[:max_len] for f in features]
     return np.array(padded)
@@ -106,7 +106,8 @@ class CustomerDemandService:
 
             X_hist = _extract_features(request.historical_data)
             horizon = min(request.time_horizon_days, 90)
-            rng = np.random.default_rng(abs(hash(request.customer_segment)) % (2**31))
+            hist_vals = [v for row in request.historical_data for v in row.values() if isinstance(v, (int, float))]
+            hist_mean = float(np.mean(hist_vals)) if hist_vals else 100.0
 
             forecast = []
             lower_bounds = []
@@ -117,25 +118,23 @@ class CustomerDemandService:
                     model = CustomerDemandForecaster()
                     model.fit(request.historical_data)
                     for i in range(horizon):
-                        X_future = X_hist[-1:] + rng.random((1, X_hist.shape[1])) * 0.05
+                        X_future = X_hist[-1:] + np.zeros((1, X_hist.shape[1]))
                         preds = model.predict(X_future)
-                        mean_pred = float(np.mean(preds))
+                        mean_pred = float(np.mean(preds)) if len(preds) > 0 else hist_mean
                         std_pred = float(np.std(preds)) if len(preds) > 1 else 5.0
                         forecast.append(round(mean_pred, 4))
                         lower_bounds.append(round(mean_pred - 1.96 * std_pred, 4))
                         upper_bounds.append(round(mean_pred + 1.96 * std_pred, 4))
                 except Exception:
                     for i in range(horizon):
-                        v = float(rng.random() * 20 + 100)
-                        forecast.append(round(v, 4))
-                        lower_bounds.append(round(v * 0.8, 4))
-                        upper_bounds.append(round(v * 1.2, 4))
+                        forecast.append(round(hist_mean, 4))
+                        lower_bounds.append(round(hist_mean * 0.8, 4))
+                        upper_bounds.append(round(hist_mean * 1.2, 4))
             else:
                 for i in range(horizon):
-                    v = float(rng.random() * 20 + 100)
-                    forecast.append(round(v, 4))
-                    lower_bounds.append(round(v * 0.8, 4))
-                    upper_bounds.append(round(v * 1.2, 4))
+                    forecast.append(round(hist_mean, 4))
+                    lower_bounds.append(round(hist_mean * 0.8, 4))
+                    upper_bounds.append(round(hist_mean * 1.2, 4))
 
             today = datetime.utcnow()
             forecast_dates = [(today + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(horizon)]
@@ -173,15 +172,11 @@ class CustomerDemandService:
             except ValueError:
                 raise ValueError("Invalid date format. Expected YYYY-MM-DD")
 
-            rng = np.random.default_rng(abs(hash(request.customer_segment)) % (2**31))
             months = (end.year - start.year) * 12 + (end.month - start.month)
             quarters = max(months // 3, 1)
 
-            base = 1200 + float(rng.random() * 100)
-            quarterly_values = []
-            for q in range(quarters):
-                growth = base * (1 + 0.03 * q + 0.02 * np.sin(q * np.pi / 2))
-                quarterly_values.append(round(float(growth), 2))
+            base = 1200.0
+            quarterly_values = [round(base * (1 + 0.03 * q + 0.02 * np.sin(q * np.pi / 2)), 2) for q in range(quarters)]
 
             peak_months = ["December", "January", "March"]
             low_months = ["February", "September", "August"]
@@ -193,7 +188,7 @@ class CustomerDemandService:
             return CustomerTrendsResponse(
                 customer_segment=request.customer_segment,
                 trends=[{"period": f"Q{q+1}", "value": quarterly_values[q]} for q in range(quarters)],
-                seasonal_patterns={"peak_month": peak_months[peak_idx], "low_month": low_months[low_idx], "seasonality_strength": round(0.5 + 0.3 * float(rng.random()), 4)},
+                seasonal_patterns={"peak_month": peak_months[peak_idx], "low_month": low_months[low_idx], "seasonality_strength": 0.5},
                 growth_rate=growth_rate,
                 model_version="customer_demand_rf_1.0.0",
                 timestamp=datetime.utcnow().isoformat() + "Z",

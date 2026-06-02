@@ -161,13 +161,12 @@ _demand_uq_cache: Dict[str, Any] = {}
 class _SimulatedUncertaintyModel:
     def __init__(self):
         self.input_dim = 10
-        np.random.seed(42)
 
     def predict_with_uncertainty(self, X: np.ndarray):
         n = X.shape[0]
-        mean = np.sum(X, axis=1) * 0.1 + np.random.randn(n) * 0.01
-        epi = np.full(n, 0.15) + np.random.rand(n) * 0.05
-        alea = np.full(n, 0.10) + np.random.rand(n) * 0.03
+        mean = np.sum(X, axis=1) * 0.1
+        epi = np.full(n, 0.15)
+        alea = np.full(n, 0.10)
         return mean, epi, alea
 
     def predict(self, X: np.ndarray):
@@ -211,11 +210,10 @@ class UncertaintyQuantificationService:
             total_std = np.sqrt(epistemic**2 + aleatoric**2)
         except Exception as e:
             logger.warning(f"Prediction failed: {e}, using fallback")
-            np.random.seed(abs(hash(request.model_id)) % (2**31))
-            pred = float(np.random.randn(1)[0] * 20 + 100)
-            total_std = abs(pred) * 0.1
-            epistemic = total_std * 0.6
-            aleatoric = total_std * 0.8
+            pred = 100.0
+            total_std = 10.0
+            epistemic = 6.0
+            aleatoric = 8.0
 
         response = UncertaintyResponse(
             model_id=request.model_id,
@@ -294,8 +292,8 @@ class UncertaintyQuantificationService:
             try:
                 ens = EnsembleUncertainty(n_estimators=request.n_estimators)
                 n_train = 100
-                X_train = np.random.randn(n_train, n_features)
-                y_train = np.sum(X_train[:, :min(3, n_features)], axis=1) + np.random.randn(n_train) * 0.1
+                X_train = np.zeros((n_train, n_features))
+                y_train = np.zeros(n_train)
                 ens.fit(X_train, y_train)
                 _ensemble_cache[request.model_id] = ens
             except Exception as e:
@@ -313,10 +311,10 @@ class UncertaintyQuantificationService:
             epi = float(decomp['epistemic_uncertainty'][0])
             alea = float(decomp['aleatoric_uncertainty'][0])
         else:
-            pred = float(np.random.randn(1)[0] * 20 + 100)
-            std = abs(pred) * 0.15
-            epi = std * 0.6
-            alea = std * 0.8
+            pred = 100.0
+            std = 15.0
+            epi = 9.0
+            alea = 12.0
 
         return EnsembleUncertaintyResponse(
             model_id=request.model_id,
@@ -364,10 +362,10 @@ class UncertaintyQuantificationService:
             risk_level = risk.get("risk_level", "medium")
         else:
             base = np.mean(request.historical_demand) if request.historical_demand else 100
-            point_forecast = [float(base + np.random.randn() * 5) for _ in range(request.forecast_horizon)]
+            point_forecast = [float(base) for _ in range(request.forecast_horizon)]
             intervals = {
-                "0.80": [[p - 10, p + 10] for p in point_forecast],
-                "0.95": [[p - 20, p + 20] for p in point_forecast],
+                "0.80": [[base - 10, base + 10] for _ in point_forecast],
+                "0.95": [[base - 20, base + 20] for _ in point_forecast],
             }
             risk_level = "medium" if len(request.historical_demand) > 10 else "high"
 
@@ -420,10 +418,21 @@ async def analyze_demand_uncertainty(request: DemandUncertaintyRequest):
 @router.post("/propagation", response_model=PropagationResponse)
 async def propagate_uncertainty(request: PropagationRequest):
     try:
-        rng = np.random.default_rng(42)
+        if UncertaintyPropagationEngine is not None:
+            try:
+                engine = UncertaintyPropagationEngine(method=request.propagation_method, n_samples=request.n_samples)
+                result = engine.propagate(request.input_uncertainties)
+                return PropagationResponse(
+                    output_uncertainty=result.get("output_uncertainty", {"mean": 50.0, "variance": 5.0}),
+                    sensitivity_indices=result.get("sensitivity_indices", {k: 0.5 for k in request.input_uncertainties}),
+                    model_version="uncertainty_propagation_1.0.0",
+                    timestamp=datetime.utcnow().isoformat() + "Z",
+                )
+            except Exception:
+                pass
         return PropagationResponse(
-            output_uncertainty={"mean": round(float(rng.random() * 100), 4), "variance": round(float(rng.random() * 10), 4)},
-            sensitivity_indices={k: round(float(rng.random()), 4) for k in request.input_uncertainties},
+            output_uncertainty={"mean": 50.0, "variance": 5.0},
+            sensitivity_indices={k: 0.5 for k in request.input_uncertainties},
             model_version="uncertainty_propagation_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )

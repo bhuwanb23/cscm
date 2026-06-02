@@ -170,7 +170,7 @@ def _load_training_data() -> pd.DataFrame:
         except Exception as e:
             logger.warning(f"Failed to load integrated dataset: {e}")
     dates = pd.date_range(end=pd.Timestamp.now(), periods=30, freq='D')
-    fallback = pd.DataFrame({'date': dates, 'sales_quantity': np.random.default_rng(42).poisson(100, 30)})
+    fallback = pd.DataFrame({'date': dates, 'sales_quantity': [100] * 30})
     return fallback
 
 
@@ -393,12 +393,12 @@ class DemandForecastingService:
                     context = train_data.iloc[-context_len:] if len(train_data) > 0 else None
                     predictions = model.forecast(future_dates, context_data=context, feature_defaults=feature_defaults)
                 except Exception as e:
-                    logger.warning(f"Model prediction failed: {e}, using fallback")
-                    rng = np.random.default_rng(42)
-                    predictions = np.array([100.0 + float(rng.random() * 10 - 5) for _ in range(request.forecast_horizon)])
+                    logger.warning(f"Model prediction failed: {e}, using mean fallback")
+                    mean_val = float(train_data['sales_quantity'].mean()) if 'sales_quantity' in train_data.columns else 100.0
+                    predictions = np.full(request.forecast_horizon, mean_val)
             else:
-                rng = np.random.default_rng(42)
-                predictions = np.array([100.0 + float(rng.random() * 10 - 5) for _ in range(request.forecast_horizon)])
+                mean_val = float(train_data['sales_quantity'].mean()) if 'sales_quantity' in train_data.columns else 100.0
+                predictions = np.full(request.forecast_horizon, mean_val)
 
             pred_list = []
             for i in range(request.forecast_horizon):
@@ -576,7 +576,8 @@ async def deep_learning_forecast(request: DeepLearningForecastRequest):
     try:
         logger.info(f"DL forecast for SKU: {request.sku_id}, model: {request.model_type}")
         train_data = _load_training_data()
-        vals = train_data['sales'].values
+        vals = train_data['sales_quantity'].values if 'sales_quantity' in train_data.columns else train_data['sales'].values
+        mean_val = float(vals.mean()) if len(vals) > 0 else 100.0
         seqs = np.array([vals[i:i+request.sequence_length] for i in range(len(vals)-request.sequence_length)])
         targets = vals[request.sequence_length:]
         if len(seqs) > 0:
@@ -588,9 +589,9 @@ async def deep_learning_forecast(request: DeepLearningForecastRequest):
                     last_seq = vals[-request.sequence_length:].reshape(1, request.sequence_length, 1)
                     preds = dl.predict(last_seq)
                 except Exception:
-                    preds = np.random.default_rng(42).random(request.forecast_horizon) * 20 + float(vals.mean())
+                    preds = np.full(request.forecast_horizon, mean_val)
             else:
-                preds = np.random.default_rng(42).random(request.forecast_horizon) * 20 + float(vals.mean())
+                preds = np.full(request.forecast_horizon, mean_val)
         else:
             preds = np.full(request.forecast_horizon, 100.0)
 
@@ -610,16 +611,18 @@ async def gradient_boosted_forecast(request: GradientBoostedForecastRequest):
         logger.info(f"GB forecast for SKU: {request.sku_id}, model: {request.model_type}")
         df = pd.DataFrame(request.features)
         n = len(df)
-        target = np.random.default_rng(42).random(n) * 100 + 50
+        train_data = _load_training_data()
+        vals = train_data['sales_quantity'].values if 'sales_quantity' in train_data.columns else train_data['sales'].values
+        mean_val = float(vals.mean()) if len(vals) > 0 else 100.0
         if GradientBoostedForecaster is not None and n > 5:
             try:
                 gb = GradientBoostedForecaster(model_type=request.model_type)
-                gb.fit(df, pd.Series(target))
+                gb.fit(df, pd.Series(np.full(n, mean_val)))
                 preds = gb.predict(df)
             except Exception:
-                preds = np.random.default_rng(42).random(request.forecast_horizon) * 20 + 100
+                preds = np.full(request.forecast_horizon, mean_val)
         else:
-            preds = np.random.default_rng(42).random(request.forecast_horizon) * 20 + 100
+            preds = np.full(request.forecast_horizon, mean_val)
 
         return GradientBoostedForecastResponse(
             sku_id=request.sku_id, store_id=request.store_id,
@@ -636,7 +639,8 @@ async def statistical_forecast(request: StatisticalForecastRequest):
     try:
         logger.info(f"Statistical forecast for SKU: {request.sku_id}, model: {request.model_type}")
         train_data = _load_training_data()
-        vals = train_data['sales'].values
+        vals = train_data['sales_quantity'].values if 'sales_quantity' in train_data.columns else train_data['sales'].values
+        mean_val = float(vals.mean()) if len(vals) > 0 else 100.0
         if StatisticalForecaster is not None and len(vals) > 5:
             try:
                 series = pd.Series(vals)
@@ -645,12 +649,10 @@ async def statistical_forecast(request: StatisticalForecastRequest):
                 preds = sf.predict(steps=request.forecast_horizon)
                 cis = [{"lower": round(float(p * 0.8), 2), "upper": round(float(p * 1.2), 2)} for p in preds]
             except Exception:
-                rng = np.random.default_rng(42)
-                preds = np.array([float(vals.mean()) + float(rng.random() * 10 - 5) for _ in range(request.forecast_horizon)])
+                preds = np.full(request.forecast_horizon, mean_val)
                 cis = None
         else:
-            rng = np.random.default_rng(42)
-            preds = np.array([100.0 + float(rng.random() * 10 - 5) for _ in range(request.forecast_horizon)])
+            preds = np.full(request.forecast_horizon, mean_val)
             cis = None
 
         return StatisticalForecastResponse(
@@ -669,7 +671,8 @@ async def hybrid_forecast(request: HybridForecastRequest):
     try:
         logger.info(f"Hybrid forecast for SKU: {request.sku_id}, model: {request.model_type}")
         train_data = _load_training_data()
-        vals = train_data['sales'].values
+        vals = train_data['sales_quantity'].values if 'sales_quantity' in train_data.columns else train_data['sales'].values
+        mean_val = float(vals.mean()) if len(vals) > 0 else 100.0
         if HybridForecaster is not None and len(vals) > 5:
             try:
                 series = pd.Series(vals)
@@ -677,11 +680,9 @@ async def hybrid_forecast(request: HybridForecastRequest):
                 hf.fit(series)
                 preds = hf.predict(steps=request.forecast_horizon)
             except Exception:
-                rng = np.random.default_rng(42)
-                preds = np.array([float(vals.mean()) + float(rng.random() * 15 - 7.5) for _ in range(request.forecast_horizon)])
+                preds = np.full(request.forecast_horizon, mean_val)
         else:
-            rng = np.random.default_rng(42)
-            preds = np.array([100.0 + float(rng.random() * 15 - 7.5) for _ in range(request.forecast_horizon)])
+            preds = np.full(request.forecast_horizon, mean_val)
 
         return HybridForecastResponse(
             sku_id=request.sku_id, store_id=request.store_id,
@@ -698,18 +699,36 @@ async def probabilistic_forecast(request: ProbabilisticForecastRequest):
     try:
         logger.info(f"Probabilistic forecast for SKU: {request.sku_id}, model: {request.model_type}")
         train_data = _load_training_data()
-        vals = train_data['sales'].values
-        rng = np.random.default_rng(42)
-        samples = [sorted([round(float(vals.mean() + rng.random() * 30 - 15), 2) for _ in range(request.forecast_horizon)]) for _ in range(min(request.num_samples, 10))]
+        vals = train_data['sales_quantity'].values if 'sales_quantity' in train_data.columns else train_data['sales'].values
+        mean_val = float(vals.mean()) if len(vals) > 0 else 100.0
+        std_val = float(vals.std()) if len(vals) > 1 else 10.0
+
+        if ProbabilisticForecaster is not None and len(vals) > 5:
+            try:
+                pf = ProbabilisticForecaster(model_type=request.model_type)
+                series = pd.Series(vals)
+                pf.fit(series)
+                samples = pf.sample(steps=request.forecast_horizon, n_samples=min(request.num_samples, 100))
+                samples_list = [[round(float(v), 2) for v in row] for row in samples]
+            except Exception:
+                import scipy.stats as stats
+                samples = stats.norm.rvs(loc=mean_val, scale=std_val, size=(min(request.num_samples, 10), request.forecast_horizon), random_state=42)
+                samples_list = [[round(float(v), 2) for v in row] for row in samples]
+        else:
+            import scipy.stats as stats
+            samples = stats.norm.rvs(loc=mean_val, scale=std_val, size=(min(request.num_samples, 10), request.forecast_horizon), random_state=42)
+            samples_list = [[round(float(v), 2) for v in row] for row in samples]
+
+        samples_arr = np.array(samples_list)
         qs = {}
         for q in [0.1, 0.25, 0.5, 0.75, 0.9]:
-            arr = np.percentile(samples, q * 100, axis=0)
+            arr = np.percentile(samples_arr, q * 100, axis=0)
             qs[str(q)] = [round(float(v), 2) for v in arr]
 
         return ProbabilisticForecastResponse(
             sku_id=request.sku_id, store_id=request.store_id,
             model_type=request.model_type,
-            samples=samples[:5],
+            samples=samples_list[:5],
             quantiles=qs,
             model_version=f"demand_prob_{request.model_type}_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
@@ -773,13 +792,15 @@ async def edge_inference(request: EdgeInferenceRequest):
     try:
         logger.info(f"Edge inference for store: {request.store_id}")
         features_df = pd.DataFrame(request.features)
-        rng = np.random.default_rng(42)
-        preds = [round(float(rng.random() * 20 + 90), 2) for _ in range(len(features_df))]
+        train_data = _load_training_data()
+        vals = train_data['sales_quantity'].values if 'sales_quantity' in train_data.columns else train_data['sales'].values
+        mean_val = float(vals.mean()) if len(vals) > 0 else 100.0
+        preds = [round(mean_val, 2) for _ in range(len(features_df))]
 
         return EdgeInferenceResponse(
             store_id=request.store_id,
             predictions=preds,
-            latency_ms=round(float(rng.random() * 50 + 10), 2),
+            latency_ms=0.0,
             model_version=f"demand_edge_{request.model_type}_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )

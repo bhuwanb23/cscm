@@ -272,12 +272,9 @@ def _risk_score_to_level(score: float) -> str:
 def _build_supplier_data(request: SupplierRiskRequest) -> pd.DataFrame:
     n = max(len(request.historical_data), 10)
     records = []
-    rng = np.random.default_rng(42)
     for i in range(n):
         hist = request.historical_data[i] if i < len(request.historical_data) else {}
-        flag = hist.get("event_flag", None)
-        if flag is None:
-            flag = 1 if rng.random() < 0.15 else 0
+        flag = hist.get("event_flag", 0)
         row = {
             "current_orders": request.current_orders,
             "delivery_history": request.delivery_history[i % len(request.delivery_history)] if request.delivery_history else 1,
@@ -323,9 +320,9 @@ class SupplierRiskService:
                     model.fit(df)
                     score = float(np.mean(model.predict_risk(df)))
                 except Exception:
-                    score = float(np.random.random() * 0.5 + 0.2)
+                    score = 0.3
             else:
-                score = float(np.random.random() * 0.5 + 0.2)
+                score = 0.3
 
             return SupplierRiskResponse(
                 supplier_id=request.supplier_id,
@@ -346,10 +343,23 @@ class SupplierRiskService:
     @staticmethod
     def get_recommendations(request: SupplierRecommendationsRequest) -> SupplierRecommendationsResponse:
         logger.info(f"Getting recommendations for supplier: {request.supplier_id}")
+        if BackupSupplierRecommender is not None:
+            try:
+                recommender = BackupSupplierRecommender()
+                result = recommender.recommend(supplier_id=request.supplier_id, top_n=request.max_recommendations)
+                recs = result.get("recommendations", [])
+                if recs:
+                    return SupplierRecommendationsResponse(
+                        supplier_id=request.supplier_id, recommendations=recs,
+                        model_version="supplier_risk_gb_1.0.0",
+                        timestamp=datetime.utcnow().isoformat() + "Z",
+                    )
+            except Exception:
+                pass
         recs = [
             {"supplier_id": f"ALT_{i}", "name": f"Alternative Supplier {i}",
-             "risk_score": round(0.2 + 0.3 * np.random.random(), 4),
-             "distance_km": round(100 + 500 * np.random.random(), 2)}
+             "risk_score": round(0.3 + 0.05 * i, 4),
+             "distance_km": round(200 + 100 * i, 2)}
             for i in range(request.max_recommendations)
         ]
         return SupplierRecommendationsResponse(
@@ -397,10 +407,24 @@ class SupplierRiskService:
     @staticmethod
     def graph_risk(request: GraphRiskRequest) -> GraphRiskResponse:
         logger.info(f"Graph risk for supplier: {request.supplier_id}")
-        emb = list(np.random.randn(16))
+        if SupplierGraphEmbedder is not None:
+            try:
+                embedder = SupplierGraphEmbedder()
+                result = embedder.embed(request.supplier_id, request.network_data)
+                emb = result.get("embedding", [0.0] * 16)
+                risk_prop = result.get("risk_propagation", 0.25)
+                return GraphRiskResponse(
+                    supplier_id=request.supplier_id, embedding=[round(v, 4) for v in emb],
+                    risk_propagation=round(risk_prop, 4),
+                    model_version="supplier_graph_1.0.0",
+                    timestamp=datetime.utcnow().isoformat() + "Z",
+                )
+            except Exception:
+                pass
+        emb = [0.0] * 16
         return GraphRiskResponse(
-            supplier_id=request.supplier_id, embedding=[round(v, 4) for v in emb],
-            risk_propagation=round(float(np.random.random() * 0.5), 4),
+            supplier_id=request.supplier_id, embedding=emb,
+            risk_propagation=0.25,
             model_version="supplier_graph_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
@@ -408,11 +432,22 @@ class SupplierRiskService:
     @staticmethod
     def correlated_risk(request: CorrelatedRiskRequest) -> CorrelatedRiskResponse:
         logger.info("Correlated risk analysis")
-        corrs = {f"{a}_{b}": round(float(np.random.random() * 0.6 + 0.2), 4)
-                 for i, a in enumerate(request.supplier_ids)
+        if CorrelatedRiskAnalyzer is not None:
+            try:
+                analyzer = CorrelatedRiskAnalyzer()
+                result = analyzer.analyze(request.supplier_ids, request.market_conditions)
+                return CorrelatedRiskResponse(
+                    correlations=result.get("correlations", {}),
+                    portfolio_risk=round(result.get("portfolio_risk", 0.4), 4),
+                    model_version="supplier_correlated_1.0.0",
+                    timestamp=datetime.utcnow().isoformat() + "Z",
+                )
+            except Exception:
+                pass
+        corrs = {f"{a}_{b}": 0.4 for i, a in enumerate(request.supplier_ids)
                  for b in request.supplier_ids[i+1:]}
         return CorrelatedRiskResponse(
-            correlations=corrs, portfolio_risk=round(float(np.mean(list(corrs.values())) if corrs else 0.5), 4),
+            correlations=corrs, portfolio_risk=0.4,
             model_version="supplier_correlated_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
@@ -436,10 +471,23 @@ class SupplierRiskService:
     @staticmethod
     def calibrate_scores(request: SupplierCalibrateRequest) -> SupplierCalibrateResponse:
         logger.info(f"Calibrating scores for supplier: {request.supplier_id}")
-        cal = [round(float(np.clip(p + np.random.randn() * 0.05, 0, 1)), 4) for p in request.predictions]
+        if ProbabilityCalibrator is not None:
+            try:
+                calibrator = ProbabilityCalibrator(method=request.method)
+                result = calibrator.calibrate(request.predictions, request.actuals)
+                return SupplierCalibrateResponse(
+                    supplier_id=request.supplier_id,
+                    calibrated_scores=result.get("calibrated_scores", request.predictions),
+                    calibration_error=round(result.get("calibration_error", 0.02), 4),
+                    model_version="supplier_calibrate_1.0.0",
+                    timestamp=datetime.utcnow().isoformat() + "Z",
+                )
+            except Exception:
+                pass
+        cal = [round(float(np.clip(p, 0, 1)), 4) for p in request.predictions]
         return SupplierCalibrateResponse(
             supplier_id=request.supplier_id, calibrated_scores=cal,
-            calibration_error=round(float(np.random.random() * 0.05), 4),
+            calibration_error=0.0,
             model_version="supplier_calibrate_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
@@ -447,10 +495,27 @@ class SupplierRiskService:
     @staticmethod
     def backup_recommend(request: BackupSupplierRequest) -> BackupSupplierResponse:
         logger.info(f"Backup recommendations for: {request.supplier_id}")
+        if BackupSupplierRecommender is not None:
+            try:
+                recommender = BackupSupplierRecommender()
+                result = recommender.recommend(
+                    supplier_id=request.supplier_id,
+                    min_reliability=request.min_reliability,
+                    max_distance_km=request.max_distance_km,
+                )
+                backups = result.get("backups", [])
+                if backups:
+                    return BackupSupplierResponse(
+                        supplier_id=request.supplier_id, backups=backups,
+                        model_version="supplier_backup_1.0.0",
+                        timestamp=datetime.utcnow().isoformat() + "Z",
+                    )
+            except Exception:
+                pass
         backups = [
             {"supplier_id": f"BACKUP_{i}", "name": f"Backup Supplier {i}",
-             "reliability": round(0.7 + 0.25 * np.random.random(), 4),
-             "distance_km": round(50 + 500 * np.random.random(), 2)}
+             "reliability": round(0.8 - 0.1 * i, 4),
+             "distance_km": round(200 + 150 * i, 2)}
             for i in range(3)
         ]
         return BackupSupplierResponse(
