@@ -220,16 +220,121 @@ class IncrementalModelUpdater:
         logger.info("IncrementalModelUpdater reset to initial state")
 
 
-if __name__ == "__main__":
-    np.random.seed(42)
-    updater = IncrementalModelUpdater(strategy='sliding_window', window_size=200)
+class PyTorchEWC:
+    """
+    Elastic Weight Consolidation for PyTorch nn.Module.
 
-    for i in range(20):
-        X = np.random.randn(32, 5)
-        y = np.sum(X[:, :2], axis=1) + np.random.randn(32) * 0.1
-        metrics = updater.update(X, y)
-        print(f"Update {i+1}: MSE={metrics['mse']:.4f}, Strategy={metrics['strategy']}")
+    Computes per-parameter Fisher information and adds an EWC penalty
+    to the loss to prevent catastrophic forgetting.
 
-    X_test = np.random.randn(10, 5)
-    preds = updater.predict(X_test)
-    print(f"Predictions: {preds[:5]}")
+    Usage:
+        model = LSTMModel(...)
+        optimizer = torch.optim.Adam(model.parameters())
+        ewc = PyTorchEWC(model, optimizer)
+
+        # After training on task A:
+        ewc.register_task(dataloader_a)
+
+        # During training on task B:
+        loss = ewc.compute_loss(task_b_loss)
+        loss.backward()
+        optimizer.step()
+    """
+
+    def __init__(
+        self,
+        model: "torch.nn.Module",
+        optimizer: "torch.optim.Optimizer",
+        ewc_lambda: float = 0.4,
+        device: Optional["torch.device"] = None,
+    ):
+        import torch
+        self.model = model
+        self.optimizer = optimizer
+        self.ewc_lambda = ewc_lambda
+        self.device = device or next(model.parameters()).device
+
+        self.fisher_diags: Dict[str, torch.Tensor] = {}
+        self.optimal_params: Dict[str, torch.Tensor] = {}
+        self._registered = False
+
+    def register_task(self, dataloader: "torch.utils.data.DataLoader", loss_fn: Optional[callable] = None) -> dict:
+        """
+        Compute Fisher information on a task's data and save optimal params.
+
+        Args:
+            dataloader: DataLoader for the task to remember.
+            loss_fn: Loss function (default: MSELoss).
+
+        Returns:
+            Dict with Fisher diagonal mean and total params count.
+        """
+        import torch
+        self.model.train()
+        total_fisher: Dict[str, torch.Tensor] = {}
+        n_samples = 0
+
+        for batch in dataloader:
+            if isinstance(batch, (list, tuple)):
+                X = batch[0].to(self.device)
+                y = batch[1].to(self.device) if len(batch) > 1 else None
+            else:
+                X = batch.to(self.device)
+                y = None
+
+            self.optimizer.zero_grad()
+            output = self.model(X)
+
+            if y is not None:
+                fn = loss_fn or torch.nn.MSELoss()
+                loss = fn(output, y)
+            else:
+                loss = output.norm() ** 2
+
+            loss.backward()
+
+            for name, param in self.model.named_parameters():
+                if param.grad is not None:
+                    fisher = param.grad ** 2
+                    if name not in total_fisher:
+                        total_fisher[name] = fisher.detach().clone()
+                    else:
+                        total_fisher[name] += fisher.detach().clone()
+
+            n_samples += X.shape[0]
+
+        for name in total_fisher:
+            total_fisher[name] /= max(n_samples, 1)
+
+        self.fisher_diags = {k: v.clone() for k, v in total_fisher.items()}
+        self.optimal_params = {k: p.detach().clone() for k, p in self.model.named_parameters()}
+        self._registered = True
+
+        fisher_mean = float(torch.mean(torch.cat([v.flatten() for v in total_fisher.values()])).item())
+        return {"fisher_mean": fisher_mean, "n_samples": n_samples, "n_params": len(total_fisher)}
+
+    def compute_ewc_penalty(self) -> "torch.Tensor":
+        """Compute the EWC penalty term."""
+        import torch
+        if not self._registered:
+            return torch.zeros(1, device=self.device)
+
+        penalty = torch.zeros(1, device=self.device)
+        for name, param in self.model.named_parameters():
+            if name in self.fisher_diags and name in self.optimal_params:
+                diff = param - self.optimal_params[name]
+                penalty += (self.fisher_diags[name] * diff ** 2).sum()
+
+        return 0.5 * self.ewc_lambda * penalty
+
+    def compute_loss(self, task_loss: "torch.Tensor") -> "torch.Tensor":
+        """Add EWC penalty to the task loss."""
+        return task_loss + self.compute_ewc_penalty()
+
+    def get_state(self) -> dict:
+        return {
+            "registered": self._registered,
+            "ewc_lambda": self.ewc_lambda,
+            "n_fisher_params": len(self.fisher_diags),
+            "n_optimal_params": len(self.optimal_params),
+        }

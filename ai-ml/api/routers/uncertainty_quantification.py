@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import json
@@ -46,6 +46,30 @@ except Exception as e:
     logging.getLogger(__name__).warning(f"Could not load BayesianNeuralNetwork: {e}")
     BayesianNeuralNetwork = None
     HAS_TF = False
+
+try:
+    _mc_mod = _load_mod(
+        'uncertainty_quantification/probabilistic_framework/mc_dropout_pytorch.py',
+        'uncertainty_quantification.probabilistic_framework.mc_dropout_pytorch'
+    )
+    MCDropoutWrapper = _mc_mod.MCDropoutWrapper
+    HAS_MC_DROPOUT = True
+except Exception as e:
+    logging.getLogger(__name__).warning(f"Could not load MCDropoutWrapper: {e}")
+    MCDropoutWrapper = None
+    HAS_MC_DROPOUT = False
+
+try:
+    _qr_mod = _load_mod(
+        'uncertainty_quantification/probabilistic_framework/quantile_regression.py',
+        'uncertainty_quantification.probabilistic_framework.quantile_regression'
+    )
+    QuantileRegressionWrapper = _qr_mod.QuantileRegressionWrapper
+    HAS_QUANTILE = True
+except Exception as e:
+    logging.getLogger(__name__).warning(f"Could not load QuantileRegressionWrapper: {e}")
+    QuantileRegressionWrapper = None
+    HAS_QUANTILE = False
 
 try:
     _ens_mod = _load_mod(
@@ -188,11 +212,39 @@ class UncertaintyQuantificationService:
         return _models_cache[model_id]
 
     @staticmethod
+    def _get_mc_dropout_model(model_id: str):
+        cache_key = f"mc_{model_id}"
+        if cache_key not in _models_cache and HAS_MC_DROPOUT:
+            try:
+                import torch
+                base = torch.nn.Linear(10, 1)
+                wrapper = MCDropoutWrapper(base, num_samples=50)
+                _models_cache[cache_key] = wrapper
+            except Exception:
+                _models_cache[cache_key] = None
+        return _models_cache.get(cache_key)
+
+    @staticmethod
+    def _get_quantile_model(model_id: str):
+        cache_key = f"qr_{model_id}"
+        if cache_key not in _models_cache and HAS_QUANTILE:
+            try:
+                import torch
+                base = torch.nn.Linear(10, 1)
+                wrapper = QuantileRegressionWrapper(
+                    base_model=base, hidden_dim=1,
+                    quantiles=[0.05, 0.25, 0.5, 0.75, 0.95]
+                )
+                _models_cache[cache_key] = wrapper
+            except Exception:
+                _models_cache[cache_key] = None
+        return _models_cache.get(cache_key)
+
+    @staticmethod
     def quantify_uncertainty(request: UncertaintyRequest) -> UncertaintyResponse:
         logger.info(f"Quantifying uncertainty for model: {request.model_id}")
 
-        model = UncertaintyQuantificationService._get_model(request.model_id)
-
+        method = request.uncertainty_method or "bayesian"
         input_values = list(request.input_data.values())
         n_features = len(input_values)
         if n_features == 0:
@@ -203,13 +255,36 @@ class UncertaintyQuantificationService:
             X = np.pad(X, ((0, 0), (0, 10 - X.shape[1])), 'constant')
 
         try:
-            mean, epi, alea = model.predict_with_uncertainty(X)
-            pred = float(mean[0])
-            epistemic = float(epi[0])
-            aleatoric = float(alea[0])
+            if method == "dropout":
+                mc_model = UncertaintyQuantificationService._get_mc_dropout_model(request.model_id)
+                if mc_model is not None:
+                    import torch
+                    x_tensor = torch.FloatTensor(X)
+                    mean, epi, alea = mc_model.predict(x_tensor)
+                    pred = float(mean[0][0]) if mean.ndim > 1 else float(mean[0])
+                    epistemic = float(epi[0])
+                    aleatoric = float(alea[0]) if alea.size > 0 else 0.0
+                else:
+                    raise RuntimeError("MC Dropout model unavailable")
+            elif method == "quantile":
+                qr_model = UncertaintyQuantificationService._get_quantile_model(request.model_id)
+                if qr_model is not None:
+                    result = qr_model.predict(X)
+                    pred = float(result['mean'][0])
+                    epistemic = float(np.std([result[f'q_{q:02d}'][0] for q in [5, 25, 75, 95]]))
+                    aleatoric = float((result['q_95'][0] - result['q_05'][0]) / 3.92) if 'q_95' in result else 0.0
+                else:
+                    raise RuntimeError("Quantile regression model unavailable")
+            else:
+                model = UncertaintyQuantificationService._get_model(request.model_id)
+                mean, epi, alea = model.predict_with_uncertainty(X)
+                pred = float(mean[0])
+                epistemic = float(epi[0])
+                aleatoric = float(alea[0])
+
             total_std = np.sqrt(epistemic**2 + aleatoric**2)
         except Exception as e:
-            logger.warning(f"Prediction failed: {e}, using fallback")
+            logger.warning(f"Prediction with method '{method}' failed: {e}, using fallback")
             pred = 100.0
             total_std = 10.0
             epistemic = 6.0
@@ -434,6 +509,56 @@ async def propagate_uncertainty(request: PropagationRequest):
             output_uncertainty={"mean": 50.0, "variance": 5.0},
             sensitivity_indices={k: 0.5 for k in request.input_uncertainties},
             model_version="uncertainty_propagation_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class SafetyStockRequest(BaseModel):
+    model_id: str = "default"
+    avg_daily_demand: float = 100.0
+    demand_std: Optional[float] = None
+    lead_time_days: float = 7.0
+    service_level: float = 0.95
+    input_data: dict = {}
+
+class SafetyStockResponse(BaseModel):
+    safety_stock: float
+    reorder_point: float
+    service_level: float
+    demand_uncertainty_std: float
+    lead_time_days: float
+    model_version: str
+    timestamp: str
+
+@router.post("/safety-stock", response_model=SafetyStockResponse)
+async def compute_safety_stock(request: SafetyStockRequest):
+    try:
+        uq = UncertaintyQuantificationService()
+        if request.input_data:
+            uq_req = UncertaintyRequest(
+                model_id=request.model_id,
+                input_data=request.input_data,
+                uncertainty_method="bayesian"
+            )
+            uq_resp = uq.quantify_uncertainty(uq_req)
+            demand_std = uq_resp.uncertainty["std"]
+        else:
+            demand_std = request.demand_std or (request.avg_daily_demand * 0.2)
+
+        z_scores = {0.90: 1.282, 0.95: 1.645, 0.975: 1.96, 0.99: 2.326}
+        z = min(s for k, s in sorted(z_scores.items()) if k >= request.service_level)
+        safety_stock = z * demand_std * np.sqrt(request.lead_time_days)
+        reorder_point = request.avg_daily_demand * request.lead_time_days + safety_stock
+
+        return SafetyStockResponse(
+            safety_stock=round(float(safety_stock), 2),
+            reorder_point=round(float(reorder_point), 2),
+            service_level=request.service_level,
+            demand_uncertainty_std=round(float(demand_std), 4),
+            lead_time_days=request.lead_time_days,
+            model_version="uncertainty_safety_stock_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
     except Exception as e:

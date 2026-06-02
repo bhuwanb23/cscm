@@ -127,15 +127,50 @@ class ContinualLearningAnomaly:
     
     def _adapt(self, X_new: np.ndarray, predictions: np.ndarray):
         """
-        Adapt model incrementally.
+        Adapt model incrementally using partial_fit or memory-buffer gradient update.
         
         Args:
             X_new: New data
             predictions: Current predictions
         """
-        # Incremental adaptation would be implemented here
-        # For now, we'll just log
-        logger.debug(f"Adapting model with {len(X_new)} samples")
+        if hasattr(self.base_detector, 'partial_fit'):
+            try:
+                y_scores = np.where(predictions < 0, -1, 1)
+                self.base_detector.partial_fit(X_new, y_scores)
+                logger.debug(f"Partial fit with {len(X_new)} samples")
+                return
+            except Exception as e:
+                logger.warning(f"partial_fit failed: {e}")
+
+        if hasattr(self.base_detector, 'warm_start') and hasattr(self.base_detector, 'fit'):
+            try:
+                memory_X = np.array(list(self.memory_buffer))
+                memory_y = np.array(list(self.memory_labels)) if self.memory_labels else None
+                if len(memory_X) >= X_new.shape[1] * 2:
+                    if memory_y is not None and len(memory_y) == len(memory_X):
+                        self.base_detector.warm_start = True
+                        self.base_detector.fit(memory_X, memory_y)
+                    else:
+                        self.base_detector.warm_start = True
+                        self.base_detector.fit(memory_X)
+                    logger.debug(f"Warm-start fit with {len(memory_X)} samples")
+                    return
+            except Exception as e:
+                logger.warning(f"warm_start fit failed: {e}")
+
+        anomaly_ratio = float(np.mean(predictions < -0.5) if len(predictions) > 0 else 0)
+        if hasattr(self.base_detector, 'contamination'):
+            old = self.base_detector.contamination
+            adapted = 0.5 * old + 0.5 * max(anomaly_ratio, 0.01)
+            self.base_detector.contamination = min(adapted, 0.5)
+            logger.debug(f"Adapted contamination: {old:.4f} -> {self.base_detector.contamination:.4f}")
+        if hasattr(self.base_detector, 'threshold'):
+            old = self.base_detector.threshold
+            new_thresh = 0.9 * old + 0.1 * float(np.percentile(abs(predictions), 95)) if len(predictions) > 0 else old
+            self.base_detector.threshold = min(new_thresh, 1.0)
+            logger.debug(f"Adapted threshold: {old:.4f} -> {self.base_detector.threshold:.4f}")
+
+        logger.debug(f"Adapted model with {len(X_new)} samples (anomaly_ratio={anomaly_ratio:.3f})")
     
     def _retrain(self):
         """Retrain model on memory buffer."""
