@@ -1,59 +1,32 @@
-const axios = require('axios');
+const BaseApiService = require('../../../services/BaseApiService');
 
-/**
- * Base API Service for Simulation Agent
- * 
- * This service provides methods to communicate with the AI/ML API endpoints.
- */
-class SimulationApiService {
-  constructor() {
-    // AI/ML API base URL - this should be configurable
-    this.baseUrl = process.env.AI_ML_API_URL || 'http://localhost:8000';
+class SimulationApiService extends BaseApiService {
+  _getFallback(method, path, data) {
+    if (path === '/api/v1/digital-twin/simulate') {
+      return { simulation_id: 'fallback', status: 'completed', results: {}, model_version: 'fallback_v1' };
+    }
+    if (path === '/api/v1/demand/forecast') {
+      return {
+        forecast_values: [100], forecast_dates: [new Date().toISOString().slice(0, 10)],
+        model_version: 'fallback_v1',
+      };
+    }
+    if (path === '/api/v1/inventory/optimize') {
+      return { reorder_quantity: 50, safety_stock: 25, model_version: 'fallback_v1' };
+    }
+    return null;
   }
 
-  /**
-   * Call digital twin simulation API
-   * @param {Object} data - Simulation data
-   * @returns {Promise<Object>} Simulation results
-   */
   async digitalTwinSimulation(data) {
-    try {
-      const response = await axios.post(`${this.baseUrl}/api/v1/digital-twin/simulate`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Digital twin simulation API call failed:', error.message);
-      throw error;
-    }
+    return this.call('post', '/api/v1/digital-twin/simulate', data, { allowFallback: true });
   }
 
-  /**
-   * Call demand forecasting API
-   * @param {Object} data - Forecasting data
-   * @returns {Promise<Object>} Forecast results
-   */
   async demandForecast(data) {
-    try {
-      const response = await axios.post(`${this.baseUrl}/api/v1/demand/forecast`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Demand forecast API call failed:', error.message);
-      throw error;
-    }
+    return this.call('post', '/api/v1/demand/forecast', data, { allowFallback: true });
   }
 
-  /**
-   * Call inventory optimization API
-   * @param {Object} data - Inventory data
-   * @returns {Promise<Object>} Optimization results
-   */
   async inventoryOptimization(data) {
-    try {
-      const response = await axios.post(`${this.baseUrl}/api/v1/inventory/optimize`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Inventory optimization API call failed:', error.message);
-      throw error;
-    }
+    return this.call('post', '/api/v1/inventory/optimize', data, { allowFallback: true });
   }
 }
 

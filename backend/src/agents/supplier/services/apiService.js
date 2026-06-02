@@ -1,44 +1,26 @@
-const axios = require('axios');
+const BaseApiService = require('../../../services/BaseApiService');
 
-/**
- * Base API Service for Supplier Agent
- * 
- * This service provides methods to communicate with the AI/ML API endpoints.
- */
-class SupplierApiService {
-  constructor() {
-    // AI/ML API base URL - this should be configurable
-    this.baseUrl = process.env.AI_ML_API_URL || 'http://localhost:8000';
+class SupplierApiService extends BaseApiService {
+  _getFallback(method, path, data) {
+    if (path === '/api/v1/supplier/risk') {
+      return {
+        supplier_id: (data && data.supplier_id) || '',
+        risk_score: 0.5, risk_level: 'medium',
+        model_version: 'fallback_v1',
+      };
+    }
+    if (path === '/api/v1/anomaly/detect') {
+      return { anomalies: [], alerts: [], model_version: 'fallback_v1' };
+    }
+    return null;
   }
 
-  /**
-   * Call supplier risk assessment API
-   * @param {Object} data - Supplier data
-   * @returns {Promise<Object>} Risk assessment results
-   */
   async supplierRiskAssessment(data) {
-    try {
-      const response = await axios.post(`${this.baseUrl}/api/v1/supplier/risk`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Supplier risk assessment API call failed:', error.message);
-      throw error;
-    }
+    return this.call('post', '/api/v1/supplier/risk', data, { allowFallback: true });
   }
 
-  /**
-   * Call anomaly detection API
-   * @param {Object} data - Anomaly detection data
-   * @returns {Promise<Object>} Anomaly detection results
-   */
   async anomalyDetection(data) {
-    try {
-      const response = await axios.post(`${this.baseUrl}/api/v1/anomaly/detect`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Anomaly detection API call failed:', error.message);
-      throw error;
-    }
+    return this.call('post', '/api/v1/anomaly/detect', data, { allowFallback: true });
   }
 }
 

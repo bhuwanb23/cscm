@@ -1,59 +1,34 @@
-const axios = require('axios');
+const BaseApiService = require('../../../services/BaseApiService');
 
-/**
- * Base API Service for Warehouse Agent
- * 
- * This service provides methods to communicate with the AI/ML API endpoints.
- */
-class WarehouseApiService {
-  constructor() {
-    // AI/ML API base URL - this should be configurable
-    this.baseUrl = process.env.AI_ML_API_URL || 'http://localhost:8000';
+class WarehouseApiService extends BaseApiService {
+  _getFallback(method, path, data) {
+    if (path === '/api/v1/inventory/optimize') {
+      return {
+        sku_id: (data && data.sku_id) || '', store_id: (data && data.store_id) || '',
+        reorder_quantity: 50, safety_stock: 25,
+        recommendations: [{ action: 'maintain', confidence: 0.5 }],
+        model_version: 'fallback_v1',
+      };
+    }
+    if (path === '/api/v1/routing/optimize') {
+      return { routes: [{ waypoints: [], total_distance_km: 0 }], model_version: 'fallback_v1' };
+    }
+    if (path === '/api/v1/anomaly/detect') {
+      return { anomalies: [], alerts: [], model_version: 'fallback_v1' };
+    }
+    return null;
   }
 
-  /**
-   * Call inventory optimization API
-   * @param {Object} data - Inventory data
-   * @returns {Promise<Object>} Optimization results
-   */
   async inventoryOptimization(data) {
-    try {
-      const response = await axios.post(`${this.baseUrl}/api/v1/inventory/optimize`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Inventory optimization API call failed:', error.message);
-      throw error;
-    }
+    return this.call('post', '/api/v1/inventory/optimize', data, { allowFallback: true });
   }
 
-  /**
-   * Call routing optimization API
-   * @param {Object} data - Routing data
-   * @returns {Promise<Object>} Routing optimization results
-   */
   async routingOptimization(data) {
-    try {
-      const response = await axios.post(`${this.baseUrl}/api/v1/routing/optimize`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Routing optimization API call failed:', error.message);
-      throw error;
-    }
+    return this.call('post', '/api/v1/routing/optimize', data, { allowFallback: true });
   }
 
-  /**
-   * Call anomaly detection API
-   * @param {Object} data - Anomaly detection data
-   * @returns {Promise<Object>} Anomaly detection results
-   */
   async anomalyDetection(data) {
-    try {
-      const response = await axios.post(`${this.baseUrl}/api/v1/anomaly/detect`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Anomaly detection API call failed:', error.message);
-      throw error;
-    }
+    return this.call('post', '/api/v1/anomaly/detect', data, { allowFallback: true });
   }
 }
 

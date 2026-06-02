@@ -1,59 +1,32 @@
-const axios = require('axios');
+const BaseApiService = require('../../../services/BaseApiService');
 
-/**
- * Base API Service for Customer Demand Agent
- * 
- * This service provides methods to communicate with the AI/ML API endpoints.
- */
-class CustomerDemandApiService {
-  constructor() {
-    // AI/ML API base URL - this should be configurable
-    this.baseUrl = process.env.AI_ML_API_URL || 'http://localhost:8000';
+class CustomerDemandApiService extends BaseApiService {
+  _getFallback(method, path, data) {
+    if (path === '/api/v1/demand/forecast') {
+      return {
+        forecast_values: [100], forecast_dates: [new Date().toISOString().slice(0, 10)],
+        model_version: 'fallback_v1',
+      };
+    }
+    if (path === '/api/v1/causal/infer') {
+      return { treatment_effect: 0, confidence_interval: [0, 0], model_version: 'fallback_v1' };
+    }
+    if (path === '/api/v1/nlp/process') {
+      return { intent: 'unknown', entities: [], sentiment: 0, model_version: 'fallback_v1' };
+    }
+    return null;
   }
 
-  /**
-   * Call demand forecasting API
-   * @param {Object} data - Forecasting data
-   * @returns {Promise<Object>} Forecast results
-   */
   async demandForecast(data) {
-    try {
-      const response = await axios.post(`${this.baseUrl}/api/v1/demand/forecast`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Demand forecast API call failed:', error.message);
-      throw error;
-    }
+    return this.call('post', '/api/v1/demand/forecast', data, { allowFallback: true });
   }
 
-  /**
-   * Call causal inference API
-   * @param {Object} data - Causal inference data
-   * @returns {Promise<Object>} Causal inference results
-   */
   async causalInference(data) {
-    try {
-      const response = await axios.post(`${this.baseUrl}/api/v1/causal/infer`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Causal inference API call failed:', error.message);
-      throw error;
-    }
+    return this.call('post', '/api/v1/causal/infer', data, { allowFallback: true });
   }
 
-  /**
-   * Call natural language processing API
-   * @param {Object} data - NLP data
-   * @returns {Promise<Object>} NLP results
-   */
   async naturalLanguageProcessing(data) {
-    try {
-      const response = await axios.post(`${this.baseUrl}/api/v1/nlp/process`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Natural language processing API call failed:', error.message);
-      throw error;
-    }
+    return this.call('post', '/api/v1/nlp/process', data, { allowFallback: true });
   }
 }
 
