@@ -19,10 +19,7 @@ try:
     HAS_TORCH = True
 except ImportError:
     HAS_TORCH = False
-    torch = None
-    nn = None
-    F = None
-    optim = None
+    raise ImportError("PyTorch required for this module. Install with: pip install torch")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 import asyncio
+import pickle
 
 _models_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'models')
 sys.path.insert(0, _models_dir)
@@ -133,37 +134,57 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+_PRETRAINED_MODEL = None
+
+def _load_pretrained_model():
+    global _PRETRAINED_MODEL
+    if _PRETRAINED_MODEL is not None:
+        return _PRETRAINED_MODEL
+    paths = [
+        os.path.join(os.path.dirname(__file__), '..', '..', 'models', 'demand_forecasting', 'weights', 'demand_forecaster_rf.pkl'),
+        os.path.join(os.path.dirname(__file__), '..', '..', 'models', 'demand_forecasting', 'weights', 'demand_forecaster_rf_v2.pkl'),
+    ]
+    for p in paths:
+        p = os.path.normpath(p)
+        if os.path.exists(p):
+            try:
+                with open(p, 'rb') as f:
+                    payload = pickle.load(f)
+                _PRETRAINED_MODEL = payload
+                logger.info(f"Loaded pre-trained model from {p}")
+                return payload
+            except Exception as e:
+                logger.warning(f"Failed to load model from {p}: {e}")
+    logger.warning("No pre-trained model found, will use fallback")
+    return None
+
 def _load_training_data() -> pd.DataFrame:
-    try:
-        from model_registry import get_registry
-        reg = get_registry()
-        reg.load_all_data()
-        sales = reg.get_data("sales")
-        if sales is not None and len(sales) > 3:
-            df = sales.copy()
-            if 'date' in df.columns:
-                df['date'] = pd.to_datetime(df['date'])
-            if 'sales_quantity' in df.columns:
-                df['sales'] = df['sales_quantity']
-            elif 'sales' not in df.columns:
-                df['sales'] = 100.0
-            return df[['date', 'sales']]
-    except Exception:
-        pass
+    integrated_path = os.path.normpath(os.path.join(
+        os.path.dirname(__file__), '..', '..', 'data', 'processed', 'integrated_dataset.csv'))
+    if os.path.exists(integrated_path):
+        try:
+            df = pd.read_csv(integrated_path)
+            df['date'] = pd.to_datetime(df['date'])
+            logger.info(f"Loaded integrated training data: {len(df)} rows, {len(df.columns)} cols")
+            return df
+        except Exception as e:
+            logger.warning(f"Failed to load integrated dataset: {e}")
     dates = pd.date_range(end=pd.Timestamp.now(), periods=30, freq='D')
-    return pd.DataFrame({'date': dates, 'sales': np.random.default_rng(42).poisson(100, 30)})
+    fallback = pd.DataFrame({'date': dates, 'sales_quantity': np.random.default_rng(42).poisson(100, 30)})
+    return fallback
 
 
 def _compute_confidence_intervals(predictions: np.ndarray, residual_std: float, horizon: int) -> List[dict]:
     try:
         import scipy.stats as stats
-        z = stats.norm.ppf(0.95)
+        z = float(stats.norm.ppf(0.95))
     except Exception:
         z = 1.96
     cis = []
+    margin = z * residual_std
     for i in range(min(horizon, len(predictions))):
-        val = predictions[i]
-        cis.append({"lower": round(val - z * residual_std, 2), "upper": round(val + z * residual_std, 2)})
+        val = float(predictions[i])
+        cis.append({"lower": round(val - margin, 2), "upper": round(val + margin, 2)})
     return cis
 
 
@@ -332,24 +353,52 @@ class DemandForecastingService:
             if request.forecast_horizon <= 0:
                 raise ValueError("Forecast horizon must be positive")
 
+            payload = _load_pretrained_model()
+            target_col = payload["target_column"] if payload else "sales_quantity"
+
             train_data = _load_training_data()
-            if DemandForecaster is not None:
-                model = DemandForecaster(model_type="random_forest")
-                model.train(train_data, target_column='sales')
+
+            if payload is not None:
+                model = DemandForecaster(model_type=payload["model_type"])
+                model.model = payload["model"]
+                model.feature_columns = payload["feature_columns"]
+                model.target_column = payload["target_column"]
+                model.is_trained = True
             else:
                 model = None
 
             last_date = train_data['date'].max()
-            last_sales = float(train_data[train_data['date'] == last_date]['sales'].iloc[0]) if len(train_data) > 0 else 100.0
             future_dates = pd.date_range(start=last_date + timedelta(days=1), periods=request.forecast_horizon, freq='D')
             future_df = pd.DataFrame({'date': future_dates})
-            future_df['sales'] = last_sales
 
-            if DemandForecaster is not None and model is not None:
-                predictions = model.predict(future_df)
+            model_feature_cols = payload["feature_columns"] if (payload and "feature_columns" in payload) else []
+            base_col = target_col if target_col else "sales_quantity"
+            future_df[base_col] = 1.0
+
+            if len(train_data) > 0 and model_feature_cols:
+                numerical = train_data.select_dtypes(include=[np.number])
+                feature_defaults = {}
+                for fcol in model_feature_cols:
+                    if fcol in numerical.columns and fcol != base_col:
+                        feature_defaults[fcol] = numerical[fcol].median()
+                    else:
+                        feature_defaults[fcol] = 0.0
+                for col, val in feature_defaults.items():
+                    future_df[col] = val
+
+            if model is not None:
+                try:
+                    feature_defaults = payload.get("feature_medians", None) if payload else None
+                    context_len = min(len(train_data), 60)
+                    context = train_data.iloc[-context_len:] if len(train_data) > 0 else None
+                    predictions = model.forecast(future_dates, context_data=context, feature_defaults=feature_defaults)
+                except Exception as e:
+                    logger.warning(f"Model prediction failed: {e}, using fallback")
+                    rng = np.random.default_rng(42)
+                    predictions = np.array([100.0 + float(rng.random() * 10 - 5) for _ in range(request.forecast_horizon)])
             else:
                 rng = np.random.default_rng(42)
-                predictions = np.array([last_sales + float(rng.random() * 10 - 5) for _ in range(request.forecast_horizon)])
+                predictions = np.array([100.0 + float(rng.random() * 10 - 5) for _ in range(request.forecast_horizon)])
 
             pred_list = []
             for i in range(request.forecast_horizon):
@@ -360,12 +409,18 @@ class DemandForecastingService:
                 else:
                     pred_list.append(100.0)
 
-            if model is not None:
-                train_preds = model.predict(train_data)
-                residuals = train_data['sales'].values[:len(train_preds)] - train_preds
-                residual_std = float(np.std(residuals)) if len(residuals) > 1 else 10.0
-            else:
-                residual_std = 10.0
+            residual_std = 10.0
+            if model is not None and target_col in train_data.columns and len(train_data) > 20:
+                try:
+                    sample = train_data.tail(60)
+                    sample = sample.dropna()
+                    if len(sample) > 5:
+                        train_preds = model.predict(sample)
+                        true_vals = sample[target_col].values[-len(train_preds):]
+                        residuals = true_vals - train_preds
+                        residual_std = float(np.std(residuals)) if len(residuals) > 1 else 10.0
+                except Exception:
+                    pass
 
             ci = _compute_confidence_intervals(np.array(pred_list), residual_std, request.forecast_horizon) if request.include_confidence_intervals else None
 
@@ -373,7 +428,7 @@ class DemandForecastingService:
                 sku_id=request.sku_id, store_id=request.store_id,
                 forecast_dates=[d.strftime('%Y-%m-%d') for d in future_dates],
                 forecast_values=pred_list, confidence_intervals=ci,
-                model_version="demand_forecaster_rf_1.0.0",
+                model_version="demand_forecaster_rf_v2",
                 timestamp=datetime.utcnow().isoformat() + "Z",
             )
         except Exception as e:
@@ -390,9 +445,15 @@ class DemandForecastingService:
             except ValueError:
                 raise ValueError("Invalid date format. Expected YYYY-MM-DD")
 
+            payload = _load_pretrained_model()
             train_data = _load_training_data()
+
+            target_col = payload["target_column"] if (payload and "target_column" in payload) else "sales_quantity"
+            if target_col not in train_data.columns:
+                target_col = "sales_quantity" if "sales_quantity" in train_data.columns else "sales"
+
             n = len(train_data)
-            split = max(n // 3, 5)
+            split = max(min(n // 3, 30), 2)
             train_df = train_data.iloc[:-split].copy()
             test_df = train_data.iloc[-split:].copy()
 
@@ -403,14 +464,20 @@ class DemandForecastingService:
                     timestamp=datetime.utcnow().isoformat() + "Z",
                 )
 
-            if DemandForecaster is not None:
-                model = DemandForecaster(model_type="random_forest")
-                model.train(train_df, target_column='sales')
-                test_preds = model.predict(test_df)
+            if payload is not None and target_col in train_df.columns:
+                model = DemandForecaster(model_type=payload["model_type"])
+                model.model = payload["model"]
+                model.feature_columns = payload["feature_columns"]
+                model.target_column = target_col
+                model.is_trained = True
+                try:
+                    test_preds = model.predict(test_df)
+                except Exception:
+                    test_preds = np.full(len(test_df), float(test_df[target_col].mean()))
             else:
-                test_preds = np.full(len(test_df), float(test_df['sales'].mean()))
+                test_preds = np.full(len(test_df), float(test_df[target_col].mean()))
 
-            true_vals = test_df['sales'].values[:len(test_preds)]
+            true_vals = test_df[target_col].values[:len(test_preds)]
             if len(true_vals) == 0 or len(test_preds) == 0:
                 raise ValueError("No valid predictions for evaluation")
 
