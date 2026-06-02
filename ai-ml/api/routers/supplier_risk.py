@@ -6,6 +6,7 @@ import os
 import types
 import logging
 from datetime import datetime
+import pickle
 import numpy as np
 import pandas as pd
 
@@ -251,6 +252,18 @@ class BackupSupplierResponse(BaseModel):
     timestamp: str
 
 
+def _load_weights_or_none(rel_weights_path: str):
+    full = os.path.join(_models_dir, *rel_weights_path.split('/'))
+    if os.path.exists(full):
+        try:
+            with open(full, 'rb') as f:
+                return pickle.load(f)
+        except Exception:
+            return None
+    return None
+
+_GB_WEIGHTS = _load_weights_or_none('supplier_risk/weights/gradient_boost_risk.pkl')
+
 def _risk_score_to_level(score: float) -> str:
     if score < 0.3: return "LOW"
     elif score < 0.7: return "MEDIUM"
@@ -292,7 +305,19 @@ class SupplierRiskService:
                 raise ValueError("Historical data is required")
 
             df = _build_supplier_data(request)
-            if GradientBoostRiskModel is not None:
+            if _GB_WEIGHTS is not None and isinstance(_GB_WEIGHTS, dict) and 'model' in _GB_WEIGHTS:
+                try:
+                    model = _GB_WEIGHTS['model']
+                    feats = _GB_WEIGHTS.get('feature_columns', None)
+                    if feats is not None:
+                        x_pred = df[[c for c in feats if c in df.columns]]
+                    else:
+                        x_pred = df.select_dtypes(include=[np.number]).drop(columns=['event_flag'], errors='ignore')
+                    preds = model.predict(x_pred)
+                    score = float(np.mean(preds))
+                except Exception:
+                    score = 0.3
+            elif GradientBoostRiskModel is not None:
                 try:
                     model = GradientBoostRiskModel()
                     model.fit(df)

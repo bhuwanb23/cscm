@@ -6,6 +6,7 @@ import os
 import types
 import logging
 from datetime import datetime
+import pickle
 import numpy as np
 
 _models_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'models')
@@ -170,6 +171,16 @@ class ThresholdCalibrateResponse(BaseModel):
     timestamp: str
 
 
+def _load_weights_or_none(rel_weights_path: str):
+    full = os.path.join(_models_dir, *rel_weights_path.split('/'))
+    if os.path.exists(full):
+        try:
+            with open(full, 'rb') as f:
+                return pickle.load(f)
+        except Exception:
+            return None
+    return None
+
 class AnomalyDetectionService:
     @staticmethod
     def detect_anomalies(request: AnomalyDetectRequest) -> AnomalyDetectResponse:
@@ -183,7 +194,22 @@ class AnomalyDetectionService:
                 raise ValueError("Contamination must be between 0 and 1")
 
             X = np.array(request.data, dtype=float)
-            if IsolationForestDetector is not None:
+            _if_weights = _load_weights_or_none('anomaly_detection/weights/isolation_forest.pkl')
+            if _if_weights is not None and isinstance(_if_weights, dict) and 'model' in _if_weights:
+                try:
+                    model = _if_weights['model']
+                    if X.shape[1] == model.n_features_in_:
+                        predictions = model.predict(X)
+                        anomaly_probs = model.score_samples(X)
+                        anomaly_probs = (anomaly_probs - anomaly_probs.min()) / (anomaly_probs.max() - anomaly_probs.min() + 1e-8)
+                    else:
+                        raise ValueError("Feature mismatch")
+                except Exception:
+                    model = IsolationForestDetector(contamination=request.contamination, random_state=42)
+                    model.fit(X, feature_names=request.feature_names)
+                    predictions, scores, info = model.detect_anomalies(X)
+                    anomaly_probs = model.predict_proba(X)
+            elif IsolationForestDetector is not None:
                 try:
                     model = IsolationForestDetector(contamination=request.contamination, random_state=42)
                     model.fit(X, feature_names=request.feature_names)

@@ -6,6 +6,7 @@ import os
 import types
 import logging
 from datetime import datetime
+import pickle
 import numpy as np
 
 _models_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'models')
@@ -361,11 +362,34 @@ async def get_inventory_recommendation(sku_id: str, store_id: str, current_stock
 async def ss_policy_optimize(request: SSOptimizeRequest):
     try:
         logger.info(f"(s,S) policy for SKU: {request.sku_id}")
-        import scipy.stats as stats
-        z = stats.norm.ppf(request.service_level)
-        demand_mean, demand_std = 100.0, 20.0
-        s = z * demand_std * np.sqrt(float(request.lead_time_days))
-        S = demand_mean * request.lead_time_days + s + request.ordering_cost / request.holding_cost * 10
+        _ss_weights = os.path.join(_models_dir, 'inventory_optimization', 'weights', 'ss_policy_lookup.pkl')
+        if os.path.exists(_ss_weights):
+            with open(_ss_weights, 'rb') as f:
+                _payload = pickle.load(f)
+            _entries = _payload['ss_entries']
+            _match = None
+            for _e in _entries:
+                if (abs(_e['holding_cost'] - request.holding_cost) < 1e-6 and
+                    abs(_e['ordering_cost'] - request.ordering_cost) < 1e-6 and
+                    abs(_e['shortage_cost'] - request.shortage_cost) < 1e-6 and
+                    abs(_e['service_level'] - request.service_level) < 1e-6):
+                    _match = _e
+                    break
+            if _match:
+                s, S = _match['s'], _match['S']
+            else:
+                _ds = _payload.get('demand_stats', {})
+                _mean = _ds.get('mean', 100.0)
+                _std = _ds.get('std', 20.0)
+                import scipy.stats as stats
+                _z = stats.norm.ppf(request.service_level)
+                s = _z * _std * np.sqrt(float(request.lead_time_days))
+                S = _mean * request.lead_time_days + s + request.ordering_cost / request.holding_cost * 10
+        else:
+            import scipy.stats as stats
+            _z = stats.norm.ppf(request.service_level)
+            s = _z * 20.0 * np.sqrt(float(request.lead_time_days))
+            S = 100.0 * request.lead_time_days + s + request.ordering_cost / request.holding_cost * 10
         return SSOptimizeResponse(
             sku_id=request.sku_id, store_id=request.store_id,
             s=round(s, 2), S=round(S, 2),
@@ -379,9 +403,25 @@ async def ss_policy_optimize(request: SSOptimizeRequest):
 async def stochastic_optimize(request: StochasticOptimizeRequest):
     try:
         logger.info(f"Stochastic optimize for SKU: {request.sku_id}")
-        rng = np.random.default_rng(42)
-        optimal_qty = float(rng.random() * 200 + 100)
-        expected_cost = request.holding_cost * optimal_qty * 0.5 + request.shortage_cost * optimal_qty * 0.1
+        demand = _load_sales_demand()
+        if StochasticInventoryOptimizer is not None:
+            try:
+                opt = StochasticInventoryOptimizer(
+                    holding_cost=request.holding_cost,
+                    ordering_cost=request.ordering_cost,
+                    shortage_cost=request.shortage_cost,
+                    lead_time=request.lead_time_days,
+                    distribution_type=request.distribution_type,
+                )
+                policy = opt.optimize_newsvendor(historical_demand=demand)
+                optimal_qty = policy.get('order_quantity', float(np.mean(demand)))
+                expected_cost = policy.get('expected_cost', request.holding_cost * optimal_qty)
+            except Exception:
+                optimal_qty = float(np.mean(demand))
+                expected_cost = request.holding_cost * optimal_qty * 0.5 + request.shortage_cost * optimal_qty * 0.1
+        else:
+            optimal_qty = float(np.mean(demand))
+            expected_cost = request.holding_cost * optimal_qty * 0.5 + request.shortage_cost * optimal_qty * 0.1
         return StochasticOptimizeResponse(
             sku_id=request.sku_id, store_id=request.store_id,
             optimal_qty=round(optimal_qty, 2), expected_cost=round(expected_cost, 2),
@@ -408,11 +448,22 @@ async def rl_inventory_train(request: RLInventoryRequest):
 async def mip_optimize(request: MIPOptimizeRequest):
     try:
         logger.info(f"MIP optimize for SKU: {request.sku_id}")
-        rng = np.random.default_rng(42)
-        solution = [
-            {"period": i, "order_qty": round(float(rng.random() * 100 + 50), 2), "holding_cost": request.holding_cost}
-            for i in range(request.periods)
-        ]
+        if MIPInventoryOptimizer is not None:
+            try:
+                demand = _load_sales_demand()
+                opt = MIPInventoryOptimizer(
+                    holding_cost=request.holding_cost,
+                    ordering_cost=request.ordering_cost,
+                )
+                sol = opt.optimize(demand, n_periods=request.periods)
+                solution = []
+                for i in range(request.periods):
+                    qty = float(sol.get('order_quantities', [0] * request.periods)[i]) if 'order_quantities' in sol else 0.0
+                    solution.append({"period": i, "order_qty": round(qty, 2), "holding_cost": request.holding_cost})
+            except Exception:
+                solution = [{"period": i, "order_qty": 0.0, "holding_cost": request.holding_cost} for i in range(request.periods)]
+        else:
+            solution = [{"period": i, "order_qty": 0.0, "holding_cost": request.holding_cost} for i in range(request.periods)]
         return MIPOptimizeResponse(
             sku_id=request.sku_id, store_id=request.store_id,
             solution=solution,
@@ -426,11 +477,18 @@ async def mip_optimize(request: MIPOptimizeRequest):
 async def batch_optimize(request: BatchOptimizeRequest):
     try:
         logger.info(f"Batch optimize for {len(request.sku_ids)} SKUs")
-        rng = np.random.default_rng(42)
+        demand = _load_sales_demand()
+        demand_mean = float(np.mean(demand))
+        demand_std = float(np.std(demand))
+        import scipy.stats as stats
+        z = stats.norm.ppf(0.95)
+        lead_time = 7
+        safety_stock = z * demand_std * np.sqrt(lead_time)
+        reorder_point = demand_mean * lead_time + safety_stock
         results = [
             {"sku_id": sku, "store_id": request.store_id,
-             "reorder_point": round(float(rng.random() * 200 + 50), 2),
-             "order_qty": round(float(rng.random() * 300 + 100), 2)}
+             "reorder_point": round(reorder_point, 2),
+             "order_qty": round(reorder_point * 1.5, 2)}
             for sku in request.sku_ids
         ]
         return BatchOptimizeResponse(
