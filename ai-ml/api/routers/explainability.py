@@ -299,6 +299,9 @@ class ExplainabilityService:
         if instance_arr.shape[0] != n_features:
             instance_arr = np.resize(instance_arr, n_features)
 
+        if TabularSHAPExplainer is None:
+            raise ValueError("SHAP explainer module is not available")
+
         explainer = TabularSHAPExplainer(
             model_fn=_model_fn,
             background=_background[:, :min(n_features, _background.shape[1])] if _background.shape[1] >= n_features else np.column_stack([_background, np.zeros((_background.shape[0], n_features - _background.shape[1]))]),

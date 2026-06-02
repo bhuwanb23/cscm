@@ -411,6 +411,8 @@ async def meta_learning_adaptation(request: MetaLearningRequest):
         if MetaLearningAdapter is not None:
             adapter = MetaLearningAdapter(adaptation_steps=request.adaptation_steps)
             result = adapter.adapt(request.support_set, request.query_set)
+            if result is None:
+                result = {}
             return MetaLearningResponse(
                 adapted_parameters=result.get("adapted_parameters", {"learning_rate": request.adaptation_steps * 0.01, "task": request.task}),
                 adaptation_loss=result.get("adaptation_loss", 0.1),
@@ -426,7 +428,7 @@ async def meta_learning_adaptation(request: MetaLearningRequest):
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Meta-learning adaptation failed: {str(e)}")
 
 @router.post("/online-adapter", response_model=OnlineAdapterResponse)
 async def init_online_adapter(request: OnlineAdapterRequest):

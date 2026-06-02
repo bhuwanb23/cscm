@@ -406,17 +406,6 @@ class ModelMonitoringService:
             risk_level = "low" if is_compliant else "medium"
             recommendations = ["Install governance framework for detailed assessment"]
 
-    @staticmethod
-    def configure_alerts(request: AlertConfigRequest) -> AlertConfigResponse:
-        logger.info(f"Configuring alerts for: {request.model_id}")
-        return AlertConfigResponse(
-            model_id=request.model_id, config_applied=True, active_alerts=3,
-            model_version="alert_manager_1.0.0",
-            timestamp=datetime.utcnow().isoformat() + "Z",
-        )
-
-    @staticmethod
-    def evaluate_governance(request: GovernanceEvaluateRequest) -> GovernanceEvaluateResponse:
         return GovernanceEvaluateResponse(
             model_id=request.model_id,
             compliance_status=compliance_status,
@@ -424,6 +413,15 @@ class ModelMonitoringService:
             risk_level=risk_level,
             bias_score=round(0.05 + 0.1 * (1.0 - request.accuracy), 4),
             recommendations=recommendations,
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def configure_alerts(request: AlertConfigRequest) -> AlertConfigResponse:
+        logger.info(f"Configuring alerts for: {request.model_id}")
+        return AlertConfigResponse(
+            model_id=request.model_id, config_applied=True, active_alerts=3,
+            model_version="alert_manager_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
 

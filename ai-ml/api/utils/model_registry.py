@@ -173,3 +173,32 @@ def init_registry():
     reg.get_or_train_supplier_risk_model()
     logger.info("ModelRegistry fully initialized")
     return reg
+
+
+def run_all_training_scripts():
+    """Run all standalone training scripts to populate .pkl weight files.
+
+    Called at startup to ensure pre-trained weights are available for router endpoints.
+    """
+    import subprocess
+    scripts_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'scripts')
+    scripts = [
+        'train_demand_forecaster.py',
+        'train_anomaly_detector.py',
+        'train_supplier_risk.py',
+        'train_inventory_models.py',
+        'train_routing.py',
+    ]
+    python = sys.executable
+    for script in scripts:
+        path = os.path.join(scripts_dir, script)
+        if not os.path.exists(path):
+            logger.warning(f"Training script not found: {path}")
+            continue
+        logger.info(f"Running training script: {script}")
+        result = subprocess.run([python, path], capture_output=True, text=True)
+        if result.returncode != 0:
+            logger.error(f"Training script {script} failed:\n{result.stderr}")
+        else:
+            logger.info(f"Training script {script} completed successfully")
+    logger.info("All training scripts completed.")

@@ -527,10 +527,16 @@ class KnowledgeGraphService:
     @staticmethod
     def ingest_data(request: KGIngestRequest) -> KGIngestResponse:
         logger.info(f"Ingesting {len(request.entities)} entities, {len(request.relationships)} relationships")
+        if Entity is None or Relationship is None:
+            raise ValueError("Knowledge graph schema classes (Entity/Relationship) are not available")
         for ent in request.entities:
             _graph.add_entity(Entity(ent.get("id", str(uuid.uuid4())), ent.get("type", "Unknown"), ent.get("attributes", {})))
         for rel in request.relationships:
-            _graph.add_relationship(Relationship(rel["source"], rel["target"], rel.get("type", "related_to"), rel.get("attributes", {})))
+            source = rel.get("source")
+            target = rel.get("target")
+            if not source or not target:
+                raise KeyError(f"Relationship missing required 'source' or 'target': {rel}")
+            _graph.add_relationship(Relationship(source, target, rel.get("type", "related_to"), rel.get("attributes", {})))
         all_nodes = _graph.graph.get('nodes', {}) if not hasattr(_graph.graph, 'nodes') else {n: _graph.graph.nodes[n] for n in _graph.graph.nodes()}
         return KGIngestResponse(
             entities_added=len(request.entities),
