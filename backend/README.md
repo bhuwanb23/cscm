@@ -15,10 +15,9 @@ This repository contains the backend services for the CSCM platform, including:
 ## Prerequisites
 
 - Node.js 16+
-- Docker and Docker Compose
-- MongoDB
-- Kafka
-- MQTT Broker
+- SQLite (included via `sqlite3` npm package — no separate install needed)
+- Kafka (optional — for message broker features)
+- MQTT Broker (optional — for IoT messaging)
 
 ## Getting Started
 
@@ -27,13 +26,14 @@ This repository contains the backend services for the CSCM platform, including:
    ```bash
    npm install
    ```
-3. Copy the example environment file:
+   This automatically creates a `.env` file from `.env.example` if one doesn't exist.
+3. Start the server:
    ```bash
-   cp .env.example .env
+   npm start
    ```
-4. Start the services using Docker Compose:
+   For development with auto-reload:
    ```bash
-   docker-compose up -d
+   npm run dev
    ```
 
 ## Project Structure

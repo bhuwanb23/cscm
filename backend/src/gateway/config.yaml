@@ -1,65 +1,39 @@
-# Reference configuration for API Gateway routing rules.
-# NOT YET LOADED at runtime — gateway.js (in the same directory) currently
-# hardcodes proxy targets rather than reading this YAML file.
-# This file serves as documentation for the intended service topology.
-# To activate: parse this file in gateway.js startup and use the values
-# instead of hardcoded proxy targets.
+# Reference documentation for API Gateway routing rules.
+# The gateway (gateway.js) currently hardcodes these values rather than
+# reading this YAML file. Keep this in sync with the actual proxy setup.
+#
+# Current gateway topology:
+#   /api/v1/{demand,demand-planning,routing,...}  → http://localhost:8000 (Python AI/ML)
+#   /api/v1/{auth,events,inventory,orders,...}     → http://localhost:3000 (Node.js CRUD)
 
-# API Gateway Configuration for CSCM
-
-# Service definitions
 services:
-  - name: cscm-api
-    url: http://localhost:3000
-  
-  - name: agent-service
-    url: http://localhost:3001
-    
-  - name: model-service
-    url: http://localhost:3002
-    
-  - name: analytics-service
-    url: http://localhost:3003
+  - name: ai-ml-api
+    url: http://localhost:8000
 
-# Routes
+  - name: express-api
+    url: http://localhost:3000
+
 routes:
   - path: /api/v1/*
-    service: cscm-api
+    service: express-api
     strip_prefix: /api/v1
-    
-  - path: /agents/*
-    service: agent-service
-    strip_prefix: /agents
-    
-  - path: /models/*
-    service: model-service
-    strip_prefix: /models
-    
-  - path: /analytics/*
-    service: analytics-service
-    strip_prefix: /analytics
 
-# Security settings
 security:
   rate_limiting:
     enabled: true
     requests_per_minute: 1000
-    
   authentication:
     enabled: true
     jwt_secret: ${JWT_SECRET}
-    
   cors:
     enabled: true
     origins:
       - "*"
-      
-# Logging
+
 logging:
   level: info
   format: json
 
-# Health checks
 health_checks:
   interval: 30s
   timeout: 5s
