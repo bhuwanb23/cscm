@@ -11,7 +11,9 @@ const config = {
 
   // Database configuration
   database: {
-    uri: process.env.DATABASE_URI || 'mongodb://localhost:27017/cscm'
+    // The project uses SQLite via src/storage/sqliteDatabase.js.
+    // DATABASE_URI is reserved for future MongoDB integration.
+    uri: process.env.DATABASE_URI || ''
   },
 
   // Kafka configuration
