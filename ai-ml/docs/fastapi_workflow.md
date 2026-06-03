@@ -97,7 +97,7 @@ Create wrapper classes for each major model type:
 - `ComputerVisionModel` (wraps computer_vision/object_detection/yolov8.py)
 - `ContinualLearningModel` (wraps continual_learning/federated_system/fedavg_coordinator.py)
 - `UncertaintyQuantificationModel` (wraps uncertainty_quantification/probabilistic_framework/bayesian_nets.py)
-- `ModelMonitoringModel` (to be implemented)
+- `ModelMonitoringModel` (wraps model_monitoring/model_monitoring/performance_tracker.py)
 
 ### 2.2 Implement Model Loading and Caching
 Create a model loader utility that can:
