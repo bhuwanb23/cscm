@@ -59,10 +59,12 @@ app.get('/metrics', async (req, res) => {
 const authRoutes = require('./routes/auth');
 const eventRoutes = require('./routes/events');
 const inventoryRoutes = require('./routes/inventory');
+const orderRoutes = require('./routes/orders');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/events', eventRoutes);
 app.use('/api/v1/inventory', inventoryRoutes);
+app.use('/api/v1/orders', orderRoutes);
 
 // Error handling middleware
 app.use(notFound);
