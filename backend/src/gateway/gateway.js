@@ -148,9 +148,11 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  logger.info(`API Gateway listening on port ${PORT}`);
-  console.log(`API Gateway listening on port ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    logger.info(`API Gateway listening on port ${PORT}`);
+    console.log(`API Gateway listening on port ${PORT}`);
+  });
+}
 
-module.exports = app;
+module.exports = { app, isAiMlPath };
