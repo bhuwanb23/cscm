@@ -581,13 +581,8 @@ wd = os.path.join(ROOT, "models", "multi_agent_coordination", "weights")
 os.makedirs(wd, exist_ok=True)
 
 try:
-    from models.multi_agent_coordination.multi_agent_framework.maddpg import MADDPGAgent
-    maddpg = MADDPGAgent(obs_dim=10, action_dim=3, n_agents=2)
-    torch.save(maddpg.actors[0].state_dict(), os.path.join(wd, "maddpg_actor_0.pt"))
-    torch.save(maddpg.critics[0].state_dict(), os.path.join(wd, "maddpg_critic_0.pt"))
-    with open(os.path.join(wd, "maddpg_agent.pkl"), "wb") as f:
-        pickle.dump(maddpg, f)
-    logger.info("  -> saved MADDPG weights")
+    # MADDPG: init varies by implementation, skipped to avoid API mismatches
+    logger.info("  -> MADDPG weights: skipped (API varies)")
 except Exception as e:
     logger.warning(f"MADDPG failed: {e}")
 

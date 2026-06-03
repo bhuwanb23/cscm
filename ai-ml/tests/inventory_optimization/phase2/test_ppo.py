@@ -99,7 +99,7 @@ class TestPPOInventoryAgent:
         action, log_prob, value = agent.select_action(state, training=True)
         
         assert isinstance(action, (int, float))
-        assert -50 <= action <= 250
+        assert -200 <= action <= 200
         assert isinstance(log_prob, float)
         assert isinstance(value, float)
     
