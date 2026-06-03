@@ -96,7 +96,7 @@ Create wrapper classes for each major model type:
 - `CausalInferenceModel` (wraps causal_inference/framework/dowhy_integration.py)
 - `ComputerVisionModel` (wraps computer_vision/object_detection/yolov8.py)
 - `ContinualLearningModel` (wraps continual_learning/federated_system/fedavg_coordinator.py)
-- `UncertaintyQuantificationModel` (to be implemented)
+- `UncertaintyQuantificationModel` (wraps uncertainty_quantification/probabilistic_framework/bayesian_nets.py)
 - `ModelMonitoringModel` (to be implemented)
 
 ### 2.2 Implement Model Loading and Caching

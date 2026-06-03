@@ -10,11 +10,13 @@ from .model_monitoring.prediction_drift import PredictionDriftDetector
 from .model_monitoring.adwin_detector import ADWINDetector
 from .lifecycle_management.model_registry import ModelRegistry
 from .advanced_mlops.governance import ModelGovernanceFramework
+from .alerting_system.alert_manager import AlertManager
 
 __all__ = [
     'PerformanceTracker',
     'PredictionDriftDetector',
     'ADWINDetector',
     'ModelRegistry',
-    'ModelGovernanceFramework'
+    'ModelGovernanceFramework',
+    'AlertManager',
 ]

@@ -99,7 +99,7 @@ class DemandForecastUncertainty:
         residuals = detrended - self._compute_seasonal_component(x)
         rmse = float(np.sqrt(np.mean(residuals ** 2)))
 
-        logger.info(f"DemandForecastUncertainty fitted for {product_id}: "
+        logger.info(f"DemandForecastUncertainty fitted for {self.product_id}: "
                    f"mean={self.baseline_mean:.1f}, trend={self.trend_coefficient:.3f}, "
                    f"autocorr={self.autocorrelation:.3f}")
 
