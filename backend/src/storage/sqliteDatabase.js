@@ -431,6 +431,119 @@ class SQLiteDatabase {
     });
   }
   // ──────────────────────────────────────────────
+  // Order query operations
+  // ──────────────────────────────────────────────
+
+  /**
+   * Get an order by ID with its items
+   * @param {string} orderId
+   * @returns {Promise<Object|null>}
+   */
+  async getOrderById(orderId) {
+    return new Promise((resolve, reject) => {
+      this.db.get('SELECT * FROM orders WHERE order_id = ?', [orderId], (err, order) => {
+        if (err) { reject(err); return; }
+        if (!order) { resolve(null); return; }
+        this.db.all(
+          'SELECT * FROM order_items WHERE order_id = ?',
+          [orderId],
+          (err2, items) => {
+            if (err2) { reject(err2); return; }
+            order.items = items || [];
+            resolve(order);
+          }
+        );
+      });
+    });
+  }
+
+  /**
+   * Update an order's status
+   * @param {string} orderId
+   * @param {string} status
+   * @returns {Promise<number>} number of rows changed
+   */
+  async updateOrderStatus(orderId, status) {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        'UPDATE orders SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ?',
+        [status, orderId],
+        function(err) {
+          if (err) { reject(err); return; }
+          resolve(this.changes);
+        }
+      );
+    });
+  }
+
+  /**
+   * Get orders by store (optionally filtered by status)
+   * @param {string} storeId
+   * @param {string|null} status
+   * @returns {Promise<Array>}
+   */
+  async getOrdersByStore(storeId, status = null) {
+    return new Promise((resolve, reject) => {
+      let query = 'SELECT * FROM orders WHERE store_id = ?';
+      const params = [storeId];
+      if (status) {
+        query += ' AND status = ?';
+        params.push(status);
+      }
+      query += ' ORDER BY created_at DESC';
+      this.db.all(query, params, (err, rows) => {
+        if (err) { reject(err); return; }
+        resolve(rows);
+      });
+    });
+  }
+
+  // ──────────────────────────────────────────────
+  // Shipment query operations
+  // ──────────────────────────────────────────────
+
+  /**
+   * Get a shipment by ID with its items
+   * @param {string} shipmentId
+   * @returns {Promise<Object|null>}
+   */
+  async getShipmentById(shipmentId) {
+    return new Promise((resolve, reject) => {
+      this.db.get('SELECT * FROM shipments WHERE shipment_id = ?', [shipmentId], (err, shipment) => {
+        if (err) { reject(err); return; }
+        if (!shipment) { resolve(null); return; }
+        this.db.all(
+          'SELECT * FROM shipment_items WHERE shipment_id = ?',
+          [shipmentId],
+          (err2, items) => {
+            if (err2) { reject(err2); return; }
+            shipment.items = items || [];
+            resolve(shipment);
+          }
+        );
+      });
+    });
+  }
+
+  /**
+   * Get shipments by location (from or to)
+   * @param {string} location
+   * @returns {Promise<Array>}
+   */
+  async getShipmentsByLocation(location) {
+    return new Promise((resolve, reject) => {
+      this.db.all(
+        'SELECT * FROM shipments WHERE from_location = ? OR to_location = ? ORDER BY created_at DESC',
+        [location, location],
+        (err, rows) => {
+          if (err) { reject(err); return; }
+          resolve(rows);
+        }
+      );
+    });
+  }
+
+  // ──────────────────────────────────────────────
   // User operations
   // ──────────────────────────────────────────────
 
