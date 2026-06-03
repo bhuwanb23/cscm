@@ -72,9 +72,11 @@ app.use('/api/v1/shipments', shipmentRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`CSCM Backend API listening on port ${PORT}`);
-});
+// Start server (skip when imported by tests)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`CSCM Backend API listening on port ${PORT}`);
+  });
+}
 
 module.exports = app;
