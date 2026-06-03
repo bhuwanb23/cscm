@@ -1,3 +1,11 @@
+// Reference schema for a future gRPC event service.
+// NOT YET IMPLEMENTED — no gRPC server code exists in this codebase.
+// The REST equivalents are available at POST /api/v1/events/* (see routes/events.js).
+//
+// To implement: generate server stubs with grpc-tools or @grpc/proto-loader,
+// wire into server.js alongside the Express app, and implement the three RPCs
+// using the same eventController logic as the REST endpoints.
+
 syntax = "proto3";
 
 package events;

@@ -1,3 +1,10 @@
+# Reference configuration for API Gateway routing rules.
+# NOT YET LOADED at runtime — gateway.js (in the same directory) currently
+# hardcodes proxy targets rather than reading this YAML file.
+# This file serves as documentation for the intended service topology.
+# To activate: parse this file in gateway.js startup and use the values
+# instead of hardcoded proxy targets.
+
 # API Gateway Configuration for CSCM
 
 # Service definitions
