@@ -126,13 +126,27 @@ class SQLiteDatabase {
         )
       `;
 
+      // Create users table
+      const usersTable = `
+        CREATE TABLE IF NOT EXISTS users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          username TEXT NOT NULL UNIQUE,
+          email TEXT NOT NULL UNIQUE,
+          password TEXT NOT NULL,
+          role TEXT NOT NULL DEFAULT 'user',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `;
+
       // Execute all table creation queries
       const queries = [
         inventoryTable,
         ordersTable,
         orderItemsTable,
         shipmentsTable,
-        shipmentItemsTable
+        shipmentItemsTable,
+        usersTable
       ];
 
       let completed = 0;
@@ -412,6 +426,70 @@ class SQLiteDatabase {
         } else {
           logger.debug(`Shipment status updated for ID: ${shipmentId}`);
           resolve(this.changes);
+        }
+      });
+    });
+  }
+  // ──────────────────────────────────────────────
+  // User operations
+  // ──────────────────────────────────────────────
+
+  /**
+   * Create a new user
+   * @param {Object} user - User data { username, email, password, role }
+   * @returns {Promise<number>} The new user's ID
+   */
+  async createUser(user) {
+    return new Promise((resolve, reject) => {
+      const query = `
+        INSERT INTO users (username, email, password, role)
+        VALUES (?, ?, ?, ?)
+      `;
+      const params = [user.username, user.email, user.password, user.role || 'user'];
+      this.db.run(query, params, function(err) {
+        if (err) {
+          logger.error('Failed to create user:', err.message);
+          reject(err);
+        } else {
+          resolve(this.lastID);
+        }
+      });
+    });
+  }
+
+  /**
+   * Find a user by username
+   * @param {string} username
+   * @returns {Promise<Object|null>}
+   */
+  async findUserByUsername(username) {
+    return new Promise((resolve, reject) => {
+      const query = 'SELECT * FROM users WHERE username = ?';
+      this.db.get(query, [username], (err, row) => {
+        if (err) {
+          logger.error('Failed to find user by username:', err.message);
+          reject(err);
+        } else {
+          resolve(row || null);
+        }
+      });
+    });
+  }
+
+  /**
+   * Find a user by ID
+   * @param {number} id
+   * @returns {Promise<Object|null>}
+   */
+  async findUserById(id) {
+    return new Promise((resolve, reject) => {
+      const query = 'SELECT * FROM users WHERE id = ?';
+      this.db.get(query, [id], (err, row) => {
+        if (err) {
+          logger.error('Failed to find user by ID:', err.message);
+          reject(err);
+        } else {
+          resolve(row || null);
         }
       });
     });
