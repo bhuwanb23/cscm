@@ -306,8 +306,7 @@ class GraphAlgorithms {
         networkMetrics: {
           connectedComponents: components.length,
           isolatedEntities: isolated.length,
-          averageClustering: this._calculateAverageClustering(),
-          density: this._calculateGraphDensity()
+          graphDensity: this._calculateGraphDensity()
         },
         keyEntities: {
           mostCentral: this.findMostCentralEntities(5),
@@ -324,27 +323,6 @@ class GraphAlgorithms {
     } catch (error) {
       logger.error('Failed to generate network summary:', error.message);
       throw error;
-    }
-  }
-
-  /**
-   * Calculate average clustering coefficient
-   * @private
-   * @returns {number} Average clustering coefficient
-   */
-  static _calculateAverageClustering() {
-    try {
-      // Simplified calculation - in a real implementation, this would be more complex
-      const nodes = Array.from(knowledgeGraph.entityMetadata.keys());
-      if (nodes.length === 0) return 0;
-      
-      // For our purposes, we'll approximate with the ratio of actual edges to possible edges
-      const actualEdges = knowledgeGraph.graph.getEdgesCount();
-      const possibleEdges = nodes.length * (nodes.length - 1);
-      
-      return possibleEdges > 0 ? actualEdges / possibleEdges : 0;
-    } catch (error) {
-      return 0;
     }
   }
 

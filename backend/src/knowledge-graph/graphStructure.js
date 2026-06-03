@@ -6,14 +6,19 @@
  */
 
 const { Graph } = require('@datastructures-js/graph');
+const fs = require('fs');
+const path = require('path');
 const logger = require('../utils/logger');
 
 class KnowledgeGraph {
-  constructor() {
-    // Create a directed graph to represent entity relationships
+  constructor(options = {}) {
     this.graph = new Graph();
-    this.entityMetadata = new Map(); // Store metadata for entities
-    this.relationshipMetadata = new Map(); // Store metadata for relationships
+    this.entityMetadata = new Map();
+    this.relationshipMetadata = new Map();
+    this._persistPath = options.persistPath || path.join(__dirname, '..', '..', 'data', 'knowledge-graph.json');
+    this._persistTimer = null;
+    this._persistDelay = options.persistDelay || 2000;
+    this._disabled = options.disableAutoPersist || process.env.NODE_ENV === 'test';
   }
 
   /**
@@ -43,6 +48,7 @@ class KnowledgeGraph {
         createdAt: new Date().toISOString()
       });
 
+      this._schedulePersist();
       logger.debug(`Added entity to knowledge graph: ${entityId} (${entityType})`);
     } catch (error) {
       logger.error(`Failed to add entity ${entityId}:`, error.message);
@@ -89,6 +95,7 @@ class KnowledgeGraph {
         ...metadata
       });
       
+      this._schedulePersist();
       logger.debug(`Added relationship to knowledge graph: ${fromEntityId} -> ${toEntityId} (${relationshipType})`);
     } catch (error) {
       logger.error(`Failed to add relationship from ${fromEntityId} to ${toEntityId}:`, error.message);
@@ -281,6 +288,7 @@ class KnowledgeGraph {
       // Remove entity metadata
       this.entityMetadata.delete(entityId);
 
+      this._schedulePersist();
       logger.debug(`Removed entity from knowledge graph: ${entityId}`);
     } catch (error) {
       logger.error(`Failed to remove entity ${entityId}:`, error.message);
@@ -321,7 +329,42 @@ class KnowledgeGraph {
     this.graph.clear();
     this.entityMetadata.clear();
     this.relationshipMetadata.clear();
+    this._schedulePersist();
     logger.info('Knowledge graph cleared');
+  }
+
+  _schedulePersist() {
+    if (this._disabled) return;
+    if (this._persistTimer) clearTimeout(this._persistTimer);
+    this._persistTimer = setTimeout(() => this._doPersist(), this._persistDelay);
+  }
+
+  _doPersist() {
+    try {
+      const dir = path.dirname(this._persistPath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      const data = this.toJSON();
+      fs.writeFileSync(this._persistPath, JSON.stringify(data, null, 2));
+      logger.debug(`Knowledge graph persisted to ${this._persistPath}`);
+    } catch (error) {
+      logger.error(`Failed to persist knowledge graph: ${error.message}`);
+    }
+  }
+
+  _load() {
+    if (this._disabled) return;
+    try {
+      if (fs.existsSync(this._persistPath)) {
+        const raw = fs.readFileSync(this._persistPath, 'utf-8');
+        const data = JSON.parse(raw);
+        this.fromJSON(data);
+        logger.info(`Knowledge graph loaded from ${this._persistPath}`);
+      }
+    } catch (error) {
+      logger.error(`Failed to load knowledge graph: ${error.message}`);
+    }
   }
 
   /**
@@ -390,5 +433,12 @@ class KnowledgeGraph {
   }
 }
 
-// Export singleton instance
-module.exports = new KnowledgeGraph();
+// Export singleton instance (loads persisted graph from disk on startup)
+const instance = new KnowledgeGraph();
+instance._load();
+// Clear any persist timer that was set during _load() via addEntity/addRelationship
+if (instance._persistTimer) {
+  clearTimeout(instance._persistTimer);
+  instance._persistTimer = null;
+}
+module.exports = instance;

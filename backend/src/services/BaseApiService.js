@@ -1,4 +1,5 @@
 const axios = require('axios');
+const logger = require('../utils/logger');
 
 class BaseApiService {
   constructor(options = {}) {
@@ -67,7 +68,7 @@ class BaseApiService {
     cb.lastFailureTime = Date.now();
     if (cb.failCount >= cb.maxFailures) {
       cb.isOpen = true;
-      console.warn(`[BaseApiService] Circuit breaker opened after ${cb.failCount} failures`);
+      logger.warn(`[BaseApiService] Circuit breaker opened after ${cb.failCount} failures`);
     }
   }
 
@@ -84,12 +85,12 @@ class BaseApiService {
 
   _logRequest(method, path, data) {
     const truncated = data ? JSON.stringify(data).slice(0, 200) : '';
-    console.log(`[BaseApiService] --> ${method} ${path} ${truncated}`);
+    logger.info(`[BaseApiService] --> ${method} ${path} ${truncated}`);
   }
 
   _logResponse(method, path, status, durationMs, data) {
     const truncated = data ? JSON.stringify(data).slice(0, 200) : '';
-    console.log(`[BaseApiService] <-- ${method} ${path} ${status} ${durationMs}ms ${truncated}`);
+    logger.info(`[BaseApiService] <-- ${method} ${path} ${status} ${durationMs}ms ${truncated}`);
   }
 
   async _request(method, path, data, attempt = 0) {
@@ -110,7 +111,7 @@ class BaseApiService {
 
       if (this._shouldRetry(error, attempt)) {
         const delay = Math.min(200 * Math.pow(2, attempt), 2000);
-        console.warn(`[BaseApiService] Retry ${attempt + 1}/${this.maxRetries} after ${delay}ms: ${method} ${path} (${status})`);
+        logger.warn(`[BaseApiService] Retry ${attempt + 1}/${this.maxRetries} after ${delay}ms: ${method} ${path} (${status})`);
         await new Promise(resolve => setTimeout(resolve, delay));
         return this._request(method, path, data, attempt + 1);
       }
@@ -135,7 +136,7 @@ class BaseApiService {
     }
 
     if (!bypassCircuitBreaker && this._isCircuitOpen()) {
-      console.warn(`[BaseApiService] Circuit breaker open for ${method} ${path}, using fallback`);
+      logger.warn(`[BaseApiService] Circuit breaker open for ${method} ${path}, using fallback`);
       const fallback = this._getFallback(method, path, data);
       if (fallback) return fallback;
       throw new Error(`Circuit breaker open for ${method} ${path}`);
@@ -154,12 +155,12 @@ class BaseApiService {
       return result;
     } catch (error) {
       this._recordFailure();
-      console.error(`[BaseApiService] ${method} ${path} failed: ${error.message}`);
+      logger.error(`[BaseApiService] ${method} ${path} failed: ${error.message}`);
 
       if (allowCache) {
         const cached = this._getCached(key);
         if (cached) {
-          console.warn(`[BaseApiService] Serving stale cache for ${method} ${path}`);
+          logger.warn(`[BaseApiService] Serving stale cache for ${method} ${path}`);
           return cached;
         }
       }
@@ -167,7 +168,7 @@ class BaseApiService {
       if (allowFallback) {
         const fallback = this._getFallback(method, path, data);
         if (fallback) {
-          console.warn(`[BaseApiService] Using fallback for ${method} ${path}`);
+          logger.warn(`[BaseApiService] Using fallback for ${method} ${path}`);
           return fallback;
         }
       }
