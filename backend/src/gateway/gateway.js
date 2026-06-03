@@ -28,7 +28,7 @@ app.use((req, res, next) => {
   }
 });
 
-// Proxy middleware for different services
+// Proxy middleware for Node.js Express API service
 const apiProxy = createProxyMiddleware({
   target: 'http://localhost:3000',
   changeOrigin: true,
@@ -36,48 +36,12 @@ const apiProxy = createProxyMiddleware({
     '^/api/v1': '',
   },
   onProxyReq: (proxyReq, req, res) => {
-    logger.info(`Proxying ${req.method} ${req.path} to API service`);
-  }
-});
-
-const agentProxy = createProxyMiddleware({
-  target: 'http://localhost:3001',
-  changeOrigin: true,
-  pathRewrite: {
-    '^/agents': '',
-  },
-  onProxyReq: (proxyReq, req, res) => {
-    logger.info(`Proxying ${req.method} ${req.path} to Agent service`);
-  }
-});
-
-const modelProxy = createProxyMiddleware({
-  target: 'http://localhost:3002',
-  changeOrigin: true,
-  pathRewrite: {
-    '^/models': '',
-  },
-  onProxyReq: (proxyReq, req, res) => {
-    logger.info(`Proxying ${req.method} ${req.path} to Model service`);
-  }
-});
-
-const analyticsProxy = createProxyMiddleware({
-  target: 'http://localhost:3003',
-  changeOrigin: true,
-  pathRewrite: {
-    '^/analytics': '',
-  },
-  onProxyReq: (proxyReq, req, res) => {
-    logger.info(`Proxying ${req.method} ${req.path} to Analytics service`);
+    logger.info(`Proxying ${req.method} ${req.path} to Express API service`);
   }
 });
 
 // Routes
 app.use('/api/v1', apiProxy);
-app.use('/agents', agentProxy);
-app.use('/models', modelProxy);
-app.use('/analytics', analyticsProxy);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
