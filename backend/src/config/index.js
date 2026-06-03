@@ -33,6 +33,13 @@ const config = {
     jwtExpiration: process.env.JWT_EXPIRATION || '24h'
   },
 
+  // AI/ML
+  aiMl: {
+    apiUrl: process.env.AI_ML_API_URL || 'http://localhost:8000',
+    apiKey: process.env.AI_ML_API_KEY || '',
+    timeout: parseInt(process.env.AI_ML_API_TIMEOUT_MS, 10) || 30000
+  },
+
   // Logging
   logging: {
     level: process.env.LOG_LEVEL || 'info'

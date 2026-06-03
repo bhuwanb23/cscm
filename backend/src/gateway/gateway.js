@@ -5,6 +5,8 @@ const logger = require('../utils/logger');
 
 const app = express();
 const PORT = process.env.GATEWAY_PORT || 8080;
+const aiMlTarget = config.aiMl ? config.aiMl.apiUrl : (process.env.AI_ML_API_URL || 'http://localhost:8000');
+const apiTarget = `http://localhost:${config.server.port}`;
 
 app.use(express.json());
 
@@ -37,7 +39,7 @@ function proxyErrorHandler(err, req, res) {
 }
 
 const aiMlProxy = createProxyMiddleware({
-  target: process.env.AI_ML_API_URL || 'http://localhost:8000',
+  target: aiMlTarget,
   changeOrigin: true,
   on: {
     proxyReq: (proxyReq, req, res) => {
@@ -48,7 +50,7 @@ const aiMlProxy = createProxyMiddleware({
 });
 
 const apiProxy = createProxyMiddleware({
-  target: `http://localhost:${config.server.port}`,
+  target: apiTarget,
   changeOrigin: true,
   on: {
     proxyReq: (proxyReq, req, res) => {
@@ -104,7 +106,7 @@ app.get('/health', (req, res) => {
 
 app.get('/health/python', async (req, res) => {
   const http = require('http');
-  const pythonUrl = new URL(process.env.AI_ML_API_URL || 'http://localhost:8000');
+  const pythonUrl = new URL(aiMlTarget);
   return new Promise(resolve => {
     const clientReq = http.get(`${pythonUrl.protocol}//${pythonUrl.host}/health`, (pythonRes) => {
       let data = '';

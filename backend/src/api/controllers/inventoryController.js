@@ -34,12 +34,22 @@ async function getItem(req, res) {
 
 async function upsert(req, res) {
   try {
-    const { product_id, store_id, quantity, reserved_quantity, min_stock_level, max_stock_level, unit_cost, selling_price } = req.body;
-    if (!product_id || !store_id) {
+    const body = req.body;
+    const productId = body.productId || body.product_id;
+    const storeId = body.storeId || body.store_id;
+    if (!productId || !storeId) {
       return res.status(400).json({ success: false, error: 'Product ID and Store ID are required' });
     }
-    const result = await InventoryModel.upsert({ product_id, store_id, quantity, reserved_quantity, min_stock_level, max_stock_level, unit_cost, selling_price });
-    logger.info(`Inventory upserted: ${product_id} at ${store_id}`);
+    const result = await InventoryModel.upsert({
+      product_id: productId, store_id: storeId,
+      quantity: body.quantity,
+      reserved_quantity: body.reserved_quantity || body.reservedQuantity,
+      min_stock_level: body.min_stock_level || body.minStockLevel,
+      max_stock_level: body.max_stock_level || body.maxStockLevel,
+      unit_cost: body.unit_cost || body.unitCost,
+      selling_price: body.selling_price || body.sellingPrice
+    });
+    logger.info(`Inventory upserted: ${productId} at ${storeId}`);
     res.status(201).json({ success: true, data: result });
   } catch (error) {
     logger.error('Failed to upsert inventory:', error);

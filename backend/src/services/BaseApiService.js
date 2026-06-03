@@ -1,13 +1,14 @@
 const axios = require('axios');
+const config = require('../config');
 const logger = require('../utils/logger');
 
 class BaseApiService {
   constructor(options = {}) {
-    this.baseUrl = options.baseUrl || process.env.AI_ML_API_URL || 'http://localhost:8000';
-    this.timeout = options.timeout || parseInt(process.env.AI_ML_API_TIMEOUT_MS, 10) || 30000;
+    this.baseUrl = options.baseUrl || config.aiMl.apiUrl;
+    this.timeout = options.timeout || config.aiMl.timeout;
     this.healthTimeout = options.healthTimeout || 5000;
     this.maxRetries = options.maxRetries || 3;
-    this.authToken = options.authToken || process.env.AI_ML_API_KEY || '';
+    this.authToken = options.authToken || config.aiMl.apiKey;
 
     this._circuitBreaker = {
       failCount: 0,
