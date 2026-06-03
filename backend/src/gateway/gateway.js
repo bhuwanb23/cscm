@@ -28,7 +28,16 @@ app.use((req, res, next) => {
   }
 });
 
-// Proxy middleware for Node.js Express API service
+// Proxy middleware for Python FastAPI AI/ML service
+const aiMlProxy = createProxyMiddleware({
+  target: 'http://localhost:8000',
+  changeOrigin: true,
+  onProxyReq: (proxyReq, req, res) => {
+    logger.info(`Proxying ${req.method} ${req.path} to Python AI/ML service`);
+  }
+});
+
+// Proxy middleware for Node.js Express API service (auth, events)
 const apiProxy = createProxyMiddleware({
   target: 'http://localhost:3000',
   changeOrigin: true,
@@ -40,7 +49,29 @@ const apiProxy = createProxyMiddleware({
   }
 });
 
-// Routes
+// AI/ML routes — must be mounted before the generic /api/v1 to take precedence
+const aiMlPrefixes = [
+  '/api/v1/demand',
+  '/api/v1/demand-planning',
+  '/api/v1/inventory',
+  '/api/v1/routing',
+  '/api/v1/supplier',
+  '/api/v1/customer',
+  '/api/v1/anomaly',
+  '/api/v1/coordination',
+  '/api/v1/simulation',
+  '/api/v1/explain',
+  '/api/v1/nlp',
+  '/api/v1/kg',
+  '/api/v1/causal',
+  '/api/v1/vision',
+  '/api/v1/learning',
+  '/api/v1/uncertainty',
+  '/api/v1/monitoring'
+];
+app.use(aiMlPrefixes, aiMlProxy);
+
+// Node.js Express routes (auth, events)
 app.use('/api/v1', apiProxy);
 
 // Health check endpoint
