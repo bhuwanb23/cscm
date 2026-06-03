@@ -6,21 +6,17 @@ const logger = require('../utils/logger');
 const app = express();
 const PORT = process.env.GATEWAY_PORT || 8080;
 
-// Middleware
 app.use(express.json());
 
-// Logging middleware
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.path} - ${req.ip}`);
   next();
 });
 
-// CORS middleware
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
   if (req.method === 'OPTIONS') {
     res.sendStatus(200);
   } else {
@@ -28,30 +24,40 @@ app.use((req, res, next) => {
   }
 });
 
-// Proxy middleware for Python FastAPI AI/ML service
+function proxyErrorHandler(err, req, res) {
+  logger.error(`Proxy error for ${req.method} ${req.originalUrl}: ${err.message}`);
+  if (!res.headersSent) {
+    res.status(502).json({
+      error: 'Upstream service unavailable',
+      message: err.code === 'ECONNREFUSED'
+        ? 'Service not running'
+        : err.message
+    });
+  }
+}
+
 const aiMlProxy = createProxyMiddleware({
-  target: 'http://localhost:8000',
+  target: process.env.AI_ML_API_URL || 'http://localhost:8000',
   changeOrigin: true,
-  onProxyReq: (proxyReq, req, res) => {
-    logger.info(`Proxying ${req.method} ${req.path} to Python AI/ML service`);
+  on: {
+    proxyReq: (proxyReq, req, res) => {
+      logger.info(`[gateway] → Python AI/ML: ${req.method} ${req.originalUrl}`);
+    },
+    error: proxyErrorHandler
   }
 });
 
-// Proxy middleware for Node.js Express API service (auth, events)
 const apiProxy = createProxyMiddleware({
-  target: 'http://localhost:3000',
+  target: `http://localhost:${config.server.port}`,
   changeOrigin: true,
-  pathRewrite: {
-    '^/api/v1': '',
-  },
-  onProxyReq: (proxyReq, req, res) => {
-    logger.info(`Proxying ${req.method} ${req.path} to Express API service`);
+  on: {
+    proxyReq: (proxyReq, req, res) => {
+      logger.info(`[gateway] → Express API: ${req.method} ${req.originalUrl}`);
+    },
+    error: proxyErrorHandler
   }
 });
 
-// AI/ML routes — must be mounted before the generic /api/v1 to take precedence.
-// Use a filter to avoid conflicts with Node.js CRUD routes under the same prefix
-// (e.g. /api/v1/inventory is shared between Python AI/ML and Node.js CRUD).
 const aiMlDomains = [
   'demand', 'demand-planning', 'routing', 'supplier', 'customer',
   'anomaly', 'coordination', 'simulation', 'explain', 'nlp', 'kg',
@@ -61,17 +67,16 @@ const aiMlActions = ['optimize', 'recommendation', 'ss-policy', 'stochastic-opti
   'rl-train', 'mip-optimize', 'batch-optimize'];
 
 function isAiMlPath(pathname) {
-  // Remove /api/v1/ prefix to get the domain part
+  // req.originalUrl is absolute (e.g. /api/v1/demand/forecast),
+  // not relative to the mount point like req.path would be.
   if (!pathname.startsWith('/api/v1/')) return false;
-  const rest = pathname.slice(8); // '/api/v1/'.length
+  const rest = pathname.slice(8);
   const firstSlash = rest.indexOf('/');
   const domain = firstSlash === -1 ? rest : rest.slice(0, firstSlash);
   const subpath = firstSlash === -1 ? '' : rest.slice(firstSlash + 1);
 
-  // Domains that exist ONLY in Python (no Node.js CRUD under the same prefix)
   if (aiMlDomains.includes(domain) && domain !== 'inventory') return true;
 
-  // Inventory has both Python AI/ML and Node.js CRUD — route AI actions to Python
   if (domain === 'inventory') {
     const actionSegment = subpath.split('/')[0];
     return aiMlActions.includes(actionSegment);
@@ -81,34 +86,66 @@ function isAiMlPath(pathname) {
 }
 
 app.use('/api/v1', (req, res, next) => {
-  if (isAiMlPath(req.path)) {
+  if (isAiMlPath(req.originalUrl)) {
     return aiMlProxy(req, res, next);
   }
   next();
 });
 
-// Node.js Express routes (auth, events)
 app.use('/api/v1', apiProxy);
 
-// Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
+  res.json({
     status: 'healthy',
     service: 'api-gateway',
     timestamp: new Date().toISOString()
   });
 });
 
-// Error handling
-app.use((err, req, res, next) => {
-  logger.error('Gateway error:', err);
-  res.status(500).json({ 
-    error: 'Internal server error',
-    message: err.message 
+app.get('/health/python', async (req, res) => {
+  const http = require('http');
+  const pythonUrl = new URL(process.env.AI_ML_API_URL || 'http://localhost:8000');
+  return new Promise(resolve => {
+    const clientReq = http.get(`${pythonUrl.protocol}//${pythonUrl.host}/health`, (pythonRes) => {
+      let data = '';
+      pythonRes.on('data', chunk => data += chunk);
+      pythonRes.on('end', () => {
+        res.json({
+          service: 'ai-ml-python',
+          status: pythonRes.statusCode === 200 ? 'healthy' : 'unhealthy',
+          timestamp: new Date().toISOString()
+        });
+        resolve();
+      });
+    });
+    clientReq.on('error', () => {
+      res.status(503).json({
+        service: 'ai-ml-python',
+        status: 'unreachable',
+        timestamp: new Date().toISOString()
+      });
+      resolve();
+    });
+    clientReq.setTimeout(3000, () => {
+      clientReq.destroy();
+      res.status(504).json({
+        service: 'ai-ml-python',
+        status: 'timeout',
+        timestamp: new Date().toISOString()
+      });
+      resolve();
+    });
   });
 });
 
-// Start server
+app.use((err, req, res, next) => {
+  logger.error('Gateway error:', err);
+  res.status(500).json({
+    error: 'Internal server error',
+    message: err.message
+  });
+});
+
 app.listen(PORT, () => {
   logger.info(`API Gateway listening on port ${PORT}`);
   console.log(`API Gateway listening on port ${PORT}`);
