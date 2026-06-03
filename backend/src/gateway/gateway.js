@@ -49,27 +49,43 @@ const apiProxy = createProxyMiddleware({
   }
 });
 
-// AI/ML routes — must be mounted before the generic /api/v1 to take precedence
-const aiMlPrefixes = [
-  '/api/v1/demand',
-  '/api/v1/demand-planning',
-  '/api/v1/inventory',
-  '/api/v1/routing',
-  '/api/v1/supplier',
-  '/api/v1/customer',
-  '/api/v1/anomaly',
-  '/api/v1/coordination',
-  '/api/v1/simulation',
-  '/api/v1/explain',
-  '/api/v1/nlp',
-  '/api/v1/kg',
-  '/api/v1/causal',
-  '/api/v1/vision',
-  '/api/v1/learning',
-  '/api/v1/uncertainty',
-  '/api/v1/monitoring'
+// AI/ML routes — must be mounted before the generic /api/v1 to take precedence.
+// Use a filter to avoid conflicts with Node.js CRUD routes under the same prefix
+// (e.g. /api/v1/inventory is shared between Python AI/ML and Node.js CRUD).
+const aiMlDomains = [
+  'demand', 'demand-planning', 'routing', 'supplier', 'customer',
+  'anomaly', 'coordination', 'simulation', 'explain', 'nlp', 'kg',
+  'causal', 'vision', 'learning', 'uncertainty', 'monitoring'
 ];
-app.use(aiMlPrefixes, aiMlProxy);
+const aiMlActions = ['optimize', 'recommendation', 'ss-policy', 'stochastic-optimize',
+  'rl-train', 'mip-optimize', 'batch-optimize'];
+
+function isAiMlPath(pathname) {
+  // Remove /api/v1/ prefix to get the domain part
+  if (!pathname.startsWith('/api/v1/')) return false;
+  const rest = pathname.slice(8); // '/api/v1/'.length
+  const firstSlash = rest.indexOf('/');
+  const domain = firstSlash === -1 ? rest : rest.slice(0, firstSlash);
+  const subpath = firstSlash === -1 ? '' : rest.slice(firstSlash + 1);
+
+  // Domains that exist ONLY in Python (no Node.js CRUD under the same prefix)
+  if (aiMlDomains.includes(domain) && domain !== 'inventory') return true;
+
+  // Inventory has both Python AI/ML and Node.js CRUD — route AI actions to Python
+  if (domain === 'inventory') {
+    const actionSegment = subpath.split('/')[0];
+    return aiMlActions.includes(actionSegment);
+  }
+
+  return false;
+}
+
+app.use('/api/v1', (req, res, next) => {
+  if (isAiMlPath(req.path)) {
+    return aiMlProxy(req, res, next);
+  }
+  next();
+});
 
 // Node.js Express routes (auth, events)
 app.use('/api/v1', apiProxy);
