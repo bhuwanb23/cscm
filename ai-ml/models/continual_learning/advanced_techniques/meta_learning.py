@@ -22,15 +22,16 @@ class MetaLearningAdapter:
     """
 
     def __init__(self,
-                 n_features: int,
+                 n_features: int = 10,
                  inner_lr: float = 0.01,
                  outer_lr: float = 0.001,
                  inner_steps: int = 5,
+                 adaptation_steps: Optional[int] = None,
                  meta_batch_size: int = 4):
         self.n_features = n_features
         self.inner_lr = inner_lr
         self.outer_lr = outer_lr
-        self.inner_steps = inner_steps
+        self.inner_steps = adaptation_steps if adaptation_steps is not None else inner_steps
         self.meta_batch_size = meta_batch_size
 
         self.meta_weights = np.random.randn(n_features) * 0.01
@@ -115,6 +116,47 @@ class MetaLearningAdapter:
         self.task_history.append(task_info)
 
         return task_info
+
+    def adapt(self, support_set: List, query_set: List) -> Dict[str, Any]:
+        X_support = np.array(support_set)
+        y_query = np.array(query_set)
+
+        if X_support.ndim == 1:
+            X_support = X_support.reshape(-1, 1)
+        if y_query.ndim == 0:
+            y_query = np.array([y_query])
+
+        if X_support.ndim == 2 and y_query.ndim == 1 and X_support.shape[0] == y_query.shape[0]:
+            adapted_w, adapted_b, loss = self._fast_adapt(
+                X_support, y_query, self.meta_weights, self.meta_bias
+            )
+            return {
+                'adapted_parameters': {'weights': adapted_w.tolist(), 'bias': float(adapted_b)},
+                'adaptation_loss': float(loss),
+                'generalization_score': 1.0 / (1.0 + float(loss)),
+            }
+
+        adapted_results = []
+        total_loss = 0.0
+        for item in support_set:
+            if isinstance(item, dict):
+                X_s = np.array(item.get('X', item.get('features', [])))
+                y_s = np.array(item.get('y', item.get('labels', [])))
+            else:
+                X_s = np.array(item)
+                y_s = np.array(query_set[len(adapted_results)]) if len(adapted_results) < len(query_set) else np.array([])
+            if X_s.ndim == 1:
+                X_s = X_s.reshape(-1, 1)
+            w, b, loss = self._fast_adapt(X_s, y_s, self.meta_weights, self.meta_bias)
+            adapted_results.append({'weights': w.copy(), 'bias': b, 'loss': float(loss)})
+            total_loss += float(loss)
+
+        avg_loss = total_loss / len(adapted_results) if adapted_results else 0.0
+        return {
+            'adapted_parameters': adapted_results[-1] if adapted_results else {},
+            'adaptation_loss': avg_loss,
+            'generalization_score': 1.0 / (1.0 + avg_loss),
+        }
 
     def predict(self, X: np.ndarray, weights: Optional[np.ndarray] = None,
                 bias: Optional[float] = None) -> np.ndarray:

@@ -95,7 +95,7 @@ Create wrapper classes for each major model type:
 - `KnowledgeGraphModel` (wraps knowledge_graph/graph_db/neo4j_connector.py)
 - `CausalInferenceModel` (wraps causal_inference/framework/dowhy_integration.py)
 - `ComputerVisionModel` (wraps computer_vision/object_detection/yolov8.py)
-- `ContinualLearningModel` (wraps continual_learning/federated_learning/fedavg.py)
+- `ContinualLearningModel` (wraps continual_learning/federated_system/fedavg_coordinator.py)
 - `UncertaintyQuantificationModel` (to be implemented)
 - `ModelMonitoringModel` (to be implemented)
 

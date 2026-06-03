@@ -5,19 +5,86 @@ This module provides continual learning and federated learning capabilities for 
 Cognitive Supply Chain Mesh (CSCM) AI/ML system.
 """
 
-from .continual_learning_framework.online_adapter import OnlineLearningAdapter
-from .continual_learning_framework.incremental_updater import IncrementalModelUpdater, PyTorchEWC
-from .federated_system.fedavg_coordinator import FederatedAveragingCoordinator
-from .federated_system.privacy_comms import DifferentialPrivacy, SecureAggregator, CrossStoreFLOrchestrator
-from .supply_chain_applications.demand_evolution import DemandPatternEvolution
+from .continual_learning_framework import (
+    OnlineLearningAdapter,
+    SimpleOnlineAdapter,
+    IncrementalModelUpdater,
+    PyTorchEWC,
+    ExperienceReplay,
+    KnowledgeDistillation,
+    RegularizationPreservation,
+    KnowledgePreservationSystem,
+    AdaptiveLRController,
+    CyclicLRController,
+)
+from .federated_system import (
+    FederatedAveragingCoordinator,
+    LocalTrainer,
+    TrainingManager,
+    DifferentialPrivacy,
+    SecureAggregator,
+    CrossStoreFLOrchestrator,
+    DeviceProfiler,
+    ResourceAwareScheduler,
+    AdaptiveCompressor,
+    CrossDeviceOptimizer,
+)
+from .advanced_techniques import (
+    MetaLearningAdapter,
+    NetworkExpander,
+    NetworkPruner,
+    ModularArchitecture,
+    DynamicArchitectureManager,
+    DifficultyScorer,
+    CurriculumScheduler,
+    TaskSequencer,
+    CurriculumLearningManager,
+)
+from .supply_chain_applications import (
+    DemandPatternEvolution,
+    SafetyStockOptimizer,
+    ReplenishmentStrategy,
+    InventoryAdaptationManager,
+    SupplierPerformanceTracker,
+    RiskAssessor,
+    SupplierLearningManager,
+)
 
 __all__ = [
     'OnlineLearningAdapter',
+    'SimpleOnlineAdapter',
     'IncrementalModelUpdater',
     'PyTorchEWC',
+    'ExperienceReplay',
+    'KnowledgeDistillation',
+    'RegularizationPreservation',
+    'KnowledgePreservationSystem',
+    'AdaptiveLRController',
+    'CyclicLRController',
     'FederatedAveragingCoordinator',
+    'LocalTrainer',
+    'TrainingManager',
     'DifferentialPrivacy',
     'SecureAggregator',
     'CrossStoreFLOrchestrator',
-    'DemandPatternEvolution'
+    'DeviceProfiler',
+    'ResourceAwareScheduler',
+    'AdaptiveCompressor',
+    'CrossDeviceOptimizer',
+    'MetaLearningAdapter',
+    'NetworkExpander',
+    'NetworkPruner',
+    'ModularArchitecture',
+    'DynamicArchitectureManager',
+    'DifficultyScorer',
+    'CurriculumScheduler',
+    'TaskSequencer',
+    'CurriculumLearningManager',
+    'DemandPatternEvolution',
+    'SafetyStockOptimizer',
+    'ReplenishmentStrategy',
+    'InventoryAdaptationManager',
+    'SupplierPerformanceTracker',
+    'RiskAssessor',
+    'SupplierLearningManager',
 ]
