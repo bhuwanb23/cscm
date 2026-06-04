@@ -14,6 +14,21 @@ class SimulationApiService extends BaseApiService {
     if (path === '/api/v1/inventory/optimize') {
       return { reorder_quantity: 50, safety_stock: 25, model_version: 'fallback_v1' };
     }
+    if (path === '/api/v1/simulation/run') {
+      return { simulation_id: `SIM-${Date.now()}`, status: 'completed', summary: { events_generated: 5 }, model_version: 'fallback_v1' };
+    }
+    if (path === '/api/v1/simulation/discrete-event-sim') {
+      return { events: [], duration: 0, summary: { total_events: 0 }, model_version: 'fallback_v1' };
+    }
+    if (path === '/api/v1/simulation/results') {
+      return { status: 'unknown', model_version: 'fallback_v1' };
+    }
+    if (path === '/api/v1/simulation/network-sim') {
+      return { nodes: [], edges: [], metrics: {}, model_version: 'fallback_v1' };
+    }
+    if (path === '/api/v1/simulation/policy-impact') {
+      return { impact: 'unknown', confidence: 0.5, model_version: 'fallback_v1' };
+    }
     return null;
   }
 
@@ -27,6 +42,26 @@ class SimulationApiService extends BaseApiService {
 
   async inventoryOptimization(data) {
     return this.call('post', '/api/v1/inventory/optimize', data, { allowFallback: true });
+  }
+
+  async simulationRun(data) {
+    return this.call('post', '/api/v1/simulation/run', data, { allowFallback: true });
+  }
+
+  async simulationDiscreteEvent(data) {
+    return this.call('post', '/api/v1/simulation/discrete-event-sim', data, { allowFallback: true });
+  }
+
+  async simulationResults(simulationId) {
+    return this.call('get', `/api/v1/simulation/results/${simulationId}`, null, { allowFallback: true, bypassCircuitBreaker: true });
+  }
+
+  async simulationNetworkSim(data) {
+    return this.call('post', '/api/v1/simulation/network-sim', data, { allowFallback: true });
+  }
+
+  async simulationWhatIf(data) {
+    return this.call('post', '/api/v1/simulation/policy-impact', data, { allowFallback: true });
   }
 }
 

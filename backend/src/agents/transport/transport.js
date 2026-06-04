@@ -2,18 +2,17 @@ const fs = require('fs');
 const path = require('path');
 const messagingLayer = require('../../messaging');
 const TransportApiService = require('./services/apiService');
-
-/**
- * Transport Agent
- * 
- * This agent manages transportation logistics, route optimization,
- * delivery scheduling, and tracking mechanisms.
- */
+const RouteOptimizer = require('./sub-agents/RouteOptimizer');
+const DeliveryScheduler = require('./sub-agents/DeliveryScheduler');
+const FleetManager = require('./sub-agents/FleetManager');
 
 class TransportAgent {
   constructor(transportId) {
     this.transportId = transportId;
     this.apiService = new TransportApiService();
+    this.routeOptimizer = new RouteOptimizer(transportId, this.apiService);
+    this.deliveryScheduler = new DeliveryScheduler(transportId, this.apiService);
+    this.fleetManager = new FleetManager(transportId, this.apiService);
     this.state = {
       vehicles: {},
       routes: {},
@@ -114,9 +113,61 @@ class TransportAgent {
     }
   }
 
-  /**
-   * Handle vehicle tracking updates
-   */
+  async handleDeliveryAssignment(topic, message) {
+    try {
+      console.log(`Transport Agent ${this.transportId}: Received delivery assignment`, message);
+      const deliveryId = message.deliveryId || `DEL-${Date.now()}`;
+      this.state.deliveries[deliveryId] = { ...message, status: 'assigned', assignedAt: new Date().toISOString() };
+      this.saveState();
+    } catch (error) {
+      console.error(`Transport Agent ${this.transportId}: Failed to handle delivery assignment:`, error.message);
+    }
+  }
+
+  async handleRouteOptimizationRequest(topic, message) {
+    try {
+      console.log(`Transport Agent ${this.transportId}: Received route optimization request`, message);
+      const deliveries = message.deliveries || Object.values(this.state.deliveries).filter(d => d.status !== 'completed');
+      const vehicles = message.vehicles || Object.values(this.state.vehicles);
+
+      const routes = await this.routeOptimizer.optimize(deliveries, vehicles);
+      this.state.routes = { ...this.state.routes, ...routes };
+      this.saveState();
+
+      messagingLayer.publishMessage(
+        `route.optimization.response.${this.transportId}`,
+        { routes, timestamp: new Date().toISOString() },
+        'kafka'
+      );
+    } catch (error) {
+      console.error(`Transport Agent ${this.transportId}: Failed to handle route optimization request:`, error.message);
+    }
+  }
+
+  async handleTrafficConditionUpdate(topic, message) {
+    try {
+      console.log(`Transport Agent ${this.transportId}: Received traffic condition update`, message);
+      if (!this.state.trafficConditions) this.state.trafficConditions = [];
+      this.state.trafficConditions.push({ ...message, receivedAt: new Date().toISOString() });
+      if (this.state.trafficConditions.length > 50) this.state.trafficConditions = this.state.trafficConditions.slice(-50);
+      this.saveState();
+    } catch (error) {
+      console.error(`Transport Agent ${this.transportId}: Failed to handle traffic condition update:`, error.message);
+    }
+  }
+
+  async handleRoadConditionUpdate(topic, message) {
+    try {
+      console.log(`Transport Agent ${this.transportId}: Received road condition update`, message);
+      if (!this.state.roadConditions) this.state.roadConditions = [];
+      this.state.roadConditions.push({ ...message, receivedAt: new Date().toISOString() });
+      if (this.state.roadConditions.length > 50) this.state.roadConditions = this.state.roadConditions.slice(-50);
+      this.saveState();
+    } catch (error) {
+      console.error(`Transport Agent ${this.transportId}: Failed to handle road condition update:`, error.message);
+    }
+  }
+
   async handleVehicleTrackingUpdate(topic, message) {
     try {
       console.log(`Transport Agent ${this.transportId}: Received vehicle tracking update`, message);

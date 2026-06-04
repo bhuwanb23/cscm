@@ -2,18 +2,17 @@ const fs = require('fs');
 const path = require('path');
 const messagingLayer = require('../../messaging');
 const WarehouseApiService = require('./services/apiService');
-
-/**
- * Warehouse Agent
- * 
- * This agent manages warehouse operations including picking, packing,
- * shipping, and inventory allocation.
- */
+const PickingOptimizer = require('./sub-agents/PickingOptimizer');
+const PackingPlanner = require('./sub-agents/PackingPlanner');
+const ShipmentConsolidator = require('./sub-agents/ShipmentConsolidator');
 
 class WarehouseAgent {
   constructor(warehouseId) {
     this.warehouseId = warehouseId;
     this.apiService = new WarehouseApiService();
+    this.pickingOptimizer = new PickingOptimizer(warehouseId, this.apiService);
+    this.packingPlanner = new PackingPlanner(warehouseId, this.apiService);
+    this.shipmentConsolidator = new ShipmentConsolidator(warehouseId, this.apiService);
     this.state = {
       inventory: {},
       shipments: {},
@@ -259,100 +258,52 @@ class WarehouseAgent {
     }
   }
 
-  /**
-   * Process the picking queue with optimization
-   */
   async processPickingQueue() {
     try {
-      if (this.state.pickingQueue.length === 0) {
-        return;
-      }
-      
+      if (this.state.pickingQueue.length === 0) return;
+
       console.log(`Warehouse Agent ${this.warehouseId}: Processing ${this.state.pickingQueue.length} shipment requests`);
-      
-      // Prepare data for AI/ML optimization API
-      const optimizationData = {
-        warehouse_id: this.warehouseId,
-        picking_queue: [...this.state.pickingQueue],
-        warehouse_layout: this.state.warehouseLayout,
-        inventory: this.state.inventory
-      };
-      
-      // Call the AI/ML routing optimization API for picking sequence
-      const optimizationResult = await this.apiService.routingOptimization(optimizationData);
-      
-      // Use optimized queue from AI/ML API
-      const optimizedQueue = optimizationResult.optimized_picking_sequence || [...this.state.pickingQueue];
-      
-      // Process one item at a time
+
+      const optimizedQueue = await this.pickingOptimizer.optimizePickingQueue(
+        [...this.state.pickingQueue], this.state.warehouseLayout, this.state.inventory
+      );
+
       const pickingTask = optimizedQueue.shift();
       const shipmentId = pickingTask.shipmentId;
-      
+
       console.log(`Warehouse Agent ${this.warehouseId}: Processing shipment ${shipmentId}`);
-      
-      // Update shipment status
+
       this.state.shipments[shipmentId].status = 'picking';
       this.saveState();
-      
-      // Generate optimized picking route using AI/ML API
-      const pickingRouteData = {
-        warehouse_id: this.warehouseId,
-        picking_task: pickingTask,
-        warehouse_layout: this.state.warehouseLayout
-      };
-      
-      const pickingRouteResult = await this.apiService.routingOptimization(pickingRouteData);
-      const pickingRoute = pickingRouteResult.picking_route;
-      
-      // Simulate picking process with optimized route
+
+      const pickingRoute = await this.pickingOptimizer.generateRoute(pickingTask, this.state.warehouseLayout);
       await this.simulatePickingProcess(pickingTask, pickingRoute);
-      
-      // Move to next stage
+
       this.state.shipments[shipmentId].status = 'packing';
       this.saveState();
-      
-      // Generate optimized packing plan using AI/ML API
-      const packingPlanData = {
-        warehouse_id: this.warehouseId,
-        picking_task: pickingTask,
-        packing_configurations: this.state.packingConfigurations
-      };
-      
-      const packingPlanResult = await this.apiService.inventoryOptimization(packingPlanData);
-      const packingPlan = packingPlanResult.packing_plan;
-      
-      // Simulate packing process with optimized plan
+
+      const packingPlan = await this.packingPlanner.generatePlan(pickingTask, this.state.packingConfigurations);
       await this.simulatePackingProcess(pickingTask, packingPlan);
-      
-      // Check for shipment consolidation opportunities
-      const consolidatedShipment = this.checkShipmentConsolidationOpportunities(shipmentId, pickingTask);
-      
+
+      const consolidatedShipment = this.shipmentConsolidator.checkOpportunities(shipmentId, pickingTask, this.state.shipments);
+
       if (consolidatedShipment) {
-        // If consolidated, update status accordingly
         this.state.shipments[shipmentId].status = 'consolidated';
         this.state.shipments[shipmentId].consolidatedWith = consolidatedShipment.shipmentId;
         this.saveState();
-        
         console.log(`Warehouse Agent ${this.warehouseId}: Shipment ${shipmentId} consolidated with ${consolidatedShipment.shipmentId}`);
       } else {
-        // Mark as ready for shipping
         this.state.shipments[shipmentId].status = 'ready_for_shipping';
         this.state.shipments[shipmentId].readyAt = new Date().toISOString();
         this.saveState();
-        
-        // Publish shipment ready notification
+
         messagingLayer.publishMessage(
           `shipment.ready.${this.warehouseId}`,
-          {
-            shipmentId: shipmentId,
-            warehouseId: this.warehouseId,
-            status: 'ready_for_shipping',
-            timestamp: new Date().toISOString()
-          },
+          { shipmentId, warehouseId: this.warehouseId, status: 'ready_for_shipping', timestamp: new Date().toISOString() },
           'kafka'
         );
       }
-      
+
       console.log(`Warehouse Agent ${this.warehouseId}: Completed processing shipment ${shipmentId}`);
     } catch (error) {
       console.error(`Warehouse Agent ${this.warehouseId}: Failed to process picking queue:`, error.message);
@@ -470,124 +421,28 @@ class WarehouseAgent {
     return commonChars / maxLen;
   }
 
-  /**
-   * Generate optimized picking route
-   */
-  generateOptimizedPickingRoute(pickingTask) {
+  async generateOptimizedPickingRoute(pickingTask) {
     try {
-      // In a real implementation, this would use the AI/ML routing models
-      // For now, we'll generate a simple route based on item locations
-      
-      const items = pickingTask.items || [];
-      const route = [];
-      
-      // Add warehouse layout information to route if available
-      items.forEach(item => {
-        // Get location information for item
-        const locationInfo = this.getItemLocation(item.productId);
-        
-        route.push({
-          productId: item.productId,
-          quantity: item.quantity,
-          location: locationInfo.location || 'unknown',
-          zone: locationInfo.zone || 'unknown',
-          aisle: locationInfo.aisle || 'unknown',
-          estimatedPickTime: this.estimatePickTime(locationInfo)
-        });
-      });
-      
-      // Optimize route order (simplified)
-      route.sort((a, b) => {
-        // Sort by zone, then aisle, then location
-        if (a.zone !== b.zone) return a.zone.localeCompare(b.zone);
-        if (a.aisle !== b.aisle) return a.aisle.localeCompare(b.aisle);
-        return a.location.localeCompare(b.location);
-      });
-      
-      return {
-        taskId: pickingTask.shipmentId,
-        route: route,
-        totalEstimatedTime: route.reduce((sum, item) => sum + item.estimatedPickTime, 0),
-        optimizationMethod: 'zone-aisle-location-sorting'
-      };
+      return await this.pickingOptimizer.generateRoute(pickingTask, this.state.warehouseLayout);
     } catch (error) {
       console.error(`Warehouse Agent ${this.warehouseId}: Failed to generate optimized picking route:`, error.message);
-      // Return basic route
       return {
         taskId: pickingTask.shipmentId,
         route: (pickingTask.items || []).map(item => ({
           productId: item.productId,
           quantity: item.quantity
         })),
-        totalEstimatedTime: pickingTask.items ? pickingTask.items.length * 60 : 0, // Assume 1 minute per item
+        totalEstimatedTime: pickingTask.items ? pickingTask.items.length * 60 : 0,
         optimizationMethod: 'basic-item-order'
       };
     }
   }
 
-  /**
-   * Generate optimized packing plan
-   */
-  generateOptimizedPackingPlan(pickingTask) {
+  async generateOptimizedPackingPlan(pickingTask) {
     try {
-      // Get packing configuration for items
-      const items = pickingTask.items || [];
-      const packingInstructions = [];
-      
-      // For each item, get packing configuration
-      items.forEach(item => {
-        const packingConfig = this.state.packingConfigurations[item.productId] || 
-                             this.getDefaultPackingConfiguration(item.productId);
-        
-        packingInstructions.push({
-          productId: item.productId,
-          quantity: item.quantity,
-          packingType: packingConfig.packingType || 'standard-box',
-          dimensions: packingConfig.dimensions || { length: 10, width: 10, height: 10 },
-          weight: packingConfig.weightPerUnit ? 
-                  packingConfig.weightPerUnit * item.quantity : 
-                  item.quantity * 0.5, // Default 0.5kg per unit
-          specialHandling: packingConfig.specialHandling || 'none',
-          estimatedPackingTime: this.estimatePackingTime(packingConfig, item.quantity)
-        });
-      });
-      
-      // Optimize packing sequence (fragile items first, heavier items at bottom, etc.)
-      packingInstructions.sort((a, b) => {
-        // Fragile items first
-        if (a.specialHandling === 'fragile' && b.specialHandling !== 'fragile') return -1;
-        if (b.specialHandling === 'fragile' && a.specialHandling !== 'fragile') return 1;
-        
-        // Heavier items first (for stability)
-        return b.weight - a.weight;
-      });
-      
-      // Calculate total package dimensions (simplified)
-      const totalWeight = packingInstructions.reduce((sum, item) => sum + item.weight, 0);
-      const estimatedVolume = packingInstructions.reduce((sum, item) => {
-        const dims = item.dimensions;
-        return sum + (dims.length * dims.width * dims.height * item.quantity);
-      }, 0);
-      
-      // Simple cube root to estimate package dimensions
-      const estimatedDim = Math.ceil(Math.cbrt(estimatedVolume));
-      
-      return {
-        taskId: pickingTask.shipmentId,
-        packingInstructions: packingInstructions,
-        totalItems: items.reduce((sum, item) => sum + item.quantity, 0),
-        totalWeight: totalWeight,
-        estimatedPackageDimensions: {
-          length: estimatedDim,
-          width: estimatedDim,
-          height: estimatedDim
-        },
-        estimatedTotalPackingTime: packingInstructions.reduce((sum, item) => sum + item.estimatedPackingTime, 0),
-        optimizationMethod: 'weight-fragility-sorting'
-      };
+      return await this.packingPlanner.generatePlan(pickingTask, this.state.packingConfigurations);
     } catch (error) {
       console.error(`Warehouse Agent ${this.warehouseId}: Failed to generate optimized packing plan:`, error.message);
-      // Return basic packing plan
       return {
         taskId: pickingTask.shipmentId,
         packingInstructions: (pickingTask.items || []).map(item => ({
@@ -596,7 +451,7 @@ class WarehouseAgent {
         })),
         totalItems: pickingTask.items ? pickingTask.items.reduce((sum, item) => sum + item.quantity, 0) : 0,
         totalWeight: pickingTask.items ? pickingTask.items.length * 0.5 : 0,
-        estimatedTotalPackingTime: pickingTask.items ? pickingTask.items.length * 120 : 0, // 2 minutes per item
+        estimatedTotalPackingTime: pickingTask.items ? pickingTask.items.length * 120 : 0,
         optimizationMethod: 'basic-item-order'
       };
     }
@@ -789,87 +644,27 @@ class WarehouseAgent {
     };
   }
 
-  /**
-   * Check for shipment consolidation opportunities
-   */
   checkShipmentConsolidationOpportunities(shipmentId, pickingTask) {
     try {
-      // Check if there are other shipments ready for shipping to the same destination
-      const currentTime = new Date();
-      const consolidationWindowMinutes = 30; // Consolidate shipments within 30 minutes
-      
-      // Look for other shipments to the same destination
-      const sameDestinationShipments = Object.values(this.state.shipments).filter(shipment => {
-        // Must be ready for shipping
-        if (shipment.status !== 'ready_for_shipping') return false;
-        
-        // Must be to the same destination
-        if (shipment.destination !== pickingTask.destination) return false;
-        
-        // Must be within consolidation window
-        const readyTime = new Date(shipment.readyAt);
-        const timeDiffMinutes = (currentTime - readyTime) / (1000 * 60);
-        
-        return timeDiffMinutes <= consolidationWindowMinutes;
-      });
-      
-      if (sameDestinationShipments.length > 0) {
-        // Consolidate with the first matching shipment
-        const consolidationTarget = sameDestinationShipments[0];
-        
-        // Update both shipments to reflect consolidation
-        this.state.shipments[shipmentId].status = 'consolidated';
-        this.state.shipments[shipmentId].consolidatedWith = consolidationTarget.shipmentId;
-        
-        // Update the target shipment to indicate it now contains consolidated items
-        if (!this.state.shipments[consolidationTarget.shipmentId].consolidatedItems) {
-          this.state.shipments[consolidationTarget.shipmentId].consolidatedItems = [];
-        }
-        
-        this.state.shipments[consolidationTarget.shipmentId].consolidatedItems.push({
-          originalShipmentId: shipmentId,
-          items: pickingTask.items,
-          consolidatedAt: new Date().toISOString()
-        });
-        
-        this.saveState();
-        
-        return consolidationTarget;
-      }
-      
-      return null;
+      return this.shipmentConsolidator.checkOpportunities(shipmentId, pickingTask, this.state.shipments);
     } catch (error) {
       console.error(`Warehouse Agent ${this.warehouseId}: Failed to check shipment consolidation opportunities:`, error.message);
       return null;
     }
   }
 
-  /**
-   * Handle consolidated shipment processing
-   */
   async processConsolidatedShipment(consolidationTarget) {
     try {
       console.log(`Warehouse Agent ${this.warehouseId}: Processing consolidated shipment ${consolidationTarget.shipmentId}`);
-      
-      // Update status to indicate it's being processed as a consolidated shipment
       this.state.shipments[consolidationTarget.shipmentId].status = 'processing_consolidated';
       this.saveState();
-      
-      // In a real implementation, this would involve:
-      // 1. Combining items from all consolidated shipments
-      // 2. Regenerating packing plan for combined items
-      // 3. Updating shipping labels and documentation
-      // 4. Notifying all original shipment requesters
-      
-      // For simulation, we'll just mark it as ready for shipping after a short delay
+
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Mark as ready for shipping
+
       this.state.shipments[consolidationTarget.shipmentId].status = 'ready_for_shipping';
       this.state.shipments[consolidationTarget.shipmentId].readyAt = new Date().toISOString();
       this.saveState();
-      
-      // Publish shipment ready notification
+
       messagingLayer.publishMessage(
         `shipment.ready.${this.warehouseId}`,
         {
@@ -882,7 +677,7 @@ class WarehouseAgent {
         },
         'kafka'
       );
-      
+
       console.log(`Warehouse Agent ${this.warehouseId}: Consolidated shipment ${consolidationTarget.shipmentId} ready for shipping`);
     } catch (error) {
       console.error(`Warehouse Agent ${this.warehouseId}: Failed to process consolidated shipment:`, error.message);

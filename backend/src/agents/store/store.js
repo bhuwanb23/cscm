@@ -2,18 +2,17 @@ const fs = require('fs');
 const path = require('path');
 const messagingLayer = require('../../messaging');
 const StoreApiService = require('./services/apiService');
-
-/**
- * Store Agent
- * 
- * This agent manages store-level inventory, demand forecasting,
- * and restocking decisions.
- */
+const DemandForecaster = require('./sub-agents/DemandForecaster');
+const InventoryOptimizer = require('./sub-agents/InventoryOptimizer');
+const StockRecommender = require('./sub-agents/StockRecommender');
 
 class StoreAgent {
   constructor(storeId) {
     this.storeId = storeId;
     this.apiService = new StoreApiService();
+    this.demandForecaster = new DemandForecaster(storeId, this.apiService);
+    this.inventoryOptimizer = new InventoryOptimizer(storeId, this.apiService);
+    this.stockRecommender = new StockRecommender(storeId, this.apiService);
     this.state = {
       inventory: {},
       demandForecast: {},
@@ -278,124 +277,69 @@ class StoreAgent {
     }
   }
 
-  /**
-   * Update demand forecast using ML models
-   */
   async updateDemandForecast(productId) {
     try {
       console.log(`Store Agent ${this.storeId}: Updating demand forecast for product ${productId}`);
-      
-      // Get historical sales data for this product
+
       const salesData = this.state.historicalSales[productId] || [];
-      
-      if (salesData.length < 7) {
-        console.log(`Store Agent ${this.storeId}: Not enough sales data for product ${productId} (${salesData.length} records)`);
-        return;
-      }
-      
-      // Prepare data for AI/ML API call
-      const requestData = {
-        product_id: productId,
-        sales_data: salesData,
-        forecast_days: 7
-      };
-      
-      // Call the AI/ML demand forecasting API
-      const forecastResult = await this.apiService.demandForecast(requestData);
-      
-      // Extract forecast data from API response
-      const forecast = {
-        productId: productId,
-        expectedDemand: forecastResult.expected_demand,
-        dailyForecasts: forecastResult.daily_forecasts,
-        safetyStock: forecastResult.safety_stock,
-        confidenceInterval: forecastResult.confidence_interval,
-        trend: forecastResult.trend,
-        lastUpdated: new Date()
-      };
-      
-      // Update local state
+
+      const forecast = await this.demandForecaster.forecast(productId, salesData, 7);
+      if (!forecast) return;
+
       this.state.demandForecast[productId] = forecast;
       this.saveState();
-      
-      // Publish updated forecast
+
       messagingLayer.publishMessage(
         `demand.forecast.${this.storeId}`,
-        {
-          productId: productId,
-          forecast: forecast
-        },
+        { productId, forecast },
         'kafka'
       );
-      
+
       console.log(`Store Agent ${this.storeId}: Updated demand forecast for product ${productId}: ${forecast.expectedDemand} units`);
-      
-      // Trigger restocking decision
       this.makeRestockingDecision(productId);
     } catch (error) {
       console.error(`Store Agent ${this.storeId}: Failed to update demand forecast:`, error.message);
     }
   }
 
-  /**
-   * Make restocking decisions based on inventory and demand forecast
-   */
   async makeRestockingDecision(productId) {
     try {
       const inventory = this.state.inventory[productId] || { quantity: 0 };
       const forecast = this.state.demandForecast[productId];
-      
+
       if (!forecast) {
         console.log(`Store Agent ${this.storeId}: No forecast available for product ${productId}`);
         return;
       }
-      
-      // Get product attributes for cost information
+
       const productAttrs = this.state.productAttributes[productId] || {};
-      
-      // Prepare data for AI/ML inventory optimization API
-      const optimizationData = {
-        product_id: productId,
-        current_stock: inventory.quantity || 0,
-        forecast: forecast,
-        product_attributes: productAttrs,
-        suppliers: this.state.suppliers
-      };
-      
-      // Call the AI/ML inventory optimization API
-      const optimizationResult = await this.apiService.inventoryOptimization(optimizationData);
-      
-      // Extract optimization results
-      const { optimal_quantity, reorder_point, service_level } = optimizationResult;
-      
-      // If stock is below reorder point, trigger restock
       const currentStock = inventory.quantity || 0;
-      if (currentStock < reorder_point) {
-        // Generate restocking recommendation
-        const recommendation = this.generateRestockingRecommendation(
-          productId,
-          optimal_quantity,
-          reorder_point,
-          forecast,
-          productAttrs
+
+      const optimizationResult = await this.inventoryOptimizer.optimize(productId, currentStock, forecast, productAttrs, this.state.suppliers);
+      const { optimal_quantity, reorder_point, service_level } = optimizationResult;
+
+      if (this.inventoryOptimizer.needsRestock(currentStock, reorder_point)) {
+        const recommendation = await this.stockRecommender.recommend(
+          productId, optimal_quantity, reorder_point, forecast, productAttrs, this.state.suppliers
         );
-        
+
+        const urgency = this.inventoryOptimizer.urgencyLevel(currentStock, reorder_point);
+
         console.log(`Store Agent ${this.storeId}: Low stock for product ${productId}. Current: ${currentStock}, Reorder Point: ${reorder_point}. Requesting ${optimal_quantity} units`);
-        
-        // Publish restock request with recommendation
+
         messagingLayer.publishMessage(
           'inventory.restock.request',
           {
             storeId: this.storeId,
-            productId: productId,
+            productId,
             quantity: optimal_quantity,
-            urgency: currentStock < (reorder_point / 2) ? 'high' : 'normal',
+            urgency,
             forecastPeriod: 7,
             expectedDemand: forecast.expectedDemand,
             safetyStock: forecast.safetyStock,
             serviceLevel: service_level,
             reorderPoint: reorder_point,
-            recommendation: recommendation
+            recommendation
           },
           'kafka'
         );
@@ -405,77 +349,13 @@ class StoreAgent {
     }
   }
 
-  /**
-   * Generate restocking recommendation with supplier analysis
-   */
-  generateRestockingRecommendation(productId, optimalQuantity, reorderPoint, forecast, productAttrs) {
+  async generateRestockingRecommendation(productId, optimalQuantity, reorderPoint, forecast, productAttrs) {
     try {
-      // Get supplier information for this product
-      const supplierId = productAttrs.supplierId;
-      const supplierInfo = supplierId ? this.state.suppliers[supplierId] : null;
-      
-      // Analyze supplier performance if available
-      let supplierRecommendation = "Standard supplier";
-      let leadTimeEstimate = 3; // Default lead time in days
-      let riskLevel = "medium";
-      
-      if (supplierInfo) {
-        // Use supplier lead time if available
-        leadTimeEstimate = supplierInfo.leadTimeDays || leadTimeEstimate;
-        
-        // Assess supplier risk based on performance metrics
-        if (supplierInfo.onTimeDeliveryRate < 0.8) {
-          riskLevel = "high";
-          supplierRecommendation = `High-risk supplier (${Math.round(supplierInfo.onTimeDeliveryRate * 100)}% on-time delivery)`;
-        } else if (supplierInfo.onTimeDeliveryRate > 0.95) {
-          riskLevel = "low";
-          supplierRecommendation = `Reliable supplier (${Math.round(supplierInfo.onTimeDeliveryRate * 100)}% on-time delivery)`;
-        } else {
-          supplierRecommendation = `Standard supplier (${Math.round(supplierInfo.onTimeDeliveryRate * 100)}% on-time delivery)`;
-        }
-      }
-      
-      // Adjust order quantity based on supplier risk
-      let adjustedQuantity = optimalQuantity;
-      if (riskLevel === "high") {
-        // Increase order quantity for high-risk suppliers to account for potential delays
-        adjustedQuantity = Math.ceil(optimalQuantity * 1.2);
-      } else if (riskLevel === "low") {
-        // Slight decrease for reliable suppliers
-        adjustedQuantity = Math.ceil(optimalQuantity * 0.95);
-      }
-      
-      // Calculate when stock might run out
-      const currentStock = this.state.inventory[productId]?.quantity || 0;
-      const dailyDemand = forecast.expectedDemand / 7;
-      const daysUntilStockout = currentStock > 0 ? Math.floor(currentStock / dailyDemand) : 0;
-      
-      // Recommend timing
-      const orderDate = new Date();
-      orderDate.setDate(orderDate.getDate() + 1); // Order tomorrow
-      const expectedDeliveryDate = new Date();
-      expectedDeliveryDate.setDate(orderDate.getDate() + leadTimeEstimate);
-      
-      return {
-        supplierAnalysis: supplierRecommendation,
-        adjustedQuantity: adjustedQuantity,
-        orderTiming: {
-          recommendedOrderDate: orderDate.toISOString().split('T')[0],
-          expectedDeliveryDate: expectedDeliveryDate.toISOString().split('T')[0],
-          daysUntilStockout: daysUntilStockout
-        },
-        riskAssessment: {
-          supplierRisk: riskLevel,
-          stockoutRisk: daysUntilStockout < leadTimeEstimate ? "high" : "low"
-        },
-        costAnalysis: {
-          estimatedHoldingCost: adjustedQuantity * (productAttrs.holdingCost || 0.5),
-          estimatedShortageCost: Math.max(0, (forecast.expectedDemand - currentStock - adjustedQuantity)) * (productAttrs.shortageCost || 2.0)
-        }
-      };
+      return await this.stockRecommender.recommend(
+        productId, optimalQuantity, reorderPoint, forecast, productAttrs, this.state.suppliers
+      );
     } catch (error) {
       console.error(`Store Agent ${this.storeId}: Failed to generate restocking recommendation:`, error.message);
-      // Return basic recommendation
       return {
         supplierAnalysis: "Standard supplier",
         adjustedQuantity: optimalQuantity,

@@ -17,6 +17,12 @@ class CentralPlannerApiService extends BaseApiService {
     if (path === '/api/v1/supplier/risk') {
       return { risk_score: 0.5, risk_level: 'medium', model_version: 'fallback_v1' };
     }
+    if (path === '/api/v1/coordination/plan') {
+      return { plan_id: `PLAN-${Date.now()}`, status: 'created', steps: [], model_version: 'fallback_v1' };
+    }
+    if (path === '/api/v1/coordination/status') {
+      return { status: 'unknown', model_version: 'fallback_v1' };
+    }
     return null;
   }
 
@@ -34,6 +40,14 @@ class CentralPlannerApiService extends BaseApiService {
 
   async supplierRiskAssessment(data) {
     return this.call('post', '/api/v1/supplier/risk', data, { allowFallback: true });
+  }
+
+  async coordinationPlan(data) {
+    return this.call('post', '/api/v1/coordination/plan', data, { allowFallback: true });
+  }
+
+  async coordinationStatus(planId) {
+    return this.call('get', `/api/v1/coordination/status/${planId}`, null, { allowFallback: true, bypassCircuitBreaker: true });
   }
 }
 
