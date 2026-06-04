@@ -36,6 +36,13 @@ class StoreApiService extends BaseApiService {
     if (path === '/api/v1/anomaly/detect') {
       return { anomalies: [], alerts: [], model_version: 'fallback_v1' };
     }
+    if (path === '/api/v1/learning/strategic-update') {
+      return {
+        model_version: 'fallback_v1',
+        training_metrics: { loss: 0, accuracy: 0, samples_seen: 0 },
+        updated_at: new Date().toISOString()
+      };
+    }
     return null;
   }
 
@@ -57,6 +64,10 @@ class StoreApiService extends BaseApiService {
 
   async anomalyDetection(data, allowFallback = true) {
     return this.call('post', '/api/v1/anomaly/detect', data, { allowFallback });
+  }
+
+  async strategicUpdate(data) {
+    return this.call('post', '/api/v1/learning/strategic-update', data, { allowFallback: true });
   }
 }
 

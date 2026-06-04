@@ -4,6 +4,7 @@ const messagingLayer = require('../../messaging');
 const CustomerDemandApiService = require('./services/apiService');
 const TrendAnalyzer = require('./sub-agents/TrendAnalyzer');
 const SegmentManager = require('./sub-agents/SegmentManager');
+const NLPSummarizer = require('./sub-agents/NLPSummarizer');
 
 /**
  * Customer Demand Agent
@@ -26,6 +27,7 @@ class CustomerDemandAgent {
     this.apiService = new CustomerDemandApiService();
     this.trendAnalyzer = new TrendAnalyzer('CustomerDemandAgent', this.apiService);
     this.segmentManager = new SegmentManager('CustomerDemandAgent', this.apiService);
+    this.nlpSummarizer = new NLPSummarizer('CustomerDemandAgent', this.apiService);
   }
 
   /**

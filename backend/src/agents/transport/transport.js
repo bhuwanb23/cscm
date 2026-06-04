@@ -5,6 +5,8 @@ const TransportApiService = require('./services/apiService');
 const RouteOptimizer = require('./sub-agents/RouteOptimizer');
 const DeliveryScheduler = require('./sub-agents/DeliveryScheduler');
 const FleetManager = require('./sub-agents/FleetManager');
+const RouteTracker = require('./sub-agents/RouteTracker');
+const EdgeDeployer = require('./sub-agents/EdgeDeployer');
 
 class TransportAgent {
   constructor(transportId) {
@@ -13,6 +15,8 @@ class TransportAgent {
     this.routeOptimizer = new RouteOptimizer(transportId, this.apiService);
     this.deliveryScheduler = new DeliveryScheduler(transportId, this.apiService);
     this.fleetManager = new FleetManager(transportId, this.apiService);
+    this.routeTracker = new RouteTracker(transportId, this.apiService);
+    this.edgeDeployer = new EdgeDeployer(transportId, this.apiService);
     this.state = {
       vehicles: {},
       routes: {},

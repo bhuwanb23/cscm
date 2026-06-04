@@ -5,6 +5,9 @@ const SupplierApiService = require('./services/apiService');
 const RiskAssessor = require('./sub-agents/RiskAssessor');
 const SourcingAdvisor = require('./sub-agents/SourcingAdvisor');
 const PerformanceTracker = require('./sub-agents/PerformanceTracker');
+const SupplierCalibrator = require('./sub-agents/SupplierCalibrator');
+const BackupSupplierFinder = require('./sub-agents/BackupSupplierFinder');
+const RiskMetricsAnalyzer = require('./sub-agents/RiskMetricsAnalyzer');
 
 /**
  * Supplier Agent
@@ -39,6 +42,9 @@ class SupplierAgent {
     this.riskAssessor = new RiskAssessor(supplierId, this.apiService);
     this.sourcingAdvisor = new SourcingAdvisor(supplierId, this.apiService);
     this.performanceTracker = new PerformanceTracker(supplierId, this.apiService);
+    this.supplierCalibrator = new SupplierCalibrator(supplierId, this.apiService);
+    this.backupSupplierFinder = new BackupSupplierFinder(supplierId, this.apiService);
+    this.riskMetricsAnalyzer = new RiskMetricsAnalyzer(supplierId, this.apiService);
   }
 
   /**

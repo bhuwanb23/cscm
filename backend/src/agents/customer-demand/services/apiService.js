@@ -20,6 +20,15 @@ class CustomerDemandApiService extends BaseApiService {
     if (path === '/api/v1/customer/segment-similarity') {
       return { similarity: 0.5, shared_characteristics: [], model_version: 'fallback_v1' };
     }
+    if (path === '/api/v1/nlp/sentiment') {
+      return {
+        sentiment_score: 0,
+        sentiment_label: 'neutral',
+        confidence: 0,
+        key_phrases: [],
+        model_version: 'fallback_v1'
+      };
+    }
     return null;
   }
 
@@ -41,6 +50,10 @@ class CustomerDemandApiService extends BaseApiService {
 
   async segmentSimilarity(data) {
     return this.call('post', '/api/v1/customer/segment-similarity', data, { allowFallback: true });
+  }
+
+  async sentimentAnalysis(data) {
+    return this.call('post', '/api/v1/nlp/sentiment', data, { allowFallback: true });
   }
 }
 

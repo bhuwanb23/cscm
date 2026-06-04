@@ -5,6 +5,7 @@ const StoreApiService = require('./services/apiService');
 const DemandForecaster = require('./sub-agents/DemandForecaster');
 const InventoryOptimizer = require('./sub-agents/InventoryOptimizer');
 const StockRecommender = require('./sub-agents/StockRecommender');
+const ContinualLearner = require('./sub-agents/ContinualLearner');
 
 class StoreAgent {
   constructor(storeId) {
@@ -13,6 +14,7 @@ class StoreAgent {
     this.demandForecaster = new DemandForecaster(storeId, this.apiService);
     this.inventoryOptimizer = new InventoryOptimizer(storeId, this.apiService);
     this.stockRecommender = new StockRecommender(storeId, this.apiService);
+    this.continualLearner = new ContinualLearner(storeId, this.apiService);
     this.state = {
       inventory: {},
       demandForecast: {},

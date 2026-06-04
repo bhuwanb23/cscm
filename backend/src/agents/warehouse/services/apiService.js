@@ -16,6 +16,33 @@ class WarehouseApiService extends BaseApiService {
     if (path === '/api/v1/anomaly/detect') {
       return { anomalies: [], alerts: [], model_version: 'fallback_v1' };
     }
+    if (path === '/api/v1/inventory/batch-optimize') {
+      const skus = (data && data.skus) || (data && data.pairs) || [];
+      return {
+        recommendations: skus.map(s => ({
+          sku_id: typeof s === 'string' ? s : s.sku,
+          reorder_quantity: 50,
+          safety_stock: 25
+        })),
+        results: (data && data.pairs ? data.pairs : []).map(p => ({
+          sku_id: p.sku,
+          store_id: p.store,
+          reorder_quantity: 50
+        })),
+        total_savings: 0,
+        model_version: 'fallback_v1'
+      };
+    }
+    if (path === '/api/v1/vision/analyze') {
+      return {
+        detections: [],
+        inventory_estimate: {},
+        quality_issues: [],
+        issues: [],
+        score: 0.5,
+        model_version: 'fallback_v1'
+      };
+    }
     return null;
   }
 
@@ -29,6 +56,14 @@ class WarehouseApiService extends BaseApiService {
 
   async anomalyDetection(data) {
     return this.call('post', '/api/v1/anomaly/detect', data, { allowFallback: true });
+  }
+
+  async batchOptimize(data) {
+    return this.call('post', '/api/v1/inventory/batch-optimize', data, { allowFallback: true });
+  }
+
+  async visionAnalyze(data) {
+    return this.call('post', '/api/v1/vision/analyze', data, { allowFallback: true });
   }
 }
 

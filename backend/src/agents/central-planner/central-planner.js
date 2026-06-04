@@ -4,6 +4,10 @@ const messagingLayer = require('../../messaging');
 const CentralPlannerApiService = require('./services/apiService');
 const WarehouseAssigner = require('./sub-agents/WarehouseAssigner');
 const DeliveryCoordinator = require('./sub-agents/DeliveryCoordinator');
+const AnomalyAlerter = require('./sub-agents/AnomalyAlerter');
+const KnowledgeGraphQuerier = require('./sub-agents/KnowledgeGraphQuerier');
+const DriftDetector = require('./sub-agents/DriftDetector');
+const UncertaintyQuantifier = require('./sub-agents/UncertaintyQuantifier');
 
 /**
  * Central Planner Agent
@@ -26,6 +30,10 @@ class CentralPlannerAgent {
     this.apiService = new CentralPlannerApiService();
     this.warehouseAssigner = new WarehouseAssigner('CentralPlannerAgent', this.apiService);
     this.deliveryCoordinator = new DeliveryCoordinator('CentralPlannerAgent', this.apiService);
+    this.anomalyAlerter = new AnomalyAlerter('CentralPlannerAgent', this.apiService);
+    this.knowledgeGraphQuerier = new KnowledgeGraphQuerier('CentralPlannerAgent', this.apiService);
+    this.driftDetector = new DriftDetector('CentralPlannerAgent', this.apiService);
+    this.uncertaintyQuantifier = new UncertaintyQuantifier('CentralPlannerAgent', this.apiService);
   }
 
   /**

@@ -5,6 +5,8 @@ const WarehouseApiService = require('./services/apiService');
 const PickingOptimizer = require('./sub-agents/PickingOptimizer');
 const PackingPlanner = require('./sub-agents/PackingPlanner');
 const ShipmentConsolidator = require('./sub-agents/ShipmentConsolidator');
+const BatchOptimizer = require('./sub-agents/BatchOptimizer');
+const VisionInspector = require('./sub-agents/VisionInspector');
 
 class WarehouseAgent {
   constructor(warehouseId) {
@@ -13,6 +15,8 @@ class WarehouseAgent {
     this.pickingOptimizer = new PickingOptimizer(warehouseId, this.apiService);
     this.packingPlanner = new PackingPlanner(warehouseId, this.apiService);
     this.shipmentConsolidator = new ShipmentConsolidator(warehouseId, this.apiService);
+    this.batchOptimizer = new BatchOptimizer(warehouseId, this.apiService);
+    this.visionInspector = new VisionInspector(warehouseId, this.apiService);
     this.state = {
       inventory: {},
       shipments: {},
