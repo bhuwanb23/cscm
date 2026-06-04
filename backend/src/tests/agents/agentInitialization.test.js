@@ -3,7 +3,9 @@ const {
   WarehouseAgent, 
   TransportAgent, 
   CentralPlannerAgent, 
-  SimulationAgent 
+  SimulationAgent,
+  SupplierAgent,
+  CustomerDemandAgent
 } = require('../../agents');
 
 describe('Agent Initialization Tests', () => {
@@ -33,5 +35,16 @@ describe('Agent Initialization Tests', () => {
   test('Simulation Agent should initialize without errors', () => {
     const agent = new SimulationAgent();
     expect(agent).toBeInstanceOf(SimulationAgent);
+  });
+
+  test('Supplier Agent should initialize without errors', () => {
+    const agent = new SupplierAgent('TEST-SUPPLIER');
+    expect(agent).toBeInstanceOf(SupplierAgent);
+    expect(agent.supplierId).toBe('TEST-SUPPLIER');
+  });
+
+  test('Customer Demand Agent should initialize without errors', () => {
+    const agent = new CustomerDemandAgent();
+    expect(agent).toBeInstanceOf(CustomerDemandAgent);
   });
 });
