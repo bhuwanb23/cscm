@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const messagingLayer = require('../../messaging');
+const CentralPlannerApiService = require('./services/apiService');
 
 /**
  * Central Planner Agent
@@ -20,6 +21,7 @@ class CentralPlannerAgent {
     };
     this.storagePath = path.join(__dirname, '..', '..', '..', 'data', 'central_planner_state.json');
     this.loadState();
+    this.apiService = new CentralPlannerApiService();
   }
 
   /**
@@ -259,13 +261,39 @@ class CentralPlannerAgent {
    */
   async findNearestWarehouseWithInventory(productId, quantity, storeId) {
     try {
-      // In a real implementation, this would use geolocation data and inventory levels
-      // For this prototype, we'll just return the first warehouse
+      // Try AI/ML routing optimization first
+      try {
+        const storeLocation = this.state.stores[storeId]?.location;
+        const warehouses = Object.entries(this.state.warehouses).map(([id, w]) => ({
+          warehouse_id: id,
+          location: w.location
+        }));
+
+        const routingData = {
+          origin: warehouses.map(w => w.location),
+          destination: storeLocation || { lat: 0, lng: 0 },
+          product_id: productId,
+          quantity: quantity
+        };
+
+        const routingResult = await this.apiService.routingOptimization(routingData);
+        if (routingResult && routingResult.routes && routingResult.routes.length > 0) {
+          const bestRoute = routingResult.routes[0];
+          const warehouseId = bestRoute.warehouse_id || (warehouses.length > 0 ? warehouses[0].warehouse_id : null);
+          if (warehouseId && this.state.warehouses[warehouseId]) {
+            return warehouseId;
+          }
+        }
+      } catch (apiError) {
+        console.warn(`Central Planner Agent: AI/ML routing API unavailable, using fallback: ${apiError.message}`);
+      }
+
+      // Fallback: return first available warehouse
       const warehouseIds = Object.keys(this.state.warehouses);
       if (warehouseIds.length > 0) {
         return warehouseIds[0];
       }
-      
+
       // If no warehouses registered, create a default one
       const defaultWarehouseId = 'WAREHOUSE-DEFAULT';
       this.state.warehouses[defaultWarehouseId] = {
@@ -273,7 +301,7 @@ class CentralPlannerAgent {
         location: { lat: 0, lng: 0 },
         inventory: {}
       };
-      
+
       this.saveState();
       return defaultWarehouseId;
     } catch (error) {
@@ -292,25 +320,41 @@ class CentralPlannerAgent {
         console.error(`Central Planner Agent: Plan ${planId} not found`);
         return;
       }
-      
+
       console.log(`Central Planner Agent: Assigning delivery for plan ${planId}`);
-      
-      // Find available transporter
-      const transporterIds = Object.keys(this.state.transporters);
-      if (transporterIds.length === 0) {
-        // Create a default transporter if none exist
-        const defaultTransporterId = 'TRANSPORTER-DEFAULT';
-        this.state.transporters[defaultTransporterId] = {
-          id: defaultTransporterId,
-          vehicles: {},
-          status: 'available'
+
+      // Try AI/ML routing optimization to find best transporter
+      let transporterId = null;
+      try {
+        const routingData = {
+          origin: plan.warehouseId,
+          destination: plan.storeId,
+          items: [{ product_id: plan.productId, quantity: plan.quantity }],
+          priority: plan.urgency
         };
-        transporterIds.push(defaultTransporterId);
+        const routingResult = await this.apiService.routingOptimization(routingData);
+        if (routingResult && routingResult.routes && routingResult.routes.length > 0) {
+          transporterId = routingResult.routes[0].transporter_id || routingResult.routes[0].vehicle_id;
+        }
+      } catch (apiError) {
+        console.warn(`Central Planner Agent: AI/ML routing API unavailable, using fallback: ${apiError.message}`);
       }
-      
-      // Assign to first available transporter
-      const transporterId = transporterIds[0];
-      
+
+      // Fallback: find first available transporter
+      if (!transporterId) {
+        const transporterIds = Object.keys(this.state.transporters);
+        if (transporterIds.length === 0) {
+          const defaultTransporterId = 'TRANSPORTER-DEFAULT';
+          this.state.transporters[defaultTransporterId] = {
+            id: defaultTransporterId,
+            vehicles: {},
+            status: 'available'
+          };
+          transporterIds.push(defaultTransporterId);
+        }
+        transporterId = transporterIds[0];
+      }
+
       // Send delivery assignment
       messagingLayer.publishMessage(
         `delivery.assignment.${transporterId}`,
@@ -325,7 +369,7 @@ class CentralPlannerAgent {
         },
         'kafka'
       );
-      
+
       console.log(`Central Planner Agent: Delivery assigned to transporter ${transporterId}`);
     } catch (error) {
       console.error('Central Planner Agent: Failed to assign delivery to transporter:', error.message);
