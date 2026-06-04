@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const messagingLayer = require('../../messaging');
+const SupplierApiService = require('./services/apiService');
 
 /**
  * Supplier Agent
@@ -31,6 +32,7 @@ class SupplierAgent {
     };
     this.storagePath = path.join(__dirname, '..', '..', '..', 'data', `supplier_${supplierId}_state.json`);
     this.loadState();
+    this.apiService = new SupplierApiService();
   }
 
   /**
@@ -188,10 +190,10 @@ class SupplierAgent {
   async handleRiskAssessmentRequest(topic, message) {
     try {
       console.log(`Supplier Agent ${this.supplierId}: Received risk assessment request`, message);
-      
+
       // Perform risk assessment
-      const riskAssessment = this.performRiskAssessment();
-      
+      const riskAssessment = await this.performRiskAssessment();
+
       // Publish risk assessment results
       messagingLayer.publishMessage(
         `supplier.risk.assessment.result`,
@@ -310,38 +312,71 @@ class SupplierAgent {
   /**
    * Perform risk assessment using AI/ML models
    */
-  performRiskAssessment() {
+  async performRiskAssessment() {
     try {
       console.log(`Supplier Agent ${this.supplierId}: Performing risk assessment`);
-      
-      // Gather risk factors using AI/ML models
+
+      // Try AI/ML API first
+      try {
+        const requestData = {
+          supplier_id: this.supplierId,
+          on_time_delivery_rate: this.state.performanceMetrics.onTimeDeliveryRate,
+          quality_score: this.state.performanceMetrics.qualityScore,
+          responsiveness: this.state.performanceMetrics.responsiveness,
+          lead_times: this.state.performanceMetrics.leadTimes,
+          order_history: this.state.performanceMetrics.orderHistory,
+          supplier_info: this.state.supplierInfo
+        };
+        const apiResult = await this.apiService.supplierRiskAssessment(requestData);
+        const riskAssessment = {
+          supplierId: this.supplierId,
+          overallRisk: apiResult.risk_level || 'medium',
+          riskScore: apiResult.risk_score || 0.5,
+          riskFactors: (apiResult.risk_factors || []).map(f => ({
+            factor: f.factor || f.name || 'unknown',
+            severity: f.severity || 'medium',
+            description: f.description || '',
+            impact: f.impact || '',
+            confidence: f.confidence || 0.5
+          })),
+          assessmentDate: new Date().toISOString(),
+          nextAssessmentDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+        };
+
+        this.state.riskAssessment = riskAssessment;
+        this.saveState();
+
+        if (riskAssessment.overallRisk === 'high' || riskAssessment.riskScore > 0.7) {
+          this.generateSourcingRecommendationsWithML();
+        }
+
+        console.log(`Supplier Agent ${this.supplierId}: Risk assessment completed via API - Risk Level: ${riskAssessment.overallRisk}`);
+        return riskAssessment;
+      } catch (apiError) {
+        console.warn(`Supplier Agent ${this.supplierId}: AI/ML API unavailable, using inline simulation: ${apiError.message}`);
+      }
+
+      // Fallback: inline ML simulation
       const riskFactors = this.identifyRiskFactorsWithML();
-      
-      // Calculate overall risk score using ML-based approach
       const riskScore = this.calculateRiskScoreWithML(riskFactors);
-      
-      // Determine risk category
       const overallRisk = this.determineRiskCategory(riskScore);
-      
-      // Create risk assessment object
+
       const riskAssessment = {
         supplierId: this.supplierId,
         overallRisk: overallRisk,
         riskScore: riskScore,
         riskFactors: riskFactors,
         assessmentDate: new Date().toISOString(),
-        nextAssessmentDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // Next week
+        nextAssessmentDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
       };
-      
-      // Update state
+
       this.state.riskAssessment = riskAssessment;
       this.saveState();
-      
-      // Generate sourcing recommendations if risk is high
+
       if (overallRisk === 'high') {
         this.generateSourcingRecommendationsWithML();
       }
-      
+
       console.log(`Supplier Agent ${this.supplierId}: Risk assessment completed - Risk Level: ${overallRisk}`);
       return riskAssessment;
     } catch (error) {
@@ -682,27 +717,46 @@ class SupplierAgent {
   /**
    * Generate sourcing recommendations using ML models
    */
-  generateSourcingRecommendationsWithML() {
+  async generateSourcingRecommendationsWithML() {
     try {
       console.log(`Supplier Agent ${this.supplierId}: Generating sourcing recommendations with ML`);
-      
-      // In a real implementation, this would interface with the AI/ML backup recommendation models
-      // For now, we'll enhance the basic recommendations with ML insights
-      
-      // 1. Use ML to identify similar suppliers with better risk profiles
+
+      // Try AI/ML API for anomaly detection first
+      try {
+        const anomalyData = {
+          supplier_id: this.supplierId,
+          on_time_delivery_rate: this.state.performanceMetrics.onTimeDeliveryRate,
+          quality_score: this.state.performanceMetrics.qualityScore,
+          lead_times: this.state.performanceMetrics.leadTimes,
+          order_history: this.state.performanceMetrics.orderHistory
+        };
+        const anomalyResult = await this.apiService.anomalyDetection(anomalyData);
+        if (anomalyResult && anomalyResult.anomalies && anomalyResult.anomalies.length > 0) {
+          const recommendations = anomalyResult.anomalies.map(a => ({
+            type: 'ml_detected_issue',
+            priority: a.severity === 'high' ? 'high' : 'medium',
+            description: a.description || `Anomaly detected: ${a.type || 'unknown'}`,
+            actionItems: ['Investigate anomaly', 'Review supplier performance', 'Adjust risk mitigation strategies'],
+            timeline: '30 days'
+          }));
+          this.state.sourcingRecommendations = recommendations;
+          this.saveState();
+          messagingLayer.publishMessage(`supplier.sourcing.recommendations.${this.supplierId}`, { supplierId: this.supplierId, recommendations, timestamp: new Date().toISOString() }, 'kafka');
+          console.log(`Supplier Agent ${this.supplierId}: Generated ${recommendations.length} ML-enhanced sourcing recommendations via API`);
+          return recommendations;
+        }
+      } catch (apiError) {
+        console.warn(`Supplier Agent ${this.supplierId}: AI/ML API unavailable for recommendations, using inline simulation: ${apiError.message}`);
+      }
+
+      // Fallback: inline simulation
       const similarSuppliers = this.findSimilarSuppliersWithML();
-      
-      // 2. Use ML to predict the impact of switching suppliers
       const impactPredictions = this.predictSwitchingImpactWithML(similarSuppliers);
-      
-      // 3. Generate enhanced recommendations
       const recommendations = this.createEnhancedRecommendations(similarSuppliers, impactPredictions);
-      
-      // Update state
+
       this.state.sourcingRecommendations = recommendations;
       this.saveState();
-      
-      // Publish recommendations
+
       messagingLayer.publishMessage(
         `supplier.sourcing.recommendations.${this.supplierId}`,
         {
@@ -712,12 +766,11 @@ class SupplierAgent {
         },
         'kafka'
       );
-      
+
       console.log(`Supplier Agent ${this.supplierId}: Generated ${recommendations.length} ML-enhanced sourcing recommendations`);
       return recommendations;
     } catch (error) {
       console.error(`Supplier Agent ${this.supplierId}: Failed to generate sourcing recommendations with ML:`, error.message);
-      // Fallback to basic recommendations
       return this.generateSourcingRecommendations();
     }
   }
