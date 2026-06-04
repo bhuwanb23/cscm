@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const messagingLayer = require('../../messaging');
 const SimulationApiService = require('./services/apiService');
+const EventGenerator = require('./sub-agents/EventGenerator');
+const ScenarioRunner = require('./sub-agents/ScenarioRunner');
 
 /**
  * Simulation Agent
@@ -24,6 +26,8 @@ class SimulationAgent {
     this.loadState();
     this.eventInterval = null;
     this.apiService = new SimulationApiService();
+    this.eventGenerator = new EventGenerator('SimulationAgent', this.apiService);
+    this.scenarioRunner = new ScenarioRunner('SimulationAgent', this.apiService);
   }
 
   /**
@@ -416,25 +420,20 @@ class SimulationAgent {
       const productId = productIds[Math.floor(Math.random() * productIds.length)];
       const baseLevel = scenario.parameters.base_inventory_level || 100;
 
-      // Try AI/ML API for realistic inventory optimization
-      let newQuantity;
-      try {
-        const invData = { product_id: productId, store_id: storeId, current_stock: baseLevel };
-        const result = await this.apiService.inventoryOptimization(invData);
-        newQuantity = (result && result.reorder_quantity) ? Math.floor(result.reorder_quantity * (Math.random() * 0.4 + 0.8)) : baseLevel;
-      } catch (apiError) {
-        console.warn(`Simulation Agent: AI/ML API unavailable for inventory optimization, using random fallback: ${apiError.message}`);
-        const variance = scenario.parameters.demand_variance || 0.2;
-        const change = Math.floor(baseLevel * (Math.random() * variance * 2 - variance));
-        newQuantity = Math.max(0, baseLevel + change);
-      }
+      const result = await this.eventGenerator.generateInventoryUpdate({
+        storeId,
+        productId,
+        currentStock: baseLevel
+      });
+
+      const newQuantity = result.optimalQuantity || baseLevel;
 
       console.log(`Simulation Agent: Generating inventory update for ${storeId}, product ${productId}: ${newQuantity}`);
 
       messagingLayer.publishMessage(
         `inventory.update.${storeId}`,
         {
-          productId: productId,
+          productId,
           quantity: newQuantity,
           timestamp: new Date().toISOString(),
           source: 'simulation'
@@ -455,32 +454,17 @@ class SimulationAgent {
       const productIds = ['product_a', 'product_b', 'product_c', 'product_d'];
       const productId = productIds[Math.floor(Math.random() * productIds.length)];
 
-      // Try AI/ML API for realistic demand forecast
-      let expectedDemand, safetyStock;
-      try {
-        const forecastData = { product_id: productId, store_id: storeId, forecast_days: 7 };
-        const result = await this.apiService.demandForecast(forecastData);
-        if (result && result.forecast_values && result.forecast_values.length > 0) {
-          const maxVal = Math.max(...result.forecast_values);
-          expectedDemand = Math.floor(maxVal * (Math.random() * 1.5 + 1));
-          safetyStock = result.safety_stock || Math.floor(expectedDemand * 0.2);
-        } else {
-          throw new Error('No forecast values returned');
-        }
-      } catch (apiError) {
-        console.warn(`Simulation Agent: AI/ML API unavailable for demand forecast, using random fallback: ${apiError.message}`);
-        const baseDemand = 50;
-        const spikeMultiplier = Math.random() * 3 + 2;
-        expectedDemand = Math.floor(baseDemand * spikeMultiplier);
-        safetyStock = Math.floor(expectedDemand * 0.2);
-      }
+      const result = await this.eventGenerator.generateDemandSpike({ storeId, productId, magnitude: 0.3 });
+
+      const expectedDemand = result.expectedImpact || 100;
+      const safetyStock = Math.floor(expectedDemand * 0.2);
 
       console.log(`Simulation Agent: Generating demand spike for ${storeId}, product ${productId}: ${expectedDemand}`);
 
       messagingLayer.publishMessage(
         `demand.forecast.${storeId}`,
         {
-          productId: productId,
+          productId,
           forecast: { expectedDemand, safetyStock, confidence: 0.85, period: 'next_24_hours' },
           timestamp: new Date().toISOString(),
           source: 'simulation'

@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const messagingLayer = require('../../messaging');
 const CustomerDemandApiService = require('./services/apiService');
+const TrendAnalyzer = require('./sub-agents/TrendAnalyzer');
+const SegmentManager = require('./sub-agents/SegmentManager');
 
 /**
  * Customer Demand Agent
@@ -22,6 +24,8 @@ class CustomerDemandAgent {
     this.storagePath = path.join(__dirname, '..', '..', '..', 'data', 'customer_demand_state.json');
     this.loadState();
     this.apiService = new CustomerDemandApiService();
+    this.trendAnalyzer = new TrendAnalyzer('CustomerDemandAgent', this.apiService);
+    this.segmentManager = new SegmentManager('CustomerDemandAgent', this.apiService);
   }
 
   /**
@@ -258,61 +262,29 @@ class CustomerDemandAgent {
         return;
       }
 
-      // Try AI/ML API for demand forecasting, fall back to inline simulation
-      let trendAnalysis;
-      try {
-        const requestData = {
-          store_id: storeId,
-          product_id: productId,
-          sales_data: salesData,
-          forecast_days: 7
-        };
-        const result = await this.apiService.demandForecast(requestData);
-        trendAnalysis = {
-          trendDirection: result.trend || 'stable',
-          trendPercentage: result.trend_percentage !== undefined ? result.trend_percentage : 0,
-          recentAverage: result.recent_average !== undefined ? result.recent_average : 0,
-          confidence: result.confidence || 0.5
-        };
-      } catch (apiError) {
-        console.warn(`Customer Demand Agent: AI/ML API unavailable, using inline simulation: ${apiError.message}`);
-
-        // Inline fallback
-        const recentData = salesData.slice(-30);
-        const olderData = salesData.slice(-60, -30);
-        const recentAverage = recentData.reduce((sum, record) => sum + record.sales, 0) / recentData.length;
-        const olderAverage = olderData.reduce((sum, record) => sum + record.sales, 0) / olderData.length;
-        const trendPercentage = ((recentAverage - olderAverage) / olderAverage) * 100;
-        let trendDirection = 'stable';
-        if (trendPercentage > 5) trendDirection = 'increasing';
-        else if (trendPercentage < -5) trendDirection = 'decreasing';
-        trendAnalysis = {
-          trendDirection,
-          trendPercentage: parseFloat(trendPercentage.toFixed(2)),
-          recentAverage: parseFloat(recentAverage.toFixed(2)),
-          confidence: Math.min(0.9, salesData.length / 100)
-        };
-      }
+      const trendAnalysis = await this.trendAnalyzer.analyze(salesData, { forecastHorizon: 7 });
 
       // Store trend analysis
       if (!this.state.trendAnalysis[storeId]) {
         this.state.trendAnalysis[storeId] = {};
       }
       this.state.trendAnalysis[storeId][productId] = {
-        ...trendAnalysis,
+        trendDirection: trendAnalysis.trend,
+        trendPercentage: trendAnalysis.trend === 'increasing' ? 10 : trendAnalysis.trend === 'decreasing' ? -10 : 0,
+        recentAverage: trendAnalysis.expectedDemand,
+        confidence: trendAnalysis.confidenceInterval || 0.5,
         lastAnalyzed: new Date().toISOString()
       };
 
       this.saveState();
 
-      // Publish trend analysis results
       messagingLayer.publishMessage(
         `demand.trend.analysis.${storeId}.${productId}`,
         this.state.trendAnalysis[storeId][productId],
         'kafka'
       );
 
-      console.log(`Customer Demand Agent: Trend analysis complete for ${storeId}-${productId}: ${trendAnalysis.trendDirection} (${trendAnalysis.trendPercentage}%)`);
+      console.log(`Customer Demand Agent: Trend analysis complete for ${storeId}-${productId}: ${trendAnalysis.trend} (expected: ${trendAnalysis.expectedDemand})`);
     } catch (error) {
       console.error('Customer Demand Agent: Failed to analyze trends:', error.message);
     }
@@ -407,54 +379,32 @@ class CustomerDemandAgent {
     try {
       console.log(`Customer Demand Agent: Segmenting customer ${customerId}`);
 
-      // Count different types of actions
-      const viewCount = actions.filter(action => action.type === 'view').length;
-      const addToCartCount = actions.filter(action => action.type === 'addToCart').length;
-      const purchaseCount = actions.filter(action => action.type === 'purchase').length;
+      const customers = [{
+        id: customerId,
+        actions,
+        totalSpending: actions.filter(a => a.type === 'purchase').reduce((s, a) => s + (a.value || 0), 0)
+      }];
 
-      // Try AI/ML API for NLP-based segmentation, fall back to rule-based
-      let segment, metrics;
-      try {
-        const requestData = {
-          customer_id: customerId,
-          actions: actions,
-          action_summary: { views: viewCount, cartAdds: addToCartCount, purchases: purchaseCount }
-        };
-        const result = await this.apiService.naturalLanguageProcessing(requestData);
-        segment = result.segment || result.intent || 'casual';
-        metrics = {
-          views: viewCount,
-          cartAdds: addToCartCount,
-          purchases: purchaseCount
-        };
-      } catch (apiError) {
-        console.warn(`Customer Demand Agent: AI/ML API unavailable, using rule-based fallback: ${apiError.message}`);
+      const segments = await this.segmentManager.segment(customers);
 
-        // Rule-based fallback
-        if (purchaseCount > 3 && addToCartCount > 5) {
-          segment = 'loyal';
-        } else if (purchaseCount > 1 && addToCartCount > 2) {
-          segment = 'engaged';
-        } else if (viewCount > 10) {
-          segment = 'browsing';
-        } else {
-          segment = 'casual';
+      let segment = 'casual';
+      for (const [seg, ids] of Object.entries(segments)) {
+        if (ids.includes(customerId)) {
+          segment = seg;
+          break;
         }
-        metrics = {
-          views: viewCount,
-          cartAdds: addToCartCount,
-          purchases: purchaseCount
-        };
       }
 
-      // Store customer segment
       this.state.customerSegments[customerId] = {
         segment,
-        metrics,
+        metrics: {
+          views: actions.filter(a => a.type === 'view').length,
+          cartAdds: actions.filter(a => a.type === 'addToCart').length,
+          purchases: actions.filter(a => a.type === 'purchase').length
+        },
         lastSegmented: new Date().toISOString()
       };
 
-      // Publish customer segmentation
       messagingLayer.publishMessage(
         `customer.segment.${customerId}`,
         this.state.customerSegments[customerId],
