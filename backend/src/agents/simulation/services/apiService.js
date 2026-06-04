@@ -2,7 +2,7 @@ const BaseApiService = require('../../../services/BaseApiService');
 
 class SimulationApiService extends BaseApiService {
   _getFallback(method, path, data) {
-    if (path === '/api/v1/digital-twin/simulate') {
+    if (path === '/api/v1/simulation/run') {
       return { simulation_id: 'fallback', status: 'completed', results: {}, model_version: 'fallback_v1' };
     }
     if (path === '/api/v1/demand/forecast') {
@@ -33,7 +33,7 @@ class SimulationApiService extends BaseApiService {
   }
 
   async digitalTwinSimulation(data) {
-    return this.call('post', '/api/v1/digital-twin/simulate', data, { allowFallback: true });
+    return this.call('post', '/api/v1/simulation/run', data, { allowFallback: true });
   }
 
   async demandForecast(data) {

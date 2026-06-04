@@ -8,10 +8,10 @@ class CustomerDemandApiService extends BaseApiService {
         model_version: 'fallback_v1',
       };
     }
-    if (path === '/api/v1/causal/infer') {
+    if (path === '/api/v1/causal/analyze') {
       return { treatment_effect: 0, confidence_interval: [0, 0], model_version: 'fallback_v1' };
     }
-    if (path === '/api/v1/nlp/process') {
+    if (path === '/api/v1/nlp/query') {
       return { intent: 'unknown', entities: [], sentiment: 0, model_version: 'fallback_v1' };
     }
     if (path === '/api/v1/customer/trends') {
@@ -28,11 +28,11 @@ class CustomerDemandApiService extends BaseApiService {
   }
 
   async causalInference(data) {
-    return this.call('post', '/api/v1/causal/infer', data, { allowFallback: true });
+    return this.call('post', '/api/v1/causal/analyze', data, { allowFallback: true });
   }
 
   async naturalLanguageProcessing(data) {
-    return this.call('post', '/api/v1/nlp/process', data, { allowFallback: true });
+    return this.call('post', '/api/v1/nlp/query', data, { allowFallback: true });
   }
 
   async customerTrends(customerSegment) {
