@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const messagingLayer = require('../../messaging');
+const SimulationApiService = require('./services/apiService');
 
 /**
  * Simulation Agent
@@ -22,6 +23,7 @@ class SimulationAgent {
     this.storagePath = path.join(__dirname, '..', '..', '..', 'data', 'simulation_state.json');
     this.loadState();
     this.eventInterval = null;
+    this.apiService = new SimulationApiService();
   }
 
   /**
@@ -368,29 +370,27 @@ class SimulationAgent {
   /**
    * Generate simulation event
    */
-  generateSimulationEvent() {
+  async generateSimulationEvent() {
     try {
       if (!this.state.activeScenario) {
         console.log('Simulation Agent: No active scenario');
         return;
       }
-      
+
       const scenario = this.state.scenarios[this.state.activeScenario];
       if (!scenario) {
         console.log('Simulation Agent: Active scenario not found');
         return;
       }
-      
-      // Select random event type
+
       const eventType = scenario.eventTypes[Math.floor(Math.random() * scenario.eventTypes.length)];
-      
-      // Generate event based on type
+
       switch (eventType) {
         case 'inventory_update':
-          this.generateInventoryUpdateEvent(scenario);
+          await this.generateInventoryUpdateEvent(scenario);
           break;
         case 'demand_spike':
-          this.generateDemandSpikeEvent(scenario);
+          await this.generateDemandSpikeEvent(scenario);
           break;
         case 'supplier_delay':
           this.generateSupplierDelayEvent(scenario);
@@ -409,22 +409,28 @@ class SimulationAgent {
   /**
    * Generate inventory update event
    */
-  generateInventoryUpdateEvent(scenario) {
+  async generateInventoryUpdateEvent(scenario) {
     try {
-      // Select random store and product
       const storeId = scenario.entities.stores[Math.floor(Math.random() * scenario.entities.stores.length)];
       const productIds = ['product_a', 'product_b', 'product_c', 'product_d'];
       const productId = productIds[Math.floor(Math.random() * productIds.length)];
-      
-      // Generate random inventory change
       const baseLevel = scenario.parameters.base_inventory_level || 100;
-      const variance = scenario.parameters.demand_variance || 0.2;
-      const change = Math.floor(baseLevel * (Math.random() * variance * 2 - variance));
-      const newQuantity = Math.max(0, baseLevel + change);
-      
+
+      // Try AI/ML API for realistic inventory optimization
+      let newQuantity;
+      try {
+        const invData = { product_id: productId, store_id: storeId, current_stock: baseLevel };
+        const result = await this.apiService.inventoryOptimization(invData);
+        newQuantity = (result && result.reorder_quantity) ? Math.floor(result.reorder_quantity * (Math.random() * 0.4 + 0.8)) : baseLevel;
+      } catch (apiError) {
+        console.warn(`Simulation Agent: AI/ML API unavailable for inventory optimization, using random fallback: ${apiError.message}`);
+        const variance = scenario.parameters.demand_variance || 0.2;
+        const change = Math.floor(baseLevel * (Math.random() * variance * 2 - variance));
+        newQuantity = Math.max(0, baseLevel + change);
+      }
+
       console.log(`Simulation Agent: Generating inventory update for ${storeId}, product ${productId}: ${newQuantity}`);
-      
-      // Publish inventory update
+
       messagingLayer.publishMessage(
         `inventory.update.${storeId}`,
         {
@@ -443,32 +449,39 @@ class SimulationAgent {
   /**
    * Generate demand spike event
    */
-  generateDemandSpikeEvent(scenario) {
+  async generateDemandSpikeEvent(scenario) {
     try {
-      // Select random store and product
       const storeId = scenario.entities.stores[Math.floor(Math.random() * scenario.entities.stores.length)];
       const productIds = ['product_a', 'product_b', 'product_c', 'product_d'];
       const productId = productIds[Math.floor(Math.random() * productIds.length)];
-      
-      // Generate demand forecast with spike
-      const baseDemand = 50;
-      const spikeMultiplier = Math.random() * 3 + 2; // 2-5x spike
-      const expectedDemand = Math.floor(baseDemand * spikeMultiplier);
-      const safetyStock = Math.floor(expectedDemand * 0.2);
-      
+
+      // Try AI/ML API for realistic demand forecast
+      let expectedDemand, safetyStock;
+      try {
+        const forecastData = { product_id: productId, store_id: storeId, forecast_days: 7 };
+        const result = await this.apiService.demandForecast(forecastData);
+        if (result && result.forecast_values && result.forecast_values.length > 0) {
+          const maxVal = Math.max(...result.forecast_values);
+          expectedDemand = Math.floor(maxVal * (Math.random() * 1.5 + 1));
+          safetyStock = result.safety_stock || Math.floor(expectedDemand * 0.2);
+        } else {
+          throw new Error('No forecast values returned');
+        }
+      } catch (apiError) {
+        console.warn(`Simulation Agent: AI/ML API unavailable for demand forecast, using random fallback: ${apiError.message}`);
+        const baseDemand = 50;
+        const spikeMultiplier = Math.random() * 3 + 2;
+        expectedDemand = Math.floor(baseDemand * spikeMultiplier);
+        safetyStock = Math.floor(expectedDemand * 0.2);
+      }
+
       console.log(`Simulation Agent: Generating demand spike for ${storeId}, product ${productId}: ${expectedDemand}`);
-      
-      // Publish demand forecast
+
       messagingLayer.publishMessage(
         `demand.forecast.${storeId}`,
         {
           productId: productId,
-          forecast: {
-            expectedDemand: expectedDemand,
-            safetyStock: safetyStock,
-            confidence: 0.85,
-            period: 'next_24_hours'
-          },
+          forecast: { expectedDemand, safetyStock, confidence: 0.85, period: 'next_24_hours' },
           timestamp: new Date().toISOString(),
           source: 'simulation'
         },
