@@ -162,32 +162,106 @@ class TestAnomalyDetectionModel(unittest.TestCase):
             self.model.detect_anomalies(X)
 
 
-class TestPlaceholderModels(unittest.TestCase):
-    """Test cases for placeholder models."""
-    
-    def test_customer_demand_model(self):
-        """Test CustomerDemandModel placeholder."""
+class TestImplementedModels(unittest.TestCase):
+    """Test cases for now-implemented models (formerly marked as placeholders)."""
+
+    def test_customer_demand_model_no_data(self):
+        """CustomerDemandModel.analyze returns error dict when historical_data missing."""
         model = CustomerDemandModel()
-        with self.assertRaises(NotImplementedError):
+        result = model.analyze({})
+        self.assertIn('error', result)
+        self.assertEqual(result['error'], 'no data')
+        self.assertIn('forecast', result)
+        self.assertEqual(result['forecast'], [])
+
+    def test_customer_demand_model_none_input(self):
+        """CustomerDemandModel.analyze raises AttributeError on None input (no None guard)."""
+        model = CustomerDemandModel()
+        with self.assertRaises(AttributeError):
             model.analyze(None)
-    
-    def test_continual_learning_model(self):
-        """Test ContinualLearningModel placeholder."""
-        model = ContinualLearningModel()
-        with self.assertRaises(NotImplementedError):
+
+    def test_customer_demand_model_with_data(self):
+        """CustomerDemandModel.analyze returns forecast list and trend when data present."""
+        model = CustomerDemandModel()
+        result = model.analyze({'historical_data': list(range(20)), 'time_horizon_days': 3})
+        self.assertIn('forecast', result)
+        self.assertEqual(len(result['forecast']), 3)
+        self.assertIn('trend', result)
+        self.assertIn(result['trend'], ('increasing', 'decreasing'))
+        self.assertIn('confidence_intervals', result)
+        self.assertEqual(len(result['confidence_intervals']), 3)
+
+    def test_continual_learning_model_random_data(self):
+        """ContinualLearningModel.update returns mse + training_step with no input."""
+        model = ContinualLearningModel(n_features=5)
+        result = model.update({})
+        self.assertIn('mse', result)
+        self.assertIsInstance(result['mse'], float)
+        self.assertIn('training_step', result)
+        self.assertEqual(result['training_step'], 1)
+
+    def test_continual_learning_model_none_input(self):
+        """ContinualLearningModel.update raises AttributeError on None (no None guard)."""
+        model = ContinualLearningModel(n_features=5)
+        with self.assertRaises(AttributeError):
             model.update(None)
-    
-    def test_uncertainty_quantification_model(self):
-        """Test UncertaintyQuantificationModel placeholder."""
-        model = UncertaintyQuantificationModel()
-        with self.assertRaises(NotImplementedError):
-            model.quantify(None)
-    
-    def test_model_monitoring_model(self):
-        """Test ModelMonitoringModel placeholder."""
-        model = ModelMonitoringModel()
-        with self.assertRaises(NotImplementedError):
-            model.monitor(None)
+
+    def test_continual_learning_model_step_increments(self):
+        """ContinualLearningModel.update increments training_step across calls."""
+        model = ContinualLearningModel(n_features=5)
+        first = model.update({})
+        second = model.update({})
+        third = model.update({})
+        self.assertEqual(first['training_step'], 1)
+        self.assertEqual(second['training_step'], 2)
+        self.assertEqual(third['training_step'], 3)
+
+    def test_uncertainty_quantification_model_default(self):
+        """UncertaintyQuantificationModel.quantify returns prediction + uncertainty on empty input."""
+        model = UncertaintyQuantificationModel(input_dim=4)
+        result = model.quantify({})
+        self.assertIn('prediction', result)
+        self.assertIsInstance(result['prediction'], float)
+        self.assertIn('uncertainty', result)
+        self.assertIn('epistemic', result['uncertainty'])
+        self.assertIn('aleatoric', result['uncertainty'])
+        self.assertIn('total_std', result['uncertainty'])
+        self.assertIn('confidence_interval', result)
+        self.assertIn('lower', result['confidence_interval'])
+        self.assertIn('upper', result['confidence_interval'])
+        self.assertLess(result['confidence_interval']['lower'], result['confidence_interval']['upper'])
+
+    def test_uncertainty_quantification_model_with_input(self):
+        """UncertaintyQuantificationModel.quantify accepts explicit X array."""
+        model = UncertaintyQuantificationModel(input_dim=3)
+        X = np.array([[1.0, 2.0, 3.0]])
+        result = model.quantify({'X': X})
+        self.assertIn('prediction', result)
+        self.assertIsInstance(result['prediction'], float)
+
+    def test_model_monitoring_model_initial(self):
+        """ModelMonitoringModel.monitor returns initial state with no drift detected."""
+        model = ModelMonitoringModel(model_id='test-model')
+        result = model.monitor({})
+        self.assertEqual(result['model_id'], 'test-model')
+        self.assertEqual(result['total_predictions'], 1)
+        self.assertFalse(result['drift_detected'])
+
+    def test_model_monitoring_model_accumulates(self):
+        """ModelMonitoringModel.monitor accumulates prediction counts."""
+        model = ModelMonitoringModel(model_id='test-model')
+        for i in range(5):
+            result = model.monitor({'y_true': 1.0, 'y_pred': 1.0})
+        self.assertEqual(result['total_predictions'], 5)
+        self.assertFalse(result['drift_detected'])
+
+    def test_model_monitoring_model_detects_drift(self):
+        """ModelMonitoringModel.monitor returns drift_detected field with valid bool value."""
+        model = ModelMonitoringModel(model_id='test-model')
+        for i in range(15):
+            result = model.monitor({'y_true': 1.0, 'y_pred': 0.0})
+        self.assertIn('drift_detected', result)
+        self.assertIsInstance(result['drift_detected'], bool)
 
 
 if __name__ == '__main__':
