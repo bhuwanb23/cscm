@@ -196,16 +196,23 @@ class TransformerRouteResponse(BaseModel):
     timestamp: str
 
 class EdgeDeployRequest(BaseModel):
-    vehicle_id: str
+    vehicle_id: Optional[str] = "default-vehicle"
     model_type: str = "eta"
+    model: Optional[dict] = None
+    model_artifact: Optional[dict] = None
+    target: Optional[str] = "edge"
+    target_regions: Optional[List[str]] = None
+    action: Optional[str] = None
+    deployment_id: Optional[str] = None
     config: dict = {}
 
 class EdgeDeployResponse(BaseModel):
-    vehicle_id: str
-    deployment_id: str
-    status: str
-    model_version: str
-    timestamp: str
+    vehicle_id: str = "default-vehicle"
+    deployment_id: str = ""
+    status: str = "deployed"
+    endpoint_url: Optional[str] = None
+    model_version: str = "routing_edge_1.0.0"
+    timestamp: str = ""
 
 
 def _haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -414,11 +421,25 @@ class RoutingOptimizationService:
 
     @staticmethod
     def edge_deploy(request: EdgeDeployRequest) -> EdgeDeployResponse:
-        logger.info(f"Edge deploy for {request.vehicle_id}")
+        vehicle_id = request.vehicle_id or "default-vehicle"
+        action = (request.action or "").lower()
+        if action == "undeploy":
+            status = "removed"
+            deployment_id = request.deployment_id or f"DEPLOY_{vehicle_id}_UNDEPLOYED"
+        else:
+            status = "deployed"
+            deployment_id = (
+                request.deployment_id
+                or f"DEPLOY_{vehicle_id}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+            )
+        logger.info(f"Edge {'undeploy' if action == 'undeploy' else 'deploy'} for {vehicle_id}: {deployment_id}")
+        endpoint = f"edge://{request.target or 'edge'}/{vehicle_id}/{deployment_id}"
         return EdgeDeployResponse(
-            vehicle_id=request.vehicle_id,
-            deployment_id=f"DEPLOY_{request.vehicle_id}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
-            status="deployed", model_version="routing_edge_1.0.0",
+            vehicle_id=vehicle_id,
+            deployment_id=deployment_id,
+            status=status,
+            endpoint_url=endpoint,
+            model_version="routing_edge_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
 
