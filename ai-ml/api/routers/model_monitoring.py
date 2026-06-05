@@ -114,6 +114,7 @@ class DriftDetectionResponse(BaseModel):
     drift_score: float = 0.0
     drifted_features: Optional[List[str]] = None
     affected_features: List[str] = []
+    model_version: str = "model_monitoring_1.0.0"
     timestamp: str = ""
 
 class ModelPerformanceRequest(BaseModel):
@@ -280,6 +281,7 @@ class ModelMonitoringService:
             drift_score=drift_score if drift_detected else round(request.drift_threshold * 0.6, 4),
             drifted_features=drifted_features,
             affected_features=affected_features,
+            model_version="model_monitoring_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
         logger.info(f"Drift detection: {response.drift_detected}, score: {response.drift_score}")
