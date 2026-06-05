@@ -228,17 +228,22 @@ class SupplierRiskMetricsResponse(BaseModel):
     timestamp: str
 
 class SupplierCalibrateRequest(BaseModel):
-    supplier_id: str
-    predictions: List[float]
-    actuals: List[float]
+    supplier_id: Optional[str] = "default"
+    predictions: Optional[List[float]] = None
+    actuals: Optional[List[float]] = None
+    assessments: Optional[List[float]] = None
+    ground_truth: Optional[List[float]] = None
+    action: Optional[str] = None
     method: str = "isotonic"
 
 class SupplierCalibrateResponse(BaseModel):
-    supplier_id: str
-    calibrated_scores: List[float]
-    calibration_error: float
-    model_version: str
-    timestamp: str
+    supplier_id: str = "default"
+    calibrated_scores: List[float] = []
+    calibration_error: float = 0.0
+    calibration_score: float = 0.5
+    threshold_adjustments: dict = {}
+    model_version: str = "supplier_calibrate_1.0.0"
+    timestamp: str = ""
 
 class BackupSupplierRequest(BaseModel):
     supplier_id: str
