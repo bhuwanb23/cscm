@@ -246,15 +246,23 @@ class SupplierCalibrateResponse(BaseModel):
     timestamp: str = ""
 
 class BackupSupplierRequest(BaseModel):
-    supplier_id: str
+    supplier_id: Optional[str] = "default"
+    primary_supplier_id: Optional[str] = None
     min_reliability: float = 0.7
+    min_quality: Optional[float] = None
     max_distance_km: float = 1000.0
+    max_lead_time: Optional[float] = None
+    product_category: Optional[str] = None
+    region: Optional[str] = None
+    requirements: Optional[dict] = None
 
 class BackupSupplierResponse(BaseModel):
-    supplier_id: str
-    backups: List[dict]
-    model_version: str
-    timestamp: str
+    supplier_id: str = "default"
+    primary_supplier_id: Optional[str] = None
+    backups: List[dict] = []
+    total_candidates: int = 0
+    model_version: str = "supplier_backup_1.0.0"
+    timestamp: str = ""
 
 
 def _load_weights_or_none(rel_weights_path: str):
@@ -499,32 +507,53 @@ class SupplierRiskService:
 
     @staticmethod
     def backup_recommend(request: BackupSupplierRequest) -> BackupSupplierResponse:
-        logger.info(f"Backup recommendations for: {request.supplier_id}")
+        primary_id = request.primary_supplier_id or request.supplier_id or "default"
+        logger.info(f"Backup recommendations for: {primary_id}")
+
+        req = request.requirements or {}
+        product_category = request.product_category or req.get("product_category")
+        min_quality = request.min_quality if request.min_quality is not None else req.get("min_quality")
+        max_lead_time = request.max_lead_time if request.max_lead_time is not None else req.get("max_lead_time")
+        region = request.region or req.get("region")
+
         if BackupSupplierRecommender is not None:
             try:
                 recommender = BackupSupplierRecommender()
                 result = recommender.recommend(
-                    supplier_id=request.supplier_id,
+                    supplier_id=primary_id,
                     min_reliability=request.min_reliability,
                     max_distance_km=request.max_distance_km,
                 )
                 backups = result.get("backups", [])
                 if backups:
                     return BackupSupplierResponse(
-                        supplier_id=request.supplier_id, backups=backups,
+                        supplier_id=primary_id,
+                        primary_supplier_id=primary_id,
+                        backups=backups,
+                        total_candidates=len(backups),
                         model_version="supplier_backup_1.0.0",
                         timestamp=datetime.utcnow().isoformat() + "Z",
                     )
             except Exception:
                 pass
         backups = [
-            {"supplier_id": f"BACKUP_{i}", "name": f"Backup Supplier {i}",
-             "reliability": round(0.8 - 0.1 * i, 4),
-             "distance_km": round(200 + 150 * i, 2)}
+            {
+                "supplier_id": f"BACKUP_{i}",
+                "name": f"Backup Supplier {i}",
+                "reliability": round(0.8 - 0.1 * i, 4),
+                "distance_km": round(200 + 150 * i, 2),
+                "product_category": product_category,
+                "quality_score": min_quality if min_quality is not None else 0.85,
+                "lead_time_days": max_lead_time if max_lead_time is not None else 14,
+                "region": region,
+            }
             for i in range(3)
         ]
         return BackupSupplierResponse(
-            supplier_id=request.supplier_id, backups=backups,
+            supplier_id=primary_id,
+            primary_supplier_id=primary_id,
+            backups=backups,
+            total_candidates=len(backups),
             model_version="supplier_backup_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
