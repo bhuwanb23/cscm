@@ -115,16 +115,19 @@ class AnomalyDetectResponse(BaseModel):
     timestamp: str
 
 class AnomalyAlertsRequest(BaseModel):
-    alert_id: str
+    alert_id: Optional[str] = "default"
+    status: Optional[str] = None
+    limit: int = 100
+    offset: int = 0
 
 class AnomalyAlertsResponse(BaseModel):
-    alert_id: str
-    anomalies: List[Dict[str, Any]]
-    severity: str
-    affected_entities: List[str]
-    recommended_actions: List[str]
-    model_version: str
-    timestamp: str
+    alert_id: str = "default"
+    anomalies: List[Dict[str, Any]] = []
+    severity: str = "unknown"
+    affected_entities: List[str] = []
+    recommended_actions: List[str] = []
+    model_version: str = "anomaly_detection_1.0.0"
+    timestamp: str = ""
 
 class AnomalyDetectDLRequest(BaseModel):
     data: List[List[float]]
