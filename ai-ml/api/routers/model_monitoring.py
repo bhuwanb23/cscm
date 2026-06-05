@@ -102,17 +102,19 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 class DriftDetectionRequest(BaseModel):
-    model_id: str
-    reference_data: List[dict]
-    current_data: List[dict]
+    model_id: Optional[str] = "default"
+    reference_data: List[dict] = []
+    current_data: List[dict] = []
     drift_threshold: float = 0.05
+    window: Optional[str] = "24h"
 
 class DriftDetectionResponse(BaseModel):
-    model_id: str
-    drift_detected: bool
-    drift_score: float
+    model_id: str = "default"
+    drift_detected: bool = False
+    drift_score: float = 0.0
     drifted_features: Optional[List[str]] = None
-    timestamp: str
+    affected_features: List[str] = []
+    timestamp: str = ""
 
 class ModelPerformanceRequest(BaseModel):
     model_id: str
@@ -271,11 +273,13 @@ class ModelMonitoringService:
             if adwin_drift:
                 drift_score = min(drift_score + 0.1, 1.0)
 
+        affected_features = list(drifted_features) if drifted_features else []
         response = DriftDetectionResponse(
             model_id=request.model_id,
             drift_detected=drift_detected,
             drift_score=drift_score if drift_detected else round(request.drift_threshold * 0.6, 4),
             drifted_features=drifted_features,
+            affected_features=affected_features,
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
         logger.info(f"Drift detection: {response.drift_detected}, score: {response.drift_score}")
