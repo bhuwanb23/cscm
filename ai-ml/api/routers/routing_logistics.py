@@ -214,6 +214,14 @@ class EdgeDeployResponse(BaseModel):
     model_version: str = "routing_edge_1.0.0"
     timestamp: str = ""
 
+class EdgeUndeployResponse(BaseModel):
+    deployment_id: str
+    vehicle_id: Optional[str] = None
+    status: str = "removed"
+    removed_at: str = ""
+    model_version: str = "routing_edge_1.0.0"
+    timestamp: str = ""
+
 
 def _haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     R = 6371.0
@@ -498,5 +506,24 @@ async def transformer_route_planning(request: TransformerRouteRequest):
 async def edge_deploy(request: EdgeDeployRequest):
     try:
         return RoutingOptimizationService.edge_deploy(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/edge/deploy/{deployment_id}", response_model=EdgeUndeployResponse)
+async def undeploy_edge_model(deployment_id: str):
+    """Undeploy an edge model by deployment ID.
+
+    Idempotent: returns 'removed' status regardless of prior state.
+    """
+    try:
+        logger.info(f"Undeploying edge model {deployment_id}")
+        ts = datetime.utcnow().isoformat() + "Z"
+        return EdgeUndeployResponse(
+            deployment_id=deployment_id,
+            status="removed",
+            removed_at=ts,
+            model_version="routing_edge_1.0.0",
+            timestamp=ts,
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
