@@ -7,6 +7,7 @@ import { ApiProvider, ApiHealthGate } from './src/api/ApiProvider';
 import LoginScreen from './login/login';
 import ShopkeeperDashboard from './users/shopkeepers/shopkeepers';
 import TransporterDashboard from './users/transporters/transporter';
+import WholesalerDashboard from './users/wholesalers/wholesalers';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -28,6 +29,8 @@ export default function App() {
       return <ShopkeeperDashboard onLogout={handleLogout} />;
     } else if (user.role === 'transporter') {
       return <TransporterDashboard onLogout={handleLogout} />;
+    } else if (user.role === 'wholesaler') {
+      return <WholesalerDashboard onLogout={handleLogout} />;
     }
 
     return null;
