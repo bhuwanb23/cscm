@@ -1,7 +1,7 @@
 const DEFAULT_HOST = 'localhost';
-const DEFAULT_PORT = 3000;
+const DEFAULT_PORT = 8080;
 const DEFAULT_TIMEOUT_MS = 30000;
-const HEALTH_PATH = '/api/health';
+const HEALTH_PATH = '/health';
 
 function readEnvBackendUrl() {
   if (typeof process === 'undefined' || !process.env) return null;

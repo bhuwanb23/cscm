@@ -1,33 +1,57 @@
 # API Setup
 
-The CSCM mobile app talks to the **Node.js gateway** running on your development
-machine. The gateway listens on **port 3000** by default and proxies AI/ML requests
-to the Python service on port 8000.
+The CSCM mobile app talks to the **Node.js API gateway** running on your
+development machine. The gateway listens on **port 8080** and routes
+requests between:
 
-## Quick start
+- The **Express API** on port 3000 (`backend/src/api/server.js`) — handles
+  CRUD, auth, agent sub-agents that don't need AI/ML models
+- The **Python AI/ML service** on port 8000 (`ai-ml/api/main.py`) — handles
+  demand forecasting, anomaly detection, NLP, knowledge graph queries, etc.
 
-1. **Start the backend** (in a separate terminal):
-   ```bash
-   cd backend
-   npm run dev          # Node.js gateway on :3000
-   ```
-   Then in another terminal:
-   ```bash
-   cd ai-ml
-   venv\Scripts\python -m api._run_server   # Python AI/ML on :8000
-   ```
+The gateway is the right entry point for the mobile app: it hides the
+backend topology, has CORS configured, and is where production auth/rate
+limiting will live.
 
-2. **Start the mobile app**:
-   ```bash
-   cd App
-   npx expo start
-   ```
-   - Press `w` to open in a web browser (fastest smoke test)
-   - Scan the QR code with **Expo Go** on a phone (must be on the same WiFi as your dev machine)
+## Quick start (three terminals)
 
-3. **Health check**: the app shows a green health gate on the launch screen when
-   the backend is reachable. If it's red, the app won't let you past the gate
-   until the backend comes back.
+```bash
+# Terminal 1 — Express API (backend)
+cd backend
+npm run dev                          # :3000
+
+# Terminal 2 — Python AI/ML (ai-ml)
+cd ai-ml
+venv\Scripts\python -m api._run_server   # :8000
+
+# Terminal 3 — Gateway (backend)
+cd backend
+node src/gateway/gateway.js          # :8080
+
+# Terminal 4 — Mobile app (App)
+cd App
+npx expo start                       # scan QR for Expo Go
+```
+
+If you only want to poke the mobile app and don't have time for the full
+stack, the Express API on `:3000` also serves the same `/api/v1/*`
+paths directly — set `EXPO_PUBLIC_BACKEND_URL=http://localhost:3000` to
+use it as a shortcut. AI/ML endpoints will fail until Python is up.
+
+## Health check
+
+The app shows a green health gate on the launch screen when the gateway
+returns 200 from `/health`. If it's red, the app won't let you past the
+gate until the backend comes back.
+
+To check the gateway yourself:
+```bash
+curl http://localhost:8080/health
+# {"status":"healthy","service":"api-gateway","timestamp":"..."}
+
+curl http://localhost:8080/health/python
+# {"service":"ai-ml-python","status":"healthy",...}
+```
 
 ## Backend URL resolution
 
@@ -37,13 +61,13 @@ The app picks the backend URL in this order (`src/api/config.js`):
 | --- | --- | --- |
 | 1 | `EXPO_PUBLIC_BACKEND_URL` env var | Production builds, staging, demos on a different network |
 | 2 | Expo `hostUri` (LAN IP of dev machine) | Phone with Expo Go on the same WiFi as your laptop |
-| 3 | `http://localhost:3000` | Web build, iOS simulator, Android emulator on the same machine |
+| 3 | `http://localhost:8080` | Web build, iOS simulator, Android emulator on the same machine |
 
 ## Finding your dev machine's LAN IP
 
-The Expo dev server prints a URL like `exp://192.168.1.10:8081`. The `192.168.1.10`
-part is your dev machine's LAN IP — the app uses this to reach your backend at
-`http://192.168.1.10:3000` automatically.
+The Expo dev server prints a URL like `exp://192.168.1.10:8081`. The
+`192.168.1.10` part is your dev machine's LAN IP — the app uses this to
+reach the gateway at `http://192.168.1.10:8080` automatically.
 
 To find it manually:
 
@@ -57,18 +81,18 @@ To find it manually:
 ### For Expo Go (development)
 
 Set the env var before starting Expo:
-```bash
+```powershell
 # Windows PowerShell
-$env:EXPO_PUBLIC_BACKEND_URL = "http://192.168.1.42:3000"
+$env:EXPO_PUBLIC_BACKEND_URL = "http://192.168.1.42:8080"
 npx expo start
-
+```
+```bash
 # macOS / Linux
-EXPO_PUBLIC_BACKEND_URL=http://192.168.1.42:3000 npx expo start
+EXPO_PUBLIC_BACKEND_URL=http://192.168.1.42:8080 npx expo start
 ```
 
 ### For production builds
 
-Set the env var at build time:
 ```bash
 EXPO_PUBLIC_BACKEND_URL=https://api.cscm.example.com npx expo run:ios
 ```
@@ -77,7 +101,8 @@ EXPO_PUBLIC_BACKEND_URL=https://api.cscm.example.com npx expo run:ios
 
 | Symptom | Likely cause | Fix |
 | --- | --- | --- |
-| Red health gate on launch | Backend not running, or wrong port | Start the backend; check `lsof -i :3000` (macOS) or `netstat -ano \| findstr :3000` (Windows) |
-| Red health gate, backend is running | Firewall blocking port 3000 on the dev machine | Allow inbound on port 3000, or set `EXPO_PUBLIC_BACKEND_URL` to `localhost` if using an emulator |
-| Phone can't reach backend, web build works | Phone and dev machine on different WiFi networks | Connect both to the same network, or set `EXPO_PUBLIC_BACKEND_URL` explicitly |
+| Red health gate on launch | Gateway not running, or wrong port | Start `node src/gateway/gateway.js`; check `netstat -ano \| findstr :8080` (Windows) or `lsof -i :8080` (macOS) |
+| Green gate but most endpoints 502 | Gateway is up but Python AI/ML is down | Start `venv\Scripts\python -m api._run_server` in `ai-ml/` |
+| Red health gate, gateway is running | Firewall blocking port 8080 on the dev machine | Allow inbound on port 8080, or set `EXPO_PUBLIC_BACKEND_URL=localhost` for emulator |
+| Phone can't reach backend, web build works | Phone and dev machine on different WiFi | Connect both to the same network, or set `EXPO_PUBLIC_BACKEND_URL` explicitly |
 | Random network errors mid-session | Dev machine went to sleep, IP changed | Tap the "Retry" button on the health gate |
