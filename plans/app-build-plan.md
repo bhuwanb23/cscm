@@ -225,6 +225,10 @@ A new top-level entry accessible from any role's nav. This is the "operations co
 - `36d0bfc` — `docs(plans): update commit log through Phase 2.8 (7/7 shopkeeper hooks wired)`
 - `a0464a3` — `feat(app): add shared LoadingScreen, ErrorScreen, and theme tokens`
 - `3e04771` — `feat(app): add pull-to-refresh to inventory and shipment lists`
+- `0d37eef` — `feat(app): wire useDashboardData (transporter) to backend`
+- `3d075be` — `feat(app): wire useTasksData (transporter) to backend`
+- `46b3c0f` — `feat(app): wire useNavigationData (transporter) to backend`
+- `cfce5c9` — `feat(app): wire useProfileData (transporter) to backend`
 
 ---
 
@@ -251,7 +255,11 @@ A new top-level entry accessible from any role's nav. This is the "operations co
 - [x] Phase 2.9 LoadingScreen + ErrorScreen shared components
 - [x] Phase 2.10 RefreshControl on list screens
 - [x] Phase 2.11 smoke test (gateway /health: 200, 621 backend tests pass, all bundles compile)
-- [ ] Phase 3 pending
+- [x] Phase 3.1 useDashboardData (transporter)
+- [x] Phase 3.2 useTasksData (transporter)
+- [x] Phase 3.3 useNavigationData (transporter)
+- [x] Phase 3.4 useProfileData (transporter)
+- [x] Phase 3.5 smoke test (621 backend tests pass, all bundles compile)
 - [ ] Phase 4 pending
 - [ ] Phase 5 pending
 - [ ] Cross-cutting concerns
