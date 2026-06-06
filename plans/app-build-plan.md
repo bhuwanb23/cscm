@@ -222,6 +222,9 @@ A new top-level entry accessible from any role's nav. This is the "operations co
 - `1396d9f` — `feat(app): wire useAnalysis (shopkeeper) to backend`
 - `bc6c1b4` — `feat(app): wire useCommunicationData (shopkeeper) to backend`
 - `c1061f3` — `feat(app): wire useProfileData (shopkeeper) to backend`
+- `36d0bfc` — `docs(plans): update commit log through Phase 2.8 (7/7 shopkeeper hooks wired)`
+- `a0464a3` — `feat(app): add shared LoadingScreen, ErrorScreen, and theme tokens`
+- `3e04771` — `feat(app): add pull-to-refresh to inventory and shipment lists`
 
 ---
 
@@ -245,9 +248,9 @@ A new top-level entry accessible from any role's nav. This is the "operations co
 - [x] Phase 2.6 useAnalysis
 - [x] Phase 2.7 useCommunicationData
 - [x] Phase 2.8 useProfileData
-- [ ] Phase 2.9 LoadingScreen + ErrorScreen shared components
-- [ ] Phase 2.10 RefreshControl on list screens
-- [ ] Phase 2.11 smoke test
+- [x] Phase 2.9 LoadingScreen + ErrorScreen shared components
+- [x] Phase 2.10 RefreshControl on list screens
+- [x] Phase 2.11 smoke test (gateway /health: 200, 621 backend tests pass, all bundles compile)
 - [ ] Phase 3 pending
 - [ ] Phase 4 pending
 - [ ] Phase 5 pending
