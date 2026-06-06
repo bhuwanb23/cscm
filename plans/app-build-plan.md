@@ -229,6 +229,8 @@ A new top-level entry accessible from any role's nav. This is the "operations co
 - `3d075be` — `feat(app): wire useTasksData (transporter) to backend`
 - `46b3c0f` — `feat(app): wire useNavigationData (transporter) to backend`
 - `cfce5c9` — `feat(app): wire useProfileData (transporter) to backend`
+- `0a74bb3` — `feat(app/login): add 3-role picker to login (shopkeeper/transporter/wholesaler)`
+- `910fb30` — `feat(app): add wholesaler role (5 screens + App.js routing)`
 
 ---
 
@@ -260,7 +262,14 @@ A new top-level entry accessible from any role's nav. This is the "operations co
 - [x] Phase 3.3 useNavigationData (transporter)
 - [x] Phase 3.4 useProfileData (transporter)
 - [x] Phase 3.5 smoke test (621 backend tests pass, all bundles compile)
-- [ ] Phase 4 pending
+- [x] Phase 4.1 3-role login picker
+- [x] Phase 4.2 wholesalers shell
+- [x] Phase 4.3 wholesaler dashboard
+- [x] Phase 4.4 wholesaler orders
+- [x] Phase 4.5 wholesaler shipments
+- [x] Phase 4.6 wholesaler inventory
+- [x] Phase 4.7 wholesaler profile
+- [x] Phase 4.8 App.js routing
 - [ ] Phase 5 pending
 - [ ] Cross-cutting concerns
 
