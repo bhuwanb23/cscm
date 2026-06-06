@@ -1,34 +1,63 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { BUSINESS_INFO, CHANNELS, WAREHOUSES, STATS, SHOP_INFO } from '../constants/profileConstants';
+
+const SHOP_ID = 'SHOP-001';
+
+function parsePrice(priceStr) {
+  if (typeof priceStr === 'number') return priceStr;
+  if (!priceStr) return 0;
+  const m = String(priceStr).replace(/[^0-9.]/g, '');
+  return parseFloat(m) || 0;
+}
+
+function deriveStats(orders, activeShipments) {
+  const monthlyOrders = Array.isArray(orders) ? orders.length : 0;
+  const monthlyRevenue = Array.isArray(orders)
+    ? orders.reduce((sum, o) => {
+        const items = Array.isArray(o.items) ? o.items : [];
+        const direct = typeof o.total_amount === 'number' ? o.total_amount : 0;
+        const fromItems = items.reduce((s, it) => s + (Number(it.quantity || 0) * parsePrice(it.price)), 0);
+        return sum + (direct || fromItems);
+      }, 0)
+    : 0;
+  return {
+    ...STATS,
+    monthlyOrders,
+    monthlyRevenue: `$${monthlyRevenue.toFixed(2)}`,
+    activeShipments: Array.isArray(activeShipments) ? activeShipments.length : STATS.activeShipments,
+  };
+}
 
 export const useProfileData = () => {
   const [businessInfo, setBusinessInfo] = useState(BUSINESS_INFO);
   const [channels] = useState(CHANNELS);
   const [warehouses] = useState(WAREHOUSES);
-  const [stats] = useState(STATS);
   const [shopInfo] = useState(SHOP_INFO);
   const [loading, setLoading] = useState(false);
 
-  const updateBusinessInfo = (newInfo) => {
-    setBusinessInfo(newInfo);
-  };
+  const ordersQuery = useApiQuery('ORDERS_CRUD', 'listByStore', { params: { storeId: SHOP_ID } });
+  const shipmentsQuery = useApiQuery('SHIPMENTS', 'listByStatus', { params: { status: 'in_transit' } });
 
-  const refreshData = async () => {
+  const stats = useMemo(
+    () => deriveStats(ordersQuery.data, shipmentsQuery.data),
+    [ordersQuery.data, shipmentsQuery.data]
+  );
+
+  const updateBusinessInfo = useCallback((newInfo) => setBusinessInfo(newInfo), []);
+
+  const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      // In a real app, you would fetch fresh data from an API here
-    } catch (error) {
-      console.error('Error refreshing data:', error);
+      await Promise.all([ordersQuery.refetch(), shipmentsQuery.refetch()]);
+    } catch {
+      // ignore - keep cached data
     } finally {
       setLoading(false);
     }
-  };
+  }, [ordersQuery, shipmentsQuery]);
 
-  useEffect(() => {
-    refreshData();
-  }, []);
+  useEffect(() => { refreshData(); }, [refreshData]);
 
   return {
     businessInfo,
@@ -36,8 +65,9 @@ export const useProfileData = () => {
     warehouses,
     stats,
     shopInfo,
-    loading,
+    loading: loading || ordersQuery.loading || shipmentsQuery.loading,
+    error: ordersQuery.error || shipmentsQuery.error,
     updateBusinessInfo,
-    refreshData
+    refreshData,
   };
 };
