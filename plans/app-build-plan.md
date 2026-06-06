@@ -201,16 +201,34 @@ A new top-level entry accessible from any role's nav. This is the "operations co
 
 ## Commit Log (filled in as we go)
 
-<!-- Add a new entry per commit. Format:
-- `<short-sha>` — `<scope>: <message>` — <what was validated>
--->
+- `d6a3248` — `docs(plans): write CSCM app 5-phase build plan`
+- `afe31ee` — `chore(app): regenerate package-lock with peer metadata`
+- `490ac0d` — `chore(app): add expo-constants dependency`
+- `89324af` — `feat(app/api): add config module with backend URL resolution`
+- `efb6fe2` — `feat(app/api): add fetch wrapper with timeout and error normalization`
+- `64f71f2` — `feat(app/api): add endpoint catalog grouped by backend family`
+- `99b30de` — `feat(app/api): add useApiQuery hook with abort and refetch support`
+- `f620ef5` — `feat(app/api): add ApiProvider with health gate`
+- `ac3e0d2` — `feat(gateway): enrich /health with Python AI/ML status probe`
+- `8105182` — `fix(app/api): correct default backend port to 8080 (gateway)`
+- `19ecb2f` — `feat(app): wire ApiProvider with health gate into root` (validated via `npx expo export --platform web` — 1.78 MB bundle compiles)
+- `<pending>` — `feat(ai-ml): add seed_demo_data script for mobile app demo`
 
 ---
 
 ## Status
 
 - [x] Plan written
-- [ ] Phase 1 in progress
+- [x] Phase 1.0 npm install
+- [x] Phase 1.1 config + setup doc
+- [x] Phase 1.2 apiClient
+- [x] Phase 1.3 endpoints
+- [x] Phase 1.4 useApiQuery
+- [x] Phase 1.5 ApiProvider
+- [x] Phase 1.6 /api/health
+- [x] Phase 1.7 wire App.js
+- [ ] Phase 1.8 seed_demo_data.py
+- [ ] Phase 1.9 smoke test
 - [ ] Phase 2 pending
 - [ ] Phase 3 pending
 - [ ] Phase 4 pending
