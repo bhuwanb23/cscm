@@ -96,11 +96,47 @@ app.use('/api/v1', (req, res, next) => {
 
 app.use('/api/v1', apiProxy);
 
-app.get('/health', (req, res) => {
+let lastAiMlStatus = 'unknown';
+let lastAiMlCheckedAt = null;
+let lastGatewayStatus = 'healthy';
+
+function probePythonHealth(timeoutMs) {
+  const http = require('http');
+  const pythonUrl = new URL(aiMlTarget);
+  return new Promise((resolve) => {
+    const clientReq = http.get(`${pythonUrl.protocol}//${pythonUrl.host}/health`, (pythonRes) => {
+      let data = '';
+      pythonRes.on('data', (chunk) => { data += chunk; });
+      pythonRes.on('end', () => {
+        resolve(pythonRes.statusCode === 200 ? 'healthy' : 'unhealthy');
+      });
+    });
+    clientReq.on('error', () => resolve('unreachable'));
+    clientReq.setTimeout(timeoutMs, () => {
+      clientReq.destroy();
+      resolve('timeout');
+    });
+  });
+}
+
+app.get('/health', async (req, res) => {
+  const now = new Date().toISOString();
+  const aiMlStatus = await probePythonHealth(1000);
+  lastAiMlStatus = aiMlStatus;
+  lastAiMlCheckedAt = now;
+  const gatewayStatus = 'healthy';
+  if (gatewayStatus !== lastGatewayStatus) {
+    logger.warn(`[gateway] health status changed: ${lastGatewayStatus} -> ${gatewayStatus}`);
+    lastGatewayStatus = gatewayStatus;
+  }
   res.json({
-    status: 'healthy',
+    status: gatewayStatus,
     service: 'api-gateway',
-    timestamp: new Date().toISOString()
+    timestamp: now,
+    aiMl: {
+      status: aiMlStatus,
+      checkedAt: now,
+    },
   });
 });
 
