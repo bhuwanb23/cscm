@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -6,35 +6,20 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-const SearchFilters = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
-  
+const SearchFilters = ({ searchQuery, onSearchChange, activeFilter, onFilterChange, counts }) => {
   const filterChips = [
-    { id: 'all', label: 'All Tasks' },
-    { id: 'highPriority', label: 'High Priority' },
-    { id: 'pickups', label: 'Pickups' },
-    { id: 'deliveries', label: 'Deliveries' },
+    { id: 'all', label: 'All Tasks', count: counts?.all },
+    { id: 'inProgress', label: 'In Progress', count: counts?.inProgress },
+    { id: 'pending', label: 'Pending', count: counts?.pending },
+    { id: 'scheduled', label: 'Scheduled', count: counts?.scheduled },
+    { id: 'completed', label: 'Completed', count: counts?.completed },
   ];
-
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      Alert.alert('Search', `Searching for: ${searchQuery}`);
-    }
-  };
-
-  const handleFilterPress = (filterId) => {
-    setActiveFilter(filterId);
-    Alert.alert('Filter Applied', `Filter set to: ${filterChips.find(f => f.id === filterId)?.label || filterId}`);
-  };
 
   return (
     <View style={styles.container}>
-      {/* Search Bar */}
       <View style={styles.searchContainer}>
         <View style={styles.searchWrapper}>
           <Ionicons name="search" size={20} color="#94A3B8" style={styles.searchIcon} />
@@ -43,46 +28,32 @@ const SearchFilters = () => {
             placeholder="Search order ID, address, or customer..."
             placeholderTextColor="#94A3B8"
             value={searchQuery}
-            onChangeText={setSearchQuery}
-            onSubmitEditing={handleSearch}
+            onChangeText={onSearchChange}
           />
-          <TouchableOpacity style={styles.filterButton} onPress={handleSearch}>
-            <Ionicons name="filter" size={20} color="#64748B" />
-          </TouchableOpacity>
         </View>
       </View>
 
-      {/* Filter Chips */}
-      <ScrollView 
-        horizontal 
+      <ScrollView
+        horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.chipsContainer}
         contentContainerStyle={styles.chipsContent}
       >
         {filterChips.map((chip) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             key={chip.id}
             style={[
-              styles.chip, 
-              activeFilter === chip.id ? styles.activeChip : styles.inactiveChip
+              styles.chip,
+              activeFilter === chip.id ? styles.activeChip : styles.inactiveChip,
             ]}
-            onPress={() => handleFilterPress(chip.id)}
+            onPress={() => onFilterChange(chip.id)}
           >
             <Text style={[
               styles.chipText,
-              activeFilter === chip.id ? styles.activeChipText : styles.inactiveChipText
+              activeFilter === chip.id ? styles.activeChipText : styles.inactiveChipText,
             ]}>
-              {chip.label}
+              {chip.label}{typeof chip.count === 'number' ? ` (${chip.count})` : ''}
             </Text>
-            {chip.id === 'highPriority' && (
-              <Text style={styles.priorityDot}>•</Text>
-            )}
-            {chip.id === 'pickups' && (
-              <Ionicons name="cube-outline" size={14} color="#2563EB" style={styles.chipIcon} />
-            )}
-            {chip.id === 'deliveries' && (
-              <Ionicons name="trail-sign-outline" size={14} color="#10B981" style={styles.chipIcon} />
-            )}
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -91,90 +62,19 @@ const SearchFilters = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    paddingTop: 16,
-    paddingBottom: 8,
-    paddingHorizontal: 20,
-    backgroundColor: '#F8FAFC',
-  },
-  searchContainer: {
-    marginBottom: 16,
-  },
-  searchWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  searchIcon: {
-    marginLeft: 12,
-  },
-  searchInput: {
-    flex: 1,
-    paddingLeft: 12,
-    paddingRight: 12,
-    paddingVertical: 14,
-    fontSize: 14,
-    color: '#1E293B',
-    fontFamily: 'System',
-  },
-  filterButton: {
-    padding: 12,
-  },
-  chipsContainer: {
-    flexGrow: 0,
-  },
-  chipsContent: {
-    flexDirection: 'row',
-    paddingBottom: 8,
-  },
-  chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-    borderWidth: 1,
-  },
-  activeChip: {
-    backgroundColor: '#1E293B',
-    borderColor: '#1E293B',
-  },
-  inactiveChip: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E2E8F0',
-  },
-  chipText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  activeChipText: {
-    color: '#FFFFFF',
-  },
-  inactiveChipText: {
-    color: '#64748B',
-  },
-  priorityDot: {
-    color: '#EF4444',
-    marginLeft: 4,
-    fontSize: 16,
-  },
-  chipIcon: {
-    marginLeft: 4,
-  },
+  container: { paddingTop: 16, paddingBottom: 8, paddingHorizontal: 20, backgroundColor: '#F8FAFC' },
+  searchContainer: { marginBottom: 16 },
+  searchWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 3, elevation: 2, borderWidth: 1, borderColor: '#E2E8F0' },
+  searchIcon: { marginLeft: 12 },
+  searchInput: { flex: 1, paddingLeft: 12, paddingRight: 12, paddingVertical: 14, fontSize: 14, color: '#1E293B', fontFamily: 'System' },
+  chipsContainer: { flexGrow: 0 },
+  chipsContent: { flexDirection: 'row', paddingBottom: 8 },
+  chip: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginRight: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1, borderWidth: 1 },
+  activeChip: { backgroundColor: '#1E293B', borderColor: '#1E293B' },
+  inactiveChip: { backgroundColor: '#FFFFFF', borderColor: '#E2E8F0' },
+  chipText: { fontSize: 12, fontWeight: '600' },
+  activeChipText: { color: '#FFFFFF' },
+  inactiveChipText: { color: '#64748B' },
 });
 
 export default SearchFilters;
