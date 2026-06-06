@@ -129,6 +129,28 @@ class AnomalyAlertsResponse(BaseModel):
     model_version: str = "anomaly_detection_1.0.0"
     timestamp: str = ""
 
+class AnomalyAlertsListResponse(BaseModel):
+    alerts: List[dict] = []
+    total: int = 0
+    limit: int = 100
+    offset: int = 0
+    filters: dict = {}
+    model_version: str = "anomaly_detection_1.0.0"
+    timestamp: str = ""
+
+class AnomalyAlertAckRequest(BaseModel):
+    user_id: Optional[str] = "system"
+    notes: Optional[str] = None
+
+class AnomalyAlertAckResponse(BaseModel):
+    alert_id: str
+    acknowledged: bool = True
+    acknowledged_by: str = "system"
+    acknowledged_at: str = ""
+    notes: Optional[str] = None
+    model_version: str = "anomaly_detection_1.0.0"
+    timestamp: str = ""
+
 class AnomalyDetectDLRequest(BaseModel):
     data: List[List[float]]
     feature_names: List[str]
@@ -251,6 +273,85 @@ class AnomalyDetectionService:
             timestamp=datetime.utcnow().isoformat() + "Z",
         )
 
+    @staticmethod
+    def list_alerts(status: Optional[str] = "active", limit: int = 100, offset: int = 0) -> AnomalyAlertsListResponse:
+        logger.info(f"Listing anomaly alerts: status={status}, limit={limit}, offset={offset}")
+        all_alerts = [
+            {
+                "alert_id": "ALERT-001",
+                "severity": "HIGH",
+                "status": "active",
+                "affected_entities": ["WAREHOUSE-NYC-01", "ROUTE-77"],
+                "detected_at": "2024-01-15T08:30:00Z",
+                "anomaly_score": 0.92,
+                "recommended_actions": ["Investigate supplier delay", "Reroute shipment"],
+            },
+            {
+                "alert_id": "ALERT-002",
+                "severity": "MEDIUM",
+                "status": "active",
+                "affected_entities": ["STORE-SF-03"],
+                "detected_at": "2024-01-15T09:15:00Z",
+                "anomaly_score": 0.71,
+                "recommended_actions": ["Review inventory levels"],
+            },
+            {
+                "alert_id": "ALERT-003",
+                "severity": "LOW",
+                "status": "active",
+                "affected_entities": ["TRANSPORT-V-42"],
+                "detected_at": "2024-01-15T10:00:00Z",
+                "anomaly_score": 0.45,
+                "recommended_actions": ["Monitor"],
+            },
+            {
+                "alert_id": "ALERT-004",
+                "severity": "HIGH",
+                "status": "acknowledged",
+                "affected_entities": ["SUPPLIER-SUP-09"],
+                "detected_at": "2024-01-14T22:00:00Z",
+                "anomaly_score": 0.88,
+                "recommended_actions": ["Contact supplier"],
+                "acknowledged_by": "ops-team",
+            },
+            {
+                "alert_id": "ALERT-005",
+                "severity": "MEDIUM",
+                "status": "active",
+                "affected_entities": ["WAREHOUSE-LA-02"],
+                "detected_at": "2024-01-15T11:00:00Z",
+                "anomaly_score": 0.65,
+                "recommended_actions": ["Check sensor calibration"],
+            },
+        ]
+        if status:
+            all_alerts = [a for a in all_alerts if a.get("status") == status]
+        total = len(all_alerts)
+        page = all_alerts[offset : offset + limit]
+        return AnomalyAlertsListResponse(
+            alerts=page,
+            total=total,
+            limit=limit,
+            offset=offset,
+            filters={"status": status} if status else {},
+            model_version="anomaly_detection_1.0.0",
+            timestamp=datetime.utcnow().isoformat() + "Z",
+        )
+
+    @staticmethod
+    def acknowledge_alert(alert_id: str, request: AnomalyAlertAckRequest) -> AnomalyAlertAckResponse:
+        logger.info(f"Acknowledging alert {alert_id} by {request.user_id}")
+        ts = datetime.utcnow().isoformat() + "Z"
+        return AnomalyAlertAckResponse(
+            alert_id=alert_id,
+            acknowledged=True,
+            acknowledged_by=request.user_id or "system",
+            acknowledged_at=ts,
+            notes=request.notes,
+            model_version="anomaly_detection_1.0.0",
+            timestamp=ts,
+        )
+
 
 @router.post("/detect", response_model=AnomalyDetectResponse)
 async def detect_anomalies(request: AnomalyDetectRequest):
@@ -264,6 +365,20 @@ async def get_anomaly_alerts(alert_id: str):
     try:
         request = AnomalyAlertsRequest(alert_id=alert_id)
         return AnomalyDetectionService.get_alerts(request)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/alerts", response_model=AnomalyAlertsListResponse)
+async def list_anomaly_alerts(status: Optional[str] = "active", limit: int = 100, offset: int = 0):
+    try:
+        return AnomalyDetectionService.list_alerts(status=status, limit=limit, offset=offset)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/alerts/{alert_id}/acknowledge", response_model=AnomalyAlertAckResponse)
+async def acknowledge_anomaly_alert(alert_id: str, request: AnomalyAlertAckRequest):
+    try:
+        return AnomalyDetectionService.acknowledge_alert(alert_id, request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
