@@ -20,6 +20,10 @@ class TransportApiService extends BaseApiService {
     if (path.startsWith('/api/v1/routing/status/')) {
       return { route_id: '', status: 'unknown', current_location: null, eta_minutes: null, progress_pct: 0, model_version: 'fallback_v1' };
     }
+    if (path.startsWith('/api/v1/routing/edge/deploy/')) {
+      const deploymentId = path.split('/').pop() || 'DEP-fallback';
+      return { deployment_id: deploymentId, status: 'removed', model_version: 'fallback_v1' };
+    }
     if (path === '/api/v1/routing/edge/deploy') {
       return { deployment_id: 'DEP-fallback', status: 'deployed', endpoint_url: 'edge://local', model_version: 'fallback_v1' };
     }
@@ -54,8 +58,8 @@ class TransportApiService extends BaseApiService {
     return this.call('post', '/api/v1/routing/edge/deploy', data, { allowFallback: true });
   }
 
-  async edgeUndeploy(data) {
-    return this.call('post', '/api/v1/routing/edge/deploy', data, { allowFallback: true });
+  async edgeUndeploy(deploymentId) {
+    return this.call('delete', `/api/v1/routing/edge/deploy/${deploymentId}`, null, { allowFallback: true });
   }
 }
 
