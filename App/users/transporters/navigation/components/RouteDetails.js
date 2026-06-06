@@ -3,8 +3,8 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 
-const RouteDetails = () => {
-  const routeStops = [
+const RouteDetails = ({ stops }) => {
+  const routeStops = stops && stops.length > 0 ? stops : [
     { id: 1, name: 'Warehouse A', address: '123 Storage St', status: 'completed' },
     { id: 2, name: 'Customer Location', address: '456 Delivery Ave', status: 'current' },
     { id: 3, name: 'Return Point', address: '789 Return Rd', status: 'pending' },
@@ -30,28 +30,19 @@ const RouteDetails = () => {
             <Ionicons name="list-outline" size={20} color="#2563EB" />
             <Text style={styles.sectionTitle}>Route Stops</Text>
           </View>
-          <Text style={styles.totalStops}>3 Stops</Text>
+          <Text style={styles.totalStops}>{routeStops.length} Stops</Text>
         </View>
-        
         <View style={styles.stopsList}>
           {routeStops.map((stop, index) => (
             <View key={stop.id} style={styles.stopItem}>
               <View style={styles.stopIconContainer}>
-                <Ionicons 
-                  name={getStatusIcon(stop.status)} 
-                  size={20} 
-                  color={getStatusColor(stop.status)} 
-                />
-                {index < routeStops.length - 1 && (
-                  <View style={styles.stopConnector} />
-                )}
+                <Ionicons name={getStatusIcon(stop.status)} size={20} color={getStatusColor(stop.status)} />
+                {index < routeStops.length - 1 && (<View style={styles.stopConnector} />)}
               </View>
-              
               <View style={styles.stopInfo}>
                 <Text style={styles.stopName}>{stop.name}</Text>
                 <Text style={styles.stopAddress}>{stop.address}</Text>
               </View>
-              
               <View style={styles.stopStatus}>
                 {stop.status === 'current' && (
                   <View style={styles.currentBadge}>
@@ -68,89 +59,22 @@ const RouteDetails = () => {
 };
 
 const styles = StyleSheet.create({
-  card: {
-    marginHorizontal: 16,
-    marginTop: 12,
-    borderRadius: 12,
-    backgroundColor: '#fff',
-  },
-  cardContent: {
-    padding: 0,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginLeft: 8,
-  },
-  totalStops: {
-    fontSize: 12,
-    color: '#6B7280',
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  stopsList: {
-    padding: 16,
-  },
-  stopItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  stopIconContainer: {
-    alignItems: 'center',
-    marginRight: 12,
-    position: 'relative',
-  },
-  stopConnector: {
-    position: 'absolute',
-    top: 24,
-    left: 9,
-    width: 2,
-    height: 40,
-    backgroundColor: '#E5E7EB',
-  },
-  stopInfo: {
-    flex: 1,
-  },
-  stopName: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 2,
-  },
-  stopAddress: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
-  stopStatus: {
-    marginLeft: 8,
-  },
-  currentBadge: {
-    backgroundColor: '#DBEAFE',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  currentBadgeText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#2563EB',
-  },
+  card: { marginHorizontal: 16, marginTop: 12, borderRadius: 12, backgroundColor: '#fff' },
+  cardContent: { padding: 0 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  headerLeft: { flexDirection: 'row', alignItems: 'center' },
+  sectionTitle: { fontSize: 16, fontWeight: '600', color: '#1F2937', marginLeft: 8 },
+  totalStops: { fontSize: 12, color: '#6B7280', backgroundColor: '#F3F4F6', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
+  stopsList: { padding: 16 },
+  stopItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  stopIconContainer: { alignItems: 'center', marginRight: 12, position: 'relative' },
+  stopConnector: { position: 'absolute', top: 24, left: 9, width: 2, height: 40, backgroundColor: '#E5E7EB' },
+  stopInfo: { flex: 1 },
+  stopName: { fontSize: 14, fontWeight: '600', color: '#1F2937', marginBottom: 2 },
+  stopAddress: { fontSize: 12, color: '#6B7280' },
+  stopStatus: { marginLeft: 8 },
+  currentBadge: { backgroundColor: '#DBEAFE', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12 },
+  currentBadgeText: { fontSize: 11, fontWeight: '600', color: '#2563EB' },
 });
 
 export default RouteDetails;
