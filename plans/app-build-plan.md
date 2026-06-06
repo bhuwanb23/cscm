@@ -231,6 +231,8 @@ A new top-level entry accessible from any role's nav. This is the "operations co
 - `cfce5c9` — `feat(app): wire useProfileData (transporter) to backend`
 - `0a74bb3` — `feat(app/login): add 3-role picker to login (shopkeeper/transporter/wholesaler)`
 - `910fb30` — `feat(app): add wholesaler role (5 screens + App.js routing)`
+- `6514278` — `feat(app): add mesh console (alerts / graph / drift / network)`
+- `c4355d9` — `feat(app): add Mesh tab to all 3 role bottom-navs`
 
 ---
 
