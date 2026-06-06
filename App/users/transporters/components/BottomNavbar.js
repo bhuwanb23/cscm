@@ -13,6 +13,7 @@ const BottomNavbar = ({ activeTab, onTabPress }) => {
     { id: 'dashboard', label: 'Home', icon: 'home-outline', activeIcon: 'home' },
     { id: 'navigation', label: 'Navigation', icon: 'navigate-outline', activeIcon: 'navigate' },
     { id: 'tasks', label: 'Tasks', icon: 'list-outline', activeIcon: 'list' },
+    { id: 'mesh', label: 'Mesh', icon: 'globe-outline', activeIcon: 'globe' },
     { id: 'profile', label: 'Profile', icon: 'person-outline', activeIcon: 'person' },
   ];
 

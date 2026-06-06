@@ -8,6 +8,7 @@ import Orders from './orders/orders';
 import Shipments from './shipments/shipments';
 import Inventory from './inventory/inventory';
 import Profile from './profile/profile';
+import MeshConsole from '../mesh/mesh';
 
 const WholesalerDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -25,6 +26,8 @@ const WholesalerDashboard = ({ onLogout }) => {
         return <Shipments onLogout={onLogout} />;
       case 'inventory':
         return <Inventory onLogout={onLogout} />;
+      case 'mesh':
+        return <MeshConsole onLogout={onLogout} />;
       case 'profile':
         return <Profile onLogout={onLogout} />;
       default:

@@ -18,6 +18,7 @@ import StockRequest from './stock_request/stock_request';
 import Shipment from './shipment/shipment';
 import Communication from './communication';
 import Profile from './profile/profile';
+import MeshConsole from '../mesh/mesh';
 
 const ShopkeeperDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -67,6 +68,8 @@ const ShopkeeperDashboard = ({ onLogout }) => {
         return <Shipment />;
       case 'messages':
         return <Communication />;
+      case 'mesh':
+        return <MeshConsole onLogout={onLogout} />;
       case 'profile':
         return <Profile onLogout={onLogout} />; // Pass onLogout prop
       default:

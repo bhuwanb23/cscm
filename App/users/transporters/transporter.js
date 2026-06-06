@@ -12,6 +12,7 @@ import Dashboard from './dashboard/dashboard';
 import Tasks from './tasks/tasks';
 import Profile from './profile/profile';
 import Navigation from './navigation/navigation';
+import MeshConsole from '../mesh/mesh';
 
 const TransporterDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -35,6 +36,8 @@ const TransporterDashboard = ({ onLogout }) => {
           <Profile onLogout={onLogout} />
         ) : activeTab === 'navigation' ? (
           <Navigation onLogout={onLogout} />
+        ) : activeTab === 'mesh' ? (
+          <MeshConsole onLogout={onLogout} />
         ) : (
           <>
             <Header 

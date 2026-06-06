@@ -7,6 +7,7 @@ const TABS = [
   { id: 'orders', label: 'Orders', icon: 'cart-outline' },
   { id: 'shipments', label: 'Shipments', icon: 'car-outline' },
   { id: 'inventory', label: 'Inventory', icon: 'cube-outline' },
+  { id: 'mesh', label: 'Mesh', icon: 'globe-outline' },
   { id: 'profile', label: 'Profile', icon: 'person-outline' },
 ];
 
