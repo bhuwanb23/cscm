@@ -110,6 +110,15 @@ class BaseApiService {
       const status = error.response ? error.response.status : 'NETWORK';
       this._logResponse(method, path, status, duration, null);
 
+      if (status === 422) {
+        const detail = error.response.data;
+        logger.error(
+          `[BaseApiService] 422 Unprocessable Entity on ${method} ${path} ` +
+          `(contract mismatch - check Pydantic schema vs caller payload). ` +
+          `detail=${JSON.stringify(detail)}`
+        );
+      }
+
       if (this._shouldRetry(error, attempt)) {
         const delay = Math.min(200 * Math.pow(2, attempt), 2000);
         logger.warn(`[BaseApiService] Retry ${attempt + 1}/${this.maxRetries} after ${delay}ms: ${method} ${path} (${status})`);
