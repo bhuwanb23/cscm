@@ -96,9 +96,8 @@ class SupplierApiService extends BaseApiService {
     return this.call('post', '/api/v1/supplier/backup', data, { allowFallback: true });
   }
 
-  async supplierRiskMetrics(params) {
-    const query = new URLSearchParams(params || {}).toString();
-    return this.call('get', `/api/v1/supplier/risk-metrics?${query}`, null, { allowFallback: true, bypassCircuitBreaker: true });
+  async supplierRiskMetrics(data) {
+    return this.call('post', '/api/v1/supplier/risk-metrics', data, { allowFallback: true });
   }
 }
 
