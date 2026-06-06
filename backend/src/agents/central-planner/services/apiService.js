@@ -76,9 +76,8 @@ class CentralPlannerApiService extends BaseApiService {
     return this.call('post', '/api/v1/kg/query', data, { allowFallback: true });
   }
 
-  async driftCheck(params) {
-    const qs = new URLSearchParams(params).toString();
-    return this.call('get', `/api/v1/monitoring/drift?${qs}`, null, { allowFallback: true, bypassCircuitBreaker: true });
+  async driftCheck(data) {
+    return this.call('post', '/api/v1/monitoring/drift', data, { allowFallback: true });
   }
 
   async safetyStock(data) {
