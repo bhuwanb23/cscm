@@ -214,6 +214,14 @@ A new top-level entry accessible from any role's nav. This is the "operations co
 - `19ecb2f` — `feat(app): wire ApiProvider with health gate into root`
 - `bcec589` — `docs(plans): update commit log through Phase 1.7`
 - `52ececf` — `feat(ai-ml): add seed_demo_data readiness check for the mobile app`
+- `ffc651c` — `docs(plans): mark Phase 1 complete`
+- `00668ac` — `feat(app): wire useDashboardData (shopkeeper) to backend`
+- `12383fe` — `feat(app): wire useInventoryData (shopkeeper) to backend`
+- `2286d31` — `feat(app): wire useShipmentData (shopkeeper) to backend`
+- `2a0da9b` — `feat(app): wire useStockRequestData (shopkeeper) to backend`
+- `1396d9f` — `feat(app): wire useAnalysis (shopkeeper) to backend`
+- `bc6c1b4` — `feat(app): wire useCommunicationData (shopkeeper) to backend`
+- `c1061f3` — `feat(app): wire useProfileData (shopkeeper) to backend`
 
 ---
 
@@ -230,7 +238,16 @@ A new top-level entry accessible from any role's nav. This is the "operations co
 - [x] Phase 1.7 wire App.js
 - [x] Phase 1.8 seed_demo_data.py
 - [x] Phase 1.9 smoke test (gateway /health returns 200 with aiMl field; bundle compiles; 621 backend tests pass)
-- [ ] Phase 2 pending
+- [x] Phase 2.1+2.2 useDashboardData
+- [x] Phase 2.3 useInventoryData
+- [x] Phase 2.4 useShipmentData
+- [x] Phase 2.5 useStockRequestData
+- [x] Phase 2.6 useAnalysis
+- [x] Phase 2.7 useCommunicationData
+- [x] Phase 2.8 useProfileData
+- [ ] Phase 2.9 LoadingScreen + ErrorScreen shared components
+- [ ] Phase 2.10 RefreshControl on list screens
+- [ ] Phase 2.11 smoke test
 - [ ] Phase 3 pending
 - [ ] Phase 4 pending
 - [ ] Phase 5 pending
