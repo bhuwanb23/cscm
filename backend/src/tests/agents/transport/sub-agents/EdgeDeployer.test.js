@@ -79,10 +79,7 @@ describe('EdgeDeployer', () => {
 
       const result = await deployer.undeployRouteModel('DEP-123');
 
-      expect(mockApiService.edgeUndeploy).toHaveBeenCalledWith({
-        deployment_id: 'DEP-123',
-        action: 'undeploy'
-      });
+      expect(mockApiService.edgeUndeploy).toHaveBeenCalledWith('DEP-123');
       expect(result).toEqual({
         deployment_id: 'DEP-123',
         status: 'removed',

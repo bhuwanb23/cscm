@@ -32,10 +32,8 @@ class EdgeDeployer extends SubAgent {
 
     if (!deploymentId) throw new Error('deploymentId is required');
 
-    const data = { deployment_id: deploymentId, action: 'undeploy' };
-
     try {
-      const result = await this.apiService.edgeUndeploy(data);
+      const result = await this.apiService.edgeUndeploy(deploymentId);
       return {
         deployment_id: result.deployment_id || deploymentId,
         status: result.status || 'removed',
