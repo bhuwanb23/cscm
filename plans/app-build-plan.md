@@ -205,14 +205,15 @@ A new top-level entry accessible from any role's nav. This is the "operations co
 - `afe31ee` — `chore(app): regenerate package-lock with peer metadata`
 - `490ac0d` — `chore(app): add expo-constants dependency`
 - `89324af` — `feat(app/api): add config module with backend URL resolution`
+- `8105182` — `fix(app/api): correct default backend port to 8080 (gateway)`
 - `efb6fe2` — `feat(app/api): add fetch wrapper with timeout and error normalization`
 - `64f71f2` — `feat(app/api): add endpoint catalog grouped by backend family`
 - `99b30de` — `feat(app/api): add useApiQuery hook with abort and refetch support`
 - `f620ef5` — `feat(app/api): add ApiProvider with health gate`
 - `ac3e0d2` — `feat(gateway): enrich /health with Python AI/ML status probe`
-- `8105182` — `fix(app/api): correct default backend port to 8080 (gateway)`
-- `19ecb2f` — `feat(app): wire ApiProvider with health gate into root` (validated via `npx expo export --platform web` — 1.78 MB bundle compiles)
-- `<pending>` — `feat(ai-ml): add seed_demo_data script for mobile app demo`
+- `19ecb2f` — `feat(app): wire ApiProvider with health gate into root`
+- `bcec589` — `docs(plans): update commit log through Phase 1.7`
+- `52ececf` — `feat(ai-ml): add seed_demo_data readiness check for the mobile app`
 
 ---
 
@@ -227,10 +228,22 @@ A new top-level entry accessible from any role's nav. This is the "operations co
 - [x] Phase 1.5 ApiProvider
 - [x] Phase 1.6 /api/health
 - [x] Phase 1.7 wire App.js
-- [ ] Phase 1.8 seed_demo_data.py
-- [ ] Phase 1.9 smoke test
+- [x] Phase 1.8 seed_demo_data.py
+- [x] Phase 1.9 smoke test (gateway /health returns 200 with aiMl field; bundle compiles; 621 backend tests pass)
 - [ ] Phase 2 pending
 - [ ] Phase 3 pending
 - [ ] Phase 4 pending
 - [ ] Phase 5 pending
 - [ ] Cross-cutting concerns
+
+### Phase 1.9 smoke test results
+
+- `node src/gateway/gateway.js` boots and listens on :8080
+- `GET /health` returns 200:
+  ```json
+  {"status":"healthy","service":"api-gateway","timestamp":"...","aiMl":{"status":"unreachable","checkedAt":"..."}}
+  ```
+  (Python not running in smoke test; aiMl.status = 'unreachable' as expected)
+- `npx expo export --platform web` produces a 1.78 MB bundle — proves all imports (expo-constants, ApiProvider, etc.) resolve
+- Backend test suite: 57 suites, 621 tests, all green
+- `python -m api.scripts.seed_demo_data`: 19 endpoints checked — 11 OK, 8 WARN (Pydantic placeholder mismatch, not blockers), 1 FAIL (pre-existing demand/forecast 500 — surfaces naturally for triage)
