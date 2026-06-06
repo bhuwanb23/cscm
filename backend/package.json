@@ -7,7 +7,7 @@
     "start": "node src/api/server.js",
     "dev": "nodemon src/api/server.js",
     "test": "jest",
-    "test:integration": "node -e \"process.env.INTEGRATION_TEST='1'; require('child_process').spawnSync('jest', ['src/tests/integration/', '--runInBand'], {stdio: 'inherit', env: process.env})\"",
+    "test:integration": "node scripts/run_integration_tests.js",
     "lint": "eslint src/**/*.js",
     "postinstall": "node -e \"require('fs').existsSync('.env') || require('fs').copyFileSync('.env.example', '.env')\"",
     "agents": "node src/agents/startAgents.js",
