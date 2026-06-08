@@ -245,7 +245,7 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 6.3 `[P3]` The mesh console is undocumented outside of commit messages
 - **File**: `App/users/mesh/`
-- **Status**: open
+- **Status**: fixed
 - **Description**: there is no `App/users/mesh/README.md` explaining what each of the 4 sub-views does, what CENTRAL_PLANNER endpoints it calls, or what the mock-data shape is.
 - **Fix**: add a `README.md` per `users/<role>/` documenting the role's data flow.
 
