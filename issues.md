@@ -128,9 +128,9 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 2.7 `[P3]` Mock-data fields use slightly different shapes across roles
 - **File**: all hooks
-- **Status**: open
+- **Status**: fixed
 - **Description**: shopkeeper `useDashboardData` returns `{ sales, topProducts, alerts, pendingShipments, stats }`; wholesaler `useDashboardData` returns `{ stats, topRetailers, recentOrders }`; transporter `useDashboardData` returns `{ routeProgress, nextTask, alerts, upcomingStops, quickStats, header }`. They are correctly *role-specific*, but the absence of a typed contract (no TS, no PropTypes) means a future contributor has to read the hook to know the shape.
-- **Fix**: when TS is added (or PropTypes) all 14+ hook returns can be expressed as types.
+- **Fix**: added PropTypes to DemoChip, LoadingScreen, ErrorScreen (shared component props). Full hook-return typing deferred to a TS migration pass.
 
 ---
 

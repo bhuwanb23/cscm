@@ -1,5 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import PropTypes from 'prop-types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, typography } from '../theme/tokens';
 
@@ -18,6 +19,11 @@ export function LoadingScreen({ message = 'Loading…', testID = 'loading-screen
     </LinearGradient>
   );
 }
+
+LoadingScreen.propTypes = {
+  message: PropTypes.string,
+  testID: PropTypes.string,
+};
 
 const styles = StyleSheet.create({
   container: {

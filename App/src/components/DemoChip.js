@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import PropTypes from 'prop-types';
 import { Ionicons } from '@expo/vector-icons';
 
 // Set to false once the 8 broken sub-agents (issues 1.3/1.4) are fixed
@@ -14,6 +15,10 @@ const DemoChip = ({ style }) => {
       <Text style={styles.label}>Demo data — backend not reachable</Text>
     </View>
   );
+};
+
+DemoChip.propTypes = {
+  style: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
 };
 
 const styles = StyleSheet.create({

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import PropTypes from 'prop-types';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, spacing, typography } from '../theme/tokens';
 
@@ -34,6 +35,14 @@ export function ErrorScreen({
     </LinearGradient>
   );
 }
+
+ErrorScreen.propTypes = {
+  title: PropTypes.string,
+  message: PropTypes.string,
+  onRetry: PropTypes.func,
+  retryLabel: PropTypes.string,
+  testID: PropTypes.string,
+};
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
