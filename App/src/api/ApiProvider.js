@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { ActivityIndicator, Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { apiHealth } from './apiClient';
 import { getDevBackendUrl, API_CONFIG } from './config';
 
@@ -88,9 +88,9 @@ function DefaultHealthScreen({ state, detail, onRetry, backendUrl }) {
             <ActivityIndicator size="large" color="#3B82F6" />
           </View>
         )}
-        <TouchableOpacity onPress={() => Linking.openURL('https://example.com')}>
-          <Text style={styles.linkText}>See API_SETUP.md</Text>
-        </TouchableOpacity>
+        <Text style={styles.hint}>
+          For setup instructions open App/API_SETUP.md
+        </Text>
       </View>
     </View>
   );
