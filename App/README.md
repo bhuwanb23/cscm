@@ -5,10 +5,11 @@ A React Native mobile application for the Cognitive Supply Chain Mesh system, de
 ## Features
 
 ### 🔐 Authentication System
-- **Role-based Login**: Separate interfaces for Shopkeepers and Transporters
+- **Role-based Login**: Separate interfaces for Shopkeepers, Transporters, and Wholesalers
+- **Mesh Console**: Role-agnostic mesh-level views (alerts, knowledge graph, drift, network)
 - **Beautiful UI**: Modern, professional login interface with gradient backgrounds
 - **Form Validation**: Input validation and error handling
-- **Secure Authentication**: JWT-based authentication system
+- **Demo Picker**: 3-role role-pick login (real auth deferred)
 
 ### 🏪 Shopkeeper Dashboard
 - **Inventory Management**: Real-time inventory tracking with color-coded status indicators
@@ -158,6 +159,16 @@ This project is part of the Cognitive Supply Chain Mesh (CSCM) system and is pro
 ## Support
 
 For technical support or questions about the CSCM system, please contact the development team.
+
+## Windows / PowerShell Quirks
+
+This project is developed on Windows with PowerShell 5.1. A few sharp edges to be aware of:
+
+- **No `&&`**: Use `if ($?) { cmd }` to chain dependent commands.
+- **No `VAR=value cmd`**: Use `$env:VAR = "value"` before the command.
+- **`git commit -m` and paths**: A `/` inside the message is interpreted as a path separator by PowerShell. Use double quotes and avoid backslashes at the end of the string.
+- **`Start-Process` lifecycle**: A child process spawned with `Start-Process` dies when the spawning shell exits. Start, test, and stop must be in the *same* shell block.
+- **`cd` + `;`**: Changing directory with `cd` via `;` chaining does not actually change the working directory for subsequent commands when using the workdir parameter. Use the tool's `workdir` parameter instead.
 
 ---
 
