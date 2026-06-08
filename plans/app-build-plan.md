@@ -2,6 +2,8 @@
 
 **Stack lock-in**: React Native + Expo SDK 54 (RN 0.81, React 19), react-native-paper, **mobile only** (no web build), **blue gradient stays** (Neural Pulse design deferred), **demo target** (role-pick login, seeded fixtures, polished UI; real auth deferred).
 
+**Known issues**: see [`issues.md`](../issues.md) for open bugs, tech debt, and shortcomings.
+
 **Commit cadence**: one small commit per sub-step after manual smoke test.
 
 **Total budget**: ~35 commits across 5 phases + 4 cross-cutting.
