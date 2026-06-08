@@ -19,6 +19,9 @@ Usage (from ai-ml/):
 """
 import sys
 import os
+import json
+import argparse
+from datetime import datetime
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -166,18 +169,19 @@ CHECKS = [
 def call(method, path, body=None, params=None):
     try:
         response = client.request(method, path, json=body, params=params, timeout=30)
-        if response.status_code >= 500:
-            return "FAIL", f"status={response.status_code} (server error)"
-        if response.status_code == 422:
-            return "WARN", f"status=422 (Pydantic rejected sample shape)"
-        if response.status_code >= 400:
-            return "WARN", f"status={response.status_code} client_error"
-        return "OK", f"status={response.status_code}"
+        code = response.status_code
+        if code >= 500:
+            return {"status": "FAIL", "detail": f"status={code} (server error)", "code": code}
+        if code == 422:
+            return {"status": "WARN", "detail": "status=422 (Pydantic rejected sample shape)", "code": code}
+        if code >= 400:
+            return {"status": "WARN", "detail": f"status={code} client_error", "code": code}
+        return {"status": "OK", "detail": f"status={code}", "code": code}
     except Exception as exc:
-        return "FAIL", f"exception={type(exc).__name__}: {str(exc)[:60]}"
+        return {"status": "FAIL", "detail": f"exception={type(exc).__name__}: {str(exc)[:60]}", "code": None}
 
 
-def main():
+def main(args):
     print("CSCM demo readiness check")
     print("=" * 64)
     print("  Endpoint reaches the FastAPI app and returns a defined status.")
@@ -191,21 +195,35 @@ def main():
     counts = {"OK": 0, "WARN": 0, "FAIL": 0}
     failed = []
     warned = []
+    results = []
 
     for check in CHECKS:
         if check["family"] != current_family:
             current_family = check["family"]
             print()
             print(f"  [{current_family}]")
-        status, detail = call(check["method"], check["path"], check.get("body"), check.get("params"))
-        counts[status] += 1
-        if status == "FAIL":
+        result = call(check["method"], check["path"], check.get("body"), check.get("params"))
+        results.append({**check, **result})
+        counts[result["status"]] += 1
+        if result["status"] == "FAIL":
             failed.append(check["label"])
-        elif status == "WARN":
+        elif result["status"] == "WARN":
             warned.append(check["label"])
-        print(f"    [{status}] {check['label']:<32}  {detail}")
+        print(f"    [{result['status']}] {check['label']:<32}  {result['detail']}")
 
     total = len(CHECKS)
+
+    report = {
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "total": total,
+        "ok": counts["OK"],
+        "warn": counts["WARN"],
+        "fail": counts["FAIL"],
+        "failed_endpoints": [{"label": f, "detail": r["detail"]} for f, r in zip(failed, [x for x in results if x["status"] == "FAIL"])],
+        "warned_endpoints": [{"label": w, "detail": r["detail"]} for w, r in zip(warned, [x for x in results if x["status"] == "WARN"])],
+        "results": [{k: v for k, v in r.items() if k in ("family", "label", "method", "path", "status", "detail", "code")} for r in results],
+    }
+
     print()
     print("=" * 64)
     print(f"  Total: {total} endpoints checked")
@@ -215,18 +233,26 @@ def main():
     print()
     if failed:
         print("  Failed endpoints (need attention):")
-        for label in failed:
-            print(f"    - {label}")
+        for f, r in zip(failed, [x for x in results if x["status"] == "FAIL"]):
+            print(f"    - {f}: {r['detail']}")
     if warned:
         print("  Warned endpoints (Pydantic rejected the placeholder input):")
-        for label in warned:
-            print(f"    - {label}")
+        for w, r in zip(warned, [x for x in results if x["status"] == "WARN"]):
+            print(f"    - {w}: {r['detail']}")
     print()
     if counts["FAIL"] == 0:
         print("  All endpoints reachable. Mobile app can hit every family.")
     else:
         print(f"  {counts['FAIL']} endpoint(s) failed; fix before booting the mobile app.")
 
+    if args.output:
+        out_path = args.output
+        with open(out_path, "w") as f:
+            json.dump(report, f, indent=2)
+        print(f"\n  Report written to {out_path}")
+
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="CSCM demo readiness check")
+    parser.add_argument("--output", "-o", type=str, default=None, help="Path to write JSON report (default: stdout only)")
+    main(parser.parse_args())
