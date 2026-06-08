@@ -15,7 +15,7 @@ import Navigation from './navigation/navigation';
 import MeshConsole from '../mesh/mesh';
 import DemoChip from '../../src/components/DemoChip';
 
-const TransporterDashboard = ({ onLogout }) => {
+const TransporterDashboard = ({ onLogout, role }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   const handleTabPress = (tabId) => {
@@ -39,7 +39,7 @@ const TransporterDashboard = ({ onLogout }) => {
         ) : activeTab === 'navigation' ? (
           <Navigation onLogout={onLogout} />
         ) : activeTab === 'mesh' ? (
-          <MeshConsole onLogout={onLogout} />
+          <MeshConsole onLogout={onLogout} role={role} />
         ) : (
           <>
             <Header 

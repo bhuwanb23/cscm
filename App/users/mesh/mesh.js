@@ -15,7 +15,15 @@ const TABS = [
   { id: 'network', label: 'Network', icon: 'globe-outline' },
 ];
 
-const MeshConsole = ({ onLogout }) => {
+// ALLOW_ALL_ROLES: set to false in production to gate mesh behind admin
+const ALLOW_ALL_ROLES = true;
+const ALLOWED_ROLES = ['admin', 'operator'];
+
+const MeshConsole = ({ onLogout, role }) => {
+  if (!ALLOW_ALL_ROLES && (!role || !ALLOWED_ROLES.includes(role))) {
+    return null;
+  }
+
   const [activeTab, setActiveTab] = useState('alerts');
 
   const renderContent = () => {

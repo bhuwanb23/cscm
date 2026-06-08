@@ -26,11 +26,11 @@ export default function App() {
     if (!user) return null;
 
     if (user.role === 'shopkeeper') {
-      return <ShopkeeperDashboard onLogout={handleLogout} />;
+      return <ShopkeeperDashboard onLogout={handleLogout} role={user.role} />;
     } else if (user.role === 'transporter') {
-      return <TransporterDashboard onLogout={handleLogout} />;
+      return <TransporterDashboard onLogout={handleLogout} role={user.role} />;
     } else if (user.role === 'wholesaler') {
-      return <WholesalerDashboard onLogout={handleLogout} />;
+      return <WholesalerDashboard onLogout={handleLogout} role={user.role} />;
     }
 
     return null;

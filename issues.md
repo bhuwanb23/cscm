@@ -219,9 +219,9 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 5.3 `[P2]` Mesh console has no real auth gate (role-agnostic)
 - **File**: `App/users/mesh/mesh.js`
-- **Status**: open (intentional for the demo)
+- **Status**: fixed
 - **Description**: the mesh console is reachable from any role. For a production deployment, central-planner views should be gated to operators / admins only.
-- **Fix**: add a `role` prop to `MeshConsole` and a permission check; or move the mesh views out of the role's bottom-nav and into a separate admin section.
+- **Fix**: added `role` prop to `MeshConsole` via `App.js` → 3 role screens → `mesh.js`; gated behind `ALLOW_ALL_ROLES` constant (true for demo, false for production). When false, only `admin`/`operator` roles can access.
 
 ### 5.4 `[P3]` Gateway port (`8080`) is duplicated in code and docs
 - **File**: `App/src/api/config.js`, `App/API_SETUP.md`, `backend/src/gateway/gateway.js`

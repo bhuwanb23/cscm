@@ -11,7 +11,7 @@ import Profile from './profile/profile';
 import MeshConsole from '../mesh/mesh';
 import DemoChip from '../../src/components/DemoChip';
 
-const WholesalerDashboard = ({ onLogout }) => {
+const WholesalerDashboard = ({ onLogout, role }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   const handleTabPress = (tabId) => setActiveTab(tabId);
@@ -28,7 +28,7 @@ const WholesalerDashboard = ({ onLogout }) => {
       case 'inventory':
         return <Inventory onLogout={onLogout} />;
       case 'mesh':
-        return <MeshConsole onLogout={onLogout} />;
+        return <MeshConsole onLogout={onLogout} role={role} />;
       case 'profile':
         return <Profile onLogout={onLogout} />;
       default:

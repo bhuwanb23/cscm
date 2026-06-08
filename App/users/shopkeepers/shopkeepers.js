@@ -21,7 +21,7 @@ import Profile from './profile/profile';
 import MeshConsole from '../mesh/mesh';
 import DemoChip from '../../src/components/DemoChip';
 
-const ShopkeeperDashboard = ({ onLogout }) => {
+const ShopkeeperDashboard = ({ onLogout, role }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   const inventoryData = [
@@ -70,7 +70,7 @@ const ShopkeeperDashboard = ({ onLogout }) => {
       case 'messages':
         return <Communication />;
       case 'mesh':
-        return <MeshConsole onLogout={onLogout} />;
+        return <MeshConsole onLogout={onLogout} role={role} />;
       case 'profile':
         return <Profile onLogout={onLogout} />; // Pass onLogout prop
       default:
