@@ -239,7 +239,7 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 - **Fix**: create `requirements.md` with one section per role (shopkeeper / transporter / wholesaler / mesh) and a "data shape" sub-section for each.
 
 ### 6.2 `[P3]` `plans/app-build-plan.md` doesn't link to `issues.md`
-- **Status**: open
+- **Status**: fixed
 - **Description**: future readers of the plan will hit a list of "deferred" items without a way to track them.
 - **Fix**: add a "Known issues" link at the top of the plan pointing to this file.
 
