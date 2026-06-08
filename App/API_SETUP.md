@@ -1,8 +1,8 @@
 # API Setup
 
 The CSCM mobile app talks to the **Node.js API gateway** running on your
-development machine. The gateway listens on **port 8080** and routes
-requests between:
+development machine. The gateway listens on **port 8080** (configurable via
+`GATEWAY_PORT` / `EXPO_PUBLIC_GATEWAY_PORT`) and routes requests between:
 
 - The **Express API** on port 3000 (`backend/src/api/server.js`) — handles
   CRUD, auth, agent sub-agents that don't need AI/ML models
@@ -12,6 +12,12 @@ requests between:
 The gateway is the right entry point for the mobile app: it hides the
 backend topology, has CORS configured, and is where production auth/rate
 limiting will live.
+
+The app has **three roles** (shopkeeper, transporter, wholesaler) plus a
+**mesh console** (role-agnostic). Each role uses a subset of the 69
+endpoints catalogued in `src/api/endpoints.js` (see `ROLE_ENDPOINTS` map).
+If the backend is unreachable, all screens fall back to centralized mock
+data from `src/demo/index.js` and show a yellow "Demo data" chip.
 
 ## Quick start (three terminals)
 
@@ -111,3 +117,4 @@ EXPO_PUBLIC_BACKEND_URL=https://api.cscm.example.com npx expo run:ios
 | Red health gate, gateway is running | Firewall blocking port 8080 on the dev machine | Allow inbound on port 8080, or set `EXPO_PUBLIC_BACKEND_URL=localhost` for emulator |
 | Phone can't reach backend, web build works | Phone and dev machine on different WiFi | Connect both to the same network, or set `EXPO_PUBLIC_BACKEND_URL` explicitly |
 | Random network errors mid-session | Dev machine went to sleep, IP changed | Tap the "Retry" button on the health gate |
+| Yellow "Demo data" chip visible | Backend unreachable or not all endpoints wired | Start the gateway + Python; or use `EXPO_PUBLIC_BACKEND_URL=http://localhost:3000` as a shortcut |
