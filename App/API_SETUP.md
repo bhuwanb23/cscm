@@ -61,7 +61,11 @@ The app picks the backend URL in this order (`src/api/config.js`):
 | --- | --- | --- |
 | 1 | `EXPO_PUBLIC_BACKEND_URL` env var | Production builds, staging, demos on a different network |
 | 2 | Expo `hostUri` (LAN IP of dev machine) | Phone with Expo Go on the same WiFi as your laptop |
-| 3 | `http://localhost:8080` | Web build, iOS simulator, Android emulator on the same machine |
+| 3 | `http://{host}:${EXPO_PUBLIC_GATEWAY_PORT || 8080}` | Web build, iOS simulator, Android emulator on the same machine |
+
+The port used in URL construction (priority 2–3) can be overridden via
+`EXPO_PUBLIC_GATEWAY_PORT` — set it to match the gateway's `GATEWAY_PORT`
+if you changed it from the default `8080`.
 
 ## Finding your dev machine's LAN IP
 
@@ -84,11 +88,12 @@ Set the env var before starting Expo:
 ```powershell
 # Windows PowerShell
 $env:EXPO_PUBLIC_BACKEND_URL = "http://192.168.1.42:8080"
+$env:EXPO_PUBLIC_GATEWAY_PORT = "8080"   # optional, defaults to 8080
 npx expo start
 ```
 ```bash
 # macOS / Linux
-EXPO_PUBLIC_BACKEND_URL=http://192.168.1.42:8080 npx expo start
+EXPO_PUBLIC_BACKEND_URL=http://192.168.1.42:8080 EXPO_PUBLIC_GATEWAY_PORT=8080 npx expo start
 ```
 
 ### For production builds

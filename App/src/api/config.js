@@ -1,5 +1,5 @@
 const DEFAULT_HOST = 'localhost';
-const DEFAULT_PORT = 8080;
+const DEFAULT_PORT = parseInt(process.env.EXPO_PUBLIC_GATEWAY_PORT, 10) || 8080;
 const DEFAULT_TIMEOUT_MS = 30000;
 const HEALTH_PATH = '/health';
 

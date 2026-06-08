@@ -32,7 +32,7 @@ npm run dev        # starts with nodemon auto-reload
 
 The gateway runs separately:
 ```bash
-node src/gateway/gateway.js    # starts on port 8080
+node src/gateway/gateway.js    # starts on port 8080 (override with GATEWAY_PORT env var)
 ```
 
 ## Project Structure
