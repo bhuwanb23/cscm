@@ -1,15 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { apiPatch, apiPost } from '../../../../src/api/apiClient';
+import { WHOLESALER_DEFAULT_ORDERS as DEFAULT_ORDERS } from '../../../../src/demo';
 
 const WHOLESALER_ID = 'WHOLE-001';
-
-const DEFAULT_ORDERS = [
-  { id: 'WO-1001', retailer: 'Fresh Mart', items: 12, value: 4250, status: 'pending', priority: 'high', date: '2024-12-15' },
-  { id: 'WO-1002', retailer: 'City Grocer', items: 8, value: 3120, status: 'approved', priority: 'normal', date: '2024-12-15' },
-  { id: 'WO-1003', retailer: 'Quick Stop', items: 15, value: 5680, status: 'dispatched', priority: 'urgent', date: '2024-12-14' },
-  { id: 'WO-1004', retailer: 'Fresh Mart', items: 6, value: 2150, status: 'delivered', priority: 'normal', date: '2024-12-13' },
-];
 
 function normalizeOrder(raw, index) {
   return {

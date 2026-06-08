@@ -7,9 +7,10 @@ import {
   Alert,
 } from 'react-native';
 import { Card } from 'react-native-paper';
+import { TRANSPORTER_ROUTE_PROGRESS } from '../../../../src/demo';
 
 const RouteProgress = ({ data }) => {
-  const progress = data || { completed: 4, total: 16 };
+  const progress = data || TRANSPORTER_ROUTE_PROGRESS;
   const pct = Math.min(100, Math.round((progress.completed / Math.max(progress.total, 1)) * 100));
 
   const handleRoutePress = () => Alert.alert('Route Details', 'Viewing route completion details');

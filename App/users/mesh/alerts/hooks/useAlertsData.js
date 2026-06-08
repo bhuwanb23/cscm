@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { apiPost } from '../../../../src/api/apiClient';
+import { MESH_DEFAULT_ALERTS as DEFAULT_ALERTS } from '../../../../src/demo';
 
 const SEVERITY_META = {
   critical: { bg: '#FEE2E2', fg: '#B91C1C', icon: 'alert-circle' },
@@ -10,13 +11,6 @@ const SEVERITY_META = {
   low: { bg: '#DBEAFE', fg: '#1E40AF', icon: 'information-circle' },
   info: { bg: '#DBEAFE', fg: '#1E40AF', icon: 'information-circle' },
 };
-
-const DEFAULT_ALERTS = [
-  { id: 'A-001', severity: 'critical', title: 'Drift Detected in DemandForecaster', source: 'central-planner', description: 'Prediction accuracy dropped 12% in last 4h on Bengaluru cluster.', created_at: '2024-12-15T10:30:00Z', acknowledged: false },
-  { id: 'A-002', severity: 'high', title: 'InventoryOptimizer Divergence', source: 'central-planner', description: 'Three warehouses reporting conflicting reorder recommendations.', created_at: '2024-12-15T09:15:00Z', acknowledged: false },
-  { id: 'A-003', severity: 'medium', title: 'EventGenerator Latency Spike', source: 'central-planner', description: 'p95 latency > 800ms in EU region for past 30 min.', created_at: '2024-12-15T08:45:00Z', acknowledged: false },
-  { id: 'A-004', severity: 'low', title: 'Warehouse B Storage Threshold', source: 'central-planner', description: 'Storage utilization crossed 85% in Warehouse B.', created_at: '2024-12-15T07:20:00Z', acknowledged: true },
-];
 
 function normalizeAlert(raw, index) {
   const severity = (raw.severity || 'info').toLowerCase();

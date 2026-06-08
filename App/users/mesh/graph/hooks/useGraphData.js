@@ -1,27 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
-
-const DEFAULT_GRAPH = {
-  nodes: [
-    { id: 'shopkeeper-1', type: 'shopkeeper', label: 'Fresh Mart' },
-    { id: 'shopkeeper-2', type: 'shopkeeper', label: 'City Grocer' },
-    { id: 'wholesaler-1', type: 'wholesaler', label: 'CSCM Wholesale' },
-    { id: 'warehouse-1', type: 'warehouse', label: 'Warehouse A' },
-    { id: 'transporter-1', type: 'transporter', label: 'FedEx Express' },
-    { id: 'transporter-2', type: 'transporter', label: 'DHL Logistics' },
-    { id: 'planner-1', type: 'central-planner', label: 'Central Planner' },
-  ],
-  edges: [
-    { from: 'shopkeeper-1', to: 'wholesaler-1', relationship: 'orders_from' },
-    { from: 'shopkeeper-2', to: 'wholesaler-1', relationship: 'orders_from' },
-    { from: 'wholesaler-1', to: 'warehouse-1', relationship: 'stocks_at' },
-    { from: 'warehouse-1', to: 'transporter-1', relationship: 'ships_via' },
-    { from: 'warehouse-1', to: 'transporter-2', relationship: 'ships_via' },
-    { from: 'transporter-1', to: 'shopkeeper-1', relationship: 'delivers_to' },
-    { from: 'transporter-2', to: 'shopkeeper-2', relationship: 'delivers_to' },
-    { from: 'planner-1', to: 'wholesaler-1', relationship: 'coordinates' },
-  ],
-};
+import { MESH_DEFAULT_GRAPH as DEFAULT_GRAPH } from '../../../../src/demo';
 
 export const useGraphData = () => {
   const [query, setQuery] = useState('');

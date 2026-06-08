@@ -3,14 +3,10 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { TRANSPORTER_DEFAULT_TURNS } from '../../../../src/demo';
 
 const UpcomingTurns = ({ turns }) => {
-  const upcomingTurns = turns && turns.length > 0 ? turns : [
-    { instruction: 'Head north on Main St', distance: '200 m', icon: 'arrow-up' },
-    { instruction: 'Turn right onto Oak Ave', distance: '1.2 km', icon: 'turn-right' },
-    { instruction: 'Continue straight', distance: '800 m', icon: 'arrow-forward' },
-    { instruction: 'Turn left onto Pine Rd', distance: '450 m', icon: 'turn-left' },
-  ];
+  const upcomingTurns = turns && turns.length > 0 ? turns : TRANSPORTER_DEFAULT_TURNS;
 
   return (
     <Card style={styles.card} elevation={2}>

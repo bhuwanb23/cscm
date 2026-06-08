@@ -1,30 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
+import {
+  TRANSPORTER_DEFAULT_DRIVER as DEFAULT_DRIVER,
+  TRANSPORTER_DEFAULT_VEHICLE as DEFAULT_VEHICLE,
+  TRANSPORTER_DEFAULT_STATS as DEFAULT_STATS,
+} from '../../../../src/demo';
 
 const TRANSPORTER_ID = 'TRANS-001';
-
-const DEFAULT_DRIVER = {
-  name: 'John Smith',
-  driverId: 'DRV001',
-  email: 'john.smith@transporter.com',
-  licenseNumber: 'DL1234567890',
-  licenseExpiry: '2025-12-31',
-  phone: '+1 (555) 123-4567',
-  emergencyContact: '+1 (555) 987-6543',
-  experience: 5,
-  preferredRoutes: 'City Center, Downtown',
-};
-
-const DEFAULT_VEHICLE = {
-  type: 'Delivery Van',
-  registration: 'ABC-123-XYZ',
-  capacity: '1.5 tons',
-  lastService: '2024-09-15',
-  nextService: '2025-03-15',
-  insuranceExpiry: '2025-06-30',
-};
-
-const DEFAULT_STATS = { completedDeliveries: 127, onTimeRate: 96, rating: 4.8 };
 
 function deriveStats(delivered) {
   if (!Array.isArray(delivered) || delivered.length === 0) return DEFAULT_STATS;

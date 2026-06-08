@@ -9,14 +9,10 @@ import {
 import { Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { TRANSPORTER_QUICK_STATS } from '../../../../src/demo';
 
 const QuickStats = ({ data }) => {
-  const stats = data || {
-    pendingDeliveries: 12,
-    pendingDeliveriesProgress: 45,
-    scheduledPickups: 4,
-    scheduledPickupsProgress: 25,
-  };
+  const stats = data || TRANSPORTER_QUICK_STATS;
 
   const handleStatPress = (statType) => {
     Alert.alert('Statistics', `Viewing details for ${statType}`);

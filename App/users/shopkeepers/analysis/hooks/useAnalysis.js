@@ -3,39 +3,13 @@ import { Animated, Easing } from 'react-native';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { apiPost } from '../../../../src/api/apiClient';
 import { ANALYSIS_MODULES } from '../constants';
+import {
+  SHOPKEEPER_DEFAULT_METRICS as DEFAULT_METRICS,
+  SHOPKEEPER_DONE_METRICS as DONE_METRICS,
+  SHOPKEEPER_DEFAULT_INSIGHTS as DEFAULT_INSIGHTS,
+} from '../../../../src/demo';
 
 const SHOP_ID = 'SHOP-001';
-
-const DEFAULT_METRICS = {
-  stockoutRisk: 18,
-  overstockValue: 24.5,
-  revenueLost: 3.2,
-  skuHealth: 82,
-  forecastAccuracy: 91,
-  workingCapital: 47.3,
-  demandSpikes: 6,
-  inventoryTurnover: 9.1,
-  transferGain: 1.4,
-};
-
-const DONE_METRICS = {
-  stockoutRisk: 21,
-  overstockValue: 26.9,
-  revenueLost: 2.7,
-  skuHealth: 84,
-  forecastAccuracy: 92,
-  workingCapital: 45.1,
-  demandSpikes: 8,
-  inventoryTurnover: 9.4,
-  transferGain: 1.9,
-};
-
-const DEFAULT_INSIGHTS = [
-  'SKU X is selling 3x faster in Bangalore; transfer 20 units from Chennai.',
-  'Weekend spike of 2.1x expected on beverages; increase PO by 18%.',
-  'Ageing inventory in Warehouse B: 43 SKUs beyond 90 days.',
-  '16 SKUs not synced across D2C, Meesho, Amazon – channel risk.',
-];
 
 function extractInsights(payload) {
   if (!payload) return null;

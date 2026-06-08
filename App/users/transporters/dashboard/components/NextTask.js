@@ -9,19 +9,10 @@ import {
 } from 'react-native';
 import { Card, Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { TRANSPORTER_NEXT_TASK } from '../../../../src/demo';
 
 const NextTask = ({ data, onStartRoute, onCall }) => {
-  const task = data || {
-    priority: 'High',
-    distance: '2.4 miles away',
-    eta: '10:45 AM',
-    storeName: 'Whole Foods Market',
-    storeAddress: '1200 Broadway, Seattle, WA',
-    orderId: '#ORD-9921',
-    packages: '15 Boxes',
-    weight: '320 lbs',
-    type: 'DELIVERY',
-  };
+  const task = data || TRANSPORTER_NEXT_TASK;
 
   const handleNavigatePress = () => Alert.alert('Navigation', 'Starting navigation to destination');
   const handleCallPress = () => {

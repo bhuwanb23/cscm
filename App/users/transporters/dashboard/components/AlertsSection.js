@@ -7,12 +7,10 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { TRANSPORTER_ALERTS_SECTION } from '../../../../src/demo';
 
 const AlertsSection = ({ data, onAlertPress }) => {
-  const alerts = data && data.length > 0 ? data : [
-    { id: 'a1', type: 'warning', title: 'Traffic Delay Detected', description: 'Estimated +15 mins on I-5 South. Rerouting recommended.' },
-    { id: 'a2', type: 'info', title: 'New Pickup Added', description: 'Stop added to route: TechHub Logistics (Order #993)', hasViewDetails: true },
-  ];
+  const alerts = data && data.length > 0 ? data : TRANSPORTER_ALERTS_SECTION;
 
   const handleAlertPress = (alert) => {
     if (onAlertPress) onAlertPress(alert);

@@ -1,28 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { apiPost } from '../../../../src/api/apiClient';
+import {
+  WHOLESALER_DEFAULT_STATS as DEFAULT_STATS,
+  WHOLESALER_DEFAULT_TOP_RETAILERS as DEFAULT_TOP_RETAILERS,
+  WHOLESALER_DEFAULT_RECENT_ORDERS as DEFAULT_RECENT_ORDERS,
+} from '../../../../src/demo';
 
 const WHOLESALER_ID = 'WHOLE-001';
-
-const DEFAULT_STATS = {
-  todayOrders: 28,
-  pendingFulfillment: 14,
-  lowStockItems: 7,
-  monthlyRevenue: 184250,
-  fulfillmentRate: 94,
-};
-
-const DEFAULT_TOP_RETAILERS = [
-  { id: 'r1', name: 'Fresh Mart', orders: 24, value: 45200 },
-  { id: 'r2', name: 'City Grocer', orders: 18, value: 38400 },
-  { id: 'r3', name: 'Quick Stop', orders: 15, value: 31200 },
-];
-
-const DEFAULT_RECENT_ORDERS = [
-  { id: 'WO-1001', retailer: 'Fresh Mart', items: 12, value: 4250, status: 'pending' },
-  { id: 'WO-1002', retailer: 'City Grocer', items: 8, value: 3120, status: 'approved' },
-  { id: 'WO-1003', retailer: 'Quick Stop', items: 15, value: 5680, status: 'dispatched' },
-];
 
 function parseOrder(raw, index) {
   return {

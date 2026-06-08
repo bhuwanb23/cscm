@@ -1,14 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { apiPatch } from '../../../../src/api/apiClient';
+import { WHOLESALER_DEFAULT_SHIPMENTS as DEFAULT_SHIPMENTS } from '../../../../src/demo';
 
 const WHOLESALER_ID = 'WHOLE-001';
-
-const DEFAULT_SHIPMENTS = [
-  { id: 'WS-2001', retailer: 'Fresh Mart', items: 12, status: 'in_transit', eta: 'Today 3:30 PM', carrier: 'FedEx', tracking: 'TRK-9821' },
-  { id: 'WS-2002', retailer: 'City Grocer', items: 8, status: 'dispatched', eta: 'Tomorrow 10:00 AM', carrier: 'DHL', tracking: 'TRK-9822' },
-  { id: 'WS-2003', retailer: 'Quick Stop', items: 15, status: 'delivered', eta: 'Delivered yesterday', carrier: 'UPS', tracking: 'TRK-9820' },
-];
 
 function normalizeShipment(raw, index) {
   return {

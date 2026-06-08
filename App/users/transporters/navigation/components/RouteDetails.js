@@ -2,13 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { TRANSPORTER_DEFAULT_STOPS } from '../../../../src/demo';
 
 const RouteDetails = ({ stops }) => {
-  const routeStops = stops && stops.length > 0 ? stops : [
-    { id: 1, name: 'Warehouse A', address: '123 Storage St', status: 'completed' },
-    { id: 2, name: 'Customer Location', address: '456 Delivery Ave', status: 'current' },
-    { id: 3, name: 'Return Point', address: '789 Return Rd', status: 'pending' },
-  ];
+  const routeStops = stops && stops.length > 0 ? stops : TRANSPORTER_DEFAULT_STOPS;
 
   const getStatusIcon = (status) => {
     if (status === 'completed') return 'checkmark-circle';

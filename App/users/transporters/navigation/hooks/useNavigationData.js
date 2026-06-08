@@ -1,21 +1,12 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { apiPatch } from '../../../../src/api/apiClient';
+import {
+  TRANSPORTER_DEFAULT_STOPS as DEFAULT_STOPS,
+  TRANSPORTER_DEFAULT_TURNS as DEFAULT_TURNS,
+} from '../../../../src/demo';
 
 const TRANSPORTER_ID = 'TRANS-001';
-
-const DEFAULT_STOPS = [
-  { id: 's1', name: 'Warehouse A', address: '123 Storage St', status: 'completed' },
-  { id: 's2', name: 'Customer Location', address: '456 Delivery Ave', status: 'current' },
-  { id: 's3', name: 'Return Point', address: '789 Return Rd', status: 'pending' },
-];
-
-const DEFAULT_TURNS = [
-  { instruction: 'Head north on Main St', distance: '200 m', icon: 'arrow-up' },
-  { instruction: 'Turn right onto Oak Ave', distance: '1.2 km', icon: 'turn-right' },
-  { instruction: 'Continue straight', distance: '800 m', icon: 'arrow-forward' },
-  { instruction: 'Turn left onto Pine Rd', distance: '450 m', icon: 'turn-left' },
-];
 
 function normalizeStop(raw, index) {
   const status = (raw.status || '').toLowerCase();

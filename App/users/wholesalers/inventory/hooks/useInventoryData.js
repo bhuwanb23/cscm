@@ -1,15 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { apiPut } from '../../../../src/api/apiClient';
+import { WHOLESALER_DEFAULT_INVENTORY as DEFAULT_INVENTORY } from '../../../../src/demo';
 
 const WHOLESALER_ID = 'WHOLE-001';
-
-const DEFAULT_INVENTORY = [
-  { id: 'W-001', name: 'Basmati Rice', sku: 'RIC-BAS-50', quantity: 240, reorder_point: 100, category: 'Grains', price: 28.50 },
-  { id: 'W-002', name: 'Sunflower Oil', sku: 'OIL-SUN-15', quantity: 12, reorder_point: 50, category: 'Oils', price: 42.00 },
-  { id: 'W-003', name: 'Sugar', sku: 'SUG-REF-25', quantity: 180, reorder_point: 80, category: 'Sweeteners', price: 18.75 },
-  { id: 'W-004', name: 'Tea Bags', sku: 'TEA-BAG-100', quantity: 8, reorder_point: 30, category: 'Beverages', price: 65.00 },
-];
 
 function normalizeItem(raw, index) {
   return {

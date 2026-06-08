@@ -1,17 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { apiPost } from '../../../../src/api/apiClient';
-
-const DEFAULT_DRIFT = {
-  model: 'DemandForecaster',
-  baseline_accuracy: 0.91,
-  current_accuracy: 0.79,
-  drift_score: 0.13,
-  threshold: 0.10,
-  detected_at: '2024-12-15T10:30:00Z',
-  affected_clusters: ['Bengaluru', 'Mumbai-South'],
-  recommended_action: 'Retrain DemandForecaster on last 14 days.',
-};
+import { MESH_DEFAULT_DRIFT as DEFAULT_DRIFT } from '../../../../src/demo';
 
 export const useDriftData = () => {
   const [history, setHistory] = useState([

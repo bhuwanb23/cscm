@@ -1,18 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
+import {
+  SHOPKEEPER_FALLBACK_STOCK_LEVELS as FALLBACK_STOCK_LEVELS,
+  SHOPKEEPER_FALLBACK_SHIPMENTS as FALLBACK_SHIPMENTS,
+  SHOPKEEPER_FALLBACK_ALERTS as FALLBACK_ALERTS,
+} from '../../../../src/demo';
 
 const SHOP_ID = 'SHOP-001';
-
-const FALLBACK_STOCK_LEVELS = { good: 124, low: 18, critical: 7 };
-const FALLBACK_SHIPMENTS = [
-  { id: 'SH001', items: 'Electronics & Accessories', eta: 'Today, 3:00 PM', status: 'in_transit' },
-  { id: 'SH002', items: 'Home & Garden', eta: 'Tomorrow, 10:00 AM', status: 'preparing' },
-];
-const FALLBACK_ALERTS = [
-  { id: 1, type: 'critical', title: 'Critical Stock Level', message: 'iPhone 14 cases below minimum threshold', time: '2 minutes ago' },
-  { id: 2, type: 'warning', title: 'Delivery Delay', message: 'Shipment #SH003 delayed by 2 hours', time: '15 minutes ago' },
-  { id: 3, type: 'success', title: 'Stock Replenished', message: 'Wireless headphones restocked successfully', time: '1 hour ago' },
-];
 
 function aggregateStockLevels(items) {
   if (!Array.isArray(items)) return FALLBACK_STOCK_LEVELS;

@@ -8,13 +8,10 @@ import {
 } from 'react-native';
 import { Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { TRANSPORTER_UPCOMING_STOPS } from '../../../../src/demo';
 
 const UpcomingStops = ({ data, onStopPress, onSeeAll }) => {
-  const stops = data && data.length > 0 ? data : [
-    { id: 's1', time: '11:30', period: 'AM', name: 'Starbucks Reserve', type: 'Delivery', details: '3 Boxes', completed: false },
-    { id: 's2', time: '12:15', period: 'PM', name: 'Amazon Hub Locker', type: 'Pickup', details: '12 Packages', completed: false },
-    { id: 's3', time: '01:45', period: 'PM', name: 'Best Buy Warehouse', type: 'Delivery', details: 'Pallet', completed: true },
-  ];
+  const stops = data && data.length > 0 ? data : TRANSPORTER_UPCOMING_STOPS;
 
   const handleStopPress = (stop) => {
     if (onStopPress) onStopPress(stop);
