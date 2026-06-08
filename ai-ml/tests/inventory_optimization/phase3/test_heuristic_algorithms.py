@@ -12,7 +12,7 @@ import os
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.inventory_optimization.optimization_framework.heuristic_algorithms import (
+from legacy_models.inventory_optimization.optimization_framework.heuristic_algorithms import (
     ForecastDrivenHeuristic
 )
 

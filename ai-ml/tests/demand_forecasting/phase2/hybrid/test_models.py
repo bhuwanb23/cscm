@@ -12,7 +12,7 @@ import sys
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.demand_forecasting.hybrid.models import ARIMAMLHybridModel, ETSMLHybridModel, EnsembleHybridModel, HybridForecaster
+from legacy_models.demand_forecasting.hybrid.models import ARIMAMLHybridModel, ETSMLHybridModel, EnsembleHybridModel, HybridForecaster
 
 def test_arima_ml_hybrid_model_initialization():
     """Test initialization of ARIMAMLHybridModel."""

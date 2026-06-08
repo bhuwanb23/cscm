@@ -19,10 +19,10 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_ORTOOLS_SAT, reason="ortools.sat not available")
 
-from models.inventory_optimization.optimization_framework.cp_sat_solver import (
+from legacy_models.inventory_optimization.optimization_framework.cp_sat_solver import (
     CPSATInventoryOptimizer
 )
-from models.inventory_optimization.optimization_framework.mip_solver import (
+from legacy_models.inventory_optimization.optimization_framework.mip_solver import (
     InventoryProblem
 )
 

@@ -11,7 +11,7 @@ import os
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.multi_agent_coordination.training_deployment.digital_twin_simulator import (
+from legacy_models.multi_agent_coordination.training_deployment.digital_twin_simulator import (
     MultiAgentDigitalTwin,
     InteractionType
 )

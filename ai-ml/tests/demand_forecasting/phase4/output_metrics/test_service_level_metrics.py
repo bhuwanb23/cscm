@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.demand_forecasting.output_metrics.service_level_metrics import ServiceLevelMetricsCalculator
+from legacy_models.demand_forecasting.output_metrics.service_level_metrics import ServiceLevelMetricsCalculator
 
 
 def test_service_level_metrics_initialization():

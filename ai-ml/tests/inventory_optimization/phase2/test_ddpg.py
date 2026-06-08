@@ -19,8 +19,8 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_TORCH, reason="PyTorch not available")
 
-from models.inventory_optimization.reinforcement_learning.ddpg import DDPGInventoryAgent
-from models.inventory_optimization.reinforcement_learning.digital_twin.inventory_simulator import (
+from legacy_models.inventory_optimization.reinforcement_learning.ddpg import DDPGInventoryAgent
+from legacy_models.inventory_optimization.reinforcement_learning.digital_twin.inventory_simulator import (
     InventorySimulator,
     InventoryState
 )
@@ -152,7 +152,7 @@ class TestDDPGInventoryAgent:
     
     def test_replay_buffer(self):
         """Test replay buffer."""
-        from models.inventory_optimization.reinforcement_learning.ddpg import ReplayBuffer
+        from legacy_models.inventory_optimization.reinforcement_learning.ddpg import ReplayBuffer
         
         buffer = ReplayBuffer(capacity=1000)
         

@@ -12,7 +12,7 @@ import os
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.multi_agent_coordination.training_deployment.coordination_metrics import (
+from legacy_models.multi_agent_coordination.training_deployment.coordination_metrics import (
     CoordinationMetricsTracker
 )
 

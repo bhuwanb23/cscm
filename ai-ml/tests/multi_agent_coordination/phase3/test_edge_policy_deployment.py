@@ -19,7 +19,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_TORCH, reason="PyTorch not available")
 
-from models.multi_agent_coordination.training_deployment.edge_policy_deployment import EdgePolicyDeployment
+from legacy_models.multi_agent_coordination.training_deployment.edge_policy_deployment import EdgePolicyDeployment
 
 
 class TestEdgePolicyDeployment:

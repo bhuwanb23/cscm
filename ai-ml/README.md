@@ -27,7 +27,7 @@ ai-ml/
 │   ├── phase3/
 │   ├── phase4/
 │   └── phase5/
-├── models/                 # Model implementations (modular, isolated)
+├── legacy_models/          # Model implementations (modular, isolated); renamed from models/ to avoid path conflict with api/models/
 │   ├── __init__.py         # Package initialization
 │   ├── data_models.py      # Data schema definitions
 │   ├── demand_forecasting/

@@ -15,7 +15,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from models.continual_learning import (
+from legacy_models.continual_learning import (
     ExperienceReplay, KnowledgeDistillation, RegularizationPreservation,
     KnowledgePreservationSystem, AdaptiveLRController, CyclicLRController,
     LocalTrainer, TrainingManager, DeviceProfiler, ResourceAwareScheduler,

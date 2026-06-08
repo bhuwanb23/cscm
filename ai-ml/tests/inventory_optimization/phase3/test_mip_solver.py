@@ -19,7 +19,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_ORTOOLS, reason="ortools not available")
 
-from models.inventory_optimization.optimization_framework.mip_solver import (
+from legacy_models.inventory_optimization.optimization_framework.mip_solver import (
     MIPInventoryOptimizer,
     InventoryProblem
 )

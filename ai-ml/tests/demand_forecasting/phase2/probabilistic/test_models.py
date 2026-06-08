@@ -12,7 +12,7 @@ import sys
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.demand_forecasting.probabilistic.models import MQRNNModel, ProbabilisticForecaster
+from legacy_models.demand_forecasting.probabilistic.models import MQRNNModel, ProbabilisticForecaster
 
 def test_mqrnn_model_initialization():
     """Test initialization of MQRNNModel."""

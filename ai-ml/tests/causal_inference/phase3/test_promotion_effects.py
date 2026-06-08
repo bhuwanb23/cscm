@@ -12,7 +12,7 @@ import os
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.causal_inference.use_cases.promotion_effects import PromotionEffectEstimator, PromotionOptimizer
+from legacy_models.causal_inference.use_cases.promotion_effects import PromotionEffectEstimator, PromotionOptimizer
 
 def test_promotion_effect_estimator_initialization():
     """Test initialization of PromotionEffectEstimator."""

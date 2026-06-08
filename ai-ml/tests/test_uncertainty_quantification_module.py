@@ -15,7 +15,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from models.uncertainty_quantification import (
+from legacy_models.uncertainty_quantification import (
     BayesianNeuralNetwork,
     EnsembleUncertainty,
     MCDropoutWrapper,

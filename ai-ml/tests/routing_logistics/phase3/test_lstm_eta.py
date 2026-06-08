@@ -20,7 +20,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_TORCH, reason="PyTorch not available")
 
-from models.routing_logistics.predictive_models.lstm_eta import LSTMETAPredictor
+from legacy_models.routing_logistics.predictive_models.lstm_eta import LSTMETAPredictor
 
 
 class TestLSTMETAPredictor:

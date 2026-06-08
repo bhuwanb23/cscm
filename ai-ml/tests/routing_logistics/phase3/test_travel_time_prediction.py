@@ -20,7 +20,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_XGBOOST, reason="xgboost not available")
 
-from models.routing_logistics.predictive_models.travel_time_prediction import TravelTimePredictor
+from legacy_models.routing_logistics.predictive_models.travel_time_prediction import TravelTimePredictor
 
 
 class TestTravelTimePredictor:

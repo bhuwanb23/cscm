@@ -19,7 +19,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_TORCH, reason="PyTorch not available")
 
-from models.multi_agent_coordination.communication_protocols.state_exchange import CompressedStateExchange
+from legacy_models.multi_agent_coordination.communication_protocols.state_exchange import CompressedStateExchange
 
 
 class TestCompressedStateExchange:

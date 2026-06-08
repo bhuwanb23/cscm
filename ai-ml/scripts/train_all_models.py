@@ -30,7 +30,7 @@ logger.info("=" * 60)
 logger.info("INVENTORY OPTIMIZATION")
 wd = weights_dir("inventory_optimization")
 
-from models.inventory_optimization.stochastic_models.newsvendor import EnhancedNewsvendorModel
+from legacy_models.inventory_optimization.stochastic_models.newsvendor import EnhancedNewsvendorModel
 demand_data = np.random.normal(100, 20, 200)
 nv = EnhancedNewsvendorModel(holding_cost=2, shortage_cost=8, distribution_type="normal")
 nv.fit(historical_demand=demand_data)
@@ -40,7 +40,7 @@ with open(os.path.join(wd, "newsvendor_default.pkl"), "wb") as f:
     pickle.dump(nv, f)
 logger.info("  -> saved newsvendor_default.pkl")
 
-from models.inventory_optimization.stochastic_models.ss_policy import SSPolicyModel
+from legacy_models.inventory_optimization.stochastic_models.ss_policy import SSPolicyModel
 ss = SSPolicyModel(holding_cost=2, ordering_cost=10, shortage_cost=8)
 ss.fit(demand_data)
 s_level, S_level = ss.reorder_point or 0, ss.order_up_to_level or 0
@@ -49,7 +49,7 @@ with open(os.path.join(wd, "ss_policy_lookup.pkl"), "wb") as f:
     pickle.dump(ss, f)
 logger.info("  -> saved ss_policy_lookup.pkl")
 
-from models.inventory_optimization.stochastic_models.stochastic_optimizer import StochasticInventoryOptimizer
+from legacy_models.inventory_optimization.stochastic_models.stochastic_optimizer import StochasticInventoryOptimizer
 so = StochasticInventoryOptimizer(holding_cost=2, ordering_cost=10, shortage_cost=8)
 so.optimize_newsvendor(demand_data)
 logger.info("StochasticOptimizer: fitted OK")
@@ -58,7 +58,7 @@ with open(os.path.join(wd, "stochastic_optimizer_default.pkl"), "wb") as f:
 logger.info("  -> saved stochastic_optimizer_default.pkl")
 
 # RL: DQN, DDPG, PPO
-from models.inventory_optimization.reinforcement_learning.dqn import DQNNetwork, DQNInventoryAgent
+from legacy_models.inventory_optimization.reinforcement_learning.dqn import DQNNetwork, DQNInventoryAgent
 dqn_net = DQNNetwork(state_dim=5, action_dim=3, hidden_dims=[64, 64])
 dqn_agent = DQNInventoryAgent(state_dim=5, action_dim=3, hidden_dims=[64, 64])
 torch.save(dqn_net.state_dict(), os.path.join(wd, "dqn_network.pt"))
@@ -67,7 +67,7 @@ with open(os.path.join(wd, "dqn_agent.pkl"), "wb") as f:
     pickle.dump(dqn_agent, f)
 logger.info("  -> saved DQN weights")
 
-from models.inventory_optimization.reinforcement_learning.ddpg import DDPGInventoryAgent
+from legacy_models.inventory_optimization.reinforcement_learning.ddpg import DDPGInventoryAgent
 ddpg = DDPGInventoryAgent(state_dim=5, action_dim=2, hidden_dims=[64, 64])
 torch.save(ddpg.actor.state_dict(), os.path.join(wd, "ddpg_actor.pt"))
 torch.save(ddpg.critic.state_dict(), os.path.join(wd, "ddpg_critic.pt"))
@@ -75,14 +75,14 @@ with open(os.path.join(wd, "ddpg_agent.pkl"), "wb") as f:
     pickle.dump(ddpg, f)
 logger.info("  -> saved DDPG weights")
 
-from models.inventory_optimization.reinforcement_learning.ppo import PPOInventoryAgent
+from legacy_models.inventory_optimization.reinforcement_learning.ppo import PPOInventoryAgent
 ppo = PPOInventoryAgent(state_dim=5, action_dim=2, hidden_dims=[64, 64])
 torch.save(ppo.actor_critic.state_dict(), os.path.join(wd, "ppo_actor_critic.pt"))
 with open(os.path.join(wd, "ppo_agent.pkl"), "wb") as f:
     pickle.dump(ppo, f)
 logger.info("  -> saved PPO weights")
 
-from models.inventory_optimization.optimization_framework.heuristic_algorithms import ForecastDrivenHeuristic
+from legacy_models.inventory_optimization.optimization_framework.heuristic_algorithms import ForecastDrivenHeuristic
 fdh = ForecastDrivenHeuristic()
 logger.info("ForecastDrivenHeuristic: created OK")
 with open(os.path.join(wd, "forecast_driven_heuristic.pkl"), "wb") as f:
@@ -107,7 +107,7 @@ X_rt = pd.DataFrame({
 })
 y_rt = (X_rt["distance_km"] * 1.5 + X_rt["traffic_score"] * 10 + np.random.normal(0, 3, n_routes)).values
 
-from models.routing_logistics.predictive_models.travel_time_prediction import TravelTimePredictor
+from legacy_models.routing_logistics.predictive_models.travel_time_prediction import TravelTimePredictor
 ttp = TravelTimePredictor(model_type="xgboost")
 ttp.train(X_rt, pd.Series(y_rt))
 preds = ttp.predict(X_rt[:3])
@@ -116,7 +116,7 @@ with open(os.path.join(wd, "travel_time_predictor.pkl"), "wb") as f:
     pickle.dump(ttp, f)
 logger.info("  -> saved travel_time weights")
 
-from models.routing_logistics.predictive_models.lstm_eta import LSTMETAModel
+from legacy_models.routing_logistics.predictive_models.lstm_eta import LSTMETAModel
 lstm_eta = LSTMETAModel(input_dim=5, hidden_dim=32, num_layers=2)
 X_seq = np.random.randn(200, 10, 5).astype(np.float32)
 y_seq = np.random.randn(200).astype(np.float32)
@@ -137,7 +137,7 @@ try:
 except Exception as e:
     logger.warning(f"LSTM-ETA training failed: {e}")
 
-from models.routing_logistics.predictive_models.transformer_routing import TransformerRoutingModel, TransformerRoutingPredictor
+from legacy_models.routing_logistics.predictive_models.transformer_routing import TransformerRoutingModel, TransformerRoutingPredictor
 trm = TransformerRoutingModel(input_dim=5, d_model=32, nhead=4, num_layers=2, max_seq_length=20)
 try:
     n_bs = 20
@@ -165,7 +165,7 @@ with open(os.path.join(wd, "transformer_routing_predictor.pkl"), "wb") as f:
     pickle.dump(trp, f)
 logger.info("  -> saved TransformerRoutingPredictor weights")
 
-from models.routing_logistics.ml_augmented.learned_heuristics import LearnedHeuristic
+from legacy_models.routing_logistics.ml_augmented.learned_heuristics import LearnedHeuristic
 lrh = LearnedHeuristic()
 logger.info("LearnedHeuristic: created OK")
 with open(os.path.join(wd, "learned_heuristic.pkl"), "wb") as f:
@@ -173,7 +173,7 @@ with open(os.path.join(wd, "learned_heuristic.pkl"), "wb") as f:
 logger.info("  -> saved learned_heuristic.pkl")
 
 # CVRPTW default
-from models.routing_logistics.classical_optimization.time_windows import TimeWindowHandler
+from legacy_models.routing_logistics.classical_optimization.time_windows import TimeWindowHandler
 twh = TimeWindowHandler()
 logger.info("TimeWindowHandler: created OK")
 with open(os.path.join(wd, "time_window_handler.pkl"), "wb") as f:
@@ -191,7 +191,7 @@ wd = weights_dir("anomaly_detection")
 X_anom = np.random.randn(500, 10).astype(np.float32)
 y_anom = np.random.randint(0, 2, 500)
 
-from models.anomaly_detection.unsupervised.one_class_svm import OneClassSVMDetector
+from legacy_models.anomaly_detection.unsupervised.one_class_svm import OneClassSVMDetector
 ocsvm = OneClassSVMDetector(nu=0.1)
 ocsvm.fit(X_anom[:400])
 preds = ocsvm.predict(X_anom[400:410])
@@ -200,7 +200,7 @@ with open(os.path.join(wd, "one_class_svm.pkl"), "wb") as f:
     pickle.dump(ocsvm, f)
 logger.info("  -> saved one_class_svm.pkl")
 
-from models.anomaly_detection.unsupervised.dbscan import DBSCANDetector
+from legacy_models.anomaly_detection.unsupervised.dbscan import DBSCANDetector
 db = DBSCANDetector(eps=0.5, min_samples=5)
 db.fit(X_anom[:400])
 try:
@@ -212,7 +212,7 @@ with open(os.path.join(wd, "dbscan_detector.pkl"), "wb") as f:
     pickle.dump(db, f)
 logger.info("  -> saved dbscan_detector.pkl")
 
-from models.anomaly_detection.unsupervised.isolation_forest import IsolationForestDetector
+from legacy_models.anomaly_detection.unsupervised.isolation_forest import IsolationForestDetector
 isf = IsolationForestDetector(contamination=0.1)
 isf.fit(X_anom[:400])
 logger.info(f"IsolationForest: trained OK (updated)")
@@ -220,7 +220,7 @@ with open(os.path.join(wd, "isolation_forest.pkl"), "wb") as f:
     pickle.dump(isf, f)
 logger.info("  -> saved isolation_forest.pkl (updated)")
 
-from models.anomaly_detection.deep_learning.autoencoder import Autoencoder
+from legacy_models.anomaly_detection.deep_learning.autoencoder import Autoencoder
 ae = Autoencoder(input_dim=10, encoding_dim=4)
 X_ae = torch.from_numpy(X_anom[:400]).float()
 try:
@@ -240,7 +240,7 @@ try:
 except Exception as e:
     logger.warning(f"Autoencoder training failed: {e}")
 
-from models.anomaly_detection.deep_learning.vae import VAE
+from legacy_models.anomaly_detection.deep_learning.vae import VAE
 vae_m = VAE(input_dim=10, latent_dim=2)
 try:
     criterion = torch.nn.MSELoss()
@@ -261,7 +261,7 @@ try:
 except Exception as e:
     logger.warning(f"VAE training failed: {e}")
 
-from models.anomaly_detection.deep_learning.lstm_anomaly import LSTMAnomalyDetector
+from legacy_models.anomaly_detection.deep_learning.lstm_anomaly import LSTMAnomalyDetector
 lstm_ad = LSTMAnomalyDetector(hidden_size=32, num_layers=2, epochs=10, batch_size=64)
 try:
     lstm_ad.fit(X_anom[:400])
@@ -273,7 +273,7 @@ try:
 except Exception as e:
     logger.warning(f"LSTM anomaly training failed: {e}")
 
-from models.anomaly_detection.graph_based.graph_anomaly import GraphAnomalyDetector
+from legacy_models.anomaly_detection.graph_based.graph_anomaly import GraphAnomalyDetector
 gad = GraphAnomalyDetector()
 try:
     edges = [(i, i+1) for i in range(10)]
@@ -285,7 +285,7 @@ with open(os.path.join(wd, "graph_anomaly.pkl"), "wb") as f:
     pickle.dump(gad, f)
 logger.info("  -> saved graph_anomaly.pkl")
 
-from models.anomaly_detection.graph_based.supplier_network import SupplierNetworkDetector
+from legacy_models.anomaly_detection.graph_based.supplier_network import SupplierNetworkDetector
 snd = SupplierNetworkDetector()
 try:
     supplier_df = pd.DataFrame({"supplier_id": [1,2,3], "name": ["A","B","C"], "lead_time": [5,10,15]})
@@ -297,7 +297,7 @@ with open(os.path.join(wd, "supplier_network.pkl"), "wb") as f:
     pickle.dump(snd, f)
 logger.info("  -> saved supplier_network.pkl")
 
-from models.anomaly_detection.graph_based.bayesian_changepoint import BayesianChangepointDetector
+from legacy_models.anomaly_detection.graph_based.bayesian_changepoint import BayesianChangepointDetector
 bcd = BayesianChangepointDetector()
 try:
     bcd.fit(X_anom[:400, 0])
@@ -328,7 +328,7 @@ X_sr = pd.DataFrame({
 })
 y_sr = (X_sr["lead_time_days"] * 0.5 + np.random.exponential(2, n_supp)).values
 
-from models.supplier_risk.survival_analysis.cox_model import CoxRiskModel
+from legacy_models.supplier_risk.survival_analysis.cox_model import CoxRiskModel
 cox = CoxRiskModel()
 try:
     cox.fit(X_sr)
@@ -339,7 +339,7 @@ with open(os.path.join(wd, "cox_model.pkl"), "wb") as f:
     pickle.dump(cox, f)
 logger.info("  -> saved cox_model.pkl")
 
-from models.supplier_risk.survival_analysis.kaplan_meier import KaplanMeierEstimator
+from legacy_models.supplier_risk.survival_analysis.kaplan_meier import KaplanMeierEstimator
 km = KaplanMeierEstimator()
 try:
     events_sr = np.random.binomial(1, 0.3, n_supp)
@@ -351,7 +351,7 @@ with open(os.path.join(wd, "kaplan_meier.pkl"), "wb") as f:
     pickle.dump(km, f)
 logger.info("  -> saved kaplan_meier.pkl")
 
-from models.supplier_risk.gradient_boosted.risk_predictor import GradientBoostRiskModel
+from legacy_models.supplier_risk.gradient_boosted.risk_predictor import GradientBoostRiskModel
 srp = GradientBoostRiskModel()
 try:
     X_sr_gb = X_sr.drop(columns=["tenure_days"]).copy()
@@ -367,7 +367,7 @@ if hasattr(srp, 'model') and hasattr(srp.model, 'save_model'):
     srp.model.save_model(os.path.join(wd, "gradient_boost_risk.json"))
 logger.info("  -> saved gradient_boost_risk.pkl + .json")
 
-from models.supplier_risk.probabilistic.bayesian_network import SupplierBayesianNetwork
+from legacy_models.supplier_risk.probabilistic.bayesian_network import SupplierBayesianNetwork
 sbn = SupplierBayesianNetwork()
 try:
     X_sr_bn = X_sr.drop(columns=["tenure_days"]).copy()
@@ -380,7 +380,7 @@ with open(os.path.join(wd, "bayesian_network.pkl"), "wb") as f:
     pickle.dump(sbn, f)
 logger.info("  -> saved bayesian_network.pkl")
 
-from models.supplier_risk.probabilistic.graph_embeddings import SupplierGraphEmbedder
+from legacy_models.supplier_risk.probabilistic.graph_embeddings import SupplierGraphEmbedder
 sge = SupplierGraphEmbedder()
 try:
     edges_df = pd.DataFrame({
@@ -396,7 +396,7 @@ with open(os.path.join(wd, "graph_embeddings.pkl"), "wb") as f:
     pickle.dump(sge, f)
 logger.info("  -> saved graph_embeddings.pkl")
 
-from models.supplier_risk.probabilistic.correlated_risk import CorrelatedRiskAnalyzer
+from legacy_models.supplier_risk.probabilistic.correlated_risk import CorrelatedRiskAnalyzer
 cra = CorrelatedRiskAnalyzer()
 try:
     X_sr_cr = X_sr.drop(columns=["tenure_days"]).copy()
@@ -409,7 +409,7 @@ with open(os.path.join(wd, "correlated_risk.pkl"), "wb") as f:
     pickle.dump(cra, f)
 logger.info("  -> saved correlated_risk.pkl")
 
-from models.supplier_risk.metrics_evaluation.probability_calibration import ProbabilityCalibrator
+from legacy_models.supplier_risk.metrics_evaluation.probability_calibration import ProbabilityCalibrator
 pc = ProbabilityCalibrator()
 scores = np.random.rand(200)
 labels = (scores > 0.7).astype(int)
@@ -429,8 +429,8 @@ wd = weights_dir("knowledge_graph")
 os.makedirs(wd, exist_ok=True)
 
 try:
-    from models.knowledge_graph.embeddings.node2vec import Node2VecEmbedder
-    from models.knowledge_graph.graph_db.graph_store import GraphStore
+    from legacy_models.knowledge_graph.embeddings.node2vec import Node2VecEmbedder
+    from legacy_models.knowledge_graph.graph_db.graph_store import GraphStore
     store = GraphStore()
     n2v = Node2VecEmbedder(store, dimensions=64, walk_length=10, walks_per_node=5)
     n2v.fit()
@@ -443,7 +443,7 @@ except Exception as e:
     logger.warning(f"Node2Vec failed: {e}")
 
 try:
-    from models.knowledge_graph.embeddings.transe import TransEModel
+    from legacy_models.knowledge_graph.embeddings.transe import TransEModel
     transe = TransEModel(embedding_dim=32)
     triples = [("e0", "r0", "e1"), ("e1", "r1", "e2"), ("e2", "r2", "e3")]
     for ep in range(10):
@@ -458,8 +458,8 @@ except Exception as e:
     logger.warning(f"TransE failed: {e}")
 
 try:
-    from models.knowledge_graph.embeddings.graphsage import GraphSAGEAggregator
-    from models.knowledge_graph.graph_db.graph_store import GraphStore
+    from legacy_models.knowledge_graph.embeddings.graphsage import GraphSAGEAggregator
+    from legacy_models.knowledge_graph.graph_db.graph_store import GraphStore
     _gs_store = GraphStore()
     gsage = GraphSAGEAggregator(_gs_store, dimensions=16)
     gsage.fit()
@@ -480,7 +480,7 @@ wd = os.path.join(ROOT, "models", "causal_inference", "weights")
 os.makedirs(wd, exist_ok=True)
 
 try:
-    from models.causal_inference.matching.causal_forests import CausalForest
+    from legacy_models.causal_inference.matching.causal_forests import CausalForest
     n_cf = 500
     X_cf = np.random.randn(n_cf, 5)
     T_cf = np.random.randint(0, 2, n_cf)
@@ -497,7 +497,7 @@ except Exception as e:
     logger.warning(f"CausalForest failed: {e}")
 
 try:
-    from models.causal_inference.matching.propensity_matching import PropensityScoreMatcher
+    from legacy_models.causal_inference.matching.propensity_matching import PropensityScoreMatcher
     pm = PropensityScoreMatcher()
     pm.fit_propensity_model(X_cf, T_cf)
     logger.info("PropensityScoreMatcher: fitted OK")
@@ -508,7 +508,7 @@ except Exception as e:
     logger.warning(f"PropensityScoreMatcher failed: {e}")
 
 try:
-    from models.causal_inference.matching.uplift_modeling import UpliftRandomForest
+    from legacy_models.causal_inference.matching.uplift_modeling import UpliftRandomForest
     um = UpliftRandomForest()
     um.fit(X_cf, T_cf, y_cf)
     logger.info("UpliftRandomForest: fitted OK")
@@ -531,7 +531,7 @@ n_uq = 500
 X_uq = np.random.randn(n_uq, 10).astype(np.float32)
 y_uq = (X_uq[:, 0] * 2 + X_uq[:, 1] * -1 + np.random.randn(n_uq) * 0.5).astype(np.float32)
 
-from models.uncertainty_quantification.probabilistic_framework.mc_dropout_pytorch import MCDropoutWrapper
+from legacy_models.uncertainty_quantification.probabilistic_framework.mc_dropout_pytorch import MCDropoutWrapper
 base_model = torch.nn.Sequential(
     torch.nn.Linear(10, 32), torch.nn.ReLU(),
     torch.nn.Linear(32, 16), torch.nn.ReLU(),
@@ -557,7 +557,7 @@ try:
 except Exception as e:
     logger.warning(f"MCDropout training failed: {e}")
 
-from models.uncertainty_quantification.probabilistic_framework.quantile_regression import QuantileRegressionWrapper
+from legacy_models.uncertainty_quantification.probabilistic_framework.quantile_regression import QuantileRegressionWrapper
 base_qr = torch.nn.Sequential(torch.nn.Linear(10, 32), torch.nn.ReLU())
 qrm = QuantileRegressionWrapper(base_qr, hidden_dim=32, quantiles=[0.1, 0.5, 0.9])
 try:
@@ -587,7 +587,7 @@ except Exception as e:
     logger.warning(f"MADDPG failed: {e}")
 
 try:
-    from models.multi_agent_coordination.multi_agent_framework.mappo import MAPPOAgent
+    from legacy_models.multi_agent_coordination.multi_agent_framework.mappo import MAPPOAgent
     mappo = MAPPOAgent(obs_dim=10, action_dim=3)
     torch.save(mappo.actor.state_dict(), os.path.join(wd, "mappo_actor.pt"))
     torch.save(mappo.critic.state_dict(), os.path.join(wd, "mappo_critic.pt"))
@@ -598,7 +598,7 @@ except Exception as e:
     logger.warning(f"MAPPO failed: {e}")
 
 try:
-    from models.multi_agent_coordination.multi_agent_framework.qmix import QMIXAgent
+    from legacy_models.multi_agent_coordination.multi_agent_framework.qmix import QMIXAgent
     qmix = QMIXAgent(obs_dim=10, action_dim=3, n_agents=2)
     torch.save(qmix.q_network.state_dict(), os.path.join(wd, "qmix_qnet.pt"))
     torch.save(qmix.mixing_network.state_dict(), os.path.join(wd, "qmix_mixing.pt"))
@@ -609,7 +609,7 @@ except Exception as e:
     logger.warning(f"QMIX failed: {e}")
 
 try:
-    from models.multi_agent_coordination.multi_agent_framework.hierarchical_rl import HierarchicalRLPlanner
+    from legacy_models.multi_agent_coordination.multi_agent_framework.hierarchical_rl import HierarchicalRLPlanner
     hrl = HierarchicalRLPlanner(state_dim=10, goal_dim=5, action_dim=3)
     torch.save(hrl.high_level_policy.state_dict(), os.path.join(wd, "hrl_high.pt"))
     torch.save(hrl.low_level_policy.state_dict(), os.path.join(wd, "hrl_low.pt"))
@@ -620,7 +620,7 @@ except Exception as e:
     logger.warning(f"HierarchicalRL failed: {e}")
 
 try:
-    from models.multi_agent_coordination.communication_protocols.gnn_communication import CommunicationGCN
+    from legacy_models.multi_agent_coordination.communication_protocols.gnn_communication import CommunicationGCN
     cgcn = CommunicationGCN(input_dim=10, hidden_dim=32, output_dim=16)
     torch.save(cgcn.state_dict(), os.path.join(wd, "comm_gcn.pt"))
     logger.info("  -> saved CommunicationGCN weights")
@@ -628,7 +628,7 @@ except Exception as e:
     logger.warning(f"CommunicationGCN failed: {e}")
 
 try:
-    from models.multi_agent_coordination.training_deployment.edge_policy_deployment import LightweightPolicy
+    from legacy_models.multi_agent_coordination.training_deployment.edge_policy_deployment import LightweightPolicy
     lwp = LightweightPolicy(input_dim=10, output_dim=3)
     torch.save(lwp.state_dict(), os.path.join(wd, "lightweight_policy.pt"))
     logger.info("  -> saved LightweightPolicy weights")
@@ -645,7 +645,7 @@ wd = os.path.join(ROOT, "models", "continual_learning", "weights")
 os.makedirs(wd, exist_ok=True)
 
 try:
-    from models.continual_learning.continual_learning_framework.incremental_updater import IncrementalUpdater
+    from legacy_models.continual_learning.continual_learning_framework.incremental_updater import IncrementalUpdater
     iu = IncrementalUpdater()
     X_cl = np.random.randn(200, 10).astype(np.float32)
     y_cl = (X_cl[:, 0] * 1.5 + np.random.randn(200) * 0.3).astype(np.float32)
@@ -658,7 +658,7 @@ except Exception as e:
     logger.warning(f"IncrementalUpdater failed: {e}")
 
 try:
-    from models.continual_learning.federated_system.federated_training_manager import FederatedTrainingManager
+    from legacy_models.continual_learning.federated_system.federated_training_manager import FederatedTrainingManager
     ftm = FederatedTrainingManager(num_clients=5)
     ftm.train_round(X_cl, y_cl)
     logger.info("FederatedTrainingManager: round OK")
@@ -669,7 +669,7 @@ except Exception as e:
     logger.warning(f"FederatedTrainingManager failed: {e}")
 
 try:
-    from models.continual_learning.continual_learning_framework.knowledge_preservation import KnowledgePreservation
+    from legacy_models.continual_learning.continual_learning_framework.knowledge_preservation import KnowledgePreservation
     kp = KnowledgePreservation()
     kp.preserve(X_cl, y_cl)
     logger.info("KnowledgePreservation: OK")
@@ -680,7 +680,7 @@ except Exception as e:
     logger.warning(f"KnowledgePreservation failed: {e}")
 
 try:
-    from models.continual_learning.advanced_techniques.meta_learning import MetaLearning
+    from legacy_models.continual_learning.advanced_techniques.meta_learning import MetaLearning
     ml = MetaLearning()
     ml.meta_train(X_cl[:150], y_cl[:150], X_cl[150:], y_cl[150:])
     logger.info("MetaLearning: meta-trained OK")

@@ -21,7 +21,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_ORTOOLS, reason="ortools not available")
 
-from models.inventory_optimization.optimization_framework.batch_optimizer import (
+from legacy_models.inventory_optimization.optimization_framework.batch_optimizer import (
     PeriodicBatchOptimizer
 )
 
@@ -73,7 +73,7 @@ class TestPeriodicBatchOptimizer:
     
     def test_optimize_batch(self):
         """Test batch optimization."""
-        from models.inventory_optimization.optimization_framework.mip_solver import InventoryProblem
+        from legacy_models.inventory_optimization.optimization_framework.mip_solver import InventoryProblem
         
         optimizer = PeriodicBatchOptimizer(optimizer_type='mip')
         

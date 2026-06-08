@@ -17,16 +17,16 @@ sys.path.insert(0, parent_dir)
 def test_imports():
     """Test that all deployment modules can be imported without errors."""
     try:
-        from models.computer_vision.deployment.edge_deployment import ModelOptimizer, EdgeDeployer, HardwareCompatibilityLayer
-        from models.computer_vision.deployment.low_latency_inference import BatchProcessor, StreamingInferenceEngine, InferenceCache, PerformanceMonitor
-        from models.computer_vision.deployment.fine_tuning import ContinualLearningDataset, ModelVersionManager, AutomatedRetrainingPipeline, DataQualityMonitor
+        from legacy_models.computer_vision.deployment.edge_deployment import ModelOptimizer, EdgeDeployer, HardwareCompatibilityLayer
+        from legacy_models.computer_vision.deployment.low_latency_inference import BatchProcessor, StreamingInferenceEngine, InferenceCache, PerformanceMonitor
+        from legacy_models.computer_vision.deployment.fine_tuning import ContinualLearningDataset, ModelVersionManager, AutomatedRetrainingPipeline, DataQualityMonitor
         assert True
     except ImportError as e:
         pytest.fail(f"Import failed: {e}")
 
 def test_model_optimizer_initialization():
     """Test ModelOptimizer initialization."""
-    from models.computer_vision.deployment.edge_deployment import ModelOptimizer
+    from legacy_models.computer_vision.deployment.edge_deployment import ModelOptimizer
     
     # Test initialization
     optimizer = ModelOptimizer(model_path="test_model.pth")
@@ -36,7 +36,7 @@ def test_model_optimizer_initialization():
 
 def test_model_optimizer_quantize_model():
     """Test model quantization."""
-    from models.computer_vision.deployment.edge_deployment import ModelOptimizer
+    from legacy_models.computer_vision.deployment.edge_deployment import ModelOptimizer
     
     # Create a simple model
     class SimpleModel(nn.Module):
@@ -62,7 +62,7 @@ def test_model_optimizer_quantize_model():
 
 def test_model_optimizer_prune_model():
     """Test model pruning."""
-    from models.computer_vision.deployment.edge_deployment import ModelOptimizer
+    from legacy_models.computer_vision.deployment.edge_deployment import ModelOptimizer
     
     # Create a simple model
     class SimpleModel(nn.Module):
@@ -95,7 +95,7 @@ def test_model_optimizer_prune_model():
 
 def test_hardware_compatibility_layer():
     """Test HardwareCompatibilityLayer."""
-    from models.computer_vision.deployment.edge_deployment import HardwareCompatibilityLayer
+    from legacy_models.computer_vision.deployment.edge_deployment import HardwareCompatibilityLayer
     
     # Test initialization
     hw_layer = HardwareCompatibilityLayer()
@@ -120,7 +120,7 @@ def test_hardware_compatibility_layer():
 
 def test_batch_processor():
     """Test BatchProcessor functionality."""
-    from models.computer_vision.deployment.low_latency_inference import BatchProcessor
+    from legacy_models.computer_vision.deployment.low_latency_inference import BatchProcessor
     import time
     
     # Test initialization
@@ -142,7 +142,7 @@ def test_batch_processor():
 
 def test_inference_cache():
     """Test InferenceCache functionality."""
-    from models.computer_vision.deployment.low_latency_inference import InferenceCache
+    from legacy_models.computer_vision.deployment.low_latency_inference import InferenceCache
     
     # Test initialization
     cache = InferenceCache(max_cache_size=100, ttl_seconds=60.0)
@@ -159,7 +159,7 @@ def test_inference_cache():
 
 def test_continual_learning_dataset():
     """Test ContinualLearningDataset."""
-    from models.computer_vision.deployment.fine_tuning import ContinualLearningDataset
+    from legacy_models.computer_vision.deployment.fine_tuning import ContinualLearningDataset
     
     # Test initialization
     dataset = ContinualLearningDataset(max_size=100)
@@ -180,7 +180,7 @@ def test_continual_learning_dataset():
 
 def test_data_quality_monitor():
     """Test DataQualityMonitor."""
-    from models.computer_vision.deployment.fine_tuning import DataQualityMonitor
+    from legacy_models.computer_vision.deployment.fine_tuning import DataQualityMonitor
     import numpy as np
     
     # Test initialization

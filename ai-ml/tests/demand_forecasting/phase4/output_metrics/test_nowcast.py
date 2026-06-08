@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.demand_forecasting.output_metrics.nowcast import NowcastEngine
+from legacy_models.demand_forecasting.output_metrics.nowcast import NowcastEngine
 
 
 def test_nowcast_engine_initialization():

@@ -19,7 +19,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_TORCH, reason="PyTorch not available")
 
-from models.multi_agent_coordination.multi_agent_framework.hierarchical_rl import HierarchicalRLPlanner
+from legacy_models.multi_agent_coordination.multi_agent_framework.hierarchical_rl import HierarchicalRLPlanner
 
 
 class TestHierarchicalRLPlanner:

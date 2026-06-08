@@ -12,7 +12,7 @@ import sys
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.demand_forecasting.transformer_based.models import InformerModel, AutoformerModel, TransformerForecaster
+from legacy_models.demand_forecasting.transformer_based.models import InformerModel, AutoformerModel, TransformerForecaster
 
 def test_informer_model_initialization():
     """Test initialization of InformerModel."""

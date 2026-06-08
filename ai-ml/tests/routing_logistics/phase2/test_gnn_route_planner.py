@@ -20,7 +20,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_TORCH_GEOMETRIC, reason="torch_geometric not available")
 
-from models.routing_logistics.ml_augmented.gnn_route_planner import GNRoutePlanner
+from legacy_models.routing_logistics.ml_augmented.gnn_route_planner import GNRoutePlanner
 
 
 class TestGNRoutePlanner:

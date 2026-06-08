@@ -19,7 +19,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_NETWORKX, reason="NetworkX not available")
 
-from models.anomaly_detection.graph_based.graph_anomaly import GraphAnomalyDetector
+from legacy_models.anomaly_detection.graph_based.graph_anomaly import GraphAnomalyDetector
 
 
 class TestGraphAnomalyDetector:

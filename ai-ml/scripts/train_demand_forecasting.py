@@ -33,7 +33,7 @@ logger.info("=" * 60)
 logger.info("Training Statistical Models")
 
 # 1a. ETSModel
-from models.demand_forecasting.statistical.models import ETSModel
+from legacy_models.demand_forecasting.statistical.models import ETSModel
 ets = ETSModel(trend="add", seasonal="add", seasonal_periods=7)
 ets.fit(df_series)
 preds = ets.predict(steps=10)
@@ -43,7 +43,7 @@ with open(os.path.join(WEIGHTS_DIR, "ets_model.pkl"), "wb") as f:
 logger.info("  -> saved ets_model.pkl")
 
 # 1b. ARIMAModel
-from models.demand_forecasting.statistical.models import ARIMAModel
+from legacy_models.demand_forecasting.statistical.models import ARIMAModel
 arima = ARIMAModel(order=(1, 1, 1))
 arima.fit(df_series)
 preds = arima.predict(steps=10)
@@ -53,7 +53,7 @@ with open(os.path.join(WEIGHTS_DIR, "arima_model.pkl"), "wb") as f:
 logger.info("  -> saved arima_model.pkl")
 
 # 1c. StatisticalForecaster (SARIMA)
-from models.demand_forecasting.statistical.models import StatisticalForecaster
+from legacy_models.demand_forecasting.statistical.models import StatisticalForecaster
 sf = StatisticalForecaster(model_type="sarima", order=(1, 1, 1), seasonal_order=(1, 1, 1, 7))
 sf.fit(df_series)
 preds = sf.predict(steps=10)
@@ -69,7 +69,7 @@ import pandas as pd
 dates = pd.date_range("2023-01-01", periods=365, freq="D")
 sales_vals = df_series.values
 df_data = pd.DataFrame({"date": dates.strftime("%Y-%m-%d"), "sales": sales_vals, "product_id": 1})
-from models.demand_forecasting.model import DemandForecaster
+from legacy_models.demand_forecasting.model import DemandForecaster
 df_model = DemandForecaster()
 df_model.train(df_data)
 preds = df_model.predict(df_data.iloc[-20:])
@@ -90,7 +90,7 @@ X_gb = pd.DataFrame({
 })
 y_gb = X_gb["feature1"] * 2 + X_gb["feature2"] * -1.5 + X_gb["feature3"] * 0.5 + np.random.randn(n_samples) * 0.1
 
-from models.demand_forecasting.gradient_boosted.models import XGBoostModel, LightGBMModel, CatBoostModel
+from legacy_models.demand_forecasting.gradient_boosted.models import XGBoostModel, LightGBMModel, CatBoostModel
 
 # 3a. XGBoost
 xgb_model = XGBoostModel()
@@ -139,7 +139,7 @@ train_size = int(0.8 * len(sequences))
 X_train_dl, X_test_dl = sequences[:train_size], sequences[train_size:]
 y_train_dl, y_test_dl = targets[:train_size], targets[train_size:]
 
-from models.demand_forecasting.deep_learning.models import DeepLearningForecaster
+from legacy_models.demand_forecasting.deep_learning.models import DeepLearningForecaster
 
 for model_type in ["lstm", "gru"]:
     dlf = DeepLearningForecaster(model_type=model_type, input_size=1, hidden_size=32, num_layers=2)
@@ -165,7 +165,7 @@ logger.info("  -> saved seq2seq_model.pt + seq2seq_forecaster.pkl")
 logger.info("=" * 60)
 logger.info("Training Transformer Models")
 
-from models.demand_forecasting.transformer_based.models import TFTModel
+from legacy_models.demand_forecasting.transformer_based.models import TFTModel
 try:
     tft = TFTModel(hidden_size=8, lstm_layers=1, attention_head_size=2, dropout=0.1,
                    max_encoder_length=10, max_prediction_length=1)
@@ -180,7 +180,7 @@ except Exception as e:
 logger.info("=" * 60)
 logger.info("Training Hybrid Models")
 
-from models.demand_forecasting.hybrid.models import ARIMAMLHybridModel, ETSMLHybridModel, EnsembleHybridModel
+from legacy_models.demand_forecasting.hybrid.models import ARIMAMLHybridModel, ETSMLHybridModel, EnsembleHybridModel
 
 # 6a. ARIMA-ML
 hybrid_arima = ARIMAMLHybridModel(arima_order=(1, 1, 1), ml_model_type="random_forest")
@@ -216,7 +216,7 @@ logger.info("  -> saved ensemble_hybrid.pkl")
 logger.info("=" * 60)
 logger.info("Training Probabilistic Models")
 
-from models.demand_forecasting.probabilistic.models import DeepARModel, NBEATSModel
+from legacy_models.demand_forecasting.probabilistic.models import DeepARModel, NBEATSModel
 try:
     deepar = DeepARModel(epochs=5)
     deepar.fit(df_series)
@@ -239,7 +239,7 @@ try:
 except Exception as e:
     logger.warning(f"NBEATS training failed: {e}")
 
-from models.demand_forecasting.probabilistic.models import MQRNNModel
+from legacy_models.demand_forecasting.probabilistic.models import MQRNNModel
 try:
     mqrnn = MQRNNModel(epochs=5)
     mqrnn.fit(df_series)

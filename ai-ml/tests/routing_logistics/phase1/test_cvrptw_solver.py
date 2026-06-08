@@ -20,7 +20,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_ORTOOLS, reason="ortools.constraint_solver not available")
 
-from models.routing_logistics.classical_optimization.cvrptw_solver import (
+from legacy_models.routing_logistics.classical_optimization.cvrptw_solver import (
     CVRPTWSolver,
     Location,
     Vehicle,
