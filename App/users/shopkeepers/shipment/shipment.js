@@ -5,6 +5,7 @@ import {
   FlatList,
   Text,
   RefreshControl,
+  Alert,
 } from 'react-native';
 import { useShipmentData } from './hooks/useShipmentData';
 import FilterTabs from './components/FilterTabs';
@@ -37,8 +38,7 @@ const Shipment = () => {
     if (shipment.actionText === 'Confirm Delivery') {
       confirmDelivery(shipment.id);
     } else {
-      // Handle other actions like "View Details", "Track Live"
-      console.log(`Action pressed for shipment ${shipment.id}: ${shipment.actionText}`);
+      Alert.alert('Coming Soon', `${shipment.actionText} will be available in a future update.`);
     }
   };
 

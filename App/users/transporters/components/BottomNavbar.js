@@ -18,7 +18,6 @@ const BottomNavbar = ({ activeTab, onTabPress }) => {
   ];
 
   const handleTabPress = (tabId) => {
-    console.log(`Navigating to ${tabId}`);
     onTabPress(tabId);
   };
 

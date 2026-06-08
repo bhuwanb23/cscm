@@ -4,12 +4,13 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 const RecentDeliveries = ({ deliveries }) => {
   const handleViewAll = () => {
-    console.log('View all deliveries pressed');
+    Alert.alert('Coming Soon', 'View all deliveries will be available in a future update.');
   };
 
   return (

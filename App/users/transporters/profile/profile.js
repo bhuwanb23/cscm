@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  Alert,
 } from 'react-native';
 import Header from './components/Header';
 import DriverInfo from './components/DriverInfo';
@@ -19,7 +20,7 @@ const Profile = ({ onLogout }) => {
   } = useProfileData();
 
   const handleEditProfile = () => {
-    console.log('Edit profile pressed');
+    Alert.alert('Coming Soon', 'Profile editing will be available in a future update.');
   };
 
   return (
