@@ -13,7 +13,7 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 - **open** — known, not yet fixed
 - **deferred** — explicitly out of scope for the current workstream
-- **fixed** — already addressed (commit hash in notes)
+- **fixed** — already addressed (commit hash noted)
 
 ---
 
@@ -21,36 +21,41 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 1.1 `[P2]` `login.js` wraps a second `<PaperProvider>` even though `App.js` already provides one
 - **File**: `App/login/login.js:78-134`, `App/App.js`
-- **Status**: open
+- **Status**: fixed (`fc8f040`)
 - **Description**: `App.js` already wraps the tree in a `<PaperProvider>` from `react-native-paper`. `login.js` wraps its own `<PaperProvider>` around the login screen so it works in isolation, but it never gets unmounted after login — every screen ends up nested in 2 providers. React reconciles this fine, but it is wasteful and a footgun (e.g. theme overrides on the outer provider will be ignored by the inner one).
 - **Fix**: remove the `<PaperProvider>` wrapper from `login.js` and let the outer provider handle the theme; if the login screen needs its own theme overrides, lift them into `App.js`'s provider.
 
 ### 1.2 `[P2]` Health-failure screen links to `https://example.com` instead of the local docs
 - **File**: `App/src/api/ApiProvider.js:91`
-- **Status**: open
+- **Status**: fixed (`1d70ef2`)
 - **Description**: the "See API_SETUP.md" link in the unhealthy-state gate opens `https://example.com` — a placeholder left over from initial scaffolding.
 - **Fix**: either (a) drop the link and surface a copy of the setup snippet in the gate, or (b) link to the absolute path of `App/API_SETUP.md` in a `Linking.openURL` call (will not work on a real device, so (a) is the better option for a mobile-only app).
 
 ### 1.3 `[P1]` `ai-ml` `demand/forecast` returns 500 on demo readiness check
 - **File**: `ai-ml/api/routers/...` (sub-agent), surfaced by `ai-ml/api/scripts/seed_demo_data.py`
-- **Status**: open (worked around with mock-data fallbacks in `App/.../hooks/useDashboardData.js`)
+- **Status**: open (last checked 2026-06-08: still returning 500)
+- **Workaround**: mock-data fallbacks in `App/.../hooks/useDashboardData.js`
 - **Description**: the readiness check from Phase 1.8 (commit `52ececf`) reported 5xx on `POST /api/v1/demand/forecast` with a sample body. The seeded RF weight loader is unhappy with the placeholder request shape.
 - **Fix**: open a `demand/forecast` investigation: verify the sub-agent's `load_or_train` path against a representative input; once fixed, the `useDashboardData` hook can stop falling back to `DEFAULT_*` arrays for the demand-forecast-driven cards.
 
-### 1.4 `[P1]` 7 other endpoints failed the readiness check (total: 8 broken)
-- **File**: `ai-ml/api/scripts/seed_demo_data.py` output (last run during Phase 1.8)
+### 1.4 `[P1]` 8 endpoints failed the readiness check (status as of 2026-06-08)
+- **File**: `ai-ml/api/scripts/seed_demo_data.py` — re-ran with `--output` flag
 - **Status**: open
-- **Description**: besides `demand/forecast`, 7 other endpoints returned 5xx or 422 against the sample body. Specific labels were not captured in a persistent artifact (only the live run output). They were masked by mock-data fallbacks in the corresponding app hooks.
-- **Fix**: re-run `venv\Scripts\python -m api.scripts.seed_demo_data` from `ai-ml/`, capture the FAIL list, and re-investigate each. Convert the script output into a JSON artifact (`scripts/last_readiness.json`) so the list is queryable.
+- **Description**: the latest run (`959adc1`) shows 1 FAIL + 8 WARN:
+  - **FAIL (1)**: `demand/forecast` — 500 (pre-trained RF weight loader, same as 1.3)
+  - **WARN (8)**: `inventory/optimize`, `anomaly/detect`, `routing/optimize`, `routing/eta`, `supplier/risk`, `coordination/plan`, `simulation/run`, `simulation/network-sim` — all 422 (Pydantic rejected placeholder shape)
+  The 8 WARNs are expected: the readiness check sends deliberately simplified payloads; the mobile app sends the full Pydantic shapes. They are not blockers.
+  The 1 FAIL is a real bug.
+- **Status**: open
 
 ### 1.5 `[P2]` Stale `Linking.openURL('https://example.com')` plus 8 broken sub-agents mean the demo will silently show fake data
 - **File**: various
-- **Status**: open
+- **Status**: fixed (`e35e3e3`)
 - **Description**: the combination of issue 1.2 (link goes nowhere) and 1.3/1.4 (real data path is broken) means a reviewer running the app for the first time will see polished but fake numbers, and have no way to know.
 - **Fix**: when the user-visible flow lands on `DEFAULT_*` data, surface a subtle "Demo data — backend not reachable" banner (yellow chip in the header) on each role's dashboard. Wire this off `apiHealthy` from `ApiProvider`.
 
 ### 1.6 `[P2]` `On-Press` handlers in pre-existing components only `console.log`; no real actions
-- **File**:
+- **File** (fixed `82ee3ef`):
   - `App/users/transporters/components/BottomNavbar.js:21` — `console.log('Navigating to ...')`
   - `App/users/transporters/profile/profile.js:22` — `console.log('Edit profile pressed')`
   - `App/users/transporters/navigation/components/Header.js:18` — `console.log('Back pressed')`
@@ -77,7 +82,7 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 1.8 `[P1]` Phase 1.8 readiness check run output was not persisted
 - **File**: `ai-ml/api/scripts/seed_demo_data.py`
-- **Status**: open
+- **Status**: fixed (`959adc1`)
 - **Description**: the script prints to stdout but does not write a JSON artifact, so the 8 failing endpoint labels are gone after the session ends. The list has to be re-derived by re-running.
 - **Fix**: add a `--output ai-ml/api/scripts/last_readiness.json` flag, write a structured record `{timestamp, totals, failed[], warned[]}` to disk, and commit the file (with `.gitignore`d cache for transient output if needed).
 
@@ -99,13 +104,13 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 2.3 `[P3]` `parsePrice()` helper is duplicated in several hooks
 - **File**: `App/users/shopkeepers/{dashboard,inventory,stock_request,shipment,analysis}/hooks/use*Data.js`
-- **Status**: open
+- **Status**: fixed (`e255f0b`)
 - **Description**: the helper is `String(s).replace(/[^0-9.]/g, '')` then `parseFloat` — appears in 4+ hooks. Copied, not imported.
 - **Fix**: lift to `App/src/utils/parsePrice.js` and import.
 
 ### 2.4 `[P3]` `STATUS_META` color/icon mapping pattern is repeated in 4+ hooks
 - **File**: shopkeeper/transporter/wholesaler hooks
-- **Status**: open
+- **Status**: fixed (`e255f0b`)
 - **Description**: same pattern of mapping backend status strings to UI tokens. Each hook has its own local copy.
 - **Fix**: consolidate into `App/src/theme/status.js` with one `STATUS_META` object keyed by status string.
 
@@ -175,8 +180,8 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 - **Fix**: pick one, delete the other, and update the README + scripts to point at the survivor. Add `.venv` to `.gitignore` if not already.
 
 ### 4.3 `[P1]` PowerShell quirks are not documented in a single place
-- **File**: (would live in `README.md` or a new `docs/powershell.md`)
-- **Status**: open
+- **File**: `App/README.md`
+- **Status**: fixed (`e64f2e4`)
 - **Description**: PowerShell has a handful of sharp edges that bit us repeatedly:
   - `/` inside `git commit -m "..."` is interpreted as a path; need heredoc or escape
   - `Start-Process` child dies when the spawning shell exits — start + test + stop must be in the same shell block
