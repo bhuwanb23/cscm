@@ -13,6 +13,7 @@ import Tasks from './tasks/tasks';
 import Profile from './profile/profile';
 import Navigation from './navigation/navigation';
 import MeshConsole from '../mesh/mesh';
+import DemoChip from '../../src/components/DemoChip';
 
 const TransporterDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -28,6 +29,7 @@ const TransporterDashboard = ({ onLogout }) => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <LinearGradient colors={['#F8F9FA', '#E9ECEF']} style={styles.container}>
+        <DemoChip />
         {activeTab === 'dashboard' ? (
           <Dashboard onLogout={onLogout} />
         ) : activeTab === 'tasks' ? (

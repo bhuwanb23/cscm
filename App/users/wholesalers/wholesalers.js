@@ -9,6 +9,7 @@ import Shipments from './shipments/shipments';
 import Inventory from './inventory/inventory';
 import Profile from './profile/profile';
 import MeshConsole from '../mesh/mesh';
+import DemoChip from '../../src/components/DemoChip';
 
 const WholesalerDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -38,6 +39,7 @@ const WholesalerDashboard = ({ onLogout }) => {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <LinearGradient colors={['#F8F9FA', '#E9ECEF']} style={styles.container}>
+        <DemoChip />
         {renderContent()}
         <BottomNavbar activeTab={activeTab} onTabPress={handleTabPress} />
       </LinearGradient>

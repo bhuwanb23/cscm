@@ -19,6 +19,7 @@ import Shipment from './shipment/shipment';
 import Communication from './communication';
 import Profile from './profile/profile';
 import MeshConsole from '../mesh/mesh';
+import DemoChip from '../../src/components/DemoChip';
 
 const ShopkeeperDashboard = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -93,6 +94,7 @@ const ShopkeeperDashboard = ({ onLogout }) => {
           onProfilePress={handleProfilePress}
           onMessagesPress={handleMessagesPress}
         />
+        <DemoChip />
         <View style={styles.contentContainer}>
           {renderContent()}
         </View>
