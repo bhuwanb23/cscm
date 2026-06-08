@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { useApiQuery } from '../../../../src/api/useApiQuery';
+import { useApiQueries } from '../../../../src/api/useApiQueries';
 import { apiPatch } from '../../../../src/api/apiClient';
 import { TRANSPORTER_DEFAULT_TASKS as DEFAULT_TASKS } from '../../../../src/demo';
 
@@ -78,11 +78,13 @@ export const useTasksData = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [localTasks, setLocalTasks] = useState([]);
 
-  const inTransit = useApiQuery('SHIPMENTS', 'listByStatus', { params: { status: 'in_transit' } });
-  const delivered = useApiQuery('SHIPMENTS', 'listByStatus', { params: { status: 'delivered' } });
+  const { results: shipmentResults, loading, error, refetch } = useApiQueries([
+    { family: 'SHIPMENTS', action: 'listByStatus', options: { params: { status: 'in_transit' } } },
+    { family: 'SHIPMENTS', action: 'listByStatus', options: { params: { status: 'delivered' } } },
+  ]);
 
   const allTasks = useMemo(() => {
-    const lists = [inTransit.data, delivered.data]
+    const lists = [shipmentResults[0].data, shipmentResults[1].data]
       .filter(Boolean)
       .map(d => Array.isArray(d) ? d : (Array.isArray(d.shipments) ? d.shipments : []));
     const flat = lists.flat();
@@ -91,7 +93,7 @@ export const useTasksData = () => {
       return DEFAULT_TASKS;
     }
     return flat.map((s, i) => normalizeTask(s, i));
-  }, [inTransit.data, delivered.data, localTasks]);
+  }, [shipmentResults[0].data, shipmentResults[1].data, localTasks]);
 
   const filteredTasks = useMemo(() => {
     let result = allTasks;
@@ -148,8 +150,8 @@ export const useTasksData = () => {
     setActiveFilter,
     handleTaskPress,
     markTaskCompleted,
-    loading: inTransit.loading || delivered.loading,
-    error: inTransit.error || delivered.error,
-    refetch: () => { inTransit.refetch(); delivered.refetch(); },
+    loading,
+    error,
+    refetch,
   };
 };
