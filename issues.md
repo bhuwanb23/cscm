@@ -234,7 +234,7 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 ## 6. Documentation gaps
 
 ### 6.1 `[P3]` No `cscm/requirements.md` at repo root
-- **Status**: open
+- **Status**: fixed
 - **Description**: the design system lives in `design.md` (Neural Pulse) but the app's product requirements (what each role can do, what data is shown) are scattered across commit messages and the plan log.
 - **Fix**: create `requirements.md` with one section per role (shopkeeper / transporter / wholesaler / mesh) and a "data shape" sub-section for each.
 
