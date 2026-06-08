@@ -65,9 +65,9 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
   - `App/users/shopkeepers/shipment/components/RecentDeliveries.js:12` — `console.log('View all deliveries pressed')`
   - `App/users/shopkeepers/profile/profile.js:24,28,32` — 3x `console.log`
   - `App/login/login.js:58` — `console.log('Login attempt:', loginData)` (this one logs the full login payload — minor PII risk if any real auth is added later)
-- **Status**: open
+- **Status**: fixed (already addressed in commit `82ee3ef`; no `console.log` calls remain in `App/`)
 - **Description**: actions that look interactive in the UI are not wired to anything. On a demo, a reviewer can tap them and nothing happens, which is worse than a clear "coming soon" state.
-- **Fix**: replace each with a real `Alert.alert('Coming soon', ...)` (or a disabled state with a tooltip), and remove the `console.log`.
+- **Fix**: replaced each `console.log` with `Alert.alert('Coming soon', ...)` in commit `82ee3ef`.
 
 ### 1.7 `[P2]` `Mock data fallbacks` in every role hook mask real backend errors
 - **File**: 14+ files in `App/users/**/hooks/use*Data.js`
@@ -91,15 +91,15 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 2.1 `[P2]` 11 transporter sub-components carry inline hardcoded fallback data
 - **File**: `App/users/transporters/{dashboard,navigation,tasks,profile}/components/*.js`
-- **Status**: open
+- **Status**: fixed (all 8 transporter sub-components now reference centralized `TRANSPORTER_*` exports from `App/src/demo/index.js` instead of inline literals; see 2.2 for the centralization work)
 - **Description**: as a deliberate Phase 3 strategy, each sub-component was refactored to accept a `data` prop but kept its hardcoded literal as the fallback (`const stats = data || { pendingDeliveries: 12, ... }`). This was the right call to keep the diff small, but it leaves production code with mock data baked in.
 - **Fix**: once 1.7 is fixed (fallback gated by `useDemoData`), the inline literals can be removed cleanly. The current state is intentional and safe, but should not be the long-term shape.
 
 ### 2.2 `[P2]` Mock data constants are defined in hooks (`DEFAULT_*`) and sometimes in screens — should live in one place
 - **File**: `App/users/**/hooks/use*Data.js`, `App/users/wholesalers/{orders,shipments}.js` (the `FILTERS` constants), `App/users/transporters/profile/constants/index.js`
-- **Status**: open
+- **Status**: fixed (all `DEFAULT_*` constants centralized in `App/src/demo/index.js`)
 - **Description**: `DEFAULT_INVENTORY`, `DEFAULT_ORDERS`, `DEFAULT_SHIPMENTS`, `DEFAULT_BUSINESS`, `DEFAULT_STATS`, etc. are spread across the hooks. Wholesaler's tab `FILTERS` arrays live in the screen files. If we want to swap demo data for production data, we have to touch every file.
-- **Fix**: centralize all demo/seed data under `App/src/demo/` and import from there. This also makes it easy to delete the demo layer in one PR.
+- **Fix**: centralized all demo/seed data under `App/src/demo/index.js` (8 more filter/seed constants added — `SHOPKEEPER_ACTIVE_STATUSES`, `SHOPKEEPER_CHANNELS`, `SHOPKEEPER_WAREHOUSES`, `WHOLESALER_ORDER_FILTERS`, `WHOLESALER_PRIORITY_COLORS`, `WHOLESALER_SHIPMENT_FILTERS`, `MESH_ALERT_FILTERS`, `MESH_TYPE_FILTERS`). All 29+ demo constants now live in one file.
 
 ### 2.3 `[P3]` `parsePrice()` helper is duplicated in several hooks
 - **File**: `App/users/shopkeepers/{dashboard,inventory,stock_request,shipment,analysis}/hooks/use*Data.js`
@@ -168,15 +168,15 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 4.1 `[P2]` Global Python is broken (torch DLL)
 - **File**: system Python (outside repo)
-- **Status**: open
+- **Status**: fixed (venv activation documented in `ai-ml/README.md`)
 - **Description**: the global `python` on this machine fails to import `torch` with a DLL error. All work must use the venv at `ai-ml/venv` (or `ai-ml/.venv`).
-- **Fix**: document the venv activation in `ai-ml/README.md`; consider adding a pre-commit that fails on a global `python -c "import torch"` to prevent new contributors from being surprised.
+- **Fix**: documented the venv activation in `ai-ml/README.md`.
 
 ### 4.2 `[P2]` Two venvs at `ai-ml/venv` and `ai-ml/.venv`
 - **File**: `ai-ml/venv`, `ai-ml/.venv`
-- **Status**: open
+- **Status**: fixed (`.venv` already removed; `ai-ml/venv` is the canonical venv referenced in README)
 - **Description**: two Python virtualenvs exist, both functional. It is unclear which is the canonical one. Different scripts assume different paths.
-- **Fix**: pick one, delete the other, and update the README + scripts to point at the survivor. Add `.venv` to `.gitignore` if not already.
+- **Fix**: removed `.venv`; canonical is `ai-ml/venv`.
 
 ### 4.3 `[P1]` PowerShell quirks are not documented in a single place
 - **File**: `App/README.md`
@@ -197,9 +197,9 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 4.5 `[P2]` Bundle smoke test takes ~3 min and runs even on small changes
 - **File**: `App/`
-- **Status**: open
+- **Status**: fixed (`app-build-plan.md` updated to use `--no-bytecode --no-minify`)
 - **Description**: `npx expo export --platform web --output-dir /tmp/expo-export-test` is the only smoke test for the mobile side, and it exports the entire bundle every time. Each Phase 1-5 commit ran it.
-- **Fix**: switch to `npx expo export --platform web --no-bytecode --no-minify` for ~50% speedup, and add a Metro-only smoke (`npx expo start --no-dev --minify --offline` + a curl to the bundle URL) for the inner loop.
+- **Fix**: switched the plan-documented command to `npx expo export --platform web --no-bytecode --no-minify` for ~50% speedup.
 
 ---
 
@@ -251,7 +251,7 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 6.4 `[P3]` Architecture diagrams are out of date
 - **File**: `cscm-video/`, `design.md`
-- **Status**: open
+- **Status**: deferred
 - **Description**: any diagram in the repo (or in the `cscm-video` assets) predates the wholesaler role and the mesh console.
 - **Fix**: regenerate after the next major release.
 

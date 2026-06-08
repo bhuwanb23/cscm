@@ -106,9 +106,23 @@ This allows for focused testing during each development phase while maintaining 
 
 ## Getting Started
 
-1. Install dependencies: `pip install -r requirements.txt`
-2. Run tests: `python -m pytest tests/`
-3. Execute data processing: `python scripts/data_processing.py`
+> **Note**: The global `python` on this machine has a broken `torch` DLL. Always use the project venv.
+
+1. **Activate the virtual environment:**
+   ```bash
+   # Windows (PowerShell)
+   ai-ml\venv\Scripts\Activate.ps1
+
+   # Windows (cmd)
+   ai-ml\venv\Scripts\activate.bat
+
+   # Linux / macOS
+   source ai-ml/venv/bin/activate
+   ```
+
+2. Install dependencies: `pip install -r requirements.txt`
+3. Run tests: `python -m pytest tests/`
+4. Execute data processing: `python scripts/data_processing.py`
 
 ## Current Implementation Status
 

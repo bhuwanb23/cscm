@@ -5,16 +5,10 @@ import { Ionicons } from '@expo/vector-icons';
 import Header from '../components/Header';
 import { getStatusMeta } from '../../../src/theme/status';
 import { useOrdersData } from './hooks/useOrdersData';
+import { WHOLESALER_ORDER_FILTERS, WHOLESALER_PRIORITY_COLORS } from '../../../src/demo';
 
-const FILTERS = [
-  { id: 'all', label: 'All' },
-  { id: 'pending', label: 'Pending' },
-  { id: 'approved', label: 'Approved' },
-  { id: 'dispatched', label: 'Dispatched' },
-  { id: 'delivered', label: 'Delivered' },
-];
-
-const PRIORITY_COLORS = { urgent: '#EF4444', high: '#F59E0B', normal: '#3B82F6', low: '#6B7280' };
+const FILTERS = WHOLESALER_ORDER_FILTERS;
+const PRIORITY_COLORS = WHOLESALER_PRIORITY_COLORS;
 
 const Orders = ({ onLogout }) => {
   const { orders, counts, activeFilter, setActiveFilter, approveOrder, dispatchOrder, rejectOrder, refetch } = useOrdersData();

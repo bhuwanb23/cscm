@@ -6,16 +6,7 @@ export const BUSINESS_INFO = {
   address: '4521 Fashion Blvd, Suite 200, New York, NY 10012'
 };
 
-export const CHANNELS = [
-  { id: 1, name: 'Shopify', connected: true, lastSync: '2h ago' },
-  { id: 2, name: 'Amazon FBA', connected: true, lastSync: '2h ago' },
-  { id: 3, name: 'WooCommerce', connected: false, lastSync: 'N/A' }
-];
-
-export const WAREHOUSES = [
-  { id: 1, name: 'West Retail', capacity: 42, location: 'CA' },
-  { id: 2, name: 'East Coast Hub', capacity: 85, location: 'NY' }
-];
+export { SHOPKEEPER_CHANNELS as CHANNELS, SHOPKEEPER_WAREHOUSES as WAREHOUSES } from '../../../../src/demo';
 
 export const STATS = {
   rating: 4.8,

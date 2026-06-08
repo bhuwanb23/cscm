@@ -241,3 +241,48 @@ export const WHOLESALER_DEFAULT_PROFILE_STATS = {
   fulfillmentRate: 94,
   avgDeliveryTime: '2.4 hrs',
 };
+
+export const SHOPKEEPER_ACTIVE_STATUSES = ['in_transit', 'arriving_soon', 'out_for_delivery', 'delayed'];
+
+export const SHOPKEEPER_CHANNELS = [
+  { id: 1, name: 'Shopify', connected: true, lastSync: '2h ago' },
+  { id: 2, name: 'Amazon FBA', connected: true, lastSync: '2h ago' },
+  { id: 3, name: 'WooCommerce', connected: false, lastSync: 'N/A' },
+];
+
+export const SHOPKEEPER_WAREHOUSES = [
+  { id: 1, name: 'West Retail', capacity: 42, location: 'CA' },
+  { id: 2, name: 'East Coast Hub', capacity: 85, location: 'NY' },
+];
+
+export const WHOLESALER_ORDER_FILTERS = [
+  { id: 'all', label: 'All' },
+  { id: 'pending', label: 'Pending' },
+  { id: 'approved', label: 'Approved' },
+  { id: 'dispatched', label: 'Dispatched' },
+  { id: 'delivered', label: 'Delivered' },
+];
+
+export const WHOLESALER_PRIORITY_COLORS = { urgent: '#EF4444', high: '#F59E0B', normal: '#3B82F6', low: '#6B7280' };
+
+export const WHOLESALER_SHIPMENT_FILTERS = [
+  { id: 'all', label: 'All' },
+  { id: 'in_transit', label: 'In Transit' },
+  { id: 'dispatched', label: 'Dispatched' },
+  { id: 'delivered', label: 'Delivered' },
+];
+
+export const MESH_ALERT_FILTERS = [
+  { id: 'all', label: 'All' },
+  { id: 'unacknowledged', label: 'Active' },
+  { id: 'critical', label: 'Critical' },
+  { id: 'high', label: 'High' },
+];
+
+export const MESH_TYPE_FILTERS = [
+  { id: 'all', label: 'All' },
+  { id: 'shopkeeper', label: 'Shops' },
+  { id: 'wholesaler', label: 'Wholesalers' },
+  { id: 'warehouse', label: 'Warehouses' },
+  { id: 'transporter', label: 'Transporters' },
+];

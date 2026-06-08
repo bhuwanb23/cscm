@@ -4,13 +4,9 @@ import { Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { getStatusMeta } from '../../../src/theme/status';
 import { useShipmentsData } from './hooks/useShipmentsData';
+import { WHOLESALER_SHIPMENT_FILTERS } from '../../../src/demo';
 
-const FILTERS = [
-  { id: 'all', label: 'All' },
-  { id: 'in_transit', label: 'In Transit' },
-  { id: 'dispatched', label: 'Dispatched' },
-  { id: 'delivered', label: 'Delivered' },
-];
+const FILTERS = WHOLESALER_SHIPMENT_FILTERS;
 
 const Shipments = ({ onLogout }) => {
   const { shipments, counts, activeFilter, setActiveFilter, refetch } = useShipmentsData();

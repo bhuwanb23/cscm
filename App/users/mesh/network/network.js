@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useNetworkData } from './hooks/useNetworkData';
+import { MESH_TYPE_FILTERS } from '../../../src/demo';
 
 const TYPE_COLORS = {
   shopkeeper: '#3B82F6',
@@ -22,13 +23,7 @@ const TYPE_ICONS = {
   'central-planner': 'pulse',
 };
 
-const TYPE_FILTERS = [
-  { id: 'all', label: 'All' },
-  { id: 'shopkeeper', label: 'Shops' },
-  { id: 'wholesaler', label: 'Wholesalers' },
-  { id: 'warehouse', label: 'Warehouses' },
-  { id: 'transporter', label: 'Transporters' },
-];
+const TYPE_FILTERS = MESH_TYPE_FILTERS;
 
 const Network = ({ onBack }) => {
   const { nodes, counts, selectedType, setSelectedType, refetch } = useNetworkData();

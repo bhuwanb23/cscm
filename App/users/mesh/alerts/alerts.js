@@ -5,13 +5,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
 import { useAlertsData } from './hooks/useAlertsData';
+import { MESH_ALERT_FILTERS } from '../../../src/demo';
 
-const FILTERS = [
-  { id: 'all', label: 'All' },
-  { id: 'unacknowledged', label: 'Active' },
-  { id: 'critical', label: 'Critical' },
-  { id: 'high', label: 'High' },
-];
+const FILTERS = MESH_ALERT_FILTERS;
 
 const Alerts = ({ onBack }) => {
   const { alerts, counts, activeFilter, setActiveFilter, acknowledge, severityMeta, refetch } = useAlertsData();

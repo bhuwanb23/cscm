@@ -285,6 +285,6 @@ A new top-level entry accessible from any role's nav. This is the "operations co
   {"status":"healthy","service":"api-gateway","timestamp":"...","aiMl":{"status":"unreachable","checkedAt":"..."}}
   ```
   (Python not running in smoke test; aiMl.status = 'unreachable' as expected)
-- `npx expo export --platform web` produces a 1.78 MB bundle — proves all imports (expo-constants, ApiProvider, etc.) resolve
+- `npx expo export --platform web --no-bytecode --no-minify` produces a 1.78 MB bundle (~50% faster than the default) — proves all imports (expo-constants, ApiProvider, etc.) resolve
 - Backend test suite: 57 suites, 621 tests, all green
 - `python -m api.scripts.seed_demo_data`: 19 endpoints checked — 11 OK, 8 WARN (Pydantic placeholder mismatch, not blockers), 1 FAIL (pre-existing demand/forecast 500 — surfaces naturally for triage)

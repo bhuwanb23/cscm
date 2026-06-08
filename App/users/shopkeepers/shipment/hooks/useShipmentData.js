@@ -3,10 +3,11 @@ import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { apiPatch } from '../../../../src/api/apiClient';
 import { getStatusMeta } from '../../../../src/theme/status';
 import { SHIPMENT_CONSTANTS } from '../constants';
+import { SHOPKEEPER_ACTIVE_STATUSES } from '../../../../src/demo';
 
 const SHOP_ID = 'SHOP-001';
 
-const ACTIVE_STATUSES = ['in_transit', 'arriving_soon', 'out_for_delivery', 'delayed'];
+const ACTIVE_STATUSES = SHOPKEEPER_ACTIVE_STATUSES;
 
 function normalizeShipment(raw, index) {
   const meta = getStatusMeta(raw.status || 'in_transit');
