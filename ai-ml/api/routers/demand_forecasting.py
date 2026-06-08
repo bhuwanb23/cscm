@@ -11,7 +11,7 @@ import pandas as pd
 import asyncio
 import pickle
 
-_models_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'models')
+_models_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'legacy_models')
 sys.path.insert(0, _models_dir)
 
 import importlib.util
@@ -141,8 +141,8 @@ def _load_pretrained_model():
     if _PRETRAINED_MODEL is not None:
         return _PRETRAINED_MODEL
     paths = [
-        os.path.join(os.path.dirname(__file__), '..', '..', 'models', 'demand_forecasting', 'weights', 'demand_forecaster_rf.pkl'),
-        os.path.join(os.path.dirname(__file__), '..', '..', 'models', 'demand_forecasting', 'weights', 'demand_forecaster_rf_v2.pkl'),
+        os.path.join(os.path.dirname(__file__), '..', '..', 'legacy_models', 'demand_forecasting', 'weights', 'demand_forecaster_rf.pkl'),
+        os.path.join(os.path.dirname(__file__), '..', '..', 'legacy_models', 'demand_forecasting', 'weights', 'demand_forecaster_rf_v2.pkl'),
     ]
     for p in paths:
         p = os.path.normpath(p)

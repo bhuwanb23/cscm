@@ -9,7 +9,7 @@ from datetime import datetime
 import pickle
 import numpy as np
 
-_models_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'models')
+_models_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'legacy_models')
 sys.path.insert(0, _models_dir)
 
 import importlib.util

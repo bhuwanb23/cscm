@@ -79,6 +79,29 @@ CASES = [
         "expect_keys": ["deployment_id", "status", "endpoint_url", "model_version"],
         "extra_assert": lambda b: b.get("status") == "deployed",
     },
+    # --- Mesh endpoints ---
+    {
+        "label": "9. POST /coordination/plan (mesh coordination)",
+        "method": "POST",
+        "path": f"{BASE}/coordination/plan",
+        "body": {"agent_states": [{"id": "agent-1", "state": "idle"}], "environment_state": {"temperature": 25}, "objectives": ["minimize_cost"], "constraints": ["max_delivery_time:48h"], "time_horizon": 100},
+        "expect_keys": ["plan_id", "agent_actions", "expected_outcomes", "coordination_metrics", "model_version", "timestamp"],
+    },
+    {
+        "label": "10. POST /kg/query (knowledge graph query)",
+        "method": "POST",
+        "path": f"{BASE}/kg/query",
+        "body": {"query": "supplier", "entity_types": ["supplier"], "max_results": 5},
+        "expect_keys": ["query", "results", "entity_count", "relationship_count", "model_version", "timestamp"],
+        "extra_assert": lambda b: b.get("query") == "supplier",
+    },
+    {
+        "label": "11. POST /monitoring/drift (model drift detection)",
+        "method": "POST",
+        "path": f"{BASE}/monitoring/drift",
+        "body": {"model_id": "demand_forecaster", "drift_threshold": 0.05, "window": "24h"},
+        "expect_keys": ["model_id", "drift_detected", "drift_score", "affected_features", "model_version", "timestamp"],
+    },
 ]
 
 passed = 0
