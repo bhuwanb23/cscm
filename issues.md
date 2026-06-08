@@ -138,7 +138,7 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 3.1 `[P1]` No tests in `App/`
 - **File**: `App/` (entire tree)
-- **Status**: fixed (commit below)
+- **Status**: fixed (commit `3e0eca6`)
 - **Description**: the `App/` folder has zero test files. All 621 backend tests live in `backend/src/tests/`. The mobile hook layer (16+ hooks), the apiClient error normalization, the response-shape mapping in hooks, and the gateway routing are all untested.
 - **Fix**: scaffold `App/jest.config.js` and `App/__tests__/` with a `__mocks__/apiClient.js`. Test pattern: import each hook, render with `@testing-library/react-hooks`, mock the apiClient to return fixture shapes, assert the hook returns the expected transformed data. Start with the 5 most data-heavy hooks (shopkeeper dashboard, wholesaler dashboard, transporter tasks, mesh alerts, mesh graph).
 
