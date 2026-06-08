@@ -1,15 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { apiPost, apiPatch } from '../../../../src/api/apiClient';
+import { parsePrice } from '../../../../src/utils/parsePrice';
 
 const TRANSPORTER_ID = 'TRANS-001';
-
-function parsePrice(priceStr) {
-  if (typeof priceStr === 'number') return priceStr;
-  if (!priceStr) return 0;
-  const m = String(priceStr).replace(/[^0-9.]/g, '');
-  return parseFloat(m) || 0;
-}
 
 function defaultQuickStats() {
   return {

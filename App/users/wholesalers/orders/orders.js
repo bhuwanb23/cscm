@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } 
 import { Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import Header from '../components/Header';
+import { getStatusMeta } from '../../../src/theme/status';
 import { useOrdersData } from './hooks/useOrdersData';
 
 const FILTERS = [
@@ -12,14 +13,6 @@ const FILTERS = [
   { id: 'dispatched', label: 'Dispatched' },
   { id: 'delivered', label: 'Delivered' },
 ];
-
-const STATUS_COLORS = {
-  pending: { bg: '#FEF3C7', fg: '#92400E' },
-  approved: { bg: '#DBEAFE', fg: '#1E40AF' },
-  dispatched: { bg: '#D1FAE5', fg: '#065F46' },
-  delivered: { bg: '#D1FAE5', fg: '#065F46' },
-  rejected: { bg: '#FEE2E2', fg: '#B91C1C' },
-};
 
 const PRIORITY_COLORS = { urgent: '#EF4444', high: '#F59E0B', normal: '#3B82F6', low: '#6B7280' };
 
@@ -58,7 +51,7 @@ const Orders = ({ onLogout }) => {
         {orders.length === 0 ? (
           <View style={styles.empty}><Ionicons name="receipt-outline" size={48} color="#9CA3AF" /><Text style={styles.emptyText}>No orders in this view</Text></View>
         ) : orders.map((order) => {
-          const sc = STATUS_COLORS[order.status] || STATUS_COLORS.pending;
+          const sc = getStatusMeta(order.status);
           const pc = PRIORITY_COLORS[order.priority] || PRIORITY_COLORS.normal;
           return (
             <Card key={order.id} style={styles.orderCard}>

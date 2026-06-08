@@ -1,24 +1,15 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { apiPatch } from '../../../../src/api/apiClient';
+import { getStatusMeta } from '../../../../src/theme/status';
 import { SHIPMENT_CONSTANTS } from '../constants';
 
 const SHOP_ID = 'SHOP-001';
 
 const ACTIVE_STATUSES = ['in_transit', 'arriving_soon', 'out_for_delivery', 'delayed'];
 
-const STATUS_META = {
-  in_transit: { icon: 'location-dot', iconColor: '#3B82F6', actionText: 'View Details', actionColor: '#3B82F6' },
-  arriving_soon: { icon: 'location-dot', iconColor: '#10B981', actionText: 'Confirm Delivery', actionColor: '#10B981' },
-  delayed: { icon: 'triangle-exclamation', iconColor: '#F59E0B', actionText: 'View Details', actionColor: '#3B82F6' },
-  out_for_delivery: { icon: 'truck', iconColor: '#A855F7', actionText: 'Track Live', actionColor: '#3B82F6' },
-  delivered: { icon: 'shield-alt', iconColor: '#10B981', actionText: 'View Receipt', actionColor: '#10B981' },
-  unknown: { icon: 'location-dot', iconColor: '#6B7280', actionText: 'View Details', actionColor: '#3B82F6' },
-};
-
 function normalizeShipment(raw, index) {
-  const status = (raw.status || 'in_transit').toLowerCase().replace(/[\s-]/g, '_');
-  const meta = STATUS_META[status] || STATUS_META.unknown;
+  const meta = getStatusMeta(raw.status || 'in_transit');
   return {
     id: raw.shipment_id || raw.id || `SH-${index}`,
     title: raw.title || raw.description || raw.origin || 'Shipment',

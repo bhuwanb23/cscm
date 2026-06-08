@@ -4,15 +4,8 @@ import { Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Header from '../components/Header';
+import { getStatusMeta } from '../../../src/theme/status';
 import { useDashboardData } from './hooks/useDashboardData';
-
-const STATUS_COLORS = {
-  pending: { bg: '#FEF3C7', fg: '#92400E' },
-  approved: { bg: '#DBEAFE', fg: '#1E40AF' },
-  dispatched: { bg: '#D1FAE5', fg: '#065F46' },
-  delivered: { bg: '#D1FAE5', fg: '#065F46' },
-  rejected: { bg: '#FEE2E2', fg: '#B91C1C' },
-};
 
 const Dashboard = ({ onLogout }) => {
   const { stats, recentOrders, topRetailers, approveOrder, refetch, loading } = useDashboardData();
@@ -75,7 +68,7 @@ const Dashboard = ({ onLogout }) => {
             </TouchableOpacity>
           </View>
           {recentOrders.map((order) => {
-            const colors = STATUS_COLORS[order.status] || STATUS_COLORS.pending;
+            const colors = getStatusMeta(order.status);
             return (
               <Card key={order.id} style={styles.orderCard}>
                 <View style={styles.orderRow}>

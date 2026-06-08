@@ -1,15 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
+import { parsePrice } from '../../../../src/utils/parsePrice';
 import { BUSINESS_INFO, CHANNELS, WAREHOUSES, STATS, SHOP_INFO } from '../constants/profileConstants';
 
 const SHOP_ID = 'SHOP-001';
-
-function parsePrice(priceStr) {
-  if (typeof priceStr === 'number') return priceStr;
-  if (!priceStr) return 0;
-  const m = String(priceStr).replace(/[^0-9.]/g, '');
-  return parseFloat(m) || 0;
-}
 
 function deriveStats(orders, activeShipments) {
   const monthlyOrders = Array.isArray(orders) ? orders.length : 0;

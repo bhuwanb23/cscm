@@ -1,29 +1,14 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { apiPost } from '../../../../src/api/apiClient';
+import { parsePrice } from '../../../../src/utils/parsePrice';
+import { getStatusMeta } from '../../../../src/theme/status';
 import { STOCK_REQUEST_CONSTANTS } from '../constants';
 
 const SHOP_ID = 'SHOP-001';
 
-const STATUS_META = {
-  pending: { statusLabel: 'Pending', statusColor: '#6B7280', statusBgColor: '#F3F4F6' },
-  approved: { statusLabel: 'Approved', statusColor: '#EAB308', statusBgColor: '#FEF3C7' },
-  dispatched: { statusLabel: 'Dispatched', statusColor: '#3B82F6', statusBgColor: '#DBEAFE' },
-  delivered: { statusLabel: 'Delivered', statusColor: '#22C55E', statusBgColor: '#D1FAE5' },
-  rejected: { statusLabel: 'Rejected', statusColor: '#EF4444', statusBgColor: '#FEE2E2' },
-  cancelled: { statusLabel: 'Cancelled', statusColor: '#EF4444', statusBgColor: '#FEE2E2' },
-};
-
-function parsePrice(priceStr) {
-  if (typeof priceStr === 'number') return priceStr;
-  if (!priceStr) return 0;
-  const m = String(priceStr).replace(/[^0-9.]/g, '');
-  return parseFloat(m) || 0;
-}
-
 function normalizeOrder(raw, index) {
-  const status = (raw.status || 'pending').toLowerCase();
-  const meta = STATUS_META[status] || STATUS_META.pending;
+  const meta = getStatusMeta(raw.status);
   const items = Array.isArray(raw.items) ? raw.items : [];
   const total = typeof raw.total_amount === 'number'
     ? raw.total_amount

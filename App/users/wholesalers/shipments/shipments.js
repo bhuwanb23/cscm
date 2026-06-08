@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from 'react-native';
 import { Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
-import Header from '../components/Header';
+import { getStatusMeta } from '../../../src/theme/status';
 import { useShipmentsData } from './hooks/useShipmentsData';
 
 const FILTERS = [
@@ -11,13 +11,6 @@ const FILTERS = [
   { id: 'dispatched', label: 'Dispatched' },
   { id: 'delivered', label: 'Delivered' },
 ];
-
-const STATUS_COLORS = {
-  in_transit: { bg: '#DBEAFE', fg: '#1E40AF' },
-  dispatched: { bg: '#D1FAE5', fg: '#065F46' },
-  delivered: { bg: '#D1FAE5', fg: '#065F46' },
-  pending: { bg: '#FEF3C7', fg: '#92400E' },
-};
 
 const Shipments = ({ onLogout }) => {
   const { shipments, counts, activeFilter, setActiveFilter, refetch } = useShipmentsData();
@@ -50,7 +43,7 @@ const Shipments = ({ onLogout }) => {
         {shipments.length === 0 ? (
           <View style={styles.empty}><Ionicons name="car-outline" size={48} color="#9CA3AF" /><Text style={styles.emptyText}>No shipments in this view</Text></View>
         ) : shipments.map((shipment) => {
-          const sc = STATUS_COLORS[shipment.status] || STATUS_COLORS.pending;
+          const sc = getStatusMeta(shipment.status);
           return (
             <Card key={shipment.id} style={styles.shipCard}>
               <View style={styles.row}>
