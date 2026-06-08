@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { callApi, stableStringify, buildQueryParams, buildBody } from './useApiQuery';
-import { resolveCall } from './endpoints';
+import { lookupEndpoint, resolveCall } from './endpoints';
 
 function deriveKey(config, index) {
   const opts = config.options || {};
@@ -12,15 +12,16 @@ function runOne(config, index, signal) {
   const enabled = opts.enabled !== false;
   if (!enabled) return Promise.resolve({ data: null, loading: false, error: null, _skip: true });
 
-  let resolved;
+  let endpoint, resolved;
   try {
+    endpoint = lookupEndpoint(config.family, config.action);
     resolved = resolveCall(config.family, config.action, opts.params);
   } catch (err) {
     return Promise.resolve({ data: null, loading: false, error: err.message });
   }
 
-  const queryParams = buildQueryParams(resolved, opts.params);
-  const finalBody = buildBody(resolved, opts.params, opts.body);
+  const queryParams = buildQueryParams(endpoint, opts.params);
+  const finalBody = buildBody(endpoint, opts.params, opts.body);
 
   return callApi(resolved.method, resolved.path, {
     params: queryParams,

@@ -116,13 +116,13 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 2.5 `[P2]` `useApiQuery` is the only shared hook — most API access is in per-screen hooks
 - **File**: `App/src/api/useApiQuery.js`, plus 16+ `App/users/**/hooks/use*Data.js`
-- **Status**: open
+- **Status**: fixed (commit `0c86ab9`)
 - **Description**: hooks do their own data reshaping (e.g. `useDashboardData` reshapes 4 endpoints into one `stats` object). That's the right boundary, but there is no shared `useApiQueries` (plural) helper for "fetch N endpoints in parallel and return `{ loading, error, data }`". Most hooks do this by hand.
 - **Fix**: add `useApiQueries(endpoints)` to `App/src/api/` and refactor the parallel-fetch hooks to use it. Cuts ~30 LOC per hook.
 
 ### 2.6 `[P3]` `App/API_SETUP.md` and `App/README.md` references are out of date
 - **File**: `App/API_SETUP.md` (referenced from `App/src/api/ApiProvider.js:92` link)
-- **Status**: open
+- **Status**: fixed (commit `666978d`)
 - **Description**: the doc was written in Phase 1.7; the links to `seed_demo_data.py` and the gateway port should still be correct, but the readme is silent on the wholesaler role, mesh console, and the 3-role login picker added in Phases 4-5.
 - **Fix**: refresh both files after 1.5 / 1.7 land.
 
@@ -138,7 +138,7 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 3.1 `[P1]` No tests in `App/`
 - **File**: `App/` (entire tree)
-- **Status**: open
+- **Status**: fixed (commit below)
 - **Description**: the `App/` folder has zero test files. All 621 backend tests live in `backend/src/tests/`. The mobile hook layer (16+ hooks), the apiClient error normalization, the response-shape mapping in hooks, and the gateway routing are all untested.
 - **Fix**: scaffold `App/jest.config.js` and `App/__tests__/` with a `__mocks__/apiClient.js`. Test pattern: import each hook, render with `@testing-library/react-hooks`, mock the apiClient to return fixture shapes, assert the hook returns the expected transformed data. Start with the 5 most data-heavy hooks (shopkeeper dashboard, wholesaler dashboard, transporter tasks, mesh alerts, mesh graph).
 
@@ -191,7 +191,7 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 4.4 `[P2]` Pytest must run from `ai-ml/api/`
 - **File**: `ai-ml/`
-- **Status**: open
+- **Status**: fixed (commit `5e34464`)
 - **Description**: there is a path conflict between `ai-ml/models/` (a top-level package) and `ai-ml/api/models/` (Pydantic models). Running pytest from `ai-ml/` resolves the wrong one. We sidestep this by always `cd ai-ml/api` first.
 - **Fix**: rename the top-level `ai-ml/models/` package to `ai-ml/legacy_models/` or similar, and update the few importers. Then `pytest` from `ai-ml/` will work. This is invasive but worth it before the ai-ml side grows further.
 
@@ -225,7 +225,7 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 5.4 `[P3]` Gateway port (`8080`) is duplicated in code and docs
 - **File**: `App/src/api/config.js`, `App/API_SETUP.md`, `backend/src/gateway/gateway.js`
-- **Status**: open
+- **Status**: fixed (commit `71962df`)
 - **Description**: the gateway port appears in 3+ files. Changing it requires touching all of them.
 - **Fix**: read from `process.env.GATEWAY_PORT` (default 8080) in all 3 places.
 
