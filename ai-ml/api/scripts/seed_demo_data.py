@@ -166,17 +166,31 @@ CHECKS = [
 ]
 
 
-def call(method, path, body=None, params=None):
+def call(method, path, body=None, params=None, save_body=False):
     try:
         response = client.request(method, path, json=body, params=params, timeout=30)
         code = response.status_code
-        if code >= 500:
-            return {"status": "FAIL", "detail": f"status={code} (server error)", "code": code}
-        if code == 422:
-            return {"status": "WARN", "detail": "status=422 (Pydantic rejected sample shape)", "code": code}
+        parsed = {}
+        if save_body:
+            try:
+                parsed = response.json()
+            except Exception:
+                parsed = {"_text": response.text[:200]}
+        base = {"status": "OK" if code < 400 else ("WARN" if code < 500 else "FAIL"),
+                "detail": f"status={code}", "code": code}
         if code >= 400:
-            return {"status": "WARN", "detail": f"status={code} client_error", "code": code}
-        return {"status": "OK", "detail": f"status={code}", "code": code}
+            base["detail"] = f"status={code} {'server error' if code >= 500 else 'client error'}"
+        if code >= 500:
+            base["status"] = "FAIL"
+        elif code == 422:
+            base["status"] = "WARN"
+            base["detail"] = "status=422 (Pydantic rejected sample shape)"
+        elif code >= 400:
+            base["status"] = "WARN"
+            base["detail"] = f"status={code} client_error"
+        if save_body:
+            base["body"] = parsed
+        return base
     except Exception as exc:
         return {"status": "FAIL", "detail": f"exception={type(exc).__name__}: {str(exc)[:60]}", "code": None}
 
@@ -197,13 +211,18 @@ def main(args):
     warned = []
     results = []
 
+    save = bool(args.save_responses)
+    responses = {}
+
     for check in CHECKS:
         if check["family"] != current_family:
             current_family = check["family"]
             print()
             print(f"  [{current_family}]")
-        result = call(check["method"], check["path"], check.get("body"), check.get("params"))
+        result = call(check["method"], check["path"], check.get("body"), check.get("params"), save_body=save)
         results.append({**check, **result})
+        if save:
+            responses[check["label"]] = {"status": result["status"], "code": result["code"], "body": result.get("body")}
         counts[result["status"]] += 1
         if result["status"] == "FAIL":
             failed.append(check["label"])
@@ -251,8 +270,15 @@ def main(args):
             json.dump(report, f, indent=2)
         print(f"\n  Report written to {out_path}")
 
+    if args.save_responses:
+        resp_path = args.save_responses
+        with open(resp_path, "w") as f:
+            json.dump(responses, f, indent=2, default=str)
+        print(f"  Response bodies saved to {resp_path}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="CSCM demo readiness check")
     parser.add_argument("--output", "-o", type=str, default=None, help="Path to write JSON report (default: stdout only)")
+    parser.add_argument("--save-responses", type=str, default=None, help="Path to write response bodies per endpoint (default: not saved)")
     main(parser.parse_args())

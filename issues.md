@@ -159,7 +159,7 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 3.4 `[P3]` `seed_demo_data.py` doesn't capture `response.json()` for the OK cases
 - **File**: `ai-ml/api/scripts/seed_demo_data.py:175`
-- **Status**: open
+- **Status**: fixed
 - **Description**: the OK branch only records `status=200`. For future work (auto-generating TS types from response shapes, see 2.7) the actual JSON body would be useful.
 - **Fix**: optionally write a `--save-responses` flag that writes `last_responses.json` keyed by endpoint.
 
