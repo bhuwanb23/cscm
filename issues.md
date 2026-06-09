@@ -251,7 +251,7 @@ Backlog of every problem surfaced during the CSCM app build (Phases 1-5, ~30 com
 
 ### 6.4 `[P3]` Architecture diagrams are out of date
 - **File**: `cscm-video/`, `design.md`
-- **Status**: deferred
+- **Status**: deferred (root `README.md` now has an up-to-date ASCII architecture diagram showing all 3 tiers + all 3 roles + mesh console)
 - **Description**: any diagram in the repo (or in the `cscm-video` assets) predates the wholesaler role and the mesh console.
 - **Fix**: regenerate after the next major release.
 
