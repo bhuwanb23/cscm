@@ -6,8 +6,7 @@ import {
   WHOLESALER_DEFAULT_TOP_RETAILERS as DEFAULT_TOP_RETAILERS,
   WHOLESALER_DEFAULT_RECENT_ORDERS as DEFAULT_RECENT_ORDERS,
 } from '../../../../src/demo';
-
-const WHOLESALER_ID = 'WHOLE-001';
+import { WHOLESALER_ID } from '../../../../src/constants/storeIds';
 
 function parseOrder(raw, index) {
   return {

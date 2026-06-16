@@ -2,8 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useApiQueries } from '../../../../src/api/useApiQueries';
 import { apiPatch } from '../../../../src/api/apiClient';
 import { TRANSPORTER_DEFAULT_TASKS as DEFAULT_TASKS } from '../../../../src/demo';
-
-const TRANSPORTER_ID = 'TRANS-001';
+import { TRANSPORTER_ID } from '../../../../src/constants/storeIds';
 
 function normalizeTask(raw, index) {
   const status = (raw.status || '').toLowerCase();

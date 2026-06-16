@@ -2,8 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { parsePrice } from '../../../../src/utils/parsePrice';
 import { BUSINESS_INFO, CHANNELS, WAREHOUSES, STATS, SHOP_INFO } from '../constants/profileConstants';
-
-const SHOP_ID = 'SHOP-001';
+import { SHOP_ID } from '../../../../src/constants/storeIds';
 
 function deriveStats(orders, activeShipments) {
   const monthlyOrders = Array.isArray(orders) ? orders.length : 0;

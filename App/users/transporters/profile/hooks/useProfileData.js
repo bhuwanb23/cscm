@@ -5,8 +5,7 @@ import {
   TRANSPORTER_DEFAULT_VEHICLE as DEFAULT_VEHICLE,
   TRANSPORTER_DEFAULT_STATS as DEFAULT_STATS,
 } from '../../../../src/demo';
-
-const TRANSPORTER_ID = 'TRANS-001';
+import { TRANSPORTER_ID } from '../../../../src/constants/storeIds';
 
 function deriveStats(delivered) {
   if (!Array.isArray(delivered) || delivered.length === 0) return DEFAULT_STATS;

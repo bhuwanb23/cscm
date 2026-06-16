@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { INVENTORY_CONSTANTS } from '../constants';
-
-const SHOP_ID = 'SHOP-001';
+import { SHOP_ID } from '../../../../src/constants/storeIds';
 
 function normalizeItem(raw, index) {
   const qty = Number(raw.quantity ?? raw.on_hand ?? 0);

@@ -2,8 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { apiPatch, apiPost } from '../../../../src/api/apiClient';
 import { WHOLESALER_DEFAULT_ORDERS as DEFAULT_ORDERS } from '../../../../src/demo';
-
-const WHOLESALER_ID = 'WHOLE-001';
+import { WHOLESALER_ID } from '../../../../src/constants/storeIds';
 
 function normalizeOrder(raw, index) {
   return {

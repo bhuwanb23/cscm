@@ -2,11 +2,12 @@ import { useCallback, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { apiPost } from '../../../../src/api/apiClient';
 import { MESH_DEFAULT_NODES as DEFAULT_NODES } from '../../../../src/demo';
+import { MESH_AGG_ID } from '../../../../src/constants/storeIds';
 
 export const useNetworkData = () => {
   const [selectedType, setSelectedType] = useState('all');
-  const inventory = useApiQuery('INVENTORY_CRUD', 'listByStore', { params: { storeId: 'MESH-AGG' }, skip: true });
-  const orders = useApiQuery('ORDERS_CRUD', 'listByStore', { params: { storeId: 'MESH-AGG' }, skip: true });
+  const inventory = useApiQuery('INVENTORY_CRUD', 'listByStore', { params: { storeId: MESH_AGG_ID }, skip: true });
+  const orders = useApiQuery('ORDERS_CRUD', 'listByStore', { params: { storeId: MESH_AGG_ID }, skip: true });
   const alerts = useApiQuery('CENTRAL_PLANNER', 'anomalyAlertList', { params: { limit: 20 } });
 
   const nodes = useMemo(() => {

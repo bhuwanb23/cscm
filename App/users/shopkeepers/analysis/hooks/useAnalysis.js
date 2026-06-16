@@ -8,8 +8,7 @@ import {
   SHOPKEEPER_DONE_METRICS as DONE_METRICS,
   SHOPKEEPER_DEFAULT_INSIGHTS as DEFAULT_INSIGHTS,
 } from '../../../../src/demo';
-
-const SHOP_ID = 'SHOP-001';
+import { SHOP_ID } from '../../../../src/constants/storeIds';
 
 function extractInsights(payload) {
   if (!payload) return null;

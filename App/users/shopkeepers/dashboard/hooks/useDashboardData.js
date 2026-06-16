@@ -5,8 +5,7 @@ import {
   SHOPKEEPER_FALLBACK_SHIPMENTS as FALLBACK_SHIPMENTS,
   SHOPKEEPER_FALLBACK_ALERTS as FALLBACK_ALERTS,
 } from '../../../../src/demo';
-
-const SHOP_ID = 'SHOP-001';
+import { SHOP_ID } from '../../../../src/constants/storeIds';
 
 function aggregateStockLevels(items) {
   if (!Array.isArray(items)) return FALLBACK_STOCK_LEVELS;

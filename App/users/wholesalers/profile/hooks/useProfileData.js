@@ -3,8 +3,7 @@ import {
   WHOLESALER_DEFAULT_BUSINESS as DEFAULT_BUSINESS,
   WHOLESALER_DEFAULT_PROFILE_STATS as DEFAULT_STATS,
 } from '../../../../src/demo';
-
-const WHOLESALER_ID = 'WHOLE-001';
+import { WHOLESALER_ID } from '../../../../src/constants/storeIds';
 
 export const useProfileData = () => {
   const [business, setBusiness] = useState(DEFAULT_BUSINESS);

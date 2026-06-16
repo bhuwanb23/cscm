@@ -5,8 +5,7 @@ import {
   TRANSPORTER_DEFAULT_STOPS as DEFAULT_STOPS,
   TRANSPORTER_DEFAULT_TURNS as DEFAULT_TURNS,
 } from '../../../../src/demo';
-
-const TRANSPORTER_ID = 'TRANS-001';
+import { TRANSPORTER_ID } from '../../../../src/constants/storeIds';
 
 function normalizeStop(raw, index) {
   const status = (raw.status || '').toLowerCase();

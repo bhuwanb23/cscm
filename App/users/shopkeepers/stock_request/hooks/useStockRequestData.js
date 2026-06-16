@@ -4,8 +4,7 @@ import { apiPost } from '../../../../src/api/apiClient';
 import { parsePrice } from '../../../../src/utils/parsePrice';
 import { getStatusMeta } from '../../../../src/theme/status';
 import { STOCK_REQUEST_CONSTANTS } from '../constants';
-
-const SHOP_ID = 'SHOP-001';
+import { SHOP_ID } from '../../../../src/constants/storeIds';
 
 function normalizeOrder(raw, index) {
   const meta = getStatusMeta(raw.status);

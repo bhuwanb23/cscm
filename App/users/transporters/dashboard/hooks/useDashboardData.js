@@ -2,61 +2,14 @@ import { useCallback, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { apiPost, apiPatch } from '../../../../src/api/apiClient';
 import { parsePrice } from '../../../../src/utils/parsePrice';
-
-const TRANSPORTER_ID = 'TRANS-001';
-
-function defaultQuickStats() {
-  return {
-    pendingDeliveries: 12,
-    pendingDeliveriesProgress: 45,
-    scheduledPickups: 4,
-    scheduledPickupsProgress: 25,
-  };
-}
-
-function defaultNextTask() {
-  return {
-    priority: 'High',
-    distance: '2.4 miles away',
-    eta: '10:45 AM',
-    storeName: 'Whole Foods Market',
-    storeAddress: '1200 Broadway, Seattle, WA',
-    orderId: '#ORD-9921',
-    packages: '15 Boxes',
-    weight: '320 lbs',
-    type: 'DELIVERY',
-  };
-}
-
-function defaultRouteProgress() {
-  return { completed: 4, total: 16 };
-}
-
-function defaultAlerts() {
-  return [
-    {
-      id: 'traffic',
-      type: 'warning',
-      title: 'Traffic Delay Detected',
-      description: 'Estimated +15 mins on I-5 South. Rerouting recommended.',
-    },
-    {
-      id: 'pickup',
-      type: 'info',
-      title: 'New Pickup Added',
-      description: 'Stop added to route: TechHub Logistics (Order #993)',
-      hasViewDetails: true,
-    },
-  ];
-}
-
-function defaultStops() {
-  return [
-    { id: 's1', time: '11:30', period: 'AM', name: 'Starbucks Reserve', type: 'Delivery', details: '3 Boxes', completed: false },
-    { id: 's2', time: '12:15', period: 'PM', name: 'Amazon Hub Locker', type: 'Pickup', details: '12 Packages', completed: false },
-    { id: 's3', time: '01:45', period: 'PM', name: 'Best Buy Warehouse', type: 'Delivery', details: 'Pallet', completed: true },
-  ];
-}
+import { TRANSPORTER_ID } from '../../../../src/constants/storeIds';
+import {
+  TRANSPORTER_QUICK_STATS as DEFAULT_QUICK_STATS,
+  TRANSPORTER_NEXT_TASK as DEFAULT_NEXT_TASK,
+  TRANSPORTER_ROUTE_PROGRESS as DEFAULT_ROUTE_PROGRESS,
+  TRANSPORTER_ALERTS_SECTION as DEFAULT_ALERTS,
+  TRANSPORTER_UPCOMING_STOPS as DEFAULT_STOPS,
+} from '../../../../src/demo';
 
 function normalizeShipment(raw, index) {
   return {
@@ -92,9 +45,9 @@ function summarizeShipments(shipments) {
     return ['in_transit', 'out_for_delivery', 'arriving_soon', 'pending'].includes(st) || !st;
   });
   return {
-    pendingDeliveries: pending.length || defaultQuickStats().pendingDeliveries,
+    pendingDeliveries: pending.length || DEFAULT_QUICK_STATS.pendingDeliveries,
     pendingDeliveriesProgress: Math.min(100, Math.round((pending.length / Math.max(all.length, 1)) * 100)),
-    scheduledPickups: all.filter(s => (s.task_type || '').toLowerCase() === 'pickup').length || defaultQuickStats().scheduledPickups,
+    scheduledPickups: all.filter(s => (s.task_type || '').toLowerCase() === 'pickup').length || DEFAULT_QUICK_STATS.scheduledPickups,
     scheduledPickupsProgress: 25,
   };
 }
@@ -112,17 +65,17 @@ export const useDashboardData = () => {
   }, [activeShipments.data]);
 
   const quickStats = useMemo(() => {
-    if (rawShipments.length === 0) return defaultQuickStats();
+    if (rawShipments.length === 0) return DEFAULT_QUICK_STATS;
     return summarizeShipments(rawShipments);
   }, [rawShipments]);
 
   const nextTask = useMemo(() => {
-    if (rawShipments.length === 0) return defaultNextTask();
+    if (rawShipments.length === 0) return DEFAULT_NEXT_TASK;
     return normalizeShipment(rawShipments[0], 0);
   }, [rawShipments]);
 
   const routeProgress = useMemo(() => {
-    if (rawShipments.length === 0) return defaultRouteProgress();
+    if (rawShipments.length === 0) return DEFAULT_ROUTE_PROGRESS;
     const total = rawShipments.length;
     const completed = rawShipments.filter(s => (s.status || '').toLowerCase() === 'delivered').length;
     return { completed: completed || 1, total: total || 16 };
@@ -144,13 +97,13 @@ export const useDashboardData = () => {
         }));
       }
     }
-    return defaultAlerts();
+    return DEFAULT_ALERTS;
   }, [alerts.data]);
 
   const upcomingStops = useMemo(() => {
     if (rawShipments.length === 0) {
       if (stopState.length > 0) return stopState;
-      return defaultStops();
+      return DEFAULT_STOPS;
     }
     return rawShipments.slice(0, 6).map((s, i) => normalizeStop(s, i));
   }, [rawShipments, stopState]);

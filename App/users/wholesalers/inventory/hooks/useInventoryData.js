@@ -2,8 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useApiQuery } from '../../../../src/api/useApiQuery';
 import { apiPut } from '../../../../src/api/apiClient';
 import { WHOLESALER_DEFAULT_INVENTORY as DEFAULT_INVENTORY } from '../../../../src/demo';
-
-const WHOLESALER_ID = 'WHOLE-001';
+import { WHOLESALER_ID } from '../../../../src/constants/storeIds';
 
 function normalizeItem(raw, index) {
   return {

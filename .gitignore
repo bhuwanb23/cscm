@@ -1,6 +1,6 @@
 .pytest_cache/
-.vscode/    
-__pycache__/    
+.vscode/
+__pycache__/
 .ipynb_checkpoints/
 .DS_Store
 *.pyc
@@ -9,12 +9,6 @@ __pycache__/
 *.so
 *.egg-info
 *.egg
-*.egg-info
-*.egg
-*.pyc
-*.pyo
-*.pyd
-*.so
 *.swp
 *.swo
 *.bak
@@ -37,4 +31,15 @@ logs/
 catboost_info/
 datasets/
 weights/
+cscm-video/renders/
+.env
+.env.local
+.env.*.local
+*.pkl
+*.pt
+*.pth
+*.h5
+*.hdf5
+*.onnx
+*.joblib
 *.mp4
