@@ -38,3 +38,5 @@ catboost_info/
 datasets/
 weights/
 *.mp4
+.serena/
+.mimocode/
