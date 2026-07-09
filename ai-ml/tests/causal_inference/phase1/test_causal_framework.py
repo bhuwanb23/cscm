@@ -12,9 +12,9 @@ import os
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.causal_inference.framework.dowhy_integration import CausalGraph, CausalModel
-from models.causal_inference.framework.econml_integration import DoubleML, CausalForest, InstrumentalVariable
-from models.causal_inference.framework.instrumental_variables import IVValidator, IVSelector, IVAnalyzer
+from legacy_models.causal_inference.framework.dowhy_integration import CausalGraph, CausalModel
+from legacy_models.causal_inference.framework.econml_integration import DoubleML, CausalForest, InstrumentalVariable
+from legacy_models.causal_inference.framework.instrumental_variables import IVValidator, IVSelector, IVAnalyzer
 
 def test_causal_graph():
     """Test CausalGraph functionality."""

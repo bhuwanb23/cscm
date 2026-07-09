@@ -1,6 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 const messagingLayer = require('../../messaging');
+const SimulationApiService = require('./services/apiService');
+const EventGenerator = require('./sub-agents/EventGenerator');
+const ScenarioRunner = require('./sub-agents/ScenarioRunner');
 
 /**
  * Simulation Agent
@@ -22,6 +25,9 @@ class SimulationAgent {
     this.storagePath = path.join(__dirname, '..', '..', '..', 'data', 'simulation_state.json');
     this.loadState();
     this.eventInterval = null;
+    this.apiService = new SimulationApiService();
+    this.eventGenerator = new EventGenerator('SimulationAgent', this.apiService);
+    this.scenarioRunner = new ScenarioRunner('SimulationAgent', this.apiService);
   }
 
   /**
@@ -368,29 +374,27 @@ class SimulationAgent {
   /**
    * Generate simulation event
    */
-  generateSimulationEvent() {
+  async generateSimulationEvent() {
     try {
       if (!this.state.activeScenario) {
         console.log('Simulation Agent: No active scenario');
         return;
       }
-      
+
       const scenario = this.state.scenarios[this.state.activeScenario];
       if (!scenario) {
         console.log('Simulation Agent: Active scenario not found');
         return;
       }
-      
-      // Select random event type
+
       const eventType = scenario.eventTypes[Math.floor(Math.random() * scenario.eventTypes.length)];
-      
-      // Generate event based on type
+
       switch (eventType) {
         case 'inventory_update':
-          this.generateInventoryUpdateEvent(scenario);
+          await this.generateInventoryUpdateEvent(scenario);
           break;
         case 'demand_spike':
-          this.generateDemandSpikeEvent(scenario);
+          await this.generateDemandSpikeEvent(scenario);
           break;
         case 'supplier_delay':
           this.generateSupplierDelayEvent(scenario);
@@ -409,26 +413,27 @@ class SimulationAgent {
   /**
    * Generate inventory update event
    */
-  generateInventoryUpdateEvent(scenario) {
+  async generateInventoryUpdateEvent(scenario) {
     try {
-      // Select random store and product
       const storeId = scenario.entities.stores[Math.floor(Math.random() * scenario.entities.stores.length)];
       const productIds = ['product_a', 'product_b', 'product_c', 'product_d'];
       const productId = productIds[Math.floor(Math.random() * productIds.length)];
-      
-      // Generate random inventory change
       const baseLevel = scenario.parameters.base_inventory_level || 100;
-      const variance = scenario.parameters.demand_variance || 0.2;
-      const change = Math.floor(baseLevel * (Math.random() * variance * 2 - variance));
-      const newQuantity = Math.max(0, baseLevel + change);
-      
+
+      const result = await this.eventGenerator.generateInventoryUpdate({
+        storeId,
+        productId,
+        currentStock: baseLevel
+      });
+
+      const newQuantity = result.optimalQuantity || baseLevel;
+
       console.log(`Simulation Agent: Generating inventory update for ${storeId}, product ${productId}: ${newQuantity}`);
-      
-      // Publish inventory update
+
       messagingLayer.publishMessage(
         `inventory.update.${storeId}`,
         {
-          productId: productId,
+          productId,
           quantity: newQuantity,
           timestamp: new Date().toISOString(),
           source: 'simulation'
@@ -443,32 +448,24 @@ class SimulationAgent {
   /**
    * Generate demand spike event
    */
-  generateDemandSpikeEvent(scenario) {
+  async generateDemandSpikeEvent(scenario) {
     try {
-      // Select random store and product
       const storeId = scenario.entities.stores[Math.floor(Math.random() * scenario.entities.stores.length)];
       const productIds = ['product_a', 'product_b', 'product_c', 'product_d'];
       const productId = productIds[Math.floor(Math.random() * productIds.length)];
-      
-      // Generate demand forecast with spike
-      const baseDemand = 50;
-      const spikeMultiplier = Math.random() * 3 + 2; // 2-5x spike
-      const expectedDemand = Math.floor(baseDemand * spikeMultiplier);
+
+      const result = await this.eventGenerator.generateDemandSpike({ storeId, productId, magnitude: 0.3 });
+
+      const expectedDemand = result.expectedImpact || 100;
       const safetyStock = Math.floor(expectedDemand * 0.2);
-      
+
       console.log(`Simulation Agent: Generating demand spike for ${storeId}, product ${productId}: ${expectedDemand}`);
-      
-      // Publish demand forecast
+
       messagingLayer.publishMessage(
         `demand.forecast.${storeId}`,
         {
-          productId: productId,
-          forecast: {
-            expectedDemand: expectedDemand,
-            safetyStock: safetyStock,
-            confidence: 0.85,
-            period: 'next_24_hours'
-          },
+          productId,
+          forecast: { expectedDemand, safetyStock, confidence: 0.85, period: 'next_24_hours' },
           timestamp: new Date().toISOString(),
           source: 'simulation'
         },

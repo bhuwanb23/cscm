@@ -1,3 +1,0 @@
-"""
-Propagation Techniques submodule
-"""

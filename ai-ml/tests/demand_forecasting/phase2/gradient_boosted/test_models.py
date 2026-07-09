@@ -12,7 +12,7 @@ import sys
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.demand_forecasting.gradient_boosted.models import XGBoostModel, LightGBMModel, CatBoostModel, GradientBoostedForecaster
+from legacy_models.demand_forecasting.gradient_boosted.models import XGBoostModel, LightGBMModel, CatBoostModel, GradientBoostedForecaster
 
 def test_xgboost_model_initialization():
     """Test initialization of XGBoostModel."""

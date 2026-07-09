@@ -20,10 +20,10 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_GUROBI, reason="gurobipy not available")
 
-from models.routing_logistics.classical_optimization.gurobi_routing import (
+from legacy_models.routing_logistics.classical_optimization.gurobi_routing import (
     GurobiRoutingOptimizer
 )
-from models.routing_logistics.classical_optimization.cvrptw_solver import (
+from legacy_models.routing_logistics.classical_optimization.cvrptw_solver import (
     Location,
     Vehicle,
     RoutingProblem

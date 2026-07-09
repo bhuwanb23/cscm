@@ -11,13 +11,13 @@ from datetime import datetime
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.inventory_optimization.deployment_integration.central_coordinator import (
+from legacy_models.inventory_optimization.deployment_integration.central_coordinator import (
     CentralCoordinator
 )
-from models.inventory_optimization.deployment_integration.edge_executor import (
+from legacy_models.inventory_optimization.deployment_integration.edge_executor import (
     EdgeDecisionExecutor
 )
-from models.inventory_optimization.deployment_integration.metrics_tracker import (
+from legacy_models.inventory_optimization.deployment_integration.metrics_tracker import (
     InventoryMetricsTracker
 )
 

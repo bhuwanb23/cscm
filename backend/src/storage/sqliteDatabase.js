@@ -126,13 +126,27 @@ class SQLiteDatabase {
         )
       `;
 
+      // Create users table
+      const usersTable = `
+        CREATE TABLE IF NOT EXISTS users (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          username TEXT NOT NULL UNIQUE,
+          email TEXT NOT NULL UNIQUE,
+          password TEXT NOT NULL,
+          role TEXT NOT NULL DEFAULT 'user',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `;
+
       // Execute all table creation queries
       const queries = [
         inventoryTable,
         ordersTable,
         orderItemsTable,
         shipmentsTable,
-        shipmentItemsTable
+        shipmentItemsTable,
+        usersTable
       ];
 
       let completed = 0;
@@ -412,6 +426,183 @@ class SQLiteDatabase {
         } else {
           logger.debug(`Shipment status updated for ID: ${shipmentId}`);
           resolve(this.changes);
+        }
+      });
+    });
+  }
+  // ──────────────────────────────────────────────
+  // Order query operations
+  // ──────────────────────────────────────────────
+
+  /**
+   * Get an order by ID with its items
+   * @param {string} orderId
+   * @returns {Promise<Object|null>}
+   */
+  async getOrderById(orderId) {
+    return new Promise((resolve, reject) => {
+      this.db.get('SELECT * FROM orders WHERE order_id = ?', [orderId], (err, order) => {
+        if (err) { reject(err); return; }
+        if (!order) { resolve(null); return; }
+        this.db.all(
+          'SELECT * FROM order_items WHERE order_id = ?',
+          [orderId],
+          (err2, items) => {
+            if (err2) { reject(err2); return; }
+            order.items = items || [];
+            resolve(order);
+          }
+        );
+      });
+    });
+  }
+
+  /**
+   * Update an order's status
+   * @param {string} orderId
+   * @param {string} status
+   * @returns {Promise<number>} number of rows changed
+   */
+  async updateOrderStatus(orderId, status) {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        'UPDATE orders SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ?',
+        [status, orderId],
+        function(err) {
+          if (err) { reject(err); return; }
+          resolve(this.changes);
+        }
+      );
+    });
+  }
+
+  /**
+   * Get orders by store (optionally filtered by status)
+   * @param {string} storeId
+   * @param {string|null} status
+   * @returns {Promise<Array>}
+   */
+  async getOrdersByStore(storeId, status = null) {
+    return new Promise((resolve, reject) => {
+      let query = 'SELECT * FROM orders WHERE store_id = ?';
+      const params = [storeId];
+      if (status) {
+        query += ' AND status = ?';
+        params.push(status);
+      }
+      query += ' ORDER BY created_at DESC';
+      this.db.all(query, params, (err, rows) => {
+        if (err) { reject(err); return; }
+        resolve(rows);
+      });
+    });
+  }
+
+  // ──────────────────────────────────────────────
+  // Shipment query operations
+  // ──────────────────────────────────────────────
+
+  /**
+   * Get a shipment by ID with its items
+   * @param {string} shipmentId
+   * @returns {Promise<Object|null>}
+   */
+  async getShipmentById(shipmentId) {
+    return new Promise((resolve, reject) => {
+      this.db.get('SELECT * FROM shipments WHERE shipment_id = ?', [shipmentId], (err, shipment) => {
+        if (err) { reject(err); return; }
+        if (!shipment) { resolve(null); return; }
+        this.db.all(
+          'SELECT * FROM shipment_items WHERE shipment_id = ?',
+          [shipmentId],
+          (err2, items) => {
+            if (err2) { reject(err2); return; }
+            shipment.items = items || [];
+            resolve(shipment);
+          }
+        );
+      });
+    });
+  }
+
+  /**
+   * Get shipments by location (from or to)
+   * @param {string} location
+   * @returns {Promise<Array>}
+   */
+  async getShipmentsByLocation(location) {
+    return new Promise((resolve, reject) => {
+      this.db.all(
+        'SELECT * FROM shipments WHERE from_location = ? OR to_location = ? ORDER BY created_at DESC',
+        [location, location],
+        (err, rows) => {
+          if (err) { reject(err); return; }
+          resolve(rows);
+        }
+      );
+    });
+  }
+
+  // ──────────────────────────────────────────────
+  // User operations
+  // ──────────────────────────────────────────────
+
+  /**
+   * Create a new user
+   * @param {Object} user - User data { username, email, password, role }
+   * @returns {Promise<number>} The new user's ID
+   */
+  async createUser(user) {
+    return new Promise((resolve, reject) => {
+      const query = `
+        INSERT INTO users (username, email, password, role)
+        VALUES (?, ?, ?, ?)
+      `;
+      const params = [user.username, user.email, user.password, user.role || 'user'];
+      this.db.run(query, params, function(err) {
+        if (err) {
+          logger.error('Failed to create user:', err.message);
+          reject(err);
+        } else {
+          resolve(this.lastID);
+        }
+      });
+    });
+  }
+
+  /**
+   * Find a user by username
+   * @param {string} username
+   * @returns {Promise<Object|null>}
+   */
+  async findUserByUsername(username) {
+    return new Promise((resolve, reject) => {
+      const query = 'SELECT * FROM users WHERE username = ?';
+      this.db.get(query, [username], (err, row) => {
+        if (err) {
+          logger.error('Failed to find user by username:', err.message);
+          reject(err);
+        } else {
+          resolve(row || null);
+        }
+      });
+    });
+  }
+
+  /**
+   * Find a user by ID
+   * @param {number} id
+   * @returns {Promise<Object|null>}
+   */
+  async findUserById(id) {
+    return new Promise((resolve, reject) => {
+      const query = 'SELECT * FROM users WHERE id = ?';
+      this.db.get(query, [id], (err, row) => {
+        if (err) {
+          logger.error('Failed to find user by ID:', err.message);
+          reject(err);
+        } else {
+          resolve(row || null);
         }
       });
     });

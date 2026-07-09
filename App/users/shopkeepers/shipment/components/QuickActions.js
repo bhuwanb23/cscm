@@ -4,28 +4,14 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SHIPMENT_CONSTANTS } from '../constants';
 
 const QuickActions = () => {
   const handlePress = (action, index) => {
-    switch (action.id) {
-      case 'scan-barcode':
-        console.log('Scanning barcode...');
-        break;
-      case 'photo-upload':
-        console.log('Uploading photo...');
-        break;
-      case 'add-note':
-        console.log('Adding note...');
-        break;
-      case 'contact-driver':
-        console.log('Contacting driver...');
-        break;
-      default:
-        console.log('Quick action pressed:', action.title);
-    }
+    Alert.alert('Coming Soon', `${action.title} will be available in a future update.`);
   };
 
   return (

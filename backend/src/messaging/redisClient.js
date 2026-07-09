@@ -21,19 +21,17 @@ class RedisClient {
    */
   async connect() {
     try {
+      const redisPassword = process.env.REDIS_PASSWORD
+        ? `:${encodeURIComponent(process.env.REDIS_PASSWORD)}@`
+        : '';
+      const redisUrl = process.env.REDIS_URL ||
+        `redis://${redisPassword}${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT || 6379}`;
+
       // Create publisher client
-      this.client = redis.createClient({
-        host: process.env.REDIS_HOST || 'localhost',
-        port: process.env.REDIS_PORT || 6379,
-        password: process.env.REDIS_PASSWORD || undefined
-      });
+      this.client = redis.createClient({ url: redisUrl });
 
       // Create subscriber client (Redis requires separate connections for pub/sub)
-      this.subscriber = redis.createClient({
-        host: process.env.REDIS_HOST || 'localhost',
-        port: process.env.REDIS_PORT || 6379,
-        password: process.env.REDIS_PASSWORD || undefined
-      });
+      this.subscriber = redis.createClient({ url: redisUrl });
 
       // Handle connection events
       this.client.on('connect', () => {

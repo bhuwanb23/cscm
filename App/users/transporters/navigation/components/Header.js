@@ -15,7 +15,7 @@ const Header = ({ title, subtitle, onLogout }) => {
   };
 
   const handleBackPress = () => {
-    console.log('Back pressed');
+    Alert.alert('Coming Soon', 'Back navigation will be available in a future update.');
   };
 
   return (

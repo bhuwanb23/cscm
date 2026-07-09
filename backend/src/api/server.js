@@ -58,17 +58,25 @@ app.get('/metrics', async (req, res) => {
 // API Routes
 const authRoutes = require('./routes/auth');
 const eventRoutes = require('./routes/events');
+const inventoryRoutes = require('./routes/inventory');
+const orderRoutes = require('./routes/orders');
+const shipmentRoutes = require('./routes/shipments');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/events', eventRoutes);
+app.use('/api/v1/inventory', inventoryRoutes);
+app.use('/api/v1/orders', orderRoutes);
+app.use('/api/v1/shipments', shipmentRoutes);
 
 // Error handling middleware
 app.use(notFound);
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`CSCM Backend API listening on port ${PORT}`);
-});
+// Start server (skip when imported by tests)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`CSCM Backend API listening on port ${PORT}`);
+  });
+}
 
 module.exports = app;

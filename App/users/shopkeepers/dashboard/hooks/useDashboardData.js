@@ -1,246 +1,71 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useApiQuery } from '../../../../src/api/useApiQuery';
+import {
+  SHOPKEEPER_FALLBACK_STOCK_LEVELS as FALLBACK_STOCK_LEVELS,
+  SHOPKEEPER_FALLBACK_SHIPMENTS as FALLBACK_SHIPMENTS,
+  SHOPKEEPER_FALLBACK_ALERTS as FALLBACK_ALERTS,
+} from '../../../../src/demo';
+import { SHOP_ID } from '../../../../src/constants/storeIds';
 
-const ANALYSIS_STEPS = [
-  { id: 'cart', label: 'Scan live carts & wishlists' },
-  { id: 'inventory', label: 'Compare on-hand vs demand' },
-  { id: 'supply', label: 'Check supplier SLAs' },
-];
+function aggregateStockLevels(items) {
+  if (!Array.isArray(items)) return FALLBACK_STOCK_LEVELS;
+  let good = 0, low = 0, critical = 0;
+  for (const item of items) {
+    const qty = Number(item.quantity ?? item.current_stock ?? item.on_hand ?? 0);
+    const reorder = Number(item.reorder_point ?? item.safety_stock ?? 0);
+    if (qty <= 0) critical += 1;
+    else if (qty <= reorder) low += 1;
+    else good += 1;
+  }
+  return { good, low, critical, total: good + low + critical };
+}
 
-const SAMPLE_CART_ANALYTICS = [
-  {
-    sku: 'SKU-1001',
-    name: 'Electro-Lite Headphones',
-    category: 'Electronics',
-    cartDemand: 48,
-    currentInventory: 18,
-    safetyStock: 12,
-    unitPrice: 89,
-    supplier: 'Alpha Audio',
-    leadTimeDays: 2,
-  },
-  {
-    sku: 'SKU-2040',
-    name: 'Heritage House Blend Coffee',
-    category: 'Grocery',
-    cartDemand: 62,
-    currentInventory: 20,
-    safetyStock: 15,
-    unitPrice: 14,
-    supplier: 'Origin Harvest',
-    leadTimeDays: 5,
-  },
-  {
-    sku: 'SKU-3055',
-    name: 'Everyday Essentials Paper Towels',
-    category: 'Household',
-    cartDemand: 35,
-    currentInventory: 9,
-    safetyStock: 8,
-    unitPrice: 11,
-    supplier: 'Purely Goods',
-    leadTimeDays: 7,
-  },
-  {
-    sku: 'SKU-4102',
-    name: 'Sustain Kids Sneakers',
-    category: 'Apparel',
-    cartDemand: 22,
-    currentInventory: 6,
-    safetyStock: 6,
-    unitPrice: 54,
-    supplier: 'Stride Labs',
-    leadTimeDays: 4,
-  },
-  {
-    sku: 'SKU-5021',
-    name: 'FreshBox Organic Lettuce Pack',
-    category: 'Produce',
-    cartDemand: 28,
-    currentInventory: 14,
-    safetyStock: 12,
-    unitPrice: 6,
-    supplier: 'GreenFly Farms',
-    leadTimeDays: 1,
-  },
-];
+function normalizeShipments(raw) {
+  if (!Array.isArray(raw)) return FALLBACK_SHIPMENTS;
+  return raw.map((s, i) => ({
+    id: s.shipment_id || s.id || `SH-${i}`,
+    items: s.items || s.description || s.destination || 'Shipment',
+    eta: s.eta || s.estimated_arrival || s.arrival_time || 'TBD',
+    status: (s.status || 'in_transit').toLowerCase().replace(/[\s-]/g, '_'),
+  }));
+}
 
-const getInitialSteps = () => ANALYSIS_STEPS.map(step => ({ ...step, completed: false }));
-
-const performCartAnalysis = () => {
-  const flagged = [];
-  let totalRevenueRisk = 0;
-  let totalShortfall = 0;
-  let totalLeadTime = 0;
-  const categorySet = new Set();
-
-  SAMPLE_CART_ANALYTICS.forEach(item => {
-    const targetInventory = item.cartDemand + item.safetyStock;
-    const shortfall = Math.max(targetInventory - item.currentInventory, 0);
-    if (shortfall <= 0) {
-      return;
-    }
-
-    const severity = shortfall / targetInventory;
-    let action = 'Schedule replenishment';
-    if (severity > 0.45) {
-      action = 'Expedite supplier PO';
-    } else if (item.leadTimeDays > 4) {
-      action = 'Switch to backup supplier';
-    } else if (severity > 0.25) {
-      action = 'Create transfer order';
-    }
-
-    flagged.push({
-      ...item,
-      targetInventory,
-      shortfall,
-      severity,
-      action,
-      priority: severity > 0.45 ? 'Critical' : severity > 0.25 ? 'High' : 'Medium',
-    });
-
-    totalRevenueRisk += shortfall * item.unitPrice;
-    totalShortfall += shortfall;
-    totalLeadTime += item.leadTimeDays;
-    categorySet.add(item.category);
-  });
-
-  flagged.sort((a, b) => b.severity - a.severity);
-
-  const summary = {
-    itemsScanned: SAMPLE_CART_ANALYTICS.length,
-    cartSessions: 148,
-    flaggedCount: flagged.length,
-    shortfallUnits: totalShortfall,
-    revenueRisk: totalRevenueRisk,
-    avgLeadTime: flagged.length ? totalLeadTime / flagged.length : 0,
-    categoriesImpacted: Array.from(categorySet),
-    riskLevel: flagged.length > 3 ? 'High' : flagged.length > 0 ? 'Elevated' : 'Stable',
-  };
-
-  return { summary, recommendations: flagged };
-};
+function normalizeAlerts(raw) {
+  if (!Array.isArray(raw)) return FALLBACK_ALERTS;
+  return raw.map((a, i) => ({
+    id: a.alert_id || a.id || `ALERT-${i}`,
+    type: a.severity || a.type || 'info',
+    title: a.title || a.alert_type || 'Alert',
+    message: a.message || a.description || '',
+    time: a.detected_at || a.timestamp || 'recently',
+  }));
+}
 
 export const useDashboardData = () => {
-  const [stockLevels] = useState({
-    good: 124,
-    low: 18,
-    critical: 7,
-  });
-
-  const [shipments] = useState([
-    {
-      id: 'SH001',
-      items: 'Electronics & Accessories',
-      eta: 'Today, 3:00 PM',
-      status: 'In Transit',
-    },
-    {
-      id: 'SH002',
-      items: 'Home & Garden',
-      eta: 'Tomorrow, 10:00 AM',
-      status: 'Preparing',
-    },
-  ]);
-
-  const [alerts] = useState([
-    {
-      id: 1,
-      type: 'critical',
-      title: 'Critical Stock Level',
-      message: 'iPhone 14 cases below minimum threshold',
-      time: '2 minutes ago',
-    },
-    {
-      id: 2,
-      type: 'warning',
-      title: 'Delivery Delay',
-      message: 'Shipment #SH003 delayed by 2 hours',
-      time: '15 minutes ago',
-    },
-    {
-      id: 3,
-      type: 'success',
-      title: 'Stock Replenished',
-      message: 'Wireless headphones restocked successfully',
-      time: '1 hour ago',
-    },
-  ]);
+  const inventory = useApiQuery('INVENTORY_CRUD', 'listByStore', { params: { storeId: SHOP_ID } });
+  const shipments = useApiQuery('SHIPMENTS', 'listByStatus', { params: { status: 'in_transit' } });
+  const alerts = useApiQuery('CENTRAL_PLANNER', 'anomalyAlertList', { params: { status: 'active', limit: 5 } });
 
   const [isLive, setIsLive] = useState(true);
-  const [analysisState, setAnalysisState] = useState({
-    status: 'idle',
-    steps: getInitialSteps(),
-    summary: null,
-    recommendations: [],
-    startedAt: null,
-    completedAt: null,
-  });
-
-  const timersRef = useRef([]);
+  const intervalRef = useRef(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIsLive(prev => !prev);
-    }, 3000);
-
-    return () => {
-      clearInterval(interval);
-      timersRef.current.forEach(clearTimeout);
-    };
+    intervalRef.current = setInterval(() => setIsLive(prev => !prev), 3000);
+    return () => clearInterval(intervalRef.current);
   }, []);
 
-  const queueTimeout = (callback, delay) => {
-    const id = setTimeout(() => {
-      callback();
-      timersRef.current = timersRef.current.filter(timerId => timerId !== id);
-    }, delay);
-    timersRef.current.push(id);
-  };
-
-  const startAnalysis = () => {
-    if (analysisState.status === 'running') {
-      return;
-    }
-
-    setAnalysisState({
-      status: 'running',
-      steps: getInitialSteps(),
-      summary: null,
-      recommendations: [],
-      startedAt: new Date().toISOString(),
-      completedAt: null,
-    });
-
-    ANALYSIS_STEPS.forEach((_, index) => {
-      queueTimeout(() => {
-        setAnalysisState(prev => ({
-          ...prev,
-          steps: prev.steps.map((step, stepIdx) =>
-            stepIdx === index ? { ...step, completed: true } : step
-          ),
-        }));
-      }, (index + 1) * 800);
-    });
-
-    queueTimeout(() => {
-      const results = performCartAnalysis();
-      setAnalysisState(prev => ({
-        ...prev,
-        status: 'completed',
-        summary: results.summary,
-        recommendations: results.recommendations,
-        completedAt: new Date().toISOString(),
-      }));
-    }, (ANALYSIS_STEPS.length + 1) * 800);
-  };
+  const inventoryOk = inventory.data && Array.isArray(inventory.data.items || inventory.data);
+  const stockLevels = inventoryOk ? aggregateStockLevels(inventory.data.items || inventory.data) : FALLBACK_STOCK_LEVELS;
+  const shipmentList = shipments.data ? normalizeShipments(shipments.data.shipments || shipments.data) : FALLBACK_SHIPMENTS;
+  const alertList = alerts.data ? normalizeAlerts(alerts.data.alerts) : FALLBACK_ALERTS;
 
   return {
     stockLevels,
-    shipments,
-    alerts,
+    shipments: shipmentList,
+    alerts: alertList,
     isLive,
-    analysisState,
-    startAnalysis,
+    loading: inventory.loading || shipments.loading || alerts.loading,
+    error: inventory.error || shipments.error || alerts.error,
+    refetch: () => { inventory.refetch(); shipments.refetch(); alerts.refetch(); },
   };
 };

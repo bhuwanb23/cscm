@@ -19,7 +19,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_TORCH, reason="PyTorch not available")
 
-from models.multi_agent_coordination.training_deployment.ctde_trainer import CTDETrainer
+from legacy_models.multi_agent_coordination.training_deployment.ctde_trainer import CTDETrainer
 
 
 class MockAgent:

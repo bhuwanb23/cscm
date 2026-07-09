@@ -16,8 +16,8 @@ import pickle
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.demand_forecasting.edge_inference.models import EdgeModelOptimizer, EdgeInferenceEngine, EdgeInferenceAPI
-from models.demand_forecasting.statistical.models import ETSModel
+from legacy_models.demand_forecasting.edge_inference.models import EdgeModelOptimizer, EdgeInferenceEngine, EdgeInferenceAPI
+from legacy_models.demand_forecasting.statistical.models import ETSModel
 
 def test_edge_model_optimizer():
     """Test edge model optimizer functionality."""

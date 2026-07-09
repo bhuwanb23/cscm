@@ -1,3 +1,0 @@
-"""
-Federated Learning System submodule
-"""

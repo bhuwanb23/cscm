@@ -15,9 +15,9 @@ sys.path.insert(0, parent_dir)
 def test_imports():
     """Test that all modules can be imported without errors."""
     try:
-        from models.computer_vision.object_detection.yolov8 import YOLOv8Detector
-        from models.computer_vision.object_detection.faster_rcnn import FasterRCNNDetector
-        from models.computer_vision.object_detection.detectron2_integration import Detectron2Detector, Detectron2ConfigManager
+        from legacy_models.computer_vision.object_detection.yolov8 import YOLOv8Detector
+        from legacy_models.computer_vision.object_detection.faster_rcnn import FasterRCNNDetector
+        from legacy_models.computer_vision.object_detection.detectron2_integration import Detectron2Detector, Detectron2ConfigManager
         assert True
     except ImportError as e:
         pytest.fail(f"Import failed: {e}")
@@ -25,7 +25,7 @@ def test_imports():
 @patch('models.computer_vision.object_detection.yolov8.YOLO')
 def test_yolov8_detector_initialization(mock_yolo):
     """Test YOLOv8 detector initialization."""
-    from models.computer_vision.object_detection.yolov8 import YOLOv8Detector
+    from legacy_models.computer_vision.object_detection.yolov8 import YOLOv8Detector
     
     # Mock the YOLO model
     mock_model = MagicMock()
@@ -41,7 +41,7 @@ def test_yolov8_detector_initialization(mock_yolo):
 
 def test_yolov8_preprocess_image():
     """Test YOLOv8 image preprocessing."""
-    from models.computer_vision.object_detection.yolov8 import YOLOv8Detector
+    from legacy_models.computer_vision.object_detection.yolov8 import YOLOv8Detector
     
     # Create a mock detector (we won't actually run inference)
     with patch('models.computer_vision.object_detection.yolov8.YOLO'):
@@ -59,7 +59,7 @@ def test_yolov8_preprocess_image():
 @patch('models.computer_vision.object_detection.faster_rcnn.fasterrcnn_resnet50_fpn')
 def test_faster_rcnn_detector_initialization(mock_faster_rcnn):
     """Test Faster R-CNN detector initialization."""
-    from models.computer_vision.object_detection.faster_rcnn import FasterRCNNDetector
+    from legacy_models.computer_vision.object_detection.faster_rcnn import FasterRCNNDetector
     
     # Mock the model
     mock_model = MagicMock()
@@ -75,7 +75,7 @@ def test_faster_rcnn_detector_initialization(mock_faster_rcnn):
 
 def test_faster_rcnn_preprocess_image():
     """Test Faster R-CNN image preprocessing."""
-    from models.computer_vision.object_detection.faster_rcnn import FasterRCNNDetector
+    from legacy_models.computer_vision.object_detection.faster_rcnn import FasterRCNNDetector
     
     # Create a mock detector
     with patch('models.computer_vision.object_detection.faster_rcnn.fasterrcnn_resnet50_fpn'):
@@ -91,7 +91,7 @@ def test_faster_rcnn_preprocess_image():
 
 def test_detectron2_import_handling():
     """Test that Detectron2 import handling works correctly."""
-    from models.computer_vision.object_detection.detectron2_integration import DETECTRON2_AVAILABLE
+    from legacy_models.computer_vision.object_detection.detectron2_integration import DETECTRON2_AVAILABLE
     
     # This test just verifies the import handling logic
     # In a real environment, DETECTRON2_AVAILABLE would depend on whether Detectron2 is installed

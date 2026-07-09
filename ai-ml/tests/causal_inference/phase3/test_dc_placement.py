@@ -12,7 +12,7 @@ import os
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.causal_inference.use_cases.dc_placement import DistributionCenterComparator, NetworkImpactAnalyzer
+from legacy_models.causal_inference.use_cases.dc_placement import DistributionCenterComparator, NetworkImpactAnalyzer
 
 def test_distribution_center_comparator_initialization():
     """Test initialization of DistributionCenterComparator."""

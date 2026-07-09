@@ -16,7 +16,7 @@ const Header = ({ title, subtitle, onLogout }) => {
   };
 
   const handleEditPress = () => {
-    console.log('Edit profile pressed');
+    Alert.alert('Coming Soon', 'Profile editing will be available in a future update.');
   };
 
   return (

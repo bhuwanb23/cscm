@@ -11,7 +11,7 @@ import os
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.anomaly_detection.deployment.threshold_calibration import AlertThresholdCalibrator
+from legacy_models.anomaly_detection.deployment.threshold_calibration import AlertThresholdCalibrator
 
 
 class TestAlertThresholdCalibrator:

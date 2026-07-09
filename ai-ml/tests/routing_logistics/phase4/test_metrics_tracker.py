@@ -12,7 +12,7 @@ import os
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.routing_logistics.deployment_infrastructure.metrics_tracker import (
+from legacy_models.routing_logistics.deployment_infrastructure.metrics_tracker import (
     RoutingMetricsTracker
 )
 

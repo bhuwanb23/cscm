@@ -9,7 +9,7 @@ import logging
 from datetime import datetime
 import numpy as np
 
-_models_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'models')
+_models_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'legacy_models')
 sys.path.insert(0, _models_dir)
 
 import importlib.util
@@ -516,47 +516,66 @@ async def propagate_uncertainty(request: PropagationRequest):
 
 
 class SafetyStockRequest(BaseModel):
-    model_id: str = "default"
+    model_id: Optional[str] = "default"
+    product_id: Optional[str] = None
     avg_daily_demand: float = 100.0
+    demand_forecast: Optional[float] = None
+    forecast: Optional[float] = None
     demand_std: Optional[float] = None
     lead_time_days: float = 7.0
     service_level: float = 0.95
     input_data: dict = {}
 
 class SafetyStockResponse(BaseModel):
-    safety_stock: float
-    reorder_point: float
-    service_level: float
-    demand_uncertainty_std: float
-    lead_time_days: float
-    model_version: str
-    timestamp: str
+    safety_stock: float = 0.0
+    reorder_point: float = 0.0
+    service_level: float = 0.95
+    demand_uncertainty_std: float = 0.0
+    uncertainty_bounds: dict = {}
+    confidence_level: float = 0.95
+    lead_time_days: float = 7.0
+    model_version: str = "uncertainty_safety_stock_1.0.0"
+    timestamp: str = ""
 
 @router.post("/safety-stock", response_model=SafetyStockResponse)
 async def compute_safety_stock(request: SafetyStockRequest):
     try:
+        product_id = request.product_id or request.model_id or "default"
+        avg_demand = (
+            request.avg_daily_demand
+            if request.avg_daily_demand is not None
+            else (request.demand_forecast or request.forecast or 100.0)
+        )
         uq = UncertaintyQuantificationService()
         if request.input_data:
             uq_req = UncertaintyRequest(
-                model_id=request.model_id,
+                model_id=product_id,
                 input_data=request.input_data,
                 uncertainty_method="bayesian"
             )
             uq_resp = uq.quantify_uncertainty(uq_req)
             demand_std = uq_resp.uncertainty["std"]
         else:
-            demand_std = request.demand_std or (request.avg_daily_demand * 0.2)
+            demand_std = request.demand_std or (avg_demand * 0.2)
 
         z_scores = {0.90: 1.282, 0.95: 1.645, 0.975: 1.96, 0.99: 2.326}
         z = min(s for k, s in sorted(z_scores.items()) if k >= request.service_level)
         safety_stock = z * demand_std * np.sqrt(request.lead_time_days)
-        reorder_point = request.avg_daily_demand * request.lead_time_days + safety_stock
+        reorder_point = avg_demand * request.lead_time_days + safety_stock
+        lower_bound = max(0.0, reorder_point - safety_stock)
+        upper_bound = reorder_point + safety_stock
+        uncertainty_bounds = {
+            "lower": round(float(lower_bound), 2),
+            "upper": round(float(upper_bound), 2),
+        }
 
         return SafetyStockResponse(
             safety_stock=round(float(safety_stock), 2),
             reorder_point=round(float(reorder_point), 2),
             service_level=request.service_level,
             demand_uncertainty_std=round(float(demand_std), 4),
+            uncertainty_bounds=uncertainty_bounds,
+            confidence_level=request.service_level,
             lead_time_days=request.lead_time_days,
             model_version="uncertainty_safety_stock_1.0.0",
             timestamp=datetime.utcnow().isoformat() + "Z",

@@ -11,7 +11,7 @@ import os
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.anomaly_detection.unsupervised.one_class_svm import OneClassSVMDetector
+from legacy_models.anomaly_detection.unsupervised.one_class_svm import OneClassSVMDetector
 
 
 class TestOneClassSVMDetector:

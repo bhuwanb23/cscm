@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { PROFILE_CONSTANTS } from '../constants';
 
 const SettingsSection = ({ onLogout }) => {
   const handleSettingPress = (setting) => {
-    console.log(`Pressed: ${setting.title}`);
+    Alert.alert('Coming Soon', `${setting.title} will be available in a future update.`);
   };
 
   return (

@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
   FlatList,
   Text,
+  RefreshControl,
+  Alert,
 } from 'react-native';
 import { useShipmentData } from './hooks/useShipmentData';
 import FilterTabs from './components/FilterTabs';
@@ -23,14 +25,20 @@ const Shipment = () => {
     recentDeliveries,
     getStatusStyle,
     confirmDelivery,
+    refetch,
   } = useShipmentData();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try { await refetch(); } finally { setRefreshing(false); }
+  };
 
   const handleActionPress = (shipment) => {
     if (shipment.actionText === 'Confirm Delivery') {
       confirmDelivery(shipment.id);
     } else {
-      // Handle other actions like "View Details", "Track Live"
-      console.log(`Action pressed for shipment ${shipment.id}: ${shipment.actionText}`);
+      Alert.alert('Coming Soon', `${shipment.actionText} will be available in a future update.`);
     }
   };
 
@@ -85,6 +93,14 @@ const Shipment = () => {
           ListFooterComponent={renderFooter}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor="#3B82F6"
+              colors={['#3B82F6']}
+            />
+          }
         />
       </View>
     </View>

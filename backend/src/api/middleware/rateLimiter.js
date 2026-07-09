@@ -59,18 +59,6 @@ const securityHeaders = (req, res, next) => {
   next();
 };
 
-// Input validation middleware
-const validateInput = (schema) => {
-  return (req, res, next) => {
-    // In a real implementation, you would validate the request body
-    // against the provided schema using a validation library like Joi
-    // This is a simplified version
-    
-    // For now, we'll just pass through
-    next();
-  };
-};
-
 // CORS configuration
 const corsOptions = {
   origin: function (origin, callback) {
@@ -88,6 +76,5 @@ const corsOptions = {
 module.exports = {
   rateLimiter,
   securityHeaders,
-  validateInput,
   corsOptions
 };

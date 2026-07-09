@@ -12,7 +12,7 @@ import sys
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.inventory_optimization.stochastic_models.ss_policy import SSPolicyModel
+from legacy_models.inventory_optimization.stochastic_models.ss_policy import SSPolicyModel
 
 
 def test_ss_policy_with_csv_data():

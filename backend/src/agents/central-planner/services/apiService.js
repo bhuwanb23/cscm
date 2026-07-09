@@ -17,6 +17,30 @@ class CentralPlannerApiService extends BaseApiService {
     if (path === '/api/v1/supplier/risk') {
       return { risk_score: 0.5, risk_level: 'medium', model_version: 'fallback_v1' };
     }
+    if (path === '/api/v1/coordination/plan') {
+      return { plan_id: `PLAN-${Date.now()}`, status: 'created', steps: [], model_version: 'fallback_v1' };
+    }
+    if (path === '/api/v1/coordination/status') {
+      return { status: 'unknown', model_version: 'fallback_v1' };
+    }
+    if (path && path.startsWith('/api/v1/anomaly/alerts/')) {
+      const alertId = path.split('/').pop();
+      return { alert_id: alertId, severity: 'unknown', status: 'unknown', model_version: 'fallback_v1' };
+    }
+    if (path === '/api/v1/kg/query') {
+      return { entities: [], relationships: [], paths: [], model_version: 'fallback_v1' };
+    }
+    if (path && path.startsWith('/api/v1/monitoring/drift')) {
+      return { drift_detected: false, drift_score: 0, affected_features: [], model_version: 'fallback_v1' };
+    }
+    if (path === '/api/v1/uncertainty/safety-stock') {
+      return {
+        safety_stock: 50,
+        uncertainty_bounds: { lower: 25, upper: 75 },
+        confidence_level: 0.95,
+        model_version: 'fallback_v1'
+      };
+    }
     return null;
   }
 
@@ -34,6 +58,30 @@ class CentralPlannerApiService extends BaseApiService {
 
   async supplierRiskAssessment(data) {
     return this.call('post', '/api/v1/supplier/risk', data, { allowFallback: true });
+  }
+
+  async coordinationPlan(data) {
+    return this.call('post', '/api/v1/coordination/plan', data, { allowFallback: true });
+  }
+
+  async coordinationStatus(planId) {
+    return this.call('get', `/api/v1/coordination/status/${planId}`, null, { allowFallback: true, bypassCircuitBreaker: true });
+  }
+
+  async anomalyAlert(alertId) {
+    return this.call('get', `/api/v1/anomaly/alerts/${alertId}`, null, { allowFallback: true, bypassCircuitBreaker: true });
+  }
+
+  async kgQuery(data) {
+    return this.call('post', '/api/v1/kg/query', data, { allowFallback: true });
+  }
+
+  async driftCheck(data) {
+    return this.call('post', '/api/v1/monitoring/drift', data, { allowFallback: true });
+  }
+
+  async safetyStock(data) {
+    return this.call('post', '/api/v1/uncertainty/safety-stock', data, { allowFallback: true });
   }
 }
 

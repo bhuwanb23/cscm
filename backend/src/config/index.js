@@ -11,7 +11,9 @@ const config = {
 
   // Database configuration
   database: {
-    uri: process.env.DATABASE_URI || 'mongodb://localhost:27017/cscm'
+    // The project uses SQLite via src/storage/sqliteDatabase.js.
+    // DATABASE_URI is reserved for future MongoDB integration.
+    uri: process.env.DATABASE_URI || ''
   },
 
   // Kafka configuration
@@ -29,6 +31,13 @@ const config = {
   auth: {
     jwtSecret: process.env.JWT_SECRET || 'cscm-secret-key',
     jwtExpiration: process.env.JWT_EXPIRATION || '24h'
+  },
+
+  // AI/ML
+  aiMl: {
+    apiUrl: process.env.AI_ML_API_URL || 'http://localhost:8000',
+    apiKey: process.env.AI_ML_API_KEY || '',
+    timeout: parseInt(process.env.AI_ML_API_TIMEOUT_MS, 10) || 30000
   },
 
   // Logging

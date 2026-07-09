@@ -12,7 +12,7 @@ import sys
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.inventory_optimization.stochastic_models.stochastic_optimizer import StochasticInventoryOptimizer
+from legacy_models.inventory_optimization.stochastic_models.stochastic_optimizer import StochasticInventoryOptimizer
 
 
 def test_stochastic_optimizer_with_csv_data():

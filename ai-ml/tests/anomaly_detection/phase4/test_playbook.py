@@ -10,7 +10,7 @@ import os
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.anomaly_detection.deployment.playbook import AnomalyPlaybook, PlaybookAction
+from legacy_models.anomaly_detection.deployment.playbook import AnomalyPlaybook, PlaybookAction
 
 
 class TestAnomalyPlaybook:

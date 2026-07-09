@@ -107,38 +107,57 @@ def validate_anomaly_detection():
 
 
 def validate_placeholder_models():
-    """Validate placeholder models."""
-    print("Validating placeholder models...")
-    
+    """Validate now-implemented models (formerly placeholders).
+
+    These models have real implementations and return structured dicts
+    rather than raising NotImplementedError. Tests verify expected shapes.
+    """
+    print("Validating implemented models (formerly placeholders)...")
+
     # Customer Demand Model
-    try:
-        customer_model = CustomerDemandModel()
-        customer_model.analyze(None)
-    except NotImplementedError:
-        print("✓ CustomerDemandModel correctly raises NotImplementedError")
-    
+    customer_model = CustomerDemandModel()
+    no_data = customer_model.analyze({})
+    assert 'error' in no_data and no_data['error'] == 'no data', "CustomerDemandModel no-data path failed"
+    with_data = customer_model.analyze({'historical_data': list(range(15)), 'time_horizon_days': 3})
+    assert 'forecast' in with_data and len(with_data['forecast']) == 3, "CustomerDemandModel with-data path failed"
+    print("✓ CustomerDemandModel returns expected dicts")
+
     # Continual Learning Model
+    cl_model = ContinualLearningModel(n_features=5)
+    cl_result = cl_model.update({})
+    assert 'mse' in cl_result and 'training_step' in cl_result, "ContinualLearningModel.update failed"
+    assert cl_result['training_step'] == 1, "ContinualLearningModel training_step should start at 1"
+    cl_second = cl_model.update({})
+    assert cl_second['training_step'] == 2, "ContinualLearningModel training_step should increment"
     try:
-        cl_model = ContinualLearningModel()
         cl_model.update(None)
-    except NotImplementedError:
-        print("✓ ContinualLearningModel correctly raises NotImplementedError")
-    
+        assert False, "ContinualLearningModel.update(None) should raise AttributeError"
+    except AttributeError:
+        pass
+    print("✓ ContinualLearningModel returns mse + training_step, raises on None")
+
     # Uncertainty Quantification Model
-    try:
-        uq_model = UncertaintyQuantificationModel()
-        uq_model.quantify(None)
-    except NotImplementedError:
-        print("✓ UncertaintyQuantificationModel correctly raises NotImplementedError")
-    
+    uq_model = UncertaintyQuantificationModel(input_dim=4)
+    uq_result = uq_model.quantify({})
+    assert 'prediction' in uq_result, "UncertaintyQuantificationModel missing prediction"
+    assert 'uncertainty' in uq_result, "UncertaintyQuantificationModel missing uncertainty"
+    assert 'epistemic' in uq_result['uncertainty'], "missing epistemic"
+    assert 'aleatoric' in uq_result['uncertainty'], "missing aleatoric"
+    assert 'confidence_interval' in uq_result, "missing confidence_interval"
+    assert uq_result['confidence_interval']['lower'] < uq_result['confidence_interval']['upper'], \
+        "CI lower must be < upper"
+    print("✓ UncertaintyQuantificationModel returns prediction + uncertainty + CI")
+
     # Model Monitoring Model
-    try:
-        mm_model = ModelMonitoringModel()
-        mm_model.monitor(None)
-    except NotImplementedError:
-        print("✓ ModelMonitoringModel correctly raises NotImplementedError")
-    
-    print("Placeholder models validation completed.\n")
+    mm_model = ModelMonitoringModel(model_id='validation-model')
+    mm_result = mm_model.monitor({'y_true': 1.0, 'y_pred': 1.0})
+    assert 'model_id' in mm_result, "ModelMonitoringModel missing model_id"
+    assert 'total_predictions' in mm_result, "ModelMonitoringModel missing total_predictions"
+    assert 'drift_detected' in mm_result, "ModelMonitoringModel missing drift_detected"
+    assert mm_result['drift_detected'] is False, "ModelMonitoringModel should not detect drift on close values"
+    print("✓ ModelMonitoringModel returns id, count, and drift flag")
+
+    print("Implemented models validation completed.\n")
 
 
 def main():

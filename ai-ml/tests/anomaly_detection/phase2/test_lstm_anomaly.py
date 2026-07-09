@@ -19,7 +19,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_TORCH, reason="PyTorch not available")
 
-from models.anomaly_detection.deep_learning.lstm_anomaly import LSTMAnomalyDetector
+from legacy_models.anomaly_detection.deep_learning.lstm_anomaly import LSTMAnomalyDetector
 
 
 class TestLSTMAnomalyDetector:

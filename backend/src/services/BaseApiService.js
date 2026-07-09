@@ -1,12 +1,14 @@
 const axios = require('axios');
+const config = require('../config');
+const logger = require('../utils/logger');
 
 class BaseApiService {
   constructor(options = {}) {
-    this.baseUrl = options.baseUrl || process.env.AI_ML_API_URL || 'http://localhost:8000';
-    this.timeout = options.timeout || parseInt(process.env.AI_ML_API_TIMEOUT_MS, 10) || 30000;
+    this.baseUrl = options.baseUrl || config.aiMl.apiUrl;
+    this.timeout = options.timeout || config.aiMl.timeout;
     this.healthTimeout = options.healthTimeout || 5000;
     this.maxRetries = options.maxRetries || 3;
-    this.authToken = options.authToken || process.env.AI_ML_API_KEY || '';
+    this.authToken = options.authToken || config.aiMl.apiKey;
 
     this._circuitBreaker = {
       failCount: 0,
@@ -67,7 +69,7 @@ class BaseApiService {
     cb.lastFailureTime = Date.now();
     if (cb.failCount >= cb.maxFailures) {
       cb.isOpen = true;
-      console.warn(`[BaseApiService] Circuit breaker opened after ${cb.failCount} failures`);
+      logger.warn(`[BaseApiService] Circuit breaker opened after ${cb.failCount} failures`);
     }
   }
 
@@ -84,12 +86,12 @@ class BaseApiService {
 
   _logRequest(method, path, data) {
     const truncated = data ? JSON.stringify(data).slice(0, 200) : '';
-    console.log(`[BaseApiService] --> ${method} ${path} ${truncated}`);
+    logger.info(`[BaseApiService] --> ${method} ${path} ${truncated}`);
   }
 
   _logResponse(method, path, status, durationMs, data) {
     const truncated = data ? JSON.stringify(data).slice(0, 200) : '';
-    console.log(`[BaseApiService] <-- ${method} ${path} ${status} ${durationMs}ms ${truncated}`);
+    logger.info(`[BaseApiService] <-- ${method} ${path} ${status} ${durationMs}ms ${truncated}`);
   }
 
   async _request(method, path, data, attempt = 0) {
@@ -108,9 +110,18 @@ class BaseApiService {
       const status = error.response ? error.response.status : 'NETWORK';
       this._logResponse(method, path, status, duration, null);
 
+      if (status === 422) {
+        const detail = error.response.data;
+        logger.error(
+          `[BaseApiService] 422 Unprocessable Entity on ${method} ${path} ` +
+          `(contract mismatch - check Pydantic schema vs caller payload). ` +
+          `detail=${JSON.stringify(detail)}`
+        );
+      }
+
       if (this._shouldRetry(error, attempt)) {
         const delay = Math.min(200 * Math.pow(2, attempt), 2000);
-        console.warn(`[BaseApiService] Retry ${attempt + 1}/${this.maxRetries} after ${delay}ms: ${method} ${path} (${status})`);
+        logger.warn(`[BaseApiService] Retry ${attempt + 1}/${this.maxRetries} after ${delay}ms: ${method} ${path} (${status})`);
         await new Promise(resolve => setTimeout(resolve, delay));
         return this._request(method, path, data, attempt + 1);
       }
@@ -135,7 +146,7 @@ class BaseApiService {
     }
 
     if (!bypassCircuitBreaker && this._isCircuitOpen()) {
-      console.warn(`[BaseApiService] Circuit breaker open for ${method} ${path}, using fallback`);
+      logger.warn(`[BaseApiService] Circuit breaker open for ${method} ${path}, using fallback`);
       const fallback = this._getFallback(method, path, data);
       if (fallback) return fallback;
       throw new Error(`Circuit breaker open for ${method} ${path}`);
@@ -154,12 +165,12 @@ class BaseApiService {
       return result;
     } catch (error) {
       this._recordFailure();
-      console.error(`[BaseApiService] ${method} ${path} failed: ${error.message}`);
+      logger.error(`[BaseApiService] ${method} ${path} failed: ${error.message}`);
 
       if (allowCache) {
         const cached = this._getCached(key);
         if (cached) {
-          console.warn(`[BaseApiService] Serving stale cache for ${method} ${path}`);
+          logger.warn(`[BaseApiService] Serving stale cache for ${method} ${path}`);
           return cached;
         }
       }
@@ -167,7 +178,7 @@ class BaseApiService {
       if (allowFallback) {
         const fallback = this._getFallback(method, path, data);
         if (fallback) {
-          console.warn(`[BaseApiService] Using fallback for ${method} ${path}`);
+          logger.warn(`[BaseApiService] Using fallback for ${method} ${path}`);
           return fallback;
         }
       }

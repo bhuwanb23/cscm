@@ -7,7 +7,9 @@
     "start": "node src/api/server.js",
     "dev": "nodemon src/api/server.js",
     "test": "jest",
+    "test:integration": "node scripts/run_integration_tests.js",
     "lint": "eslint src/**/*.js",
+    "postinstall": "node -e \"require('fs').existsSync('.env') || require('fs').copyFileSync('.env.example', '.env')\"",
     "agents": "node src/agents/startAgents.js",
     "verify-agents": "node src/agents/verifyAgents.js",
     "test-redis": "node src/messaging/testRedis.js",
@@ -42,7 +44,6 @@
     "jsonwebtoken": "^9.0.3",
     "kafkajs": "^2.2.4",
     "mqtt": "^4.3.8",
-    "nodemon": "^3.1.11",
     "prom-client": "^14.2.0",
     "redis": "^4.6.13",
     "sqlite3": "^5.1.7",
@@ -51,6 +52,7 @@
   "devDependencies": {
     "eslint": "^8.57.1",
     "jest": "^29.7.0",
+    "nodemon": "^3.1.11",
     "supertest": "^6.3.4"
   }
 }

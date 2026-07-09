@@ -81,14 +81,9 @@ class OrderModel {
    */
   static async getById(orderId) {
     try {
-      if (!orderId) {
-        throw new Error('Order ID is required');
-      }
-
-      // This would require a join with order_items table
-      // For simplicity, we'll just return the order data
-      // In a real implementation, we'd fetch the items as well
-      return { order_id: orderId }; // Placeholder
+      if (!orderId) throw new Error('Order ID is required');
+      const order = await sqliteDatabase.getOrderById(orderId);
+      return order || null;
     } catch (error) {
       throw new Error(`Failed to get order: ${error.message}`);
     }
@@ -101,18 +96,11 @@ class OrderModel {
    */
   static async updateStatus(orderId, status) {
     try {
-      if (!orderId) {
-        throw new Error('Order ID is required');
-      }
+      if (!orderId) throw new Error('Order ID is required');
+      if (!status) throw new Error('Status is required');
 
-      if (!status) {
-        throw new Error('Status is required');
-      }
-
-      // Update order status in database
-      // This would require implementing the update method in sqliteDatabase
-      // For now, we'll just return a placeholder
-      return { order_id: orderId, status };
+      const changes = await sqliteDatabase.updateOrderStatus(orderId, status);
+      return { order_id: orderId, status, changes };
     } catch (error) {
       throw new Error(`Failed to update order status: ${error.message}`);
     }
@@ -125,13 +113,9 @@ class OrderModel {
    */
   static async getByStore(storeId, status = null) {
     try {
-      if (!storeId) {
-        throw new Error('Store ID is required');
-      }
-
-      // This would require querying the database
-      // For now, we'll just return a placeholder
-      return []; // Placeholder
+      if (!storeId) throw new Error('Store ID is required');
+      const orders = await sqliteDatabase.getOrdersByStore(storeId, status);
+      return orders;
     } catch (error) {
       throw new Error(`Failed to get orders by store: ${error.message}`);
     }

@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.causal_inference.use_cases.intervention_analysis import (
+from legacy_models.causal_inference.use_cases.intervention_analysis import (
     InterventionAnalyzer, SyntheticControlAnalyzer, EventStudyAnalyzer
 )
 

@@ -8,7 +8,6 @@ import {
   Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Provider as PaperProvider } from 'react-native-paper';
 import LoginForm from './components/LoginForm';
 
 const { width, height } = Dimensions.get('window');
@@ -55,7 +54,7 @@ const LoginScreen = ({ onLogin }) => {
     
     try {
       // Simulate authentication
-      console.log('Login attempt:', loginData);
+      // Login attempt removed: real auth deferred (issue 5.2)
       
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -75,13 +74,13 @@ const LoginScreen = ({ onLogin }) => {
   });
 
   return (
-    <PaperProvider>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#3B82F6" />
       
       {/* Animated Background */}
       <LinearGradient
         colors={['#3B82F6', '#1E40AF', '#1E3A8A']}
-        style={styles.container}
+        style={styles.fullScreen}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
@@ -131,12 +130,15 @@ const LoginScreen = ({ onLogin }) => {
           <LoginForm onLogin={handleLogin} isLoading={isLoading} />
         </Animated.View>
       </LinearGradient>
-    </PaperProvider>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  fullScreen: {
     flex: 1,
   },
   overlay: {

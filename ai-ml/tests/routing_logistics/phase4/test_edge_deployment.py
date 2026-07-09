@@ -11,7 +11,7 @@ import os
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.routing_logistics.deployment_infrastructure.edge_deployment import EdgeETADeployment
+from legacy_models.routing_logistics.deployment_infrastructure.edge_deployment import EdgeETADeployment
 
 
 class TestEdgeETADeployment:

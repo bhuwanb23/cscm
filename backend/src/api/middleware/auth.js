@@ -53,34 +53,7 @@ const authorize = (...roles) => {
   };
 };
 
-// Role-based access control middleware
-const checkPermission = (resource, action) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        error: 'Access denied. No user authenticated.'
-      });
-    }
-    
-    // In a real implementation, you would check the user's permissions
-    // against the requested resource and action
-    // This is a simplified version
-    const hasPermission = true; // Placeholder logic
-    
-    if (!hasPermission) {
-      return res.status(403).json({
-        success: false,
-        error: 'Access denied. Insufficient permissions.'
-      });
-    }
-    
-    next();
-  };
-};
-
 module.exports = {
   authenticate,
-  authorize,
-  checkPermission
+  authorize
 };

@@ -12,7 +12,7 @@ import sys
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.demand_forecasting.statistical.models import ETSModel, ARIMAModel, StatisticalForecaster
+from legacy_models.demand_forecasting.statistical.models import ETSModel, ARIMAModel, StatisticalForecaster
 
 def test_ets_model_initialization():
     """Test initialization of ETSModel."""

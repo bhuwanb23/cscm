@@ -1,3 +1,0 @@
-"""
-Calibration and Verification submodule
-"""

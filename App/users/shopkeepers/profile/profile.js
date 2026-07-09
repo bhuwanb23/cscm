@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 
 // Components
 import ProfileHeader from './components/ProfileHeader';
@@ -21,15 +21,15 @@ const ShopkeeperDashboard = () => {
   } = useProfileData();
 
   const handleEditProfile = () => {
-    console.log('Edit profile pressed');
+    Alert.alert('Coming Soon', 'Profile editing will be available in a future update.');
   };
 
   const handleSave = () => {
-    console.log('Save pressed');
+    Alert.alert('Coming Soon', 'Save changes will be available in a future update.');
   };
 
   const handleCancel = () => {
-    console.log('Cancel pressed');
+    Alert.alert('Coming Soon', 'Cancel will be available in a future update.');
   };
 
   return (

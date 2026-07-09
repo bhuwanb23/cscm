@@ -16,7 +16,7 @@ import json
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.demand_forecasting.cloud_infrastructure.models import (
+from legacy_models.demand_forecasting.cloud_infrastructure.models import (
     GPUCluster, DistributedTrainingManager, CostOptimizer, 
     SecurityManager, CloudInfrastructureManager
 )

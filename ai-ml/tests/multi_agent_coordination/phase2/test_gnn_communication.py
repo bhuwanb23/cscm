@@ -20,7 +20,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_TORCH_GEOMETRIC, reason="torch_geometric not available")
 
-from models.multi_agent_coordination.communication_protocols.gnn_communication import GNNCommunication
+from legacy_models.multi_agent_coordination.communication_protocols.gnn_communication import GNNCommunication
 
 
 class TestGNNCommunication:

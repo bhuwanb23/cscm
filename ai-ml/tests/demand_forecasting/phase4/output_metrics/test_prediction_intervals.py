@@ -13,7 +13,7 @@ from datetime import datetime
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.demand_forecasting.output_metrics.prediction_intervals import PredictionIntervalGenerator
+from legacy_models.demand_forecasting.output_metrics.prediction_intervals import PredictionIntervalGenerator
 
 
 def test_prediction_interval_generator_initialization():

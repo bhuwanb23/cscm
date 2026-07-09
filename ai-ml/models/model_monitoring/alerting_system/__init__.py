@@ -1,3 +1,0 @@
-"""
-Alerting System submodule
-"""

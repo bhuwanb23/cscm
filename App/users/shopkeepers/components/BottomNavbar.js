@@ -15,6 +15,7 @@ const BottomNavbar = ({ activeTab, onTabPress }) => {
     { id: 'inventory', icon: 'list-outline', activeIcon: 'list' },
     { id: 'orders', icon: 'add-circle-outline', activeIcon: 'add-circle' },
     { id: 'shipments', icon: 'car-outline', activeIcon: 'car' },
+    { id: 'mesh', icon: 'globe-outline', activeIcon: 'globe' },
     // Removed messages tab as it's now in the header
   ];
 

@@ -4,59 +4,87 @@ A React Native mobile application for the Cognitive Supply Chain Mesh system, de
 
 ## Features
 
-### 🔐 Authentication System
-- **Role-based Login**: Separate interfaces for Shopkeepers and Transporters
-- **Beautiful UI**: Modern, professional login interface with gradient backgrounds
-- **Form Validation**: Input validation and error handling
-- **Secure Authentication**: JWT-based authentication system
+### 🔐 Role-based Login (Demo)
+- **3-role picker**: Shopkeeper, Transporter, Wholesaler — each with dedicated shell, navigation, and screens
+- **Demo-first**: No real auth; each role has hardcoded IDs and seeded mock data
+- **Mesh Console**: Role-agnostic mesh-level views (alerts, knowledge graph, drift, network) accessible from any role's bottom nav
 
-### 🏪 Shopkeeper Dashboard
-- **Inventory Management**: Real-time inventory tracking with color-coded status indicators
-- **Stock Requisition**: Easy ordering system with priority settings
-- **Shipment Tracking**: Real-time delivery monitoring and confirmation
-- **Quick Actions**: Fast access to common tasks
-- **Alerts & Notifications**: Proactive alerts for low stock and delivery updates
+### 🏪 Shopkeeper (7 screens)
+- **Dashboard**: Stock levels, active shipments, alerts, quick actions, KPI cards
+- **Inventory**: Real-time tracking with color-coded status indicators
+- **Stock Requisition**: Ordering system with priority settings
+- **Shipments**: Incoming delivery tracking and confirmation
+- **Analysis**: Demand forecast, inventory optimization, anomaly detection
+- **Communication**: Alerts, notifications, channel activity
+- **Profile**: Business info, stats, shop settings
 
-### 🚚 Transporter Dashboard
-- **Delivery Management**: Current and completed delivery tracking
-- **Route Optimization**: GPS integration for efficient delivery routes
-- **Status Updates**: Real-time delivery status management
-- **Performance Metrics**: Daily performance statistics
-- **Navigation**: Integrated mapping for delivery locations
+### 🚚 Transporter (4 screens)
+- **Dashboard**: Active deliveries, alerts, KPIs, quick stats
+- **Tasks**: Current/completed delivery list with search, filter, task completion
+- **Navigation**: Map-based routing with stops and ETAs
+- **Profile**: Driver info, vehicle stats, performance metrics
+
+### 🏭 Wholesaler (5 screens)
+- **Dashboard**: Order summaries, inventory overview, supplier recommendations
+- **Inventory**: Multi-warehouse stock levels
+- **Orders**: Purchase orders, order history
+- **Shipments**: In-transit and delivered shipment tracking
+- **Profile**: Business info, distribution stats
+
+### 📊 Mesh Console (4 sub-views)
+- **Alerts**: Cross-role anomaly alerts from CENTRAL_PLANNER
+- **Knowledge Graph**: Entity-relationship visualization (CENTRAL_PLANNER.kgQuery)
+- **Drift**: Model drift monitoring (CENTRAL_PLANNER.driftCheck)
+- **Network**: Supply chain network topology
 
 ## Project Structure
 
 ```
 App/
-├── components/           # Reusable UI components
-│   └── Header.js        # Navigation header with logout
-├── login/               # Authentication system
+├── src/                  # Shared application layer
+│   ├── api/              # API client, endpoints, hooks
+│   │   ├── config.js         # Backend URL resolution (EXPO_PUBLIC_* env vars)
+│   │   ├── apiClient.js      # fetch wrapper with AbortController, timeouts
+│   │   ├── endpoints.js      # 69-endpoint catalog across 11 families
+│   │   ├── useApiQuery.js    # Single-query React hook
+│   │   ├── useApiQueries.js  # Parallel-query React hook
+│   │   └── ApiProvider.js    # Context + HealthGate (green/red screen)
+│   ├── components/       # Shared UI components
+│   │   ├── Header.js,
+│   │   ├── LoadingScreen.js,
+│   │   ├── ErrorScreen.js,
+│   │   └── DemoChip.js       # Yellow "Demo data" badge
+│   ├── demo/             # Centralized mock data (22+ exports, role-prefixed)
+│   ├── utils/            # Shared utilities (parsePrice, etc.)
+│   └── theme/            # Design tokens, status meta
+├── login/                # 3-role picker (Shopkeeper / Transporter / Wholesaler)
 │   ├── components/
-│   │   └── LoginForm.js # Login form component
-│   └── login.js         # Main login screen
-├── users/               # User-specific dashboards
-│   ├── shopkeepers/
-│   │   └── shopkeepers.js # Shopkeeper dashboard
-│   └── transporters/
-│       └── transporter.js # Transporter dashboard
-├── App.js              # Main application component
-└── package.json        # Dependencies and scripts
+│   │   └── LoginForm.js
+│   └── login.js
+├── users/                # Role-specific screens
+│   ├── shopkeepers/  (7 screens)
+│   ├── transporters/  (4 screens)
+│   ├── wholesalers/   (5 screens)
+│   └── mesh/          (4 sub-views)
+├── App.js               # Root: ApiProvider → HealthGate → role router
+└── package.json
 ```
 
 ## Dependencies
 
-- **React Native**: Cross-platform mobile development
-- **Expo**: Development platform and tools
-- **React Native Paper**: Material Design components
-- **Expo Linear Gradient**: Beautiful gradient backgrounds
-- **Expo Vector Icons**: Comprehensive icon library
+- **React Native 0.81.5** / **React 19.1.0**: Core framework
+- **Expo SDK 54.0.13**: Development platform
+- **React Native Paper 5.14.5**: Material Design 3 components
+- **Expo Linear Gradient**: Gradient backgrounds
+- **Expo Vector Icons**: Icon library
+- **Expo Constants**: Backend URL resolution (hostUri → LAN IP) — see `src/api/config.js`
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v14 or higher)
-- Expo CLI
-- iOS Simulator or Android Emulator (for testing)
+- Node.js 18+
+- Expo CLI (installed via `npx expo`)
+- iOS Simulator or Android Emulator (for testing), or Expo Go on a physical device
 
 ### Installation
 
@@ -79,21 +107,38 @@ App/
 ## Usage
 
 ### Login Process
-1. **Select Role**: Choose between Shopkeeper or Transporter
-2. **Enter Credentials**: Provide email and password
-3. **Authentication**: System validates credentials and redirects to appropriate dashboard
+1. **Select Role**: Choose Shopkeeper, Transporter, or Wholesaler
+2. **Enter Credentials**: Provide email and password (demo mode accepts any input)
+3. **Authentication**: Real auth deferred — app navigates directly to the chosen role's shell
+4. **Mesh Console**: Accessible via the bottom nav from any role
 
-### Shopkeeper Features
-- **View Inventory**: Check current stock levels with color-coded indicators
-- **Request Stock**: Order new inventory with priority settings
-- **Track Deliveries**: Monitor incoming shipments in real-time
-- **Quick Actions**: Fast access to common tasks
+### Shopkeeper Screens
+- **Dashboard**: KPI cards (revenue, active orders, low stock alerts), quick actions, recent shipments
+- **Inventory**: Searchable list with color-coded status, detail view per SKU
+- **Stock Request**: Place orders with priority, AI-powered recommendations
+- **Shipments**: Incoming deliveries grouped by status
+- **Analysis**: Demand forecast, inventory optimization, anomaly detection results
+- **Communication**: Alerts list, channel activity
+- **Profile**: Business info, shop settings, monthly stats
 
-### Transporter Features
-- **Manage Deliveries**: View current and completed deliveries
-- **Update Status**: Real-time delivery status updates
-- **Navigation**: GPS integration for efficient routing
-- **Performance Tracking**: Monitor daily delivery metrics
+### Transporter Screens
+- **Dashboard**: Active deliveries, quick stats (stops, distance, packages), alerts
+- **Tasks**: Filterable delivery list with search; tap to mark completed (optimistic update + PATCH)
+- **Navigation**: Route progress bar, stop-by-stop directions, upcoming stops
+- **Profile**: Driver info, vehicle stats, delivery history
+
+### Wholesaler Screens
+- **Dashboard**: Order summaries, low-stock inventory, supplier recommendations
+- **Inventory**: Multi-warehouse stock levels with reorder alerts
+- **Orders**: Purchase order list, order history
+- **Shipments**: In-transit and delivered shipment tracking
+- **Profile**: Business info, distribution network stats
+
+### Mesh Console Sub-views
+- **Alerts**: Centralized anomaly alerts from `CENTRAL_PLANNER.anomalyAlertList`
+- **Graph**: Knowledge graph entity-relationship explorer (skipped — no endpoints yet)
+- **Drift**: ML model drift monitoring (skipped)
+- **Network**: Supply chain node topology explorer (skipped)
 
 ## Design Philosophy
 
@@ -158,6 +203,16 @@ This project is part of the Cognitive Supply Chain Mesh (CSCM) system and is pro
 ## Support
 
 For technical support or questions about the CSCM system, please contact the development team.
+
+## Windows / PowerShell Quirks
+
+This project is developed on Windows with PowerShell 5.1. A few sharp edges to be aware of:
+
+- **No `&&`**: Use `if ($?) { cmd }` to chain dependent commands.
+- **No `VAR=value cmd`**: Use `$env:VAR = "value"` before the command.
+- **`git commit -m` and paths**: A `/` inside the message is interpreted as a path separator by PowerShell. Use double quotes and avoid backslashes at the end of the string.
+- **`Start-Process` lifecycle**: A child process spawned with `Start-Process` dies when the spawning shell exits. Start, test, and stop must be in the *same* shell block.
+- **`cd` + `;`**: Changing directory with `cd` via `;` chaining does not actually change the working directory for subsequent commands when using the workdir parameter. Use the tool's `workdir` parameter instead.
 
 ---
 

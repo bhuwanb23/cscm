@@ -611,5 +611,108 @@ class TestAPIEndpoints:
         assert "performance_metrics" in data
         assert "alerts" in data
 
+    # Uncertainty – Safety-Stock
+    def test_uncertainty_safety_stock_endpoint(self):
+        """Test the uncertainty safety-stock endpoint"""
+        payload = {
+            "model_id": "MODEL123",
+            "avg_daily_demand": 100.0,
+            "demand_std": 30.0,
+            "lead_time_days": 7.0,
+            "service_level": 0.95
+        }
+        response = requests.post(
+            f"{self.BASE_URL}{self.API_PREFIX}/uncertainty/safety-stock",
+            headers={"Content-Type": "application/json"},
+            data=json.dumps(payload)
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "safety_stock" in data
+        assert "reorder_point" in data
+        assert "service_level" in data
+        assert data["service_level"] == 0.95
+
+    # Monitoring – Log Prediction
+    def test_monitoring_log_prediction_endpoint(self):
+        """Test the monitoring log prediction endpoint"""
+        payload = {
+            "model_id": "MODEL123",
+            "y_true": 100.0,
+            "y_pred": 95.0,
+            "features": {"feature1": 0.5, "feature2": 0.3},
+        }
+        response = requests.post(
+            f"{self.BASE_URL}{self.API_PREFIX}/monitoring/log",
+            headers={"Content-Type": "application/json"},
+            data=json.dumps(payload)
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "model_id" in data
+        assert data["logged"] is True
+        assert data["total_logged"] > 0
+
+    # Monitoring – Metrics
+    def test_monitoring_metrics_endpoint(self):
+        """Test the monitoring metrics endpoint"""
+        payload = {
+            "model_id": "MODEL123",
+            "metrics": ["accuracy", "precision", "recall"]
+        }
+        response = requests.post(
+            f"{self.BASE_URL}{self.API_PREFIX}/monitoring/metrics/MODEL123",
+            headers={"Content-Type": "application/json"},
+            data=json.dumps(payload)
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "model_id" in data
+        assert "metrics" in data
+        assert "data_quality" in data
+        assert "model_version" in data
+
+    # Monitoring – Fairness
+    def test_monitoring_fairness_endpoint(self):
+        """Test the monitoring fairness endpoint"""
+        payload = {
+            "model_id": "MODEL123",
+            "sensitive_attributes": ["store_region"],
+            "predictions": [
+                {"store_region": "north", "prediction": 0.9},
+                {"store_region": "south", "prediction": 0.7}
+            ],
+            "labels": [1.0, 0.0]
+        }
+        response = requests.post(
+            f"{self.BASE_URL}{self.API_PREFIX}/monitoring/fairness",
+            headers={"Content-Type": "application/json"},
+            data=json.dumps(payload)
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "fairness_metrics" in data
+        assert "disparities" in data
+        assert "recommendations" in data
+
+    # Monitoring – SHAP
+    def test_monitoring_shap_endpoint(self):
+        """Test the monitoring SHAP explainability endpoint"""
+        payload = {
+            "model_id": "MODEL123",
+            "input_data": {"feature1": 0.5, "feature2": 0.3, "feature3": 0.8},
+            "feature_names": ["feature1", "feature2", "feature3"]
+        }
+        response = requests.post(
+            f"{self.BASE_URL}{self.API_PREFIX}/monitoring/shap",
+            headers={"Content-Type": "application/json"},
+            data=json.dumps(payload)
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "shap_values" in data
+        assert "baseline" in data
+        assert "model_version" in data
+
 if __name__ == "__main__":
     pytest.main([__file__])

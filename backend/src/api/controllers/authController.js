@@ -2,73 +2,49 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const config = require('../../config');
 const logger = require('../../utils/logger');
+const UserModel = require('../../models/userModel');
 
-/**
- * Controller for handling authentication operations
- */
+const SALT_ROUNDS = 10;
 
-/**
- * Generate a JWT token
- * @param {Object} user - User object
- * @returns {String} JWT token
- */
 function generateToken(user) {
   return jwt.sign(
-    { 
-      id: user.id, 
-      username: user.username, 
-      role: user.role 
-    },
+    { id: user.id, username: user.username, role: user.role },
     config.auth.jwtSecret,
     { expiresIn: config.auth.jwtExpiration }
   );
 }
 
-/**
- * Register a new user
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
 async function register(req, res) {
   try {
     const { username, email, password, role } = req.body;
-    
-    // Validate required fields
+
     if (!username || !email || !password) {
       return res.status(400).json({
         success: false,
         error: 'Username, email, and password are required'
       });
     }
-    
-    // In a real implementation, you would:
-    // 1. Check if user already exists
-    // 2. Hash the password
-    // 3. Save user to database
-    
-    // For demo purposes, we'll simulate a user object
-    const user = {
-      id: Date.now().toString(),
-      username,
-      email,
-      role: role || 'user'
-    };
-    
-    // Generate token
-    const token = generateToken(user);
-    
+
+    const existing = await UserModel.findByUsername(username);
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        error: 'Username already exists'
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    const saved = await UserModel.create({ username, email, password: hashedPassword, role });
+
+    const token = generateToken({ id: saved.id, username, role: role || 'user' });
+
     logger.info(`User registered: ${username}`);
-    
+
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
       data: {
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          role: user.role
-        },
+        user: { id: saved.id, username, email, role: role || 'user' },
         token
       }
     });
@@ -81,51 +57,42 @@ async function register(req, res) {
   }
 }
 
-/**
- * Login user
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
 async function login(req, res) {
   try {
     const { username, password } = req.body;
-    
-    // Validate required fields
+
     if (!username || !password) {
       return res.status(400).json({
         success: false,
         error: 'Username and password are required'
       });
     }
-    
-    // In a real implementation, you would:
-    // 1. Find user in database
-    // 2. Compare hashed passwords
-    // 3. Generate token
-    
-    // For demo purposes, we'll simulate a user object
-    const user = {
-      id: Date.now().toString(),
-      username,
-      email: `${username}@example.com`,
-      role: 'user'
-    };
-    
-    // Generate token
-    const token = generateToken(user);
-    
+
+    const user = await UserModel.findByUsername(username);
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid username or password'
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid username or password'
+      });
+    }
+
+    const token = generateToken({ id: user.id, username: user.username, role: user.role });
+
     logger.info(`User logged in: ${username}`);
-    
+
     res.status(200).json({
       success: true,
       message: 'Login successful',
       data: {
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          role: user.role
-        },
+        user: { id: user.id, username: user.username, email: user.email, role: user.role },
         token
       }
     });
@@ -138,25 +105,20 @@ async function login(req, res) {
   }
 }
 
-/**
- * Get current user profile
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
 async function getProfile(req, res) {
   try {
-    // User is attached to request by authentication middleware
-    const user = req.user;
-    
+    const user = await UserModel.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
     res.status(200).json({
       success: true,
       data: {
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          role: user.role
-        }
+        user: { id: user.id, username: user.username, email: user.email, role: user.role }
       }
     });
   } catch (error) {

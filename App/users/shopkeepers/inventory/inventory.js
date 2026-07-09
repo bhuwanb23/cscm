@@ -25,6 +25,7 @@ const Inventory = () => {
     updateItemQuantity,
     markItemAsDamaged,
     markItemAsExpired,
+    refetch,
   } = useInventoryData();
 
   const [selectedItem, setSelectedItem] = useState(null);
@@ -99,6 +100,7 @@ const Inventory = () => {
           items={filteredItems}
           onQuickUpdate={handleQuickUpdate}
           onViewDetails={handleViewDetails}
+          onRefresh={refetch}
         />
       </View>
       

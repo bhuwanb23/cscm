@@ -16,8 +16,8 @@ sys.path.insert(0, parent_dir)
 def test_imports():
     """Test that all modules can be imported without errors."""
     try:
-        from models.computer_vision.ocr_counting.ocr import TesseractOCR
-        from models.computer_vision.ocr_counting.density_estimation import DensityEstimator
+        from legacy_models.computer_vision.ocr_counting.ocr import TesseractOCR
+        from legacy_models.computer_vision.ocr_counting.density_estimation import DensityEstimator
         assert True
     except ImportError as e:
         pytest.fail(f"Import failed: {e}")
@@ -26,7 +26,7 @@ def test_imports():
 @patch('models.computer_vision.ocr_counting.ocr.pytesseract.get_tesseract_version')
 def test_tesseract_ocr_extract_text(mock_get_tesseract_version, mock_imread):
     """Test Tesseract OCR text extraction."""
-    from models.computer_vision.ocr_counting.ocr import TesseractOCR
+    from legacy_models.computer_vision.ocr_counting.ocr import TesseractOCR
     
     # Mock Tesseract availability
     mock_get_tesseract_version.return_value = "5.0.0"
@@ -64,7 +64,7 @@ def test_tesseract_ocr_extract_text(mock_get_tesseract_version, mock_imread):
 @patch('models.computer_vision.ocr_counting.ocr.pytesseract.get_tesseract_version')
 def test_tesseract_ocr_extract_structured_data(mock_get_tesseract_version, mock_imread):
     """Test Tesseract OCR structured data extraction."""
-    from models.computer_vision.ocr_counting.ocr import TesseractOCR
+    from legacy_models.computer_vision.ocr_counting.ocr import TesseractOCR
     
     # Mock Tesseract availability
     mock_get_tesseract_version.return_value = "5.0.0"
@@ -98,7 +98,7 @@ def test_tesseract_ocr_extract_structured_data(mock_get_tesseract_version, mock_
 
 def test_density_estimator_count_items_blob_detection():
     """Test density estimation using blob detection."""
-    from models.computer_vision.ocr_counting.density_estimation import DensityEstimator
+    from legacy_models.computer_vision.ocr_counting.density_estimation import DensityEstimator
     
     density_estimator = DensityEstimator()
     
@@ -121,7 +121,7 @@ def test_density_estimator_count_items_blob_detection():
 
 def test_density_estimator_count_items_template_matching():
     """Test density estimation using template matching."""
-    from models.computer_vision.ocr_counting.density_estimation import DensityEstimator
+    from legacy_models.computer_vision.ocr_counting.density_estimation import DensityEstimator
     
     density_estimator = DensityEstimator()
     
@@ -144,7 +144,7 @@ def test_density_estimator_count_items_template_matching():
 
 def test_density_estimator_count_items_clustering():
     """Test density estimation using clustering."""
-    from models.computer_vision.ocr_counting.density_estimation import DensityEstimator
+    from legacy_models.computer_vision.ocr_counting.density_estimation import DensityEstimator
     
     density_estimator = DensityEstimator()
     

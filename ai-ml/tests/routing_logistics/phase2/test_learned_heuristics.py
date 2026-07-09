@@ -11,7 +11,7 @@ import os
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.routing_logistics.ml_augmented.learned_heuristics import LearnedHeuristic
+from legacy_models.routing_logistics.ml_augmented.learned_heuristics import LearnedHeuristic
 
 
 # Tests will work even without torch_geometric since GNN is optional

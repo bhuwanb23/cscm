@@ -82,13 +82,9 @@ class ShipmentModel {
    */
   static async getById(shipmentId) {
     try {
-      if (!shipmentId) {
-        throw new Error('Shipment ID is required');
-      }
-
-      // This would require querying the database
-      // For now, we'll just return a placeholder
-      return { shipment_id: shipmentId }; // Placeholder
+      if (!shipmentId) throw new Error('Shipment ID is required');
+      const shipment = await sqliteDatabase.getShipmentById(shipmentId);
+      return shipment || null;
     } catch (error) {
       throw new Error(`Failed to get shipment: ${error.message}`);
     }
@@ -141,13 +137,9 @@ class ShipmentModel {
    */
   static async getByLocation(location) {
     try {
-      if (!location) {
-        throw new Error('Location is required');
-      }
-
-      // This would require querying the database
-      // For now, we'll just return a placeholder
-      return []; // Placeholder
+      if (!location) throw new Error('Location is required');
+      const shipments = await sqliteDatabase.getShipmentsByLocation(location);
+      return shipments;
     } catch (error) {
       throw new Error(`Failed to get shipments by location: ${error.message}`);
     }

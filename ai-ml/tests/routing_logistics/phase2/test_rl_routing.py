@@ -19,7 +19,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_TORCH, reason="PyTorch not available")
 
-from models.routing_logistics.ml_augmented.rl_routing import (
+from legacy_models.routing_logistics.ml_augmented.rl_routing import (
     RoutingEnvironment,
     MADDPGRoutingAgent,
     PPORoutingAgent

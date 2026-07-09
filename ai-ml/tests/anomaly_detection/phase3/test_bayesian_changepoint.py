@@ -11,7 +11,7 @@ import os
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.anomaly_detection.graph_based.bayesian_changepoint import BayesianChangepointDetector
+from legacy_models.anomaly_detection.graph_based.bayesian_changepoint import BayesianChangepointDetector
 
 
 class TestBayesianChangepointDetector:

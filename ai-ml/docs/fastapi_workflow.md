@@ -95,9 +95,9 @@ Create wrapper classes for each major model type:
 - `KnowledgeGraphModel` (wraps knowledge_graph/graph_db/neo4j_connector.py)
 - `CausalInferenceModel` (wraps causal_inference/framework/dowhy_integration.py)
 - `ComputerVisionModel` (wraps computer_vision/object_detection/yolov8.py)
-- `ContinualLearningModel` (wraps continual_learning/federated_learning/fedavg.py)
-- `UncertaintyQuantificationModel` (to be implemented)
-- `ModelMonitoringModel` (to be implemented)
+- `ContinualLearningModel` (wraps continual_learning/federated_system/fedavg_coordinator.py)
+- `UncertaintyQuantificationModel` (wraps uncertainty_quantification/probabilistic_framework/bayesian_nets.py)
+- `ModelMonitoringModel` (wraps model_monitoring/model_monitoring/performance_tracker.py)
 
 ### 2.2 Implement Model Loading and Caching
 Create a model loader utility that can:

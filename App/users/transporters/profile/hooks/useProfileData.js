@@ -1,46 +1,48 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useApiQuery } from '../../../../src/api/useApiQuery';
+import {
+  TRANSPORTER_DEFAULT_DRIVER as DEFAULT_DRIVER,
+  TRANSPORTER_DEFAULT_VEHICLE as DEFAULT_VEHICLE,
+  TRANSPORTER_DEFAULT_STATS as DEFAULT_STATS,
+} from '../../../../src/demo';
+import { TRANSPORTER_ID } from '../../../../src/constants/storeIds';
+
+function deriveStats(delivered) {
+  if (!Array.isArray(delivered) || delivered.length === 0) return DEFAULT_STATS;
+  return {
+    completedDeliveries: delivered.length || DEFAULT_STATS.completedDeliveries,
+    onTimeRate: DEFAULT_STATS.onTimeRate,
+    rating: DEFAULT_STATS.rating,
+  };
+}
 
 export const useProfileData = () => {
-  const [driverInfo, setDriverInfo] = useState({
-    name: 'John Smith',
-    driverId: 'DRV001',
-    email: 'john.smith@transporter.com',
-    licenseNumber: 'DL1234567890',
-    licenseExpiry: '2025-12-31',
-    phone: '+1 (555) 123-4567',
-    emergencyContact: '+1 (555) 987-6543',
-    experience: 5,
-    preferredRoutes: 'City Center, Downtown'
-  });
+  const [driverInfo, setDriverInfo] = useState(DEFAULT_DRIVER);
+  const [vehicleInfo, setVehicleInfo] = useState(DEFAULT_VEHICLE);
+  const [loading, setLoading] = useState(false);
 
-  const [vehicleInfo, setVehicleInfo] = useState({
-    type: 'Delivery Van',
-    registration: 'ABC-123-XYZ',
-    capacity: '1.5 tons',
-    lastService: '2024-09-15',
-    nextService: '2025-03-15',
-    insuranceExpiry: '2025-06-30'
-  });
+  const delivered = useApiQuery('SHIPMENTS', 'listByStatus', { params: { status: 'delivered' } });
 
-  const [stats, setStats] = useState({
-    completedDeliveries: 127,
-    onTimeRate: 96,
-    rating: 4.8
-  });
+  const stats = useMemo(() => deriveStats(delivered.data), [delivered.data]);
 
-  const updateDriverInfo = (newInfo) => {
-    setDriverInfo(prev => ({ ...prev, ...newInfo }));
-  };
+  const updateDriverInfo = useCallback((newInfo) => setDriverInfo(prev => ({ ...prev, ...newInfo })), []);
+  const updateVehicleInfo = useCallback((newInfo) => setVehicleInfo(prev => ({ ...prev, ...newInfo })), []);
 
-  const updateVehicleInfo = (newInfo) => {
-    setVehicleInfo(prev => ({ ...prev, ...newInfo }));
-  };
+  const refreshData = useCallback(async () => {
+    setLoading(true);
+    try { await delivered.refetch(); } catch {} finally { setLoading(false); }
+  }, [delivered]);
+
+  useEffect(() => { refreshData(); }, [refreshData]);
 
   return {
     driverInfo,
     vehicleInfo,
     stats,
     updateDriverInfo,
-    updateVehicleInfo
+    updateVehicleInfo,
+    loading: loading || delivered.loading,
+    error: delivered.error,
+    refreshData,
   };
 };

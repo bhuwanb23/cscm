@@ -1,3 +1,0 @@
-"""
-Lifecycle Management submodule
-"""

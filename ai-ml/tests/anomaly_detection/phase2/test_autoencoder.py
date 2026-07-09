@@ -19,7 +19,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skipif(not HAS_TORCH, reason="PyTorch not available")
 
-from models.anomaly_detection.deep_learning.autoencoder import AutoencoderDetector
+from legacy_models.anomaly_detection.deep_learning.autoencoder import AutoencoderDetector
 
 
 class TestAutoencoderDetector:

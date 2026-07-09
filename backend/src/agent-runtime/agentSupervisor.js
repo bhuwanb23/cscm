@@ -69,7 +69,7 @@ class AgentSupervisor {
       const agentProcess = spawn('node', [agent.scriptPath], {
         cwd: process.cwd(),
         env: process.env,
-        stdio: ['pipe', 'pipe', 'pipe', 'ipc']
+        stdio: ['pipe', 'pipe', 'pipe']
       });
 
       // Update agent info

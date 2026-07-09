@@ -15,14 +15,14 @@ sys.path.insert(0, parent_dir)
 def test_imports():
     """Test that all modules can be imported without errors."""
     try:
-        from models.computer_vision.instance_segmentation.detailed_damage import DetailedDamageDetector, DamageType, DamageSeverity
+        from legacy_models.computer_vision.instance_segmentation.detailed_damage import DetailedDamageDetector, DamageType, DamageSeverity
         assert True
     except ImportError as e:
         pytest.fail(f"Import failed: {e}")
 
 def test_detailed_damage_detector_initialization():
     """Test detailed damage detector initialization."""
-    from models.computer_vision.instance_segmentation.detailed_damage import DetailedDamageDetector
+    from legacy_models.computer_vision.instance_segmentation.detailed_damage import DetailedDamageDetector
     
     # Test initialization
     detector = DetailedDamageDetector(confidence_threshold=0.5)
@@ -34,7 +34,7 @@ def test_detailed_damage_detector_initialization():
 
 def test_damage_type_classification():
     """Test damage type classification."""
-    from models.computer_vision.instance_segmentation.detailed_damage import DetailedDamageDetector, DamageType
+    from legacy_models.computer_vision.instance_segmentation.detailed_damage import DetailedDamageDetector, DamageType
     
     detector = DetailedDamageDetector()
     
@@ -54,7 +54,7 @@ def test_damage_type_classification():
 
 def test_damage_severity_assessment():
     """Test damage severity assessment."""
-    from models.computer_vision.instance_segmentation.detailed_damage import DetailedDamageDetector, DamageType, DamageSeverity
+    from legacy_models.computer_vision.instance_segmentation.detailed_damage import DetailedDamageDetector, DamageType, DamageSeverity
     
     detector = DetailedDamageDetector()
     

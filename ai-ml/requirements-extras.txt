@@ -1,0 +1,69 @@
+# AI/ML Optional / Heavy Dependencies
+#
+# These are heavy ML frameworks and optional features. Install only
+# what you need to avoid bloating the base install. They are organized
+# by feature area so you can pick subsets.
+#
+# Examples:
+#   pip install -r requirements.txt
+#   pip install -r requirements-extras.txt                          # everything below
+#   pip install -r requirements-extras.txt && pip install torch==2.1.0  # specific items
+#
+# Many of these have native build requirements (CUDA, MSVC, etc.)
+# and may not install cleanly on Windows without extra setup.
+
+# --- Deep learning frameworks ---
+# torch>=1.9.0
+# torchvision>=0.10.0
+# tensorflow>=2.6.0
+
+# --- Time series deep learning ---
+# pytorch-forecasting>=0.9.0
+# gluonts>=0.10.0
+
+# --- Gradient boosting (beyond xgboost in core) ---
+# lightgbm>=3.3.0
+# catboost>=1.0.0
+
+# --- Reinforcement learning ---
+# ray[rllib]>=1.10.0
+# stable-baselines3>=1.5.0
+
+# --- NLP / LLMs ---
+# transformers>=4.10.0
+# tokenizers>=0.10.0
+# sentence-transformers>=2.1.0
+
+# --- Computer vision ---
+# opencv-python>=4.5.0
+# Pillow>=8.3.0
+# ultralytics>=8.0.0
+# pytesseract>=0.3.10
+# onnx>=1.14.0
+# onnxruntime>=1.15.0
+# detectron2 @ git+https://github.com/facebookresearch/detectron2.git
+
+# --- Graph neural networks (beyond networkx in core) ---
+# pytorch-geometric>=2.0.0
+# dgl>=0.8.0
+
+# --- Federated learning ---
+# tensorflow-federated>=0.20.0
+# pysyft>=0.7.0
+
+# --- Optimization (gurobipy requires a commercial license) ---
+# ortools>=9.0.0
+# gurobipy>=9.5.0
+
+# --- Visualization extras ---
+# seaborn>=0.11.0
+# plotly>=5.0.0
+
+# --- MLOps (heavy install footprint) ---
+# mlflow>=1.20.0
+# seldon-core>=1.12.0
+# feast>=0.15.0
+# airflow>=2.2.0
+
+# --- Monitoring extras (grafana-api has no standard PyPI release) ---
+# grafana-api>=1.0.0

@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.demand_forecasting.output_metrics.unified_interface import DemandForecastOutputMetrics
+from legacy_models.demand_forecasting.output_metrics.unified_interface import DemandForecastOutputMetrics
 
 
 def test_unified_interface_initialization():
@@ -58,7 +58,7 @@ def test_generate_nowcast():
     
     # Create sample data
     dates = pd.date_range(start=datetime.now() - timedelta(days=7),
-                         end=datetime.now(), freq='H')
+                         end=datetime.now(), freq='h')
     historical_data = pd.DataFrame({
         'timestamp': dates,
         'sku_id': [1] * len(dates),

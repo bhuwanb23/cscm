@@ -12,9 +12,9 @@ import os
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.causal_inference.matching.propensity_matching import PropensityScoreMatcher
-from models.causal_inference.matching.causal_forests import CausalTree, CausalForest
-from models.causal_inference.matching.uplift_modeling import UpliftRandomForest, UpliftKNN, UpliftEvaluator, UpliftOptimizer
+from legacy_models.causal_inference.matching.propensity_matching import PropensityScoreMatcher
+from legacy_models.causal_inference.matching.causal_forests import CausalTree, CausalForest
+from legacy_models.causal_inference.matching.uplift_modeling import UpliftRandomForest, UpliftKNN, UpliftEvaluator, UpliftOptimizer
 
 def test_propensity_score_matching():
     """Test PropensityScoreMatcher functionality."""

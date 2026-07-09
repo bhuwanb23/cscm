@@ -15,7 +15,7 @@ import shutil
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.demand_forecasting.sliding_window.models import SlidingWindowTrainer
+from legacy_models.demand_forecasting.sliding_window.models import SlidingWindowTrainer
 
 def test_sliding_window_trainer_initialization():
     """Test initialization of SlidingWindowTrainer."""

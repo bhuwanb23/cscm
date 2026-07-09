@@ -12,7 +12,7 @@ import sys
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
-from models.demand_forecasting.model import DemandForecaster
+from legacy_models.demand_forecasting.model import DemandForecaster
 
 def test_demand_forecaster_initialization():
     """Test initialization of DemandForecaster."""
