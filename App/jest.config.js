@@ -7,7 +7,7 @@ module.exports = {
     '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|expo|@expo|expo-modules-core|jest-expo|react-native-paper|react-native-vector-icons|react-native-safe-area-context|@react-navigation)/)',
+    'node_modules/(?!(react-native|@react-native|expo|@expo|expo-modules-core|expo-linear-gradient|expo-constants|expo-status-bar|jest-expo|react-native-paper|react-native-vector-icons|@expo/vector-icons|react-native-safe-area-context|@react-navigation)/)',
   ],
   moduleNameMapper: {},
   collectCoverageFrom: [
