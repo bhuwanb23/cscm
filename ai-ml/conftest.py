@@ -8,10 +8,10 @@ import os
 import numpy as np
 import pandas as pd
 
-# Ensure ai-ml/ and ai-ml/models/ are on sys.path
+# Ensure ai-ml/, ai-ml/legacy_models/, and ai-ml/api/ are on sys.path
 AI_ML_ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, AI_ML_ROOT)
-sys.path.insert(0, os.path.join(AI_ML_ROOT, 'models'))
+sys.path.insert(0, os.path.join(AI_ML_ROOT, 'legacy_models'))
 sys.path.insert(0, os.path.join(AI_ML_ROOT, 'api'))
 
 
