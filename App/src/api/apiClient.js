@@ -1,4 +1,15 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_CONFIG, getDevBackendUrl } from './config';
+
+const TOKEN_KEY = 'cscm_auth_token';
+
+async function getAuthToken() {
+  try {
+    return await AsyncStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
 
 function buildUrl(path, params) {
   const base = getDevBackendUrl().replace(/\/+$/, '');
@@ -56,6 +67,14 @@ export async function request(method, path, options = {}) {
   const { params, body, headers, timeoutMs, signal: externalSignal } = options;
   const url = buildUrl(path, params);
   const finalHeaders = { ...API_CONFIG.defaultHeaders, ...(headers || {}) };
+
+  // Auto-attach auth token if not already provided
+  if (!finalHeaders['Authorization'] && !finalHeaders['authorization']) {
+    const token = await getAuthToken();
+    if (token) {
+      finalHeaders['Authorization'] = `Bearer ${token}`;
+    }
+  }
   const bodyText = safeStringifyBody(body);
 
   let finalBody = undefined;
