@@ -14,13 +14,14 @@ import {
 import { TextInput } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { login, register } from '../../src/api/auth';
 
 const { width } = Dimensions.get('window');
 
 const ROLES = [
-  { id: 'shopkeeper', label: 'Shopkeeper', icon: 'storefront', email: 'shopkeeper@cscm.com' },
-  { id: 'transporter', label: 'Transporter', icon: 'car', email: 'transporter@cscm.com' },
-  { id: 'wholesaler', label: 'Wholesaler', icon: 'business', email: 'wholesaler@cscm.com' },
+  { id: 'shopkeeper', label: 'Shopkeeper', icon: 'storefront' },
+  { id: 'transporter', label: 'Transporter', icon: 'car' },
+  { id: 'wholesaler', label: 'Wholesaler', icon: 'business' },
 ];
 
 const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
@@ -29,6 +30,7 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
   const [userRole, setUserRole] = useState('shopkeeper');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const slideAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -57,17 +59,72 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
     return () => { rotateLoop.stop(); pulseLoop.stop(); };
   }, []);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter email and password');
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      let result;
+      if (isRegistering) {
+        result = await register(email.split('@')[0], email, password, userRole);
+      } else {
+        result = await login(email.split('@')[0], password);
+      }
+
+      if (result.ok) {
+        onLogin({
+          email: email,
+          role: userRole,
+          token: result.token,
+          user: result.user,
+        });
+      } else {
+        // Fallback to demo mode if API is not available
+        Alert.alert(
+          'Backend Not Available',
+          'Using demo mode. Select a role and continue.',
+          [
+            {
+              text: 'Use Demo Mode',
+              onPress: () => {
+                onLogin({
+                  email: email || `demo@${userRole}.com`,
+                  role: userRole,
+                  token: null,
+                  user: { username: email.split('@')[0] || 'demo', role: userRole },
+                });
+              },
+            },
+            { text: 'Cancel', style: 'cancel' },
+          ]
+        );
+      }
+    } catch (error) {
+      // Fallback to demo mode on network error
+      Alert.alert(
+        'Connection Error',
+        'Cannot reach the backend. Use demo mode?',
+        [
+          {
+            text: 'Use Demo Mode',
+            onPress: () => {
+              onLogin({
+                email: email || `demo@${userRole}.com`,
+                role: userRole,
+                token: null,
+                user: { username: email.split('@')[0] || 'demo', role: userRole },
+              });
+            },
+          },
+          { text: 'Cancel', style: 'cancel' },
+        ]
+      );
+    } finally {
       setLoading(false);
-      const role = ROLES.find(r => r.id === userRole) || ROLES[0];
-      onLogin({
-        email: email || role.email,
-        password: password || 'demo123',
-        role: role.id,
-      });
-    }, 800);
+    }
   };
 
   const iconRotateInterpolate = iconRotateAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
@@ -98,13 +155,6 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
             </Animated.View>
 
             <View style={styles.form}>
-              <Animated.View style={[styles.demoNotice, { transform: [{ scale: pulseAnim }] }]}>
-                <LinearGradient colors={['#EBF4FF', '#DBEAFE']} style={styles.demoGradient}>
-                  <Ionicons name="information-circle" size={14} color="#3B82F6" />
-                  <Text style={styles.demoText}>Demo Mode: Pick a role and tap Sign In</Text>
-                </LinearGradient>
-              </Animated.View>
-
               <View style={styles.roleContainer}>
                 <Text style={styles.roleLabel}>Your Role</Text>
                 <View style={styles.roleOptions}>
@@ -133,7 +183,7 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
 
               <View style={styles.inputContainer}>
                 <TextInput
-                  label="Email (Optional)"
+                  label="Email"
                   value={email}
                   onChangeText={setEmail}
                   mode="outlined"
@@ -141,7 +191,7 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
                   autoCapitalize="none"
                   style={styles.input}
                   left={<TextInput.Icon icon="email" size={14} />}
-                  placeholder="Leave empty for demo"
+                  placeholder="your@email.com"
                   dense
                   theme={{ colors: { primary: '#3B82F6', outline: '#D1D5DB' } }}
                 />
@@ -149,14 +199,14 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
 
               <View style={styles.inputContainer}>
                 <TextInput
-                  label="Password (Optional)"
+                  label="Password"
                   value={password}
                   onChangeText={setPassword}
                   mode="outlined"
                   secureTextEntry={!showPassword}
                   style={styles.input}
                   left={<TextInput.Icon icon="lock" size={14} />}
-                  placeholder="Leave empty for demo"
+                  placeholder="Enter password"
                   dense
                   theme={{ colors: { primary: '#3B82F6', outline: '#D1D5DB' } }}
                   right={<TextInput.Icon icon={showPassword ? 'eye-off' : 'eye'} size={14} onPress={() => setShowPassword(!showPassword)} />}
@@ -175,20 +225,27 @@ const LoginForm = ({ onLogin, isLoading: parentLoading }) => {
                       <Animated.View style={[styles.loadingDot, { transform: [{ rotate: iconRotateInterpolate }] }]}>
                         <Ionicons name="refresh" size={16} color="#FFFFFF" />
                       </Animated.View>
-                      <Text style={styles.loginButtonText}>Signing In...</Text>
+                      <Text style={styles.loginButtonText}>{isRegistering ? 'Creating Account...' : 'Signing In...'}</Text>
                     </View>
                   ) : (
                     <View style={styles.buttonContent}>
                       <Ionicons name="log-in" size={16} color="#FFFFFF" />
-                      <Text style={styles.loginButtonText}>Sign In as {ROLES.find(r => r.id === userRole).label}</Text>
+                      <Text style={styles.loginButtonText}>
+                        {isRegistering ? `Sign Up as ${ROLES.find(r => r.id === userRole).label}` : `Sign In as ${ROLES.find(r => r.id === userRole).label}`}
+                      </Text>
                     </View>
                   )}
                 </LinearGradient>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.forgotPassword} activeOpacity={0.7}>
-                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-                <Ionicons name="arrow-forward" size={10} color="#3B82F6" />
+              <TouchableOpacity
+                style={styles.toggleButton}
+                onPress={() => setIsRegistering(!isRegistering)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.toggleText}>
+                  {isRegistering ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
+                </Text>
               </TouchableOpacity>
             </View>
           </LinearGradient>
@@ -209,9 +266,6 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 11, color: '#6B7280', marginTop: 2, textAlign: 'center', fontWeight: '500' },
   decorativeLine: { width: 50, height: 2, backgroundColor: '#3B82F6', borderRadius: 1, marginTop: 10 },
   form: { gap: 14 },
-  demoNotice: { borderRadius: 10, overflow: 'hidden', marginBottom: 4 },
-  demoGradient: { flexDirection: 'row', alignItems: 'center', padding: 10, gap: 6 },
-  demoText: { fontSize: 11, color: '#3B82F6', fontWeight: '600', flex: 1 },
   roleContainer: { marginBottom: 4 },
   roleLabel: { fontSize: 13, fontWeight: '700', color: '#1F2937', marginBottom: 10 },
   roleOptions: { flexDirection: 'row', gap: 6 },
@@ -229,8 +283,8 @@ const styles = StyleSheet.create({
   buttonContent: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   loginButtonText: { fontSize: 13, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.3 },
   loadingDot: { alignItems: 'center', justifyContent: 'center' },
-  forgotPassword: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 12, gap: 4 },
-  forgotPasswordText: { color: '#3B82F6', fontSize: 12, fontWeight: '600' },
+  toggleButton: { alignItems: 'center', marginTop: 12 },
+  toggleText: { color: '#3B82F6', fontSize: 12, fontWeight: '600' },
 });
 
 export default LoginForm;
