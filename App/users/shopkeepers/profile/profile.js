@@ -10,59 +10,76 @@ import SettingsSection from './components/SettingsSection';
 // Hooks
 import { useProfileData } from './hooks/useProfileData';
 
-const ShopkeeperDashboard = () => {
+const ShopkeeperDashboard = ({ onLogout }) => {
   const {
     businessInfo,
     channels,
     warehouses,
     stats,
     shopInfo,
-    updateBusinessInfo
+    updateBusinessInfo,
   } = useProfileData();
 
+  const [isEditing, setIsEditing] = useState(false);
+
   const handleEditProfile = () => {
-    Alert.alert('Coming Soon', 'Profile editing will be available in a future update.');
+    setIsEditing(true);
   };
 
-  const handleSave = () => {
-    Alert.alert('Coming Soon', 'Save changes will be available in a future update.');
+  const handleSave = (updatedInfo) => {
+    updateBusinessInfo(updatedInfo);
+    setIsEditing(false);
+    Alert.alert('Success', 'Profile updated successfully!');
   };
 
   const handleCancel = () => {
-    Alert.alert('Coming Soon', 'Cancel will be available in a future update.');
+    setIsEditing(false);
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Logout', style: 'destructive', onPress: onLogout },
+      ]
+    );
   };
 
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <ProfileHeader 
-          shopInfo={shopInfo} 
-          stats={stats} 
-          onEditProfile={handleEditProfile} 
+        <ProfileHeader
+          shopInfo={shopInfo}
+          stats={stats}
+          onEditProfile={handleEditProfile}
         />
-        
-        <BusinessInfo 
-          businessInfo={businessInfo} 
-          onEdit={handleEditProfile} 
+
+        <BusinessInfo
+          businessInfo={businessInfo}
+          onEdit={handleEditProfile}
+          isEditing={isEditing}
+          onSave={handleSave}
+          onCancel={handleCancel}
         />
-        
-        <ChannelsWarehouses 
-          channels={channels} 
-          warehouses={warehouses} 
+
+        <ChannelsWarehouses
+          channels={channels}
+          warehouses={warehouses}
         />
-        
-        <SettingsSection />
+
+        <SettingsSection onLogout={handleLogout} />
       </ScrollView>
-      
-      {/* Action Buttons */}
-      <View style={styles.actionButtons}>
-        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-          <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save</Text>
-        </TouchableOpacity>
-      </View>
+
+      {/* Action Buttons - only show when not editing (BusinessInfo has its own) */}
+      {!isEditing && (
+        <View style={styles.actionButtons}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutButtonText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };
@@ -84,31 +101,20 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e5e7eb',
   },
-  cancelButton: {
+  logoutButton: {
     flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
     alignItems: 'center',
-    backgroundColor: '#f3f4f6',
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
   },
-  cancelButtonText: {
+  logoutButtonText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#6b7280',
-  },
-  saveButton: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    backgroundColor: '#4f46e5',
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#fff',
+    color: '#dc2626',
   },
 });
 
