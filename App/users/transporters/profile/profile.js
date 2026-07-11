@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -17,30 +17,65 @@ const Profile = ({ onLogout }) => {
     driverInfo,
     vehicleInfo,
     stats,
+    updateDriverInfo,
+    updateVehicleInfo,
   } = useProfileData();
 
-  const handleEditProfile = () => {
-    Alert.alert('Coming Soon', 'Profile editing will be available in a future update.');
+  const [isEditingDriver, setIsEditingDriver] = useState(false);
+  const [isEditingVehicle, setIsEditingVehicle] = useState(false);
+
+  const handleEditDriver = () => {
+    setIsEditingDriver(true);
+  };
+
+  const handleSaveDriver = (updatedInfo) => {
+    updateDriverInfo(updatedInfo);
+    setIsEditingDriver(false);
+    Alert.alert('Success', 'Driver info updated successfully!');
+  };
+
+  const handleCancelDriver = () => {
+    setIsEditingDriver(false);
+  };
+
+  const handleEditVehicle = () => {
+    setIsEditingVehicle(true);
+  };
+
+  const handleSaveVehicle = (updatedInfo) => {
+    updateVehicleInfo(updatedInfo);
+    setIsEditingVehicle(false);
+    Alert.alert('Success', 'Vehicle info updated successfully!');
+  };
+
+  const handleCancelVehicle = () => {
+    setIsEditingVehicle(false);
   };
 
   return (
     <View style={styles.container}>
-      <Header 
-        title="My Profile" 
-        subtitle="Manage your account" 
+      <Header
+        title="My Profile"
+        subtitle="Manage your account"
         onLogout={onLogout}
       />
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <DriverInfo 
-          driverInfo={driverInfo} 
-          onEdit={handleEditProfile} 
+        <DriverInfo
+          driverInfo={driverInfo}
+          onEdit={handleEditDriver}
+          isEditing={isEditingDriver}
+          onSave={handleSaveDriver}
+          onCancel={handleCancelDriver}
         />
-        
-        <VehicleInfo 
-          vehicleInfo={vehicleInfo} 
-          onEdit={handleEditProfile} 
+
+        <VehicleInfo
+          vehicleInfo={vehicleInfo}
+          onEdit={handleEditVehicle}
+          isEditing={isEditingVehicle}
+          onSave={handleSaveVehicle}
+          onCancel={handleCancelVehicle}
         />
-        
+
         <SettingsSection onLogout={onLogout} />
       </ScrollView>
     </View>
@@ -50,7 +85,7 @@ const Profile = ({ onLogout }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: '#F8F9FA',
   },
   scrollView: {
     flex: 1,
