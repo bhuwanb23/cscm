@@ -8,7 +8,8 @@ const PORT = process.env.GATEWAY_PORT || 8080;
 const aiMlTarget = config.aiMl ? config.aiMl.apiUrl : (process.env.AI_ML_API_URL || 'http://localhost:8000');
 const apiTarget = `http://localhost:${config.server.port}`;
 
-app.use(express.json());
+// NOTE: Do NOT use express.json() here — it consumes the request body
+// before http-proxy-middleware can forward it, causing POST requests to hang.
 
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.path} - ${req.ip}`);
