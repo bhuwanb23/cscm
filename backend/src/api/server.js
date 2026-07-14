@@ -6,6 +6,7 @@ require('dotenv').config();
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 const { rateLimiter, securityHeaders, corsOptions } = require('./middleware/rateLimiter');
 const messagingLayer = require('../messaging');
+const sqliteDatabase = require('../storage/sqliteDatabase');
 const { requestTracker, getMetrics, getContentType } = require('../utils/metrics');
 
 const app = express();
@@ -18,6 +19,16 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(rateLimiter);
 app.use(requestTracker);
+
+// Initialize database
+(async () => {
+  try {
+    await sqliteDatabase.initialize();
+    console.log('Database initialized successfully');
+  } catch (error) {
+    console.error('Failed to initialize database:', error);
+  }
+})();
 
 // Initialize messaging layer
 (async () => {
