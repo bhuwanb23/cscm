@@ -16,6 +16,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        path: cscm
 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
@@ -23,43 +25,93 @@ jobs:
         node-version: ${{ matrix.node-version }}
 
     - name: Install dependencies
-      run: npm ci
+      run: |
+        cd cscm/backend
+        npm ci
 
     - name: Run linter
-      run: npm run lint
+      run: |
+        cd cscm/backend
+        npm run lint
 
     - name: Run tests
-      run: npm test
+      run: |
+        cd cscm/backend
+        npm test
 
-  build:
-    needs: test
+  test-ai-ml:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
-
-    - name: Use Node.js 18.x
-      uses: actions/setup-node@v3
       with:
-        node-version: '18.x'
+        path: cscm
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
 
     - name: Install dependencies
-      run: npm ci
-
-    - name: Build application
-      run: npm run build
-
-    - name: Build Docker image
       run: |
-        docker build -t cscm-backend:${{ github.sha }} .
-        
-  deploy:
-    needs: build
+        cd cscm/ai-ml
+        pip install -r requirements.txt
+
+    - name: Run tests
+      run: |
+        cd cscm/ai-ml
+        pytest
+
+  build-docker:
+    needs: [test, test-ai-ml]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
 
     steps:
-    - name: Deploy to production
-      run: |
-        echo "Deploying to production environment"
-        # Add deployment commands here
+    - uses: actions/checkout@v3
+      with:
+        path: cscm
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Backend image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./cscm/backend
+        file: ./cscm/backend/Dockerfile
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/cscm-backend:latest
+          ${{ secrets.DOCKER_USERNAME }}/cscm-backend:${{ github.sha }}
+        cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/cscm-backend:buildcache
+        cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/cscm-backend:buildcache,mode=max
+
+    - name: Build and push Gateway image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./cscm/backend
+        file: ./cscm/backend/Dockerfile.gateway
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/cscm-gateway:latest
+          ${{ secrets.DOCKER_USERNAME }}/cscm-gateway:${{ github.sha }}
+        cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/cscm-gateway:buildcache
+        cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/cscm-gateway:buildcache,mode=max
+
+    - name: Build and push AI/ML image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./cscm/ai-ml
+        file: ./cscm/ai-ml/Dockerfile
+        push: true
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/cscm-ai-ml:latest
+          ${{ secrets.DOCKER_USERNAME }}/cscm-ai-ml:${{ github.sha }}
+        cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/cscm-ai-ml:buildcache
+        cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/cscm-ai-ml:buildcache,mode=max
