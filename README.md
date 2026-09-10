@@ -58,7 +58,41 @@ cscm/
 
 ## Quick Start
 
-### Mobile App
+### Simplified Development Setup (Recommended)
+
+The easiest way to start the development environment is using the automated setup scripts:
+
+**Windows (PowerShell):**
+```bash
+.\scripts\setup-dev.ps1
+.\scripts\start-dev.ps1
+```
+
+**Linux/Mac (Bash):**
+```bash
+./scripts/setup-dev.sh
+./scripts/start-dev.sh
+```
+
+This will:
+- Install all dependencies
+- Set up the development environment
+- Start all services (Backend, Gateway, AI/ML, Redis, Development Dashboard)
+- Initialize the database with seed data
+
+Once started, access services at:
+- **Backend API**: http://localhost:3000
+- **API Gateway**: http://localhost:8080
+- **AI/ML Service**: http://localhost:8000
+- **Development Dashboard**: http://localhost:3002
+- **Grafana**: http://localhost:3001
+- **Prometheus**: http://localhost:9090
+
+### Manual Setup
+
+If you prefer to set up services individually:
+
+#### Mobile App
 
 ```bash
 cd App
@@ -66,7 +100,7 @@ npm install
 npx expo start
 ```
 
-### Backend (Express API + Gateway)
+#### Backend (Express API + Gateway)
 
 ```bash
 cd backend
@@ -75,7 +109,7 @@ npm start              # API on :3000
 node src/gateway/gateway.js   # Gateway on :8080
 ```
 
-### Python AI/ML
+#### Python AI/ML
 
 ```bash
 cd ai-ml
