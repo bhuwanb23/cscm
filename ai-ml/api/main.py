@@ -117,6 +117,9 @@ from .routers import (
     model_monitoring
 )
 
+# Import debug router (development only)
+from .debug import router as debug_router
+
 # Register routers
 app.include_router(demand_forecasting.router, prefix="/api/v1/demand", tags=["Demand Forecasting"])
 app.include_router(demand_planning.router, prefix="/api/v1", tags=["Demand Planning"])
@@ -135,6 +138,10 @@ app.include_router(computer_vision.router, prefix="/api/v1/vision", tags=["Compu
 app.include_router(continual_learning.router, prefix="/api/v1/learning", tags=["Continual Learning"])
 app.include_router(uncertainty_quantification.router, prefix="/api/v1/uncertainty", tags=["Uncertainty Quantification"])
 app.include_router(model_monitoring.router, prefix="/api/v1/monitoring", tags=["Model Monitoring"])
+
+# Register debug router (development only)
+if os.getenv("DEBUG", "false").lower() == "true":
+    app.include_router(debug_router, prefix="/debug", tags=["Debug"])
 
 # Startup event to initialize job queue
 @app.on_event("startup")

@@ -116,6 +116,46 @@ app.get('/cache/stats', (req, res) => {
   }
 });
 
+// Debug endpoints (development only)
+if (process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true') {
+  app.get('/debug/info', (req, res) => {
+    res.json({
+      service: 'CSCM Backend API',
+      version: '1.0.0',
+      node_version: process.version,
+      platform: process.platform,
+      environment: process.env.NODE_ENV,
+      debug_mode: true
+    });
+  });
+
+  app.get('/debug/memory', (req, res) => {
+    const memory = process.memoryUsage();
+    res.json({
+      heap: {
+        used: memory.heapUsed,
+        used_mb: Math.round(memory.heapUsed / 1024 / 1024),
+        total: memory.heapTotal,
+        total_mb: Math.round(memory.heapTotal / 1024 / 1024)
+      },
+      external: {
+        used: memory.external,
+        used_mb: Math.round(memory.external / 1024 / 1024)
+      }
+    });
+  });
+
+  app.get('/debug/config', (req, res) => {
+    // Return safe configuration values
+    const safeConfig = {
+      node_env: process.env.NODE_ENV,
+      port: process.env.PORT,
+      debug: process.env.DEBUG
+    };
+    res.json(safeConfig);
+  });
+}
+
 // API Documentation endpoint
 app.use(
   '/api-docs',
@@ -133,12 +173,14 @@ const eventRoutes = require('./routes/events');
 const inventoryRoutes = require('./routes/inventory');
 const orderRoutes = require('./routes/orders');
 const shipmentRoutes = require('./routes/shipments');
+const analyticsRouter = require('../analytics/analyticsRouter');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/events', eventRoutes);
 app.use('/api/v1/inventory', inventoryRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/shipments', shipmentRoutes);
+app.use('/api/v1/analytics', analyticsRouter);
 
 // Error handling middleware
 app.use(notFound);
