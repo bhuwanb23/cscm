@@ -25,7 +25,12 @@
     "demo-features": "node src/features/demoFeatures.js",
     "test-knowledge-graph": "node src/knowledge-graph/testGraph.js",
     "agent-runtime": "node src/agent-runtime/startRuntime.js",
-    "test-agent-runtime": "node src/agent-runtime/testRuntime.js"
+    "test-agent-runtime": "node src/agent-runtime/testRuntime.js",
+    "migrate": "node scripts/migrate.js",
+    "migrate:up": "node scripts/migrate.js up",
+    "migrate:down": "node scripts/migrate.js down",
+    "migrate:status": "node scripts/migrate.js status",
+    "migrate:create": "node scripts/migrate.js create"
   },
   "keywords": [
     "supply-chain",
