@@ -3,6 +3,9 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
 const swaggerUi = require('swagger-ui-express');
+const yaml = require('js-yaml');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const { notFound, errorHandler } = require('./middleware/errorHandler');
@@ -20,16 +23,24 @@ const sqliteDatabase = require('../storage/sqliteDatabase');
 const { requestTracker, getMetrics, getContentType } = require('../utils/metrics');
 const cacheService = require('../services/cacheService');
 
-// Swagger specs - note: using inline specs until swagger.js is fixed
-const swaggerSpecs = {
-  openapi: '3.0.0',
-  info: {
-    title: 'CSCM Backend API',
-    version: '1.0.0',
-    description: 'Cognitive Supply Chain Mesh Backend API',
-  },
-  paths: {},
-};
+// Load OpenAPI specification from YAML file
+let swaggerSpecs;
+try {
+  const openApiPath = path.join(__dirname, '../../docs/openapi.yaml');
+  const openApiFile = fs.readFileSync(openApiPath, 'utf8');
+  swaggerSpecs = yaml.load(openApiFile);
+} catch (error) {
+  console.warn('Failed to load OpenAPI spec from YAML, using fallback:', error.message);
+  swaggerSpecs = {
+    openapi: '3.0.0',
+    info: {
+      title: 'CSCM Backend API',
+      version: '1.0.0',
+      description: 'Cognitive Supply Chain Mesh Backend API',
+    },
+    paths: {},
+  };
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;

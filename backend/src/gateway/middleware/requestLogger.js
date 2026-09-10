@@ -6,14 +6,6 @@
 const { v4: uuidv4 } = require('uuid');
 const logger = require('../../utils/logger');
 
-// Metrics recording (lazy import to avoid circular dependency)
-let metrics;
-try {
-  metrics = require('../metrics');
-} catch (error) {
-  logger.warn('Metrics module not available in request logger');
-}
-
 // Sensitive data patterns to filter
 const SENSITIVE_PATTERNS = [
   /password/i,
@@ -185,6 +177,17 @@ function proxyResponseLogger(targetService) {
     };
 
     logger.info(`[Gateway] Response from ${targetService}`, logData);
+    
+    // Record proxy metrics
+    if (req.proxyStartTime) {
+      const duration = (Date.now() - req.proxyStartTime) / 1000; // Convert to seconds
+      try {
+        const metrics = require('../metrics');
+        metrics.recordProxyRequest(targetService, req.method, req.path, proxyRes.statusCode, duration);
+      } catch (error) {
+        // Metrics not available, continue without recording
+      }
+    }
   };
 }
 
