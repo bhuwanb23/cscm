@@ -1,0 +1,14 @@
+node_modules
+.expo
+.expo-shared
+android
+ios
+web
+dist
+build
+coverage
+.nyc_output
+.vscode
+.idea
+*.min.js
+*.min.css
