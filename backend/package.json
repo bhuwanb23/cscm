@@ -56,6 +56,9 @@
     "sqlite3": "^5.1.7",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1",
+    "uuid": "^11.0.0",
+    "express-rate-limit": "^7.1.0",
+    "rate-limiter-flexible": "^5.0.0",
     "winston": "^3.18.3"
   },
   "devDependencies": {

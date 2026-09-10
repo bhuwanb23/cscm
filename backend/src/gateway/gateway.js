@@ -2,13 +2,22 @@ const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const config = require('../config');
 const logger = require('../utils/logger');
+const { bypassHealthCheck, optionalAuth } = require('./middleware/auth');
+const { authorize } = require('./middleware/authorization');
+const { requestLogger, errorLogger, proxyLogger, proxyResponseLogger, proxyErrorLogger } = require('./middleware/requestLogger');
+const { defaultRateLimiter, perUserRateLimiter, rateLimitInfo } = require('./middleware/rateLimiter');
+const { circuitBreakerState, getAllCircuitBreakerStates, resetCircuitBreaker } = require('./middleware/circuitBreaker');
+const { getServiceUrl, getServiceMetrics, startHealthChecks } = require('./serviceDiscovery');
+const { metricsMiddleware, getMetricsEndpoint, recordAuthenticationSuccess, recordAuthenticationFailure } = require('./metrics');
 
 const app = express();
 const PORT = process.env.GATEWAY_PORT || 8080;
-const aiMlTarget = config.aiMl
+
+// Use service discovery for dynamic service URLs
+const aiMlTarget = getServiceUrl('aiMl') || (config.aiMl
   ? config.aiMl.apiUrl
-  : process.env.AI_ML_API_URL || 'http://localhost:8000';
-const apiTarget = `http://localhost:${config.server.port}`;
+  : process.env.AI_ML_API_URL || 'http://localhost:8000');
+const apiTarget = getServiceUrl('backend') || `http://localhost:${config.server.port}`;
 
 // NOTE: Do NOT use express.json() here — it consumes the request body
 // before http-proxy-middleware can forward it, causing POST requests to hang.
@@ -29,6 +38,21 @@ app.use((req, res, next) => {
   }
 });
 
+// Authentication and authorization middleware
+app.use(bypassHealthCheck);
+app.use(optionalAuth);
+
+// Rate limiting middleware
+app.use(defaultRateLimiter);
+app.use(perUserRateLimiter);
+app.use(rateLimitInfo);
+
+// Request logging middleware
+app.use(requestLogger);
+
+// Metrics middleware (must be after request logger to track duration)
+app.use(metricsMiddleware);
+
 function proxyErrorHandler(err, req, res) {
   logger.error(`Proxy error for ${req.method} ${req.originalUrl}: ${err.message}`);
   if (!res.headersSent) {
@@ -43,10 +67,9 @@ const aiMlProxy = createProxyMiddleware({
   target: aiMlTarget,
   changeOrigin: true,
   on: {
-    proxyReq: (proxyReq, req, res) => {
-      logger.info(`[gateway] → Python AI/ML: ${req.method} ${req.originalUrl}`);
-    },
-    error: proxyErrorHandler,
+    proxyReq: proxyLogger('AI/ML'),
+    proxyRes: proxyResponseLogger('AI/ML'),
+    error: proxyErrorLogger('AI/ML'),
   },
 });
 
@@ -54,10 +77,9 @@ const apiProxy = createProxyMiddleware({
   target: apiTarget,
   changeOrigin: true,
   on: {
-    proxyReq: (proxyReq, req, res) => {
-      logger.info(`[gateway] → Express API: ${req.method} ${req.originalUrl}`);
-    },
-    error: proxyErrorHandler,
+    proxyReq: proxyLogger('Backend API'),
+    proxyRes: proxyResponseLogger('Backend API'),
+    error: proxyErrorLogger('Backend API'),
   },
 });
 
@@ -117,6 +139,45 @@ app.use('/api/v1', (req, res, next) => {
 
 app.use('/api/v1', apiProxy);
 
+// Circuit breaker state endpoint
+app.get('/circuit-breaker/state', (req, res) => {
+  res.json({
+    circuitBreakers: getAllCircuitBreakerStates(),
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Reset circuit breaker endpoint
+app.post('/circuit-breaker/reset/:service', (req, res) => {
+  const { service } = req.params;
+  resetCircuitBreaker(service);
+  res.json({
+    success: true,
+    message: `Circuit breaker reset for ${service}`
+  });
+});
+
+// Service discovery endpoints
+app.get('/services/registry', (req, res) => {
+  res.json({
+    services: getServiceMetrics(),
+    timestamp: new Date().toISOString()
+  });
+});
+
+app.get('/services/:serviceName/url', (req, res) => {
+  const { serviceName } = req.params;
+  const url = getServiceUrl(serviceName);
+  if (url) {
+    res.json({ serviceName, url });
+  } else {
+    res.status(404).json({ error: 'Service not found' });
+  }
+});
+
+// Metrics endpoint
+app.get('/metrics', getMetricsEndpoint);
+
 let lastAiMlStatus = 'unknown';
 let lastAiMlCheckedAt = null;
 let lastGatewayStatus = 'healthy';
@@ -160,6 +221,7 @@ app.get('/health', async (req, res) => {
       status: aiMlStatus,
       checkedAt: now,
     },
+    circuitBreakers: getAllCircuitBreakerStates()
   });
 });
 
@@ -199,6 +261,7 @@ app.get('/health/python', async (req, res) => {
   });
 });
 
+app.use(errorLogger);
 app.use((err, req, res, next) => {
   logger.error('Gateway error:', err);
   res.status(500).json({
@@ -208,6 +271,9 @@ app.use((err, req, res, next) => {
 });
 
 if (require.main === module) {
+  // Start service discovery health checks
+  startHealthChecks(30000); // Check every 30 seconds
+  
   app.listen(PORT, () => {
     logger.info(`API Gateway listening on port ${PORT}`);
     console.log(`API Gateway listening on port ${PORT}`);
