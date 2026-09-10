@@ -128,11 +128,15 @@ function debugHeaders(req, res, next) {
     const duration = Date.now() - startTime;
     
     // Add debug headers in development mode
-    if (process.env.NODE_ENV === 'development') {
-      res.setHeader('X-Debug-Duration', duration);
-      res.setHeader('X-Debug-Node-Version', process.version);
-      res.setHeader('X-Debug-Platform', process.platform);
-      res.setHeader('X-Debug-Memory', JSON.stringify(process.memoryUsage()));
+    if (process.env.NODE_ENV === 'development' && !res.headersSent) {
+      try {
+        res.setHeader('X-Debug-Duration', duration);
+        res.setHeader('X-Debug-Node-Version', process.version);
+        res.setHeader('X-Debug-Platform', process.platform);
+        res.setHeader('X-Debug-Memory', JSON.stringify(process.memoryUsage()));
+      } catch (e) {
+        // Ignore header setting errors
+      }
     }
   });
   

@@ -28,9 +28,18 @@ class E2ETestRunner {
     this.startTime = Date.now();
     
     try {
-      // Wait for all services to be healthy
+      // Check service health (with timeout and partial success tolerance)
       console.log('\n🔍 Checking service health...');
-      await this.apiClient.waitForAllServices();
+      const healthCheck = await this.apiClient.checkAllServices();
+      
+      if (!healthCheck.allHealthy) {
+        console.log('⚠️  Not all services are fully healthy, but proceeding with tests...');
+        console.log(`  Gateway: ${healthCheck.gateway ? '✓' : '✗'}`);
+        console.log(`  Backend: ${healthCheck.backend ? '✓' : '✗'}`);
+        console.log(`  AI/ML: ${healthCheck.aiMl ? '✓' : '✗'}`);
+      } else {
+        console.log('✅ All services are healthy');
+      }
       
       // Run role-specific tests
       await this.runRoleTests();

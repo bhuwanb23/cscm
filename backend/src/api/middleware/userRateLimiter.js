@@ -102,8 +102,40 @@ function createUserRateLimiter(config) {
  */
 function userRateLimiter(req, res, next) {
   const config = getRateLimitConfig(req.user);
-  const limiter = createUserRateLimiter(config);
-  return limiter(req, res, next);
+  // Create a simple rate limiter that doesn't require instance creation
+  const windowMs = config.windowMs;
+  const max = config.max;
+  
+  // Simple in-memory rate limiting using a Map
+  const key = req.user?.id || req.ip;
+  const now = Date.now();
+  
+  if (!rateLimitStore.has(key)) {
+    rateLimitStore.set(key, { count: 1, resetTime: now + windowMs });
+    return next();
+  }
+  
+  const userLimit = rateLimitStore.get(key);
+  
+  // Reset if window expired
+  if (now > userLimit.resetTime) {
+    userLimit.count = 1;
+    userLimit.resetTime = now + windowMs;
+    return next();
+  }
+  
+  // Check if limit exceeded
+  if (userLimit.count >= max) {
+    logger.warn(`Rate limit exceeded for user ${key} on ${req.path}`);
+    return res.status(429).json({
+      error: 'Too Many Requests',
+      message: config.message,
+      retryAfter: Math.ceil((userLimit.resetTime - now) / 1000)
+    });
+  }
+  
+  userLimit.count++;
+  return next();
 }
 
 /**
@@ -116,8 +148,37 @@ function strictUserRateLimiter(req, res, next) {
     max: Math.floor(config.max / 10), // 10% of normal limit
     message: 'Strict rate limit exceeded for sensitive endpoint'
   };
-  const limiter = createUserRateLimiter(strictConfig);
-  return limiter(req, res, next);
+  
+  const windowMs = strictConfig.windowMs;
+  const max = strictConfig.max;
+  
+  const key = req.user?.id || req.ip;
+  const now = Date.now();
+  
+  if (!rateLimitStore.has(key)) {
+    rateLimitStore.set(key, { count: 1, resetTime: now + windowMs });
+    return next();
+  }
+  
+  const userLimit = rateLimitStore.get(key);
+  
+  if (now > userLimit.resetTime) {
+    userLimit.count = 1;
+    userLimit.resetTime = now + windowMs;
+    return next();
+  }
+  
+  if (userLimit.count >= max) {
+    logger.warn(`Strict rate limit exceeded for user ${key} on ${req.path}`);
+    return res.status(429).json({
+      error: 'Too Many Requests',
+      message: strictConfig.message,
+      retryAfter: Math.ceil((userLimit.resetTime - now) / 1000)
+    });
+  }
+  
+  userLimit.count++;
+  return next();
 }
 
 /**

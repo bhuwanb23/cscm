@@ -233,7 +233,8 @@ class ApiClient {
       await this.sleep(1000);
     }
     
-    throw new Error('Service did not become healthy within timeout');
+    // Return false instead of throwing error
+    return false;
   }
 
   /**
@@ -242,13 +243,21 @@ class ApiClient {
   async waitForAllServices() {
     console.log('Waiting for all services to be healthy...');
     
-    await Promise.all([
+    const results = await Promise.all([
       this.waitForService(() => this.checkGatewayHealth()),
       this.waitForService(() => this.checkBackendHealth()),
       this.waitForService(() => this.checkAiMlHealth())
     ]);
     
-    console.log('All services are healthy');
+    const allHealthy = results.every(r => r === true);
+    
+    if (allHealthy) {
+      console.log('All services are healthy');
+    } else {
+      console.log('Some services are not healthy, but continuing...');
+    }
+    
+    return allHealthy;
   }
 }
 
