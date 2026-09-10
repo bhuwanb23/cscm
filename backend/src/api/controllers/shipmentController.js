@@ -1,6 +1,27 @@
 const ShipmentModel = require('../../models/shipmentModel');
 const logger = require('../../utils/logger');
 
+/**
+ * Create a new shipment
+ * @route POST /api/v1/shipments
+ * @group Shipments
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>}
+ * @description Create a new shipment with tracking information
+ * @body {string} shipment_id.required - Unique shipment identifier
+ * @body {string} order_id - Associated order ID
+ * @body {string} from_location.required - Origin location
+ * @body {string} to_location.required - Destination location
+ * @body {string} status - Shipment status (pending, in_transit, delivered, cancelled)
+ * @body {string} carrier - Shipping carrier
+ * @body {string} tracking_number - Tracking number
+ * @body {string} estimated_delivery - Estimated delivery date
+ * @body {Array} items - Array of shipment items
+ * @response {201} Shipment created successfully
+ * @response {400} Shipment ID, From Location, and To Location are required
+ * @response {500} Failed to create shipment
+ */
 async function create(req, res) {
   try {
     const { shipment_id, order_id, from_location, to_location, status, carrier, tracking_number, estimated_delivery, items } = req.body;
@@ -16,6 +37,20 @@ async function create(req, res) {
   }
 }
 
+/**
+ * Get shipment by ID
+ * @route GET /api/v1/shipments/:shipmentId
+ * @group Shipments
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>}
+ * @description Retrieve a specific shipment by its ID
+ * @param {string} shipmentId.path.required - Shipment ID
+ * @response {200} Shipment retrieved successfully
+ * @response {400} Shipment ID is required
+ * @response {404} Shipment not found
+ * @response {500} Failed to get shipment
+ */
 async function getById(req, res) {
   try {
     const { shipmentId } = req.params;
@@ -33,6 +68,21 @@ async function getById(req, res) {
   }
 }
 
+/**
+ * Update shipment status
+ * @route PATCH /api/v1/shipments/:shipmentId/status
+ * @group Shipments
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>}
+ * @description Update the status of an existing shipment
+ * @param {string} shipmentId.path.required - Shipment ID
+ * @body {string} status.required - New shipment status
+ * @body {string} actual_delivery - Actual delivery date
+ * @response {200} Shipment status updated successfully
+ * @response {400} Shipment ID and status are required
+ * @response {500} Failed to update shipment status
+ */
 async function updateStatus(req, res) {
   try {
     const { shipmentId } = req.params;
@@ -49,6 +99,19 @@ async function updateStatus(req, res) {
   }
 }
 
+/**
+ * Get shipments by status
+ * @route GET /api/v1/shipments/status/:status
+ * @group Shipments
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>}
+ * @description Retrieve all shipments with a specific status
+ * @param {string} status.path.required - Shipment status
+ * @response {200} Shipments retrieved successfully
+ * @response {400} Status is required
+ * @response {500} Failed to get shipments by status
+ */
 async function getByStatus(req, res) {
   try {
     const { status } = req.params;
@@ -63,6 +126,19 @@ async function getByStatus(req, res) {
   }
 }
 
+/**
+ * Get shipments by location
+ * @route GET /api/v1/shipments/location/:location
+ * @group Shipments
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>}
+ * @description Retrieve all shipments related to a specific location
+ * @param {string} location.path.required - Location identifier
+ * @response {200} Shipments retrieved successfully
+ * @response {400} Location is required
+ * @response {500} Failed to get shipments by location
+ */
 async function getByLocation(req, res) {
   try {
     const { location } = req.params;

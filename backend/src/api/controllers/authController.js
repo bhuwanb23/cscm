@@ -6,6 +6,11 @@ const UserModel = require('../../models/userModel');
 
 const SALT_ROUNDS = 10;
 
+/**
+ * Generate JWT token for user authentication
+ * @param {Object} user - User object containing id, username, and role
+ * @returns {string} JWT token
+ */
 function generateToken(user) {
   return jwt.sign(
     { id: user.id, username: user.username, role: user.role },
@@ -14,6 +19,23 @@ function generateToken(user) {
   );
 }
 
+/**
+ * Register a new user
+ * @route POST /api/v1/auth/register
+ * @group Authentication
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>}
+ * @description Register a new user with username, email, and password
+ * @body {string} username.required - User's username
+ * @body {string} email.required - User's email address
+ * @body {string} password.required - User's password
+ * @body {string} role - User's role (admin, user, guest) - defaults to 'user'
+ * @response {201} User registered successfully
+ * @response {400} Username, email, and password are required
+ * @response {409} Username already exists
+ * @response {500} Registration failed
+ */
 async function register(req, res) {
   try {
     const { username, email, password, role } = req.body;
@@ -58,6 +80,21 @@ async function register(req, res) {
   }
 }
 
+/**
+ * Login user with username and password
+ * @route POST /api/v1/auth/login
+ * @group Authentication
+ * @param {Request} req - Express request object
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>}
+ * @description Authenticate user and return JWT token
+ * @body {string} username.required - User's username
+ * @body {string} password.required - User's password
+ * @response {200} Login successful with JWT token
+ * @response {400} Username and password are required
+ * @response {401} Invalid username or password
+ * @response {500} Login failed
+ */
 async function login(req, res) {
   try {
     const { username, password } = req.body;
@@ -106,6 +143,20 @@ async function login(req, res) {
   }
 }
 
+/**
+ * Get user profile
+ * @route GET /api/v1/auth/profile
+ * @group Authentication
+ * @security BearerAuth
+ * @param {Request} req - Express request object with authenticated user
+ * @param {Response} res - Express response object
+ * @returns {Promise<void>}
+ * @description Get current user's profile information
+ * @response {200} User profile retrieved successfully
+ * @response {401} Unauthorized - invalid or missing token
+ * @response {404} User not found
+ * @response {500} Failed to get profile
+ */
 async function getProfile(req, res) {
   try {
     const user = await UserModel.findById(req.user.id);

@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const swaggerUi = require('swagger-ui-express');
 require('dotenv').config();
 
 const { notFound, errorHandler } = require('./middleware/errorHandler');
@@ -8,6 +9,7 @@ const { rateLimiter, securityHeaders, corsOptions } = require('./middleware/rate
 const messagingLayer = require('../messaging');
 const sqliteDatabase = require('../storage/sqliteDatabase');
 const { requestTracker, getMetrics, getContentType } = require('../utils/metrics');
+const swaggerSpecs = require('../../../docs/swagger');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -65,6 +67,13 @@ app.get('/metrics', async (req, res) => {
     res.status(500).send('Error collecting metrics');
   }
 });
+
+// API Documentation endpoint
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'CSCM API Documentation'
+}));
 
 // API Routes
 const authRoutes = require('./routes/auth');
