@@ -1,4 +1,4 @@
-# Multi-stage build for Backend API service
+# Multi-stage build for Gateway service
 FROM node:18-alpine AS builder
 
 WORKDIR /app
@@ -14,14 +14,16 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Install curl for health checks and sqlite3 dependencies
-RUN apk add --no-cache curl sqlite
+# Install curl for health checks
+RUN apk add --no-cache curl
 
 # Copy dependencies from builder
 COPY --from=builder /app/node_modules ./node_modules
 
-# Copy application source files
-COPY src ./src
+# Copy gateway and shared source files
+COPY src/gateway ./src/gateway
+COPY src/config ./src/config
+COPY src/utils ./src/utils
 COPY package*.json ./
 
 # Create non-root user
@@ -30,15 +32,12 @@ RUN addgroup -g 1001 -S cscm && \
     chown -R cscm:cscm /app
 USER cscm
 
-# Create data directory for SQLite database
-RUN mkdir -p /app/data && chown -R cscm:cscm /app/data
-
 # Expose port
-EXPOSE 3000
+EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:3000/health || exit 1
+    CMD curl -f http://localhost:8080/health || exit 1
 
-# Run the application
-CMD ["node", "src/api/server.js"]
+# Run the gateway
+CMD ["node", "src/gateway/gateway.js"]

@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+.github
+
+# Documentation
+*.md
+docs/
+README.md
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+*.log
+
+# Mobile app (not needed for backend services)
+App/
+app/
+
+# Website (not needed for backend services)
+website/
+
+# Plans and prototypes
+plans/
+prototype/
+
+# Video assets
+cscm-video/
+
+# Hyperframes
+.hyperframes/
+
+# Misc
+*.tmp
+*.bak
+.env
+.env.local
