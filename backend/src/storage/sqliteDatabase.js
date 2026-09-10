@@ -41,6 +41,9 @@ class SQLiteDatabase {
       // Create tables
       await this.createTables();
       
+      // Create indexes for performance
+      await this.createIndexes();
+      
       logger.info('SQLite database initialized successfully');
     } catch (error) {
       logger.error('Failed to initialize SQLite database:', error.message);
@@ -162,6 +165,65 @@ class SQLiteDatabase {
         this.db.run(query, (err) => {
           if (err) {
             logger.error('Failed to create table:', err.message);
+            reject(err);
+          } else {
+            checkCompletion();
+          }
+        });
+      });
+    });
+  }
+
+  /**
+   * Create database indexes for performance optimization
+   */
+  async createIndexes() {
+    return new Promise((resolve, reject) => {
+      const indexes = [
+        // Inventory indexes
+        'CREATE INDEX IF NOT EXISTS idx_inventory_product_id ON inventory(product_id)',
+        'CREATE INDEX IF NOT EXISTS idx_inventory_store_id ON inventory(store_id)',
+        'CREATE INDEX IF NOT EXISTS idx_inventory_quantity ON inventory(quantity)',
+        'CREATE INDEX IF NOT EXISTS idx_inventory_store_product ON inventory(store_id, product_id)',
+        
+        // Orders indexes
+        'CREATE INDEX IF NOT EXISTS idx_orders_order_id ON orders(order_id)',
+        'CREATE INDEX IF NOT EXISTS idx_orders_store_id ON orders(store_id)',
+        'CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)',
+        'CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at)',
+        'CREATE INDEX IF NOT EXISTS idx_orders_store_status ON orders(store_id, status)',
+        
+        // Order items indexes
+        'CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id)',
+        'CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id)',
+        
+        // Shipments indexes
+        'CREATE INDEX IF NOT EXISTS idx_shipments_shipment_id ON shipments(shipment_id)',
+        'CREATE INDEX IF NOT EXISTS idx_shipments_order_id ON shipments(order_id)',
+        'CREATE INDEX IF NOT EXISTS idx_shipments_status ON shipments(status)',
+        'CREATE INDEX IF NOT EXISTS idx_shipments_from_location ON shipments(from_location)',
+        'CREATE INDEX IF NOT EXISTS idx_shipments_to_location ON shipments(to_location)',
+        'CREATE INDEX IF NOT EXISTS idx_shipments_tracking_number ON shipments(tracking_number)',
+        
+        // Users indexes
+        'CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)',
+        'CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)',
+        'CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)'
+      ];
+
+      let completed = 0;
+      const checkCompletion = () => {
+        completed++;
+        if (completed === indexes.length) {
+          logger.info('Database indexes created successfully');
+          resolve();
+        }
+      };
+
+      indexes.forEach(indexQuery => {
+        this.db.run(indexQuery, (err) => {
+          if (err) {
+            logger.error('Failed to create index:', err.message);
             reject(err);
           } else {
             checkCompletion();
