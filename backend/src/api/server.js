@@ -7,6 +7,14 @@ require('dotenv').config();
 
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 const { rateLimiter, securityHeaders, corsOptions } = require('./middleware/rateLimiter');
+const {
+  requestLogger,
+  queryLogger,
+  errorStackTrace,
+  performanceMetrics,
+  debugHeaders,
+  debugMiddleware
+} = require('./middleware/debug');
 const messagingLayer = require('../messaging');
 const sqliteDatabase = require('../storage/sqliteDatabase');
 const { requestTracker, getMetrics, getContentType } = require('../utils/metrics');
@@ -34,6 +42,13 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(rateLimiter);
 app.use(requestTracker);
+
+// Debug middleware (development only)
+if (process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true') {
+  app.use(requestLogger);
+  app.use(performanceMetrics);
+  app.use(debugHeaders);
+}
 
 // Initialize database
 (async () => {
