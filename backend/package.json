@@ -38,7 +38,8 @@
     "backup:rotate": "node scripts/backup.js rotate",
     "backup:validate": "node scripts/backup.js validate",
     "backup:stats": "node scripts/backup.js stats",
-    "restore": "node scripts/restore.js"
+    "restore": "node scripts/restore.js",
+    "test:e2e": "node e2e/e2e-runner.js"
   },
   "keywords": [
     "supply-chain",
