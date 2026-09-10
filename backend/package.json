@@ -30,7 +30,15 @@
     "migrate:up": "node scripts/migrate.js up",
     "migrate:down": "node scripts/migrate.js down",
     "migrate:status": "node scripts/migrate.js status",
-    "migrate:create": "node scripts/migrate.js create"
+    "migrate:create": "node scripts/migrate.js create",
+    "backup": "node scripts/backup.js",
+    "backup:create": "node scripts/backup.js create",
+    "backup:restore": "node scripts/backup.js restore",
+    "backup:list": "node scripts/backup.js list",
+    "backup:rotate": "node scripts/backup.js rotate",
+    "backup:validate": "node scripts/backup.js validate",
+    "backup:stats": "node scripts/backup.js stats",
+    "restore": "node scripts/restore.js"
   },
   "keywords": [
     "supply-chain",
