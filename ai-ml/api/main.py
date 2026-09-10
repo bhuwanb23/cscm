@@ -30,8 +30,42 @@ from job_queue import job_queue
 # Import model registry
 from model_registry import init_registry
 
-# Create app
-app = FastAPI(title="Cognitive Supply Chain Mesh - AI/ML API")
+# Create app with enhanced OpenAPI configuration
+app = FastAPI(
+    title="Cognitive Supply Chain Mesh - AI/ML API",
+    description="AI/ML services for supply chain optimization, demand forecasting, inventory management, and logistics coordination",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+    contact={
+        "name": "CSCM Team",
+        "email": "support@cscm.example.com"
+    },
+    license_info={
+        "name": "MIT",
+        "url": "https://opensource.org/licenses/MIT"
+    },
+    servers=[
+        {
+            "url": "http://localhost:8000",
+            "description": "Development server"
+        },
+        {
+            "url": "https://api.cscm.example.com",
+            "description": "Production server"
+        }
+    ]
+)
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, specify allowed origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Global instances
 api_monitor = APIMonitor()

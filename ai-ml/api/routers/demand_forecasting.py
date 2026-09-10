@@ -520,6 +520,16 @@ class DemandForecastingService:
 
 @router.post("/forecast", response_model=demand_models.DemandForecastResponse)
 async def forecast_demand(request: demand_models.DemandForecastRequest):
+    """
+    Generate demand forecast for a specific SKU and store
+    
+    - **sku_id**: Product SKU identifier
+    - **store_id**: Store identifier  
+    - **forecast_horizon**: Number of days to forecast
+    - **include_confidence_intervals**: Whether to include confidence intervals
+    
+    Returns forecasted demand values with optional confidence intervals
+    """
     try:
         return DemandForecastingService.get_forecast(request)
     except Exception as e:
@@ -527,6 +537,16 @@ async def forecast_demand(request: demand_models.DemandForecastRequest):
 
 @router.get("/metrics/{sku_id}/{store_id}", response_model=demand_models.DemandMetricsResponse)
 async def get_demand_metrics(sku_id: str, store_id: str, start_date: str, end_date: str):
+    """
+    Get demand forecasting performance metrics for a specific SKU and store
+    
+    - **sku_id**: Product SKU identifier
+    - **store_id**: Store identifier
+    - **start_date**: Start date for metrics calculation (YYYY-MM-DD)
+    - **end_date**: End date for metrics calculation (YYYY-MM-DD)
+    
+    Returns performance metrics including MAPE, SMAPE, MAE, RMSE, and CRPS
+    """
     try:
         request = demand_models.DemandMetricsRequest(sku_id=sku_id, store_id=store_id, start_date=start_date, end_date=end_date)
         return DemandForecastingService.get_metrics(request)
@@ -548,6 +568,13 @@ async def validate_preprocess_sales_data(data: dict):
 
 @router.post("/batch-forecast")
 async def batch_forecast_demands(requests: List[demand_models.DemandForecastRequest]):
+    """
+    Submit multiple demand forecasting jobs for batch processing
+    
+    - **requests**: List of demand forecast requests
+    
+    Returns job IDs for tracking forecast job status
+    """
     try:
         job_ids = []
         for i, req in enumerate(requests):
