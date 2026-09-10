@@ -7,7 +7,7 @@ describe('RiskMetricsAnalyzer', () => {
 
   beforeEach(() => {
     apiService = {
-      supplierRiskMetrics: jest.fn()
+      supplierRiskMetrics: jest.fn(),
     };
     analyzer = new RiskMetricsAnalyzer(supplierId, apiService);
   });
@@ -32,7 +32,7 @@ describe('RiskMetricsAnalyzer', () => {
         avg_risk_score: 0.42,
         distribution: { low: 120, medium: 60, high: 20 },
         trends: [{ date: '2024-03-01', avg: 0.4 }],
-        model_version: 'v2'
+        model_version: 'v2',
       };
       apiService.supplierRiskMetrics.mockResolvedValue(apiResult);
 
@@ -61,7 +61,7 @@ describe('RiskMetricsAnalyzer', () => {
         avg_risk_score: 0,
         distribution: { low: 0, medium: 0, high: 0 },
         trends: [],
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
   });
@@ -74,7 +74,7 @@ describe('RiskMetricsAnalyzer', () => {
         avg_risk_score: 0.35,
         distribution: { low: 50, medium: 25, high: 5 },
         trends: [],
-        model_version: 'v2'
+        model_version: 'v2',
       };
       apiService.supplierRiskMetrics.mockResolvedValue(apiResult);
 
@@ -82,7 +82,7 @@ describe('RiskMetricsAnalyzer', () => {
 
       expect(apiService.supplierRiskMetrics).toHaveBeenCalledWith({
         range: '90d',
-        supplier_id: 'SUP-200'
+        supplier_id: 'SUP-200',
       });
       expect(result).toEqual(apiResult);
     });
@@ -94,7 +94,7 @@ describe('RiskMetricsAnalyzer', () => {
 
       expect(apiService.supplierRiskMetrics).toHaveBeenCalledWith({
         range: '30d',
-        supplier_id: 'SUP-300'
+        supplier_id: 'SUP-300',
       });
     });
 
@@ -115,7 +115,7 @@ describe('RiskMetricsAnalyzer', () => {
 
       expect(apiService.supplierRiskMetrics).toHaveBeenCalledWith({
         range: '30d',
-        supplier_id: ''
+        supplier_id: '',
       });
       expect(result.model_version).toBe('fallback');
     });
@@ -131,7 +131,7 @@ describe('RiskMetricsAnalyzer', () => {
         avg_risk_score: 0,
         distribution: { low: 0, medium: 0, high: 0 },
         trends: [],
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
   });

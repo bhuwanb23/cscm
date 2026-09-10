@@ -2,7 +2,7 @@ const InventoryOptimizer = require('../../../../agents/store/sub-agents/Inventor
 
 describe('InventoryOptimizer', () => {
   const mockApiService = {
-    inventoryOptimization: jest.fn()
+    inventoryOptimization: jest.fn(),
   };
   const storeId = 'STORE-001';
   let optimizer;
@@ -27,7 +27,7 @@ describe('InventoryOptimizer', () => {
       reorder_point: 30,
       order_quantity: 80,
       safety_stock: 15,
-      recommendations: [{ action: 'reorder', confidence: 0.8 }]
+      recommendations: [{ action: 'reorder', confidence: 0.8 }],
     };
 
     test('should return optimization result on success', async () => {
@@ -41,7 +41,7 @@ describe('InventoryOptimizer', () => {
         current_stock: currentStock,
         forecast,
         product_attributes: {},
-        suppliers: {}
+        suppliers: {},
       });
       expect(result).toBe(apiResponse);
     });
@@ -59,23 +59,31 @@ describe('InventoryOptimizer', () => {
     });
 
     test('should throw when productId is missing', async () => {
-      await expect(optimizer.optimize(null, currentStock, forecast)).rejects.toThrow('productId is required');
+      await expect(optimizer.optimize(null, currentStock, forecast)).rejects.toThrow(
+        'productId is required'
+      );
       expect(mockApiService.inventoryOptimization).not.toHaveBeenCalled();
     });
 
     test('should throw when currentStock is missing', async () => {
-      await expect(optimizer.optimize(productId, undefined, forecast)).rejects.toThrow('currentStock is required');
+      await expect(optimizer.optimize(productId, undefined, forecast)).rejects.toThrow(
+        'currentStock is required'
+      );
       expect(mockApiService.inventoryOptimization).not.toHaveBeenCalled();
     });
 
     test('should throw when currentStock is null', async () => {
-      await expect(optimizer.optimize(productId, null, forecast)).rejects.toThrow('currentStock is required');
+      await expect(optimizer.optimize(productId, null, forecast)).rejects.toThrow(
+        'currentStock is required'
+      );
       expect(mockApiService.inventoryOptimization).not.toHaveBeenCalled();
     });
 
     test('should throw when API call fails', async () => {
       mockApiService.inventoryOptimization.mockRejectedValue(new Error('Service unavailable'));
-      await expect(optimizer.optimize(productId, currentStock, forecast)).rejects.toThrow('Service unavailable');
+      await expect(optimizer.optimize(productId, currentStock, forecast)).rejects.toThrow(
+        'Service unavailable'
+      );
     });
   });
 

@@ -7,7 +7,7 @@ describe('KnowledgeGraphQuerier', () => {
 
   beforeEach(() => {
     apiService = {
-      kgQuery: jest.fn()
+      kgQuery: jest.fn(),
     };
     querier = new KnowledgeGraphQuerier(plannerId, apiService);
   });
@@ -29,7 +29,7 @@ describe('KnowledgeGraphQuerier', () => {
         entities: [{ id: 'E1' }],
         relationships: [{ from: 'E1', to: 'E2' }],
         paths: [['E1', 'E2']],
-        model_version: 'v2'
+        model_version: 'v2',
       };
       apiService.kgQuery.mockResolvedValue(apiResult);
 
@@ -48,7 +48,7 @@ describe('KnowledgeGraphQuerier', () => {
         entities: [],
         relationships: [],
         paths: [],
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
 
@@ -77,7 +77,7 @@ describe('KnowledgeGraphQuerier', () => {
       apiService.kgQuery.mockResolvedValue({
         related: [{ id: 'X' }, { id: 'Y' }],
         total: 2,
-        model_version: 'v1'
+        model_version: 'v1',
       });
 
       const result = await querier.findRelated(entityId, entityType, 3);
@@ -85,12 +85,12 @@ describe('KnowledgeGraphQuerier', () => {
       expect(apiService.kgQuery).toHaveBeenCalledWith({
         entity_id: entityId,
         entity_type: entityType,
-        depth: 3
+        depth: 3,
       });
       expect(result).toEqual({
         related: [{ id: 'X' }, { id: 'Y' }],
         total: 2,
-        model_version: 'v1'
+        model_version: 'v1',
       });
     });
 
@@ -102,7 +102,7 @@ describe('KnowledgeGraphQuerier', () => {
       expect(apiService.kgQuery).toHaveBeenCalledWith({
         entity_id: entityId,
         entity_type: entityType,
-        depth: 2
+        depth: 2,
       });
     });
 
@@ -131,14 +131,14 @@ describe('KnowledgeGraphQuerier', () => {
         entities: [{ id: 'SUP-100' }],
         relationships: [],
         paths: [],
-        model_version: 'v1'
+        model_version: 'v1',
       });
 
       const result = await querier.getSupplierGraph(supplierId);
 
       expect(apiService.kgQuery).toHaveBeenCalledWith({
         query_type: 'supplier_graph',
-        supplier_id: supplierId
+        supplier_id: supplierId,
       });
       expect(result.entities).toEqual([{ id: 'SUP-100' }]);
       expect(result.model_version).toBe('v1');
@@ -153,7 +153,7 @@ describe('KnowledgeGraphQuerier', () => {
         entities: [],
         relationships: [],
         paths: [],
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
 
@@ -168,7 +168,7 @@ describe('KnowledgeGraphQuerier', () => {
         entities: [],
         relationships: [],
         paths: [],
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
   });
@@ -178,7 +178,7 @@ describe('KnowledgeGraphQuerier', () => {
       expect(querier._fallbackRelated()).toEqual({
         related: [],
         total: 0,
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
   });

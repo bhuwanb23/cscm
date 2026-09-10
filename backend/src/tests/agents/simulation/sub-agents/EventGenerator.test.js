@@ -3,7 +3,7 @@ const EventGenerator = require('../../../../agents/simulation/sub-agents/EventGe
 describe('EventGenerator', () => {
   const mockApiService = {
     demandForecast: jest.fn(),
-    inventoryOptimization: jest.fn()
+    inventoryOptimization: jest.fn(),
   };
   const agentId = 'SIM-001';
   let generator;
@@ -33,14 +33,14 @@ describe('EventGenerator', () => {
         store_id: 'STORE-001',
         product_id: 'PROD-001',
         magnitude: 0.5,
-        duration_days: 7
+        duration_days: 7,
       });
       expect(result).toEqual({
         eventType: 'demand_spike',
         storeId: 'STORE-001',
         expectedImpact: 250,
         forecast: apiResult,
-        timestamp: expect.any(String)
+        timestamp: expect.any(String),
       });
     });
 
@@ -54,7 +54,7 @@ describe('EventGenerator', () => {
         store_id: undefined,
         product_id: 'PROD-001',
         magnitude: 0.3,
-        duration_days: 3
+        duration_days: 3,
       });
       expect(result.eventType).toBe('demand_spike');
     });
@@ -84,19 +84,22 @@ describe('EventGenerator', () => {
         event_type: 'inventory_update',
         store_id: 'STORE-001',
         product_id: 'PROD-002',
-        current_stock: 80
+        current_stock: 80,
       });
       expect(result).toEqual({
         eventType: 'inventory_update',
         storeId: 'STORE-001',
         optimalQuantity: 120,
         reorderPoint: 30,
-        timestamp: expect.any(String)
+        timestamp: expect.any(String),
       });
     });
 
     test('should use defaults when meta is empty', async () => {
-      mockApiService.inventoryOptimization.mockResolvedValue({ order_quantity: 50, reorder_point: 20 });
+      mockApiService.inventoryOptimization.mockResolvedValue({
+        order_quantity: 50,
+        reorder_point: 20,
+      });
 
       await generator.generateInventoryUpdate({});
 
@@ -104,7 +107,7 @@ describe('EventGenerator', () => {
         event_type: 'inventory_update',
         store_id: undefined,
         product_id: 'PROD-001',
-        current_stock: 100
+        current_stock: 100,
       });
     });
 

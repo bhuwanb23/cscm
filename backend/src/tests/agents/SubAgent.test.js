@@ -153,7 +153,9 @@ describe('SubAgent base class', () => {
           super('Child', 'Parent-X', api);
           this.id = id;
         }
-        greet() { return `hello ${this.id}`; }
+        greet() {
+          return `hello ${this.id}`;
+        }
       }
       const c = new ChildAgent('42', apiService);
       expect(c.name).toBe('Child');
@@ -165,7 +167,9 @@ describe('SubAgent base class', () => {
 
     it('should support overriding log method', () => {
       class Quiet extends SubAgent {
-        log() { /* silent */ }
+        log() {
+          /* silent */
+        }
       }
       const q = new Quiet('Q', 'P', apiService);
       const spy = jest.spyOn(console, 'log').mockImplementation(() => {});

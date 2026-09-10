@@ -1,6 +1,6 @@
 /**
  * Integration Test for Agent to AI/ML API Communication
- * 
+ *
  * This test verifies that the backend agents can successfully communicate
  * with the AI/ML API endpoints.
  */
@@ -16,9 +16,9 @@ const testData = {
     sku_id: 'TEST-PRODUCT',
     store_id: 'TEST-STORE',
     forecast_horizon: 7,
-    include_confidence_intervals: true
+    include_confidence_intervals: true,
   },
-  
+
   inventoryOptimize: {
     sku_id: 'TEST-PRODUCT',
     store_id: 'TEST-STORE',
@@ -28,16 +28,19 @@ const testData = {
     demand_std_dev: 10,
     service_level: 0.95,
     holding_cost: 0.5,
-    ordering_cost: 10
-  }
+    ordering_cost: 10,
+  },
 };
 
 async function testDemandForecastAPI() {
   console.log('Testing Demand Forecast API...');
-  
+
   try {
-    const response = await axios.post(`${BASE_URL}/api/v1/demand/forecast`, testData.demandForecast);
-    
+    const response = await axios.post(
+      `${BASE_URL}/api/v1/demand/forecast`,
+      testData.demandForecast
+    );
+
     if (response.status === 200) {
       console.log('✅ Demand Forecast API test passed');
       console.log(`   SKU: ${response.data.sku_id}`);
@@ -59,10 +62,13 @@ async function testDemandForecastAPI() {
 
 async function testInventoryOptimizationAPI() {
   console.log('Testing Inventory Optimization API...');
-  
+
   try {
-    const response = await axios.post(`${BASE_URL}/api/v1/inventory/optimize`, testData.inventoryOptimize);
-    
+    const response = await axios.post(
+      `${BASE_URL}/api/v1/inventory/optimize`,
+      testData.inventoryOptimize
+    );
+
     if (response.status === 200) {
       console.log('✅ Inventory Optimization API test passed');
       console.log(`   SKU: ${response.data.sku_id}`);
@@ -85,25 +91,25 @@ async function testInventoryOptimizationAPI() {
 
 async function runIntegrationTests() {
   console.log('Starting Agent to AI/ML API Integration Tests...\n');
-  
+
   const startTime = Date.now();
-  
+
   // Test individual APIs
   const demandTestPassed = await testDemandForecastAPI();
   console.log('');
-  
+
   const inventoryTestPassed = await testInventoryOptimizationAPI();
   console.log('');
-  
+
   // Summary
   const endTime = Date.now();
   const duration = endTime - startTime;
-  
+
   console.log('=== Test Summary ===');
   console.log(`Duration: ${duration}ms`);
   console.log(`Demand Forecast API: ${demandTestPassed ? '✅ PASS' : '❌ FAIL'}`);
   console.log(`Inventory Optimization API: ${inventoryTestPassed ? '✅ PASS' : '❌ FAIL'}`);
-  
+
   if (demandTestPassed && inventoryTestPassed) {
     console.log('\n🎉 All integration tests passed!');
     console.log('Backend agents can successfully communicate with AI/ML APIs.');
@@ -117,7 +123,7 @@ async function runIntegrationTests() {
 
 // Run tests if script is executed directly
 if (require.main === module) {
-  runIntegrationTests().then(success => {
+  runIntegrationTests().then((success) => {
     process.exit(success ? 0 : 1);
   });
 }

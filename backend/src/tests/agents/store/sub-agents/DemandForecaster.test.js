@@ -3,7 +3,7 @@ const DemandForecaster = require('../../../../agents/store/sub-agents/DemandFore
 describe('DemandForecaster', () => {
   const mockApiService = {
     demandForecast: jest.fn(),
-    batchDemandForecast: jest.fn()
+    batchDemandForecast: jest.fn(),
   };
   const storeId = 'STORE-001';
   let forecaster;
@@ -29,7 +29,7 @@ describe('DemandForecaster', () => {
       daily_forecasts: [14, 15, 13, 16, 14, 15, 13],
       safety_stock: 20,
       confidence_interval: { lower: 85, upper: 115 },
-      trend: 'stable'
+      trend: 'stable',
     };
 
     test('should return mapped forecast data on success', async () => {
@@ -41,7 +41,7 @@ describe('DemandForecaster', () => {
         product_id: productId,
         store_id: storeId,
         sales_data: salesData,
-        forecast_days: forecastDays
+        forecast_days: forecastDays,
       });
       expect(result).toEqual({
         productId,
@@ -50,7 +50,7 @@ describe('DemandForecaster', () => {
         safetyStock: 20,
         confidenceInterval: apiResponse.confidence_interval,
         trend: 'stable',
-        lastUpdated: expect.any(String)
+        lastUpdated: expect.any(String),
       });
     });
 
@@ -90,7 +90,7 @@ describe('DemandForecaster', () => {
 
       expect(mockApiService.batchDemandForecast).toHaveBeenCalledWith({
         items,
-        store_id: storeId
+        store_id: storeId,
       });
       expect(result).toBe(expected);
     });

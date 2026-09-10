@@ -26,12 +26,12 @@ describe('Inventory Optimizer Tests', () => {
         orderingCost: 10,
         holdingCost: 2,
         leadTime: 5,
-        currentStock: 50
-      }
+        currentStock: 50,
+      },
     ];
-    
+
     const recommendations = inventoryOptimizer.optimizeInventoryLevels(products);
-    
+
     expect(recommendations).toHaveLength(1);
     expect(recommendations[0].productId).toBe('PRODUCT-A');
     expect(recommendations[0].action).toBeDefined();

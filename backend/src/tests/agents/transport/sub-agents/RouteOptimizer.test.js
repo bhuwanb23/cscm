@@ -28,9 +28,15 @@ describe('RouteOptimizer', () => {
     const vehicles = [{ id: 'v1' }];
 
     it('should return routes on success', async () => {
-      mockApiService.routingOptimization.mockResolvedValue({ routes: [{ vehicleId: 'v1', deliveries: [{ id: 1 }] }] });
+      mockApiService.routingOptimization.mockResolvedValue({
+        routes: [{ vehicleId: 'v1', deliveries: [{ id: 1 }] }],
+      });
       const result = await optimizer.optimize(deliveries, vehicles);
-      expect(mockApiService.routingOptimization).toHaveBeenCalledWith({ deliveries, vehicles, transport_id: 42 });
+      expect(mockApiService.routingOptimization).toHaveBeenCalledWith({
+        deliveries,
+        vehicles,
+        transport_id: 42,
+      });
       expect(result).toEqual([{ vehicleId: 'v1', deliveries: [{ id: 1 }] }]);
     });
 

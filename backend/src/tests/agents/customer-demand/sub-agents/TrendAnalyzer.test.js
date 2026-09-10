@@ -8,7 +8,7 @@ describe('TrendAnalyzer', () => {
   beforeEach(() => {
     apiService = {
       demandForecast: jest.fn(),
-      customerTrends: jest.fn()
+      customerTrends: jest.fn(),
     };
     analyzer = new TrendAnalyzer(agentId, apiService);
   });
@@ -22,11 +22,7 @@ describe('TrendAnalyzer', () => {
   });
 
   describe('analyze', () => {
-    const salesData = [
-      { sales: 100 },
-      { sales: 120 },
-      { sales: 140 }
-    ];
+    const salesData = [{ sales: 100 }, { sales: 120 }, { sales: 140 }];
 
     it('should return mapped API result on success', async () => {
       const apiResult = {
@@ -34,23 +30,26 @@ describe('TrendAnalyzer', () => {
         trend: 'increasing',
         seasonality: { strength: 0.2 },
         confidence_interval: [130, 150],
-        daily_forecasts: [130, 135, 140]
+        daily_forecasts: [130, 135, 140],
       };
       apiService.demandForecast.mockResolvedValue(apiResult);
 
-      const result = await analyzer.analyze(salesData, { forecastHorizon: 7, includeSeasonality: true });
+      const result = await analyzer.analyze(salesData, {
+        forecastHorizon: 7,
+        includeSeasonality: true,
+      });
 
       expect(apiService.demandForecast).toHaveBeenCalledWith({
         sales_data: salesData,
         forecast_horizon: 7,
-        include_seasonality: true
+        include_seasonality: true,
       });
       expect(result).toEqual({
         expectedDemand: 140,
         trend: 'increasing',
         seasonality: { strength: 0.2 },
         confidenceInterval: [130, 150],
-        dailyForecasts: [130, 135, 140]
+        dailyForecasts: [130, 135, 140],
       });
     });
 
@@ -60,7 +59,7 @@ describe('TrendAnalyzer', () => {
         trend: 'stable',
         seasonality: null,
         confidence_interval: null,
-        daily_forecasts: []
+        daily_forecasts: [],
       });
 
       const result = await analyzer.analyze(salesData);
@@ -68,14 +67,17 @@ describe('TrendAnalyzer', () => {
       expect(apiService.demandForecast).toHaveBeenCalledWith({
         sales_data: salesData,
         forecast_horizon: 14,
-        include_seasonality: true
+        include_seasonality: true,
       });
     });
 
     it('should pass includeSeasonality false from options', async () => {
       apiService.demandForecast.mockResolvedValue({
-        expected_demand: 120, trend: 'stable', seasonality: null,
-        confidence_interval: null, daily_forecasts: []
+        expected_demand: 120,
+        trend: 'stable',
+        seasonality: null,
+        confidence_interval: null,
+        daily_forecasts: [],
       });
 
       await analyzer.analyze(salesData, { includeSeasonality: false });
@@ -83,7 +85,7 @@ describe('TrendAnalyzer', () => {
       expect(apiService.demandForecast).toHaveBeenCalledWith({
         sales_data: salesData,
         forecast_horizon: 14,
-        include_seasonality: false
+        include_seasonality: false,
       });
     });
 
@@ -137,11 +139,7 @@ describe('TrendAnalyzer', () => {
 
   describe('_fallbackAnalysis', () => {
     it('should compute increasing trend when last value > first', () => {
-      const salesData = [
-        { sales: 100 },
-        { sales: 150 },
-        { sales: 200 }
-      ];
+      const salesData = [{ sales: 100 }, { sales: 150 }, { sales: 200 }];
 
       const result = analyzer._fallbackAnalysis(salesData);
 
@@ -152,11 +150,7 @@ describe('TrendAnalyzer', () => {
     });
 
     it('should compute decreasing trend when last value <= first', () => {
-      const salesData = [
-        { sales: 200 },
-        { sales: 150 },
-        { sales: 100 }
-      ];
+      const salesData = [{ sales: 200 }, { sales: 150 }, { sales: 100 }];
 
       const result = analyzer._fallbackAnalysis(salesData);
 
@@ -174,10 +168,7 @@ describe('TrendAnalyzer', () => {
     });
 
     it('should fall back to value field when sales is missing', () => {
-      const salesData = [
-        { value: 50 },
-        { value: 75 }
-      ];
+      const salesData = [{ value: 50 }, { value: 75 }];
 
       const result = analyzer._fallbackAnalysis(salesData);
 
@@ -186,9 +177,7 @@ describe('TrendAnalyzer', () => {
     });
 
     it('should treat missing sales and value as 0', () => {
-      const salesData = [
-        {}
-      ];
+      const salesData = [{}];
 
       const result = analyzer._fallbackAnalysis(salesData);
 

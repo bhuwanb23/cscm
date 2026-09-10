@@ -8,7 +8,7 @@ describe('AnomalyAlerter', () => {
   beforeEach(() => {
     apiService = {
       anomalyAlert: jest.fn(),
-      call: jest.fn()
+      call: jest.fn(),
     };
     alerter = new AnomalyAlerter(plannerId, apiService);
   });
@@ -31,7 +31,7 @@ describe('AnomalyAlerter', () => {
       affected_entity: 'STORE-1',
       detected_at: '2024-01-01T00:00:00Z',
       details: { reason: 'spike' },
-      model_version: 'v1.2'
+      model_version: 'v1.2',
     };
 
     it('should return API result on success', async () => {
@@ -52,7 +52,7 @@ describe('AnomalyAlerter', () => {
         alert_id: alertId,
         severity: 'unknown',
         status: 'unknown',
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
 
@@ -67,7 +67,7 @@ describe('AnomalyAlerter', () => {
       const apiResult = {
         alerts: [{ alert_id: 'A-1' }, { alert_id: 'A-2' }],
         total: 2,
-        model_version: 'v1'
+        model_version: 'v1',
       };
       apiService.call.mockResolvedValue(apiResult);
 
@@ -161,7 +161,7 @@ describe('AnomalyAlerter', () => {
         alert_id: 'ALERT-X',
         severity: 'unknown',
         status: 'unknown',
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
   });
@@ -171,7 +171,7 @@ describe('AnomalyAlerter', () => {
       expect(alerter._fallbackList()).toEqual({
         alerts: [],
         total: 0,
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
   });

@@ -9,7 +9,7 @@ jest.mock('../../storage/sqliteDatabase', () => {
       return 1;
     }),
     getInventoryByStore: jest.fn(async (storeId) => {
-      return Object.values(store).filter(i => i.store_id === storeId);
+      return Object.values(store).filter((i) => i.store_id === storeId);
     }),
     initialize: jest.fn(),
     close: jest.fn(),
@@ -27,7 +27,7 @@ jest.mock('../../storage/sqliteDatabase', () => {
     getShipmentById: jest.fn(),
     getShipmentsByStatus: jest.fn(),
     getShipmentsByLocation: jest.fn(),
-    updateShipmentStatus: jest.fn()
+    updateShipmentStatus: jest.fn(),
   };
 });
 
@@ -56,9 +56,7 @@ describe('Inventory API', () => {
     });
 
     it('should reject without auth', async () => {
-      await request(app)
-        .get('/api/v1/inventory/STORE-001')
-        .expect(401);
+      await request(app).get('/api/v1/inventory/STORE-001').expect(401);
     });
   });
 

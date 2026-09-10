@@ -34,7 +34,9 @@ describe('Graph Algorithms Tests', () => {
     // Should have one connected component with 3 entities
     expect(components).toHaveLength(1);
     expect(components[0]).toHaveLength(3);
-    expect(components[0]).toEqual(expect.arrayContaining(['SKU-TEST-001', 'STORE-TEST-001', 'SUPPLIER-TEST-001']));
+    expect(components[0]).toEqual(
+      expect.arrayContaining(['SKU-TEST-001', 'STORE-TEST-001', 'SUPPLIER-TEST-001'])
+    );
   });
 
   test('should calculate centrality', () => {
@@ -42,17 +44,19 @@ describe('Graph Algorithms Tests', () => {
     entityModels.createSKU('SKU-TEST-001');
     entityModels.createStore('STORE-TEST-001');
     entityModels.createSupplier('SUPPLIER-TEST-001');
-    
+
     // SKU connects to both store and supplier (higher centrality)
     entityModels.createSKUStoreRelationship('SKU-TEST-001', 'STORE-TEST-001');
     entityModels.createSKUSupplierRelationship('SKU-TEST-001', 'SUPPLIER-TEST-001');
-    
+
     // Calculate centrality
     const centrality = graphAlgorithms.calculateCentrality();
 
     // SKU should have higher centrality than store and supplier
     expect(centrality['SKU-TEST-001'].degree).toBeGreaterThan(centrality['STORE-TEST-001'].degree);
-    expect(centrality['SKU-TEST-001'].degree).toBeGreaterThan(centrality['SUPPLIER-TEST-001'].degree);
+    expect(centrality['SKU-TEST-001'].degree).toBeGreaterThan(
+      centrality['SUPPLIER-TEST-001'].degree
+    );
   });
 
   test('should find most central entities', () => {
@@ -60,11 +64,11 @@ describe('Graph Algorithms Tests', () => {
     entityModels.createSKU('SKU-TEST-001');
     entityModels.createStore('STORE-TEST-001');
     entityModels.createSupplier('SUPPLIER-TEST-001');
-    
+
     // SKU connects to both store and supplier (higher centrality)
     entityModels.createSKUStoreRelationship('SKU-TEST-001', 'STORE-TEST-001');
     entityModels.createSKUSupplierRelationship('SKU-TEST-001', 'SUPPLIER-TEST-001');
-    
+
     // Find most central entities
     const centralEntities = graphAlgorithms.findMostCentralEntities(2);
 
@@ -78,7 +82,7 @@ describe('Graph Algorithms Tests', () => {
     entityModels.createSKU('SKU-TEST-001');
     entityModels.createStore('STORE-TEST-001');
     entityModels.createSKUStoreRelationship('SKU-TEST-001', 'STORE-TEST-001');
-    
+
     // Create isolated entity
     entityModels.createSupplier('SUPPLIER-TEST-001');
 
@@ -95,16 +99,16 @@ describe('Graph Algorithms Tests', () => {
     entityModels.createSKU('SKU-TEST-001');
     entityModels.createStore('STORE-TEST-001');
     entityModels.createSupplier('SUPPLIER-TEST-001');
-    
+
     // SKU connects to both store and supplier (acting as a bridge)
     entityModels.createSKUStoreRelationship('SKU-TEST-001', 'STORE-TEST-001');
     entityModels.createSKUSupplierRelationship('SKU-TEST-001', 'SUPPLIER-TEST-001');
-    
+
     // Find bridge entities
     const bridges = graphAlgorithms.findBridgeEntities();
 
     // SKU should be identified as a bridge entity
-    expect(bridges.some(bridge => bridge.id === 'SKU-TEST-001')).toBe(true);
+    expect(bridges.some((bridge) => bridge.id === 'SKU-TEST-001')).toBe(true);
   });
 
   test('should analyze supply chain clusters', () => {
@@ -129,7 +133,7 @@ describe('Graph Algorithms Tests', () => {
     entityModels.createSKU('SKU-TEST-001');
     entityModels.createStore('STORE-TEST-001');
     entityModels.createSupplier('SUPPLIER-TEST-001');
-    
+
     // Create relationships
     entityModels.createSKUStoreRelationship('SKU-TEST-001', 'STORE-TEST-001');
     entityModels.createSKUSupplierRelationship('SKU-TEST-001', 'SUPPLIER-TEST-001');

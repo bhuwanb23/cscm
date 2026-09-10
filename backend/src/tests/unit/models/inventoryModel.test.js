@@ -15,7 +15,11 @@ describe('InventoryModel', () => {
   describe('upsert', () => {
     it('should upsert item', async () => {
       sqliteDatabase.upsertInventory.mockResolvedValue(1);
-      const result = await InventoryModel.upsert({ product_id: 'P1', store_id: 'S1', quantity: 10 });
+      const result = await InventoryModel.upsert({
+        product_id: 'P1',
+        store_id: 'S1',
+        quantity: 10,
+      });
       expect(result.id).toBe(1);
       expect(result.product_id).toBe('P1');
     });
@@ -53,7 +57,9 @@ describe('InventoryModel', () => {
 
   describe('updateQuantity', () => {
     it('should update quantity', async () => {
-      sqliteDatabase.getInventoryByStore.mockResolvedValue([{ product_id: 'P1', store_id: 'S1', quantity: 10 }]);
+      sqliteDatabase.getInventoryByStore.mockResolvedValue([
+        { product_id: 'P1', store_id: 'S1', quantity: 10 },
+      ]);
       sqliteDatabase.upsertInventory.mockResolvedValue(1);
       const result = await InventoryModel.updateQuantity('P1', 'S1', 25);
       expect(result.quantity).toBe(25);
@@ -71,29 +77,39 @@ describe('InventoryModel', () => {
 
   describe('reserveQuantity', () => {
     it('should reserve quantity', async () => {
-      sqliteDatabase.getInventoryByStore.mockResolvedValue([{ product_id: 'P1', store_id: 'S1', quantity: 100, reserved_quantity: 10 }]);
+      sqliteDatabase.getInventoryByStore.mockResolvedValue([
+        { product_id: 'P1', store_id: 'S1', quantity: 100, reserved_quantity: 10 },
+      ]);
       sqliteDatabase.upsertInventory.mockResolvedValue(1);
       const result = await InventoryModel.reserveQuantity('P1', 'S1', 20);
       expect(result.reserved_quantity).toBe(30);
     });
 
     it('should throw for insufficient inventory', async () => {
-      sqliteDatabase.getInventoryByStore.mockResolvedValue([{ product_id: 'P1', store_id: 'S1', quantity: 5, reserved_quantity: 3 }]);
+      sqliteDatabase.getInventoryByStore.mockResolvedValue([
+        { product_id: 'P1', store_id: 'S1', quantity: 5, reserved_quantity: 3 },
+      ]);
       await expect(InventoryModel.reserveQuantity('P1', 'S1', 10)).rejects.toThrow('Insufficient');
     });
   });
 
   describe('releaseReservedQuantity', () => {
     it('should release reserved quantity', async () => {
-      sqliteDatabase.getInventoryByStore.mockResolvedValue([{ product_id: 'P1', store_id: 'S1', quantity: 100, reserved_quantity: 30 }]);
+      sqliteDatabase.getInventoryByStore.mockResolvedValue([
+        { product_id: 'P1', store_id: 'S1', quantity: 100, reserved_quantity: 30 },
+      ]);
       sqliteDatabase.upsertInventory.mockResolvedValue(1);
       const result = await InventoryModel.releaseReservedQuantity('P1', 'S1', 10);
       expect(result.reserved_quantity).toBe(20);
     });
 
     it('should throw for over-release', async () => {
-      sqliteDatabase.getInventoryByStore.mockResolvedValue([{ product_id: 'P1', store_id: 'S1', quantity: 100, reserved_quantity: 5 }]);
-      await expect(InventoryModel.releaseReservedQuantity('P1', 'S1', 10)).rejects.toThrow('Cannot release');
+      sqliteDatabase.getInventoryByStore.mockResolvedValue([
+        { product_id: 'P1', store_id: 'S1', quantity: 100, reserved_quantity: 5 },
+      ]);
+      await expect(InventoryModel.releaseReservedQuantity('P1', 'S1', 10)).rejects.toThrow(
+        'Cannot release'
+      );
     });
   });
 });

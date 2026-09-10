@@ -7,7 +7,7 @@ describe('BackupSupplierFinder', () => {
 
   beforeEach(() => {
     apiService = {
-      supplierBackup: jest.fn()
+      supplierBackup: jest.fn(),
     };
     finder = new BackupSupplierFinder(supplierId, apiService);
   });
@@ -30,17 +30,29 @@ describe('BackupSupplierFinder', () => {
       product_category: 'electronics',
       min_quality: 0.8,
       max_lead_time: 20,
-      region: 'APAC'
+      region: 'APAC',
     };
 
     it('should return API result on success', async () => {
       const apiResult = {
         backups: [
-          { supplier_id: 'BACKUP-A', score: 0.9, lead_time_days: 10, quality_score: 0.95, distance_km: 50 },
-          { supplier_id: 'BACKUP-B', score: 0.75, lead_time_days: 15, quality_score: 0.85, distance_km: 200 }
+          {
+            supplier_id: 'BACKUP-A',
+            score: 0.9,
+            lead_time_days: 10,
+            quality_score: 0.95,
+            distance_km: 50,
+          },
+          {
+            supplier_id: 'BACKUP-B',
+            score: 0.75,
+            lead_time_days: 15,
+            quality_score: 0.85,
+            distance_km: 200,
+          },
         ],
         total_candidates: 12,
-        model_version: 'v1.0'
+        model_version: 'v1.0',
       };
       apiService.supplierBackup.mockResolvedValue(apiResult);
 
@@ -52,8 +64,8 @@ describe('BackupSupplierFinder', () => {
           product_category: 'electronics',
           min_quality: 0.8,
           max_lead_time: 20,
-          region: 'APAC'
-        }
+          region: 'APAC',
+        },
       });
       expect(result).toEqual(apiResult);
     });
@@ -80,8 +92,8 @@ describe('BackupSupplierFinder', () => {
           product_category: undefined,
           min_quality: undefined,
           max_lead_time: undefined,
-          region: undefined
-        }
+          region: undefined,
+        },
       });
       expect(result.model_version).toBe('fallback');
     });
@@ -92,7 +104,7 @@ describe('BackupSupplierFinder', () => {
       const candidates = [
         { supplier_id: 'A', score: 0.5, quality_score: 0.8, lead_time_days: 10, distance_km: 100 },
         { supplier_id: 'B', score: 0.9, quality_score: 0.7, lead_time_days: 20, distance_km: 200 },
-        { supplier_id: 'C', score: 0.7, quality_score: 0.9, lead_time_days: 5, distance_km: 50 }
+        { supplier_id: 'C', score: 0.7, quality_score: 0.9, lead_time_days: 5, distance_km: 50 },
       ];
 
       const result = finder.rankByCriteria(candidates);
@@ -110,7 +122,7 @@ describe('BackupSupplierFinder', () => {
     it('should not mutate the input array', () => {
       const candidates = [
         { supplier_id: 'A', score: 0.5 },
-        { supplier_id: 'B', score: 0.9 }
+        { supplier_id: 'B', score: 0.9 },
       ];
       const original = [...candidates];
 
@@ -122,7 +134,7 @@ describe('BackupSupplierFinder', () => {
     it('should apply custom criteria weights', () => {
       const candidates = [
         { supplier_id: 'A', score: 0.5, quality_score: 0.95, lead_time_days: 30 },
-        { supplier_id: 'B', score: 0.9, quality_score: 0.5, lead_time_days: 5 }
+        { supplier_id: 'B', score: 0.9, quality_score: 0.5, lead_time_days: 5 },
       ];
 
       const result = finder.rankByCriteria(candidates, { score: 0.1, quality: 1.0, leadTime: 0.1 });
@@ -136,9 +148,17 @@ describe('BackupSupplierFinder', () => {
       const result = finder._fallbackBackups('SUP-100', {});
 
       expect(result).toEqual({
-        backups: [{ supplier_id: 'BACKUP-001', score: 0.7, lead_time_days: 14, quality_score: 0.8, distance_km: 100 }],
+        backups: [
+          {
+            supplier_id: 'BACKUP-001',
+            score: 0.7,
+            lead_time_days: 14,
+            quality_score: 0.8,
+            distance_km: 100,
+          },
+        ],
         total_candidates: 1,
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
   });

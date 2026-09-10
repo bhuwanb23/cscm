@@ -39,7 +39,7 @@ describe('Entity Models Tests', () => {
       name: 'Test Product',
       category: 'Electronics',
       price: 99.99,
-      createdAt: expect.any(String)
+      createdAt: expect.any(String),
     });
   });
 
@@ -59,7 +59,7 @@ describe('Entity Models Tests', () => {
       name: 'Test Store',
       location: 'New York, NY',
       capacity: 5000,
-      createdAt: expect.any(String)
+      createdAt: expect.any(String),
     });
   });
 
@@ -79,7 +79,7 @@ describe('Entity Models Tests', () => {
       name: 'Test Supplier',
       contact: 'contact@test.com',
       leadTime: 3,
-      createdAt: expect.any(String)
+      createdAt: expect.any(String),
     });
   });
 
@@ -100,7 +100,7 @@ describe('Entity Models Tests', () => {
       quantity: 50,
       minStock: 10,
       maxStock: 100,
-      lastRestocked: null
+      lastRestocked: null,
     });
   });
 
@@ -120,7 +120,7 @@ describe('Entity Models Tests', () => {
     expect(relationships[0].metadata).toEqual({
       contractStart: '2023-01-01',
       contractEnd: null,
-      preferred: true
+      preferred: true,
     });
   });
 
@@ -140,7 +140,7 @@ describe('Entity Models Tests', () => {
     expect(relationships[0].metadata).toEqual({
       cost: 79.99,
       moq: 10,
-      leadTime: 5
+      leadTime: 5,
     });
   });
 
@@ -158,7 +158,9 @@ describe('Entity Models Tests', () => {
     const skus = entityModels.getSKUsAtStore('STORE-TEST-001');
 
     expect(skus).toHaveLength(2);
-    expect(skus.map(sku => sku.id)).toEqual(expect.arrayContaining(['SKU-TEST-001', 'SKU-TEST-002']));
+    expect(skus.map((sku) => sku.id)).toEqual(
+      expect.arrayContaining(['SKU-TEST-001', 'SKU-TEST-002'])
+    );
   });
 
   test('should get stores with SKU', () => {
@@ -175,7 +177,9 @@ describe('Entity Models Tests', () => {
     const stores = entityModels.getStoresWithSKU('SKU-TEST-001');
 
     expect(stores).toHaveLength(2);
-    expect(stores.map(store => store.id)).toEqual(expect.arrayContaining(['STORE-TEST-001', 'STORE-TEST-002']));
+    expect(stores.map((store) => store.id)).toEqual(
+      expect.arrayContaining(['STORE-TEST-001', 'STORE-TEST-002'])
+    );
   });
 
   test('should get suppliers for store', () => {
@@ -192,7 +196,9 @@ describe('Entity Models Tests', () => {
     const suppliers = entityModels.getSuppliersForStore('STORE-TEST-001');
 
     expect(suppliers).toHaveLength(2);
-    expect(suppliers.map(supplier => supplier.id)).toEqual(expect.arrayContaining(['SUPPLIER-TEST-001', 'SUPPLIER-TEST-002']));
+    expect(suppliers.map((supplier) => supplier.id)).toEqual(
+      expect.arrayContaining(['SUPPLIER-TEST-001', 'SUPPLIER-TEST-002'])
+    );
   });
 
   test('should get suppliers for SKU', () => {
@@ -209,7 +215,9 @@ describe('Entity Models Tests', () => {
     const suppliers = entityModels.getSuppliersForSKU('SKU-TEST-001');
 
     expect(suppliers).toHaveLength(2);
-    expect(suppliers.map(supplier => supplier.id)).toEqual(expect.arrayContaining(['SUPPLIER-TEST-001', 'SUPPLIER-TEST-002']));
+    expect(suppliers.map((supplier) => supplier.id)).toEqual(
+      expect.arrayContaining(['SUPPLIER-TEST-001', 'SUPPLIER-TEST-002'])
+    );
   });
 
   test('should get SKUs from supplier', () => {
@@ -226,7 +234,9 @@ describe('Entity Models Tests', () => {
     const skus = entityModels.getSKUsFromSupplier('SUPPLIER-TEST-001');
 
     expect(skus).toHaveLength(2);
-    expect(skus.map(sku => sku.id)).toEqual(expect.arrayContaining(['SKU-TEST-001', 'SKU-TEST-002']));
+    expect(skus.map((sku) => sku.id)).toEqual(
+      expect.arrayContaining(['SKU-TEST-001', 'SKU-TEST-002'])
+    );
   });
 
   test('should find supply chain path', () => {
@@ -241,7 +251,7 @@ describe('Entity Models Tests', () => {
 
     // Find path (this will just test that the function works)
     const path = entityModels.findSupplyChainPath('SKU-TEST-001', 'SUPPLIER-TEST-001');
-    
+
     // Since we're using a simple graph, we expect a direct path
     expect(path).toEqual(['SKU-TEST-001', 'SUPPLIER-TEST-001']);
   });

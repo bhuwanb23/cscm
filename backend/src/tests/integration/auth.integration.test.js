@@ -12,7 +12,7 @@ jest.mock('../../storage/sqliteDatabase', () => {
       return id;
     }),
     findUserByUsername: jest.fn(async (username) => users[username] || null),
-    findUserById: jest.fn(async (id) => Object.values(users).find(u => u.id === id) || null),
+    findUserById: jest.fn(async (id) => Object.values(users).find((u) => u.id === id) || null),
     initialize: jest.fn(),
     close: jest.fn(),
     upsertInventory: jest.fn(),
@@ -39,10 +39,7 @@ describe('Auth Integration', () => {
 
   it('should register, login, and get profile', async () => {
     // Register
-    const regRes = await request(app)
-      .post('/api/v1/auth/register')
-      .send(testUser)
-      .expect(201);
+    const regRes = await request(app).post('/api/v1/auth/register').send(testUser).expect(201);
 
     expect(regRes.body.success).toBe(true);
     expect(regRes.body.data.token).toBeDefined();
@@ -67,15 +64,10 @@ describe('Auth Integration', () => {
   });
 
   it('should reject profile without token', async () => {
-    await request(app)
-      .get('/api/v1/auth/profile')
-      .expect(401);
+    await request(app).get('/api/v1/auth/profile').expect(401);
   });
 
   it('should reject duplicate registration', async () => {
-    await request(app)
-      .post('/api/v1/auth/register')
-      .send(testUser)
-      .expect(409);
+    await request(app).post('/api/v1/auth/register').send(testUser).expect(409);
   });
 });

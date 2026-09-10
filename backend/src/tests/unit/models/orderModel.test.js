@@ -26,7 +26,8 @@ describe('OrderModel', () => {
       sqliteDatabase.createOrder.mockResolvedValue(1);
       sqliteDatabase.addOrderItem.mockResolvedValue(1);
       await OrderModel.create({
-        order_id: 'ORD-1', store_id: 'S1',
+        order_id: 'ORD-1',
+        store_id: 'S1',
         items: [{ product_id: 'P1', quantity: 2, unit_price: 10 }],
       });
       expect(sqliteDatabase.addOrderItem).toHaveBeenCalled();

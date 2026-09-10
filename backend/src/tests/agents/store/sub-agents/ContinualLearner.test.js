@@ -8,7 +8,7 @@ describe('ContinualLearner', () => {
   beforeEach(() => {
     apiService = {
       strategicUpdate: jest.fn(),
-      call: jest.fn()
+      call: jest.fn(),
     };
     learner = new ContinualLearner(storeId, apiService);
   });
@@ -30,7 +30,7 @@ describe('ContinualLearner', () => {
       const apiResult = {
         model_version: 'v2',
         training_metrics: { loss: 0.1, accuracy: 0.95, samples_seen: 100 },
-        updated_at: '2024-01-01T00:00:00Z'
+        updated_at: '2024-01-01T00:00:00Z',
       };
       apiService.strategicUpdate.mockResolvedValue(apiResult);
 
@@ -39,7 +39,7 @@ describe('ContinualLearner', () => {
       expect(apiService.strategicUpdate).toHaveBeenCalledWith({
         model_state: modelState,
         new_data: newData,
-        learning_rate: 0.01
+        learning_rate: 0.01,
       });
       expect(result).toEqual(apiResult);
     });
@@ -49,7 +49,7 @@ describe('ContinualLearner', () => {
       apiService.strategicUpdate.mockResolvedValue({
         model_version: 'v2',
         training_metrics: { loss: 0, accuracy: 0, samples_seen: 0 },
-        updated_at: 't'
+        updated_at: 't',
       });
 
       await learner.strategicUpdate(stateNoLr, newData);
@@ -68,12 +68,16 @@ describe('ContinualLearner', () => {
     });
 
     it('should throw when modelState is missing', async () => {
-      await expect(learner.strategicUpdate(null, newData)).rejects.toThrow('modelState is required');
+      await expect(learner.strategicUpdate(null, newData)).rejects.toThrow(
+        'modelState is required'
+      );
       expect(apiService.strategicUpdate).not.toHaveBeenCalled();
     });
 
     it('should throw when newData is missing', async () => {
-      await expect(learner.strategicUpdate(modelState, null)).rejects.toThrow('newData is required');
+      await expect(learner.strategicUpdate(modelState, null)).rejects.toThrow(
+        'newData is required'
+      );
       expect(apiService.strategicUpdate).not.toHaveBeenCalled();
     });
 
@@ -114,7 +118,7 @@ describe('ContinualLearner', () => {
         model_id: modelId,
         status: 'unknown',
         last_update: null,
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
 

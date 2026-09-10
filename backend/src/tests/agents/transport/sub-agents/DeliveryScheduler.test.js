@@ -27,14 +27,25 @@ describe('DeliveryScheduler', () => {
     const vehicles = [{ id: 'v1' }];
 
     it('should return routes on success', async () => {
-      mockApiService.routingOptimization.mockResolvedValue({ routes: [{ deliveryId: 1, scheduledTime: '2026-06-04T12:00:00Z', status: 'scheduled' }] });
+      mockApiService.routingOptimization.mockResolvedValue({
+        routes: [{ deliveryId: 1, scheduledTime: '2026-06-04T12:00:00Z', status: 'scheduled' }],
+      });
       const result = await scheduler.schedule(deliveries, timeWindows, vehicles);
-      expect(mockApiService.routingOptimization).toHaveBeenCalledWith({ deliveries, time_windows: timeWindows, vehicles, transport_id: 7 });
-      expect(result).toEqual([{ deliveryId: 1, scheduledTime: '2026-06-04T12:00:00Z', status: 'scheduled' }]);
+      expect(mockApiService.routingOptimization).toHaveBeenCalledWith({
+        deliveries,
+        time_windows: timeWindows,
+        vehicles,
+        transport_id: 7,
+      });
+      expect(result).toEqual([
+        { deliveryId: 1, scheduledTime: '2026-06-04T12:00:00Z', status: 'scheduled' },
+      ]);
     });
 
     it('should throw if deliveries is empty', async () => {
-      await expect(scheduler.schedule([], timeWindows, vehicles)).rejects.toThrow('deliveries are required');
+      await expect(scheduler.schedule([], timeWindows, vehicles)).rejects.toThrow(
+        'deliveries are required'
+      );
     });
 
     it('should throw if deliveries is null', async () => {

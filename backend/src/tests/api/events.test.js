@@ -3,7 +3,7 @@ const request = require('supertest');
 jest.mock('../../messaging', () => ({
   publishMessage: jest.fn().mockResolvedValue(undefined),
   subscribeToTopic: jest.fn().mockResolvedValue(undefined),
-  initialize: jest.fn().mockResolvedValue(undefined)
+  initialize: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('../../storage/sqliteDatabase', () => ({
@@ -25,7 +25,7 @@ jest.mock('../../storage/sqliteDatabase', () => ({
   getShipmentById: jest.fn(),
   getShipmentsByStatus: jest.fn(),
   getShipmentsByLocation: jest.fn(),
-  updateShipmentStatus: jest.fn()
+  updateShipmentStatus: jest.fn(),
 }));
 
 const jwt = require('jsonwebtoken');
@@ -51,7 +51,7 @@ describe('Events API', () => {
         sourceId: 'SENSOR-001',
         eventType: 'temperature_reading',
         payload: { temperature: 22.5, humidity: 45 },
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
 
       const res = await request(app)
@@ -65,10 +65,13 @@ describe('Events API', () => {
       expect(res.body.data.sourceId).toBe('SENSOR-001');
       expect(res.body.data.eventType).toBe('temperature_reading');
       expect(res.body.data.timestamp).toBeDefined();
-      expect(messagingLayer.publishMessage).toHaveBeenCalledWith('telemetry.events', expect.objectContaining({
-        sourceId: 'SENSOR-001',
-        eventType: 'temperature_reading'
-      }));
+      expect(messagingLayer.publishMessage).toHaveBeenCalledWith(
+        'telemetry.events',
+        expect.objectContaining({
+          sourceId: 'SENSOR-001',
+          eventType: 'temperature_reading',
+        })
+      );
     });
 
     it('should reject telemetry event without sourceId', async () => {
@@ -114,7 +117,7 @@ describe('Events API', () => {
           sourceId: 'SENSOR-001',
           eventType: 'temperature_reading',
           payload: { temperature: 22.5 },
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         })
         .expect(500);
 
@@ -128,7 +131,7 @@ describe('Events API', () => {
       storeId: 'STORE-001',
       quantity: 50,
       eventType: 'STOCK_UPDATE',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     it('should publish a valid inventory event', async () => {
@@ -142,11 +145,14 @@ describe('Events API', () => {
       expect(res.body.data.productId).toBe('PROD-001');
       expect(res.body.data.storeId).toBe('STORE-001');
       expect(res.body.data.quantity).toBe(50);
-      expect(messagingLayer.publishMessage).toHaveBeenCalledWith('inventory.events', expect.objectContaining({
-        productId: 'PROD-001',
-        storeId: 'STORE-001',
-        quantity: 50
-      }));
+      expect(messagingLayer.publishMessage).toHaveBeenCalledWith(
+        'inventory.events',
+        expect.objectContaining({
+          productId: 'PROD-001',
+          storeId: 'STORE-001',
+          quantity: 50,
+        })
+      );
     });
 
     it('should reject inventory event missing productId', async () => {
@@ -212,7 +218,7 @@ describe('Events API', () => {
       items: [{ productId: 'PROD-001', quantity: 2, price: 10 }],
       totalAmount: 20,
       status: 'PENDING',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     it('should publish a valid order event', async () => {
@@ -224,10 +230,13 @@ describe('Events API', () => {
 
       expect(res.body.success).toBe(true);
       expect(res.body.data.orderId).toBe('ORD-001');
-      expect(messagingLayer.publishMessage).toHaveBeenCalledWith('orders.events', expect.objectContaining({
-        orderId: 'ORD-001',
-        totalAmount: 20
-      }));
+      expect(messagingLayer.publishMessage).toHaveBeenCalledWith(
+        'orders.events',
+        expect.objectContaining({
+          orderId: 'ORD-001',
+          totalAmount: 20,
+        })
+      );
     });
 
     it('should reject order event missing orderId', async () => {
@@ -316,7 +325,14 @@ describe('Events API', () => {
     it('should reject unauthenticated order request', async () => {
       await request(app)
         .post('/api/v1/events/orders')
-        .send({ orderId: 'o', customerId: 'c', items: [], totalAmount: 0, status: 'PENDING', timestamp: new Date().toISOString() })
+        .send({
+          orderId: 'o',
+          customerId: 'c',
+          items: [],
+          totalAmount: 0,
+          status: 'PENDING',
+          timestamp: new Date().toISOString(),
+        })
         .expect(401);
     });
   });

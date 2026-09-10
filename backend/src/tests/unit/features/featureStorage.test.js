@@ -81,7 +81,9 @@ describe('FeatureStorage', () => {
     });
 
     it('should throw for non-function', () => {
-      expect(() => FeatureStorage.registerTransformation('bad', 'not a function')).toThrow('function');
+      expect(() => FeatureStorage.registerTransformation('bad', 'not a function')).toThrow(
+        'function'
+      );
     });
   });
 

@@ -7,7 +7,7 @@ describe('PerformanceTracker', () => {
 
   beforeEach(() => {
     apiService = {
-      supplierRiskAssessment: jest.fn()
+      supplierRiskAssessment: jest.fn(),
     };
     tracker = new PerformanceTracker(supplierId, apiService);
   });
@@ -61,7 +61,11 @@ describe('PerformanceTracker', () => {
     });
 
     it('should return the summary after tracking', () => {
-      const result = tracker.trackMetrics({ onTimeDelivery: 0.95, qualityScore: 0.9, leadTimeDays: 5 });
+      const result = tracker.trackMetrics({
+        onTimeDelivery: 0.95,
+        qualityScore: 0.9,
+        leadTimeDays: 5,
+      });
 
       expect(result).toHaveProperty('onTimeDeliveryRate');
       expect(result).toHaveProperty('qualityScore');
@@ -80,7 +84,7 @@ describe('PerformanceTracker', () => {
         onTimeDeliveryRate: 0,
         qualityScore: 0,
         averageLeadTime: 0,
-        dataPoints: 0
+        dataPoints: 0,
       });
     });
 
@@ -95,7 +99,7 @@ describe('PerformanceTracker', () => {
     it('should compute averages from stored metrics', () => {
       tracker.state.metrics = [
         { onTimeDelivery: 0.9, qualityScore: 0.8, leadTimeDays: 5 },
-        { onTimeDelivery: 1.0, qualityScore: 1.0, leadTimeDays: 3 }
+        { onTimeDelivery: 1.0, qualityScore: 1.0, leadTimeDays: 3 },
       ];
 
       const result = tracker.summarize();
@@ -108,9 +112,7 @@ describe('PerformanceTracker', () => {
     });
 
     it('should treat missing qualityScore as 1', () => {
-      tracker.state.metrics = [
-        { onTimeDelivery: 0.9, leadTimeDays: 5 }
-      ];
+      tracker.state.metrics = [{ onTimeDelivery: 0.9, leadTimeDays: 5 }];
 
       const result = tracker.summarize();
 
@@ -118,10 +120,7 @@ describe('PerformanceTracker', () => {
     });
 
     it('should treat missing values as 0', () => {
-      tracker.state.metrics = [
-        {},
-        {}
-      ];
+      tracker.state.metrics = [{}, {}];
 
       const result = tracker.summarize();
 
@@ -140,7 +139,7 @@ describe('PerformanceTracker', () => {
 
       expect(apiService.supplierRiskAssessment).toHaveBeenCalledWith({
         supplier_id: supplierId,
-        days: 30
+        days: 30,
       });
       expect(result).toEqual(apiResult);
     });
@@ -152,14 +151,12 @@ describe('PerformanceTracker', () => {
 
       expect(apiService.supplierRiskAssessment).toHaveBeenCalledWith({
         supplier_id: supplierId,
-        days: 90
+        days: 90,
       });
     });
 
     it('should fallback to summarize() when API throws', async () => {
-      tracker.state.metrics = [
-        { onTimeDelivery: 0.95, qualityScore: 0.9, leadTimeDays: 4 }
-      ];
+      tracker.state.metrics = [{ onTimeDelivery: 0.95, qualityScore: 0.9, leadTimeDays: 4 }];
       apiService.supplierRiskAssessment.mockRejectedValue(new Error('API down'));
 
       const result = await tracker.getHistoricalMetrics();

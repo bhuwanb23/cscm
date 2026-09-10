@@ -19,7 +19,11 @@ describe('ShipmentModel', () => {
   describe('create', () => {
     it('should create shipment', async () => {
       sqliteDatabase.createShipment.mockResolvedValue(1);
-      const result = await ShipmentModel.create({ shipment_id: 'SHP-1', from_location: 'A', to_location: 'B' });
+      const result = await ShipmentModel.create({
+        shipment_id: 'SHP-1',
+        from_location: 'A',
+        to_location: 'B',
+      });
       expect(result.shipment_id).toBe('SHP-1');
     });
 
@@ -27,7 +31,9 @@ describe('ShipmentModel', () => {
       sqliteDatabase.createShipment.mockResolvedValue(1);
       sqliteDatabase.addShipmentItem.mockResolvedValue(1);
       await ShipmentModel.create({
-        shipment_id: 'SHP-1', from_location: 'A', to_location: 'B',
+        shipment_id: 'SHP-1',
+        from_location: 'A',
+        to_location: 'B',
         items: [{ product_id: 'P1', quantity: 5 }],
       });
       expect(sqliteDatabase.addShipmentItem).toHaveBeenCalled();

@@ -6,13 +6,34 @@ jest.mock('../../../storage/sqliteDatabase', () => ({
   getInventoryByStore: jest.fn(),
   initialize: jest.fn(),
 }));
-jest.mock('../../../utils/logger', () => ({ info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() }));
+jest.mock('../../../utils/logger', () => ({
+  info: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+}));
 
-const { getByStore, getItem, upsert, updateQuantity } = require('../../../api/controllers/inventoryController');
+const {
+  getByStore,
+  getItem,
+  upsert,
+  updateQuantity,
+} = require('../../../api/controllers/inventoryController');
 const sqliteDatabase = require('../../../storage/sqliteDatabase');
 
 function mockRes() {
-  return { statusCode: null, body: null, status(c) { this.statusCode = c; return this; }, json(d) { this.body = d; return this; } };
+  return {
+    statusCode: null,
+    body: null,
+    status(c) {
+      this.statusCode = c;
+      return this;
+    },
+    json(d) {
+      this.body = d;
+      return this;
+    },
+  };
 }
 
 describe('Inventory Controller', () => {
@@ -73,7 +94,9 @@ describe('Inventory Controller', () => {
 
   describe('updateQuantity', () => {
     it('should update quantity', async () => {
-      sqliteDatabase.getInventoryByStore.mockResolvedValue([{ product_id: 'P1', store_id: 'S1', quantity: 10 }]);
+      sqliteDatabase.getInventoryByStore.mockResolvedValue([
+        { product_id: 'P1', store_id: 'S1', quantity: 10 },
+      ]);
       sqliteDatabase.upsertInventory.mockResolvedValue(1);
       const req = { params: { storeId: 'S1', productId: 'P1' }, body: { quantity: 25 } };
       const res = mockRes();

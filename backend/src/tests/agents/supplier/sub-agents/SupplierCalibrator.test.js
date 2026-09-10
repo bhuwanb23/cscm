@@ -7,7 +7,7 @@ describe('SupplierCalibrator', () => {
 
   beforeEach(() => {
     apiService = {
-      supplierCalibrate: jest.fn()
+      supplierCalibrate: jest.fn(),
     };
     calibrator = new SupplierCalibrator(supplierId, apiService);
   });
@@ -31,18 +31,18 @@ describe('SupplierCalibrator', () => {
   describe('calibrate', () => {
     const historicalAssessments = [
       { id: 'A1', score: 30, label: 'low' },
-      { id: 'A2', score: 65, label: 'medium' }
+      { id: 'A2', score: 65, label: 'medium' },
     ];
     const groundTruth = [
       { id: 'A1', actual: 'low' },
-      { id: 'A2', actual: 'high' }
+      { id: 'A2', actual: 'high' },
     ];
 
     it('should return API result on success', async () => {
       const apiResult = {
         calibration_score: 0.82,
         threshold_adjustments: { low: 28, medium: 58, high: 78 },
-        model_version: 'v2.1'
+        model_version: 'v2.1',
       };
       apiService.supplierCalibrate.mockResolvedValue(apiResult);
 
@@ -50,7 +50,7 @@ describe('SupplierCalibrator', () => {
 
       expect(apiService.supplierCalibrate).toHaveBeenCalledWith({
         assessments: historicalAssessments,
-        ground_truth: groundTruth
+        ground_truth: groundTruth,
       });
       expect(result).toEqual(apiResult);
     });
@@ -77,7 +77,11 @@ describe('SupplierCalibrator', () => {
 
   describe('getCalibrationStatus', () => {
     it('should return API result on success', async () => {
-      const apiResult = { last_calibrated: '2024-03-01T00:00:00Z', sample_size: 500, drift_detected: false };
+      const apiResult = {
+        last_calibrated: '2024-03-01T00:00:00Z',
+        sample_size: 500,
+        drift_detected: false,
+      };
       apiService.supplierCalibrate.mockResolvedValue(apiResult);
 
       const result = await calibrator.getCalibrationStatus();
@@ -95,7 +99,7 @@ describe('SupplierCalibrator', () => {
         last_calibrated: null,
         sample_size: 0,
         drift_detected: false,
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
   });
@@ -107,7 +111,7 @@ describe('SupplierCalibrator', () => {
       expect(result).toEqual({
         calibration_score: 0.5,
         threshold_adjustments: { low: 30, medium: 60, high: 80 },
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
   });
@@ -120,7 +124,7 @@ describe('SupplierCalibrator', () => {
         last_calibrated: null,
         sample_size: 0,
         drift_detected: false,
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
   });

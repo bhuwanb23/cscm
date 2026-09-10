@@ -1,11 +1,11 @@
-const { 
-  StoreAgent, 
-  WarehouseAgent, 
-  TransportAgent, 
-  CentralPlannerAgent, 
+const {
+  StoreAgent,
+  WarehouseAgent,
+  TransportAgent,
+  CentralPlannerAgent,
   SimulationAgent,
   SupplierAgent,
-  CustomerDemandAgent
+  CustomerDemandAgent,
 } = require('../../agents');
 
 describe('Agent Initialization Tests', () => {

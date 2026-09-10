@@ -8,7 +8,7 @@ describe('SourcingAdvisor', () => {
   beforeEach(() => {
     apiService = {
       sourcingRecommendations: jest.fn(),
-      supplierGraphRisk: jest.fn()
+      supplierGraphRisk: jest.fn(),
     };
     advisor = new SourcingAdvisor(supplierId, apiService);
   });
@@ -27,14 +27,16 @@ describe('SourcingAdvisor', () => {
 
   describe('recommend', () => {
     const supplierData = {
-      historical_performance: [
-        { quality_score: 0.9 },
-        { quality_score: 0.85 }
-      ]
+      historical_performance: [{ quality_score: 0.9 }, { quality_score: 0.85 }],
     };
 
     it('should return API result on success', async () => {
-      const apiResult = { recommended: true, confidence: 0.9, reason: 'Good performance', alternatives: [] };
+      const apiResult = {
+        recommended: true,
+        confidence: 0.9,
+        reason: 'Good performance',
+        alternatives: [],
+      };
       apiService.sourcingRecommendations.mockResolvedValue(apiResult);
 
       const result = await advisor.recommend(supplierData);
@@ -80,13 +82,21 @@ describe('SourcingAdvisor', () => {
     it('should return low confidence recommendation when performance is empty', () => {
       const result = advisor._fallbackRecommendation({ historical_performance: [] });
 
-      expect(result).toEqual({ recommended: true, confidence: 0.5, reason: 'Insufficient data for evaluation' });
+      expect(result).toEqual({
+        recommended: true,
+        confidence: 0.5,
+        reason: 'Insufficient data for evaluation',
+      });
     });
 
     it('should return low confidence recommendation when performance is missing', () => {
       const result = advisor._fallbackRecommendation({});
 
-      expect(result).toEqual({ recommended: true, confidence: 0.5, reason: 'Insufficient data for evaluation' });
+      expect(result).toEqual({
+        recommended: true,
+        confidence: 0.5,
+        reason: 'Insufficient data for evaluation',
+      });
     });
 
     it('should recommend when average quality is above 0.8', () => {
@@ -94,8 +104,8 @@ describe('SourcingAdvisor', () => {
         historical_performance: [
           { quality_score: 0.9 },
           { quality_score: 0.85 },
-          { quality_score: 0.95 }
-        ]
+          { quality_score: 0.95 },
+        ],
       };
 
       const result = advisor._fallbackRecommendation(data);
@@ -108,10 +118,7 @@ describe('SourcingAdvisor', () => {
 
     it('should not recommend when average quality is 0.8 or below', () => {
       const data = {
-        historical_performance: [
-          { quality_score: 0.7 },
-          { quality_score: 0.6 }
-        ]
+        historical_performance: [{ quality_score: 0.7 }, { quality_score: 0.6 }],
       };
 
       const result = advisor._fallbackRecommendation(data);
@@ -123,10 +130,7 @@ describe('SourcingAdvisor', () => {
 
     it('should treat missing quality_score as 1.0', () => {
       const data = {
-        historical_performance: [
-          { someField: 'value' },
-          { someField: 'value2' }
-        ]
+        historical_performance: [{ someField: 'value' }, { someField: 'value2' }],
       };
 
       const result = advisor._fallbackRecommendation(data);

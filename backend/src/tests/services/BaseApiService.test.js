@@ -9,7 +9,12 @@ beforeEach(() => {
   mockClient = jest.fn();
   mockClient.get = jest.fn();
   axios.create.mockReturnValue(mockClient);
-  service = new BaseApiService({ baseUrl: 'http://test:9999', cacheTtlMs: 5000, maxCircuitFailures: 3, circuitCooldownMs: 10000 });
+  service = new BaseApiService({
+    baseUrl: 'http://test:9999',
+    cacheTtlMs: 5000,
+    maxCircuitFailures: 3,
+    circuitCooldownMs: 10000,
+  });
 });
 
 describe('constructor', () => {
@@ -60,9 +65,11 @@ describe('_buildClient', () => {
   test('creates axios instance with auth token', () => {
     const s = new BaseApiService({ baseUrl: 'http://x', authToken: 'tok' });
     s._buildClient();
-    expect(axios.create).toHaveBeenCalledWith(expect.objectContaining({
-      headers: expect.objectContaining({ Authorization: 'Bearer tok' })
-    }));
+    expect(axios.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: 'Bearer tok' }),
+      })
+    );
   });
 });
 

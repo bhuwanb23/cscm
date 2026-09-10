@@ -8,7 +8,7 @@ describe('DecisionModels', () => {
     it('should return forecasts', () => {
       const forecasts = DecisionModels.simpleForecast([10, 20, 30], 3);
       expect(forecasts.length).toBe(3);
-      forecasts.forEach(f => expect(f).toBeGreaterThanOrEqual(0));
+      forecasts.forEach((f) => expect(f).toBeGreaterThanOrEqual(0));
     });
 
     it('should handle empty data', () => {
@@ -25,21 +25,30 @@ describe('DecisionModels', () => {
   describe('assessRisk', () => {
     it('should classify low risk', () => {
       const risk = DecisionModels.assessRisk({
-        inventoryLevel: 100, demandRate: 10, leadTime: 2, supplierReliability: 0.99,
+        inventoryLevel: 100,
+        demandRate: 10,
+        leadTime: 2,
+        supplierReliability: 0.99,
       });
       expect(risk).toBe('low');
     });
 
     it('should classify high risk', () => {
       const risk = DecisionModels.assessRisk({
-        inventoryLevel: 5, demandRate: 150, leadTime: 15, supplierReliability: 0.5,
+        inventoryLevel: 5,
+        demandRate: 150,
+        leadTime: 15,
+        supplierReliability: 0.5,
       });
       expect(risk).toBe('high');
     });
 
     it('should classify medium risk', () => {
       const risk = DecisionModels.assessRisk({
-        inventoryLevel: 20, demandRate: 60, leadTime: 8, supplierReliability: 0.85,
+        inventoryLevel: 20,
+        demandRate: 60,
+        leadTime: 8,
+        supplierReliability: 0.85,
       });
       expect(risk).toBe('medium');
     });

@@ -46,7 +46,7 @@ describe('InventoryOptimizer', () => {
     it('should return correct z-scores', () => {
       expect(InventoryOptimizer.getZScore(0.95)).toBe(1.645);
       expect(InventoryOptimizer.getZScore(0.99)).toBe(2.33);
-      expect(InventoryOptimizer.getZScore(0.90)).toBe(1.28);
+      expect(InventoryOptimizer.getZScore(0.9)).toBe(1.28);
     });
 
     it('should default to 1.645 for unknown', () => {
@@ -56,15 +56,17 @@ describe('InventoryOptimizer', () => {
 
   describe('optimizeInventoryLevels', () => {
     it('should generate recommendations', () => {
-      const products = [{
-        productId: 'P1',
-        annualDemand: 1000,
-        dailyDemand: 3,
-        orderingCost: 50,
-        holdingCost: 2,
-        leadTime: 7,
-        currentStock: 10,
-      }];
+      const products = [
+        {
+          productId: 'P1',
+          annualDemand: 1000,
+          dailyDemand: 3,
+          orderingCost: 50,
+          holdingCost: 2,
+          leadTime: 7,
+          currentStock: 10,
+        },
+      ];
       const recs = InventoryOptimizer.optimizeInventoryLevels(products);
       expect(recs.length).toBe(1);
       expect(recs[0].productId).toBe('P1');

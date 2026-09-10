@@ -3,7 +3,7 @@ const DeliveryCoordinator = require('../../../../agents/central-planner/sub-agen
 describe('DeliveryCoordinator', () => {
   const mockApiService = {
     coordinationPlan: jest.fn(),
-    coordinationStatus: jest.fn()
+    coordinationStatus: jest.fn(),
   };
   const agentId = 'CP-001';
   let coordinator;
@@ -31,7 +31,7 @@ describe('DeliveryCoordinator', () => {
 
       expect(mockApiService.coordinationPlan).toHaveBeenCalledWith({
         assignments,
-        transporters
+        transporters,
       });
       expect(result).toEqual(apiResult);
     });
@@ -74,7 +74,7 @@ describe('DeliveryCoordinator', () => {
       expect(result).toEqual({
         planId,
         status: 'unknown',
-        timestamp: expect.any(String)
+        timestamp: expect.any(String),
       });
     });
   });
@@ -83,7 +83,7 @@ describe('DeliveryCoordinator', () => {
     const transporters = [
       { id: 'T-1', status: 'busy', priorityScore: 5 },
       { id: 'T-2', status: 'available', priorityScore: 3 },
-      { id: 'T-3', status: 'available', priorityScore: 8 }
+      { id: 'T-3', status: 'available', priorityScore: 8 },
     ];
 
     test('should return first available transporter for normal urgency', () => {

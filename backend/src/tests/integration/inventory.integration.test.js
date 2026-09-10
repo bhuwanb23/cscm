@@ -14,7 +14,7 @@ jest.mock('../../storage/sqliteDatabase', () => {
       return store[key].id;
     }),
     getInventoryByStore: jest.fn(async (storeId) => {
-      return Object.values(store).filter(i => i.store_id === storeId);
+      return Object.values(store).filter((i) => i.store_id === storeId);
     }),
     initialize: jest.fn(),
     close: jest.fn(),
@@ -66,9 +66,7 @@ describe('Inventory Integration', () => {
   });
 
   it('should reject without auth', async () => {
-    await request(app)
-      .get('/api/v1/inventory/INT-S1')
-      .expect(401);
+    await request(app).get('/api/v1/inventory/INT-S1').expect(401);
   });
 
   it('should reject upsert with missing fields', async () => {

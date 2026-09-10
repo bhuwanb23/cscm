@@ -17,10 +17,10 @@ describe('Local Storage Tests', () => {
   test('should save and load data correctly', () => {
     // Save data
     localStorage.save(testFileName, testData);
-    
+
     // Load data
     const loadedData = localStorage.load(testFileName);
-    
+
     expect(loadedData).toEqual(testData);
   });
 
@@ -32,10 +32,10 @@ describe('Local Storage Tests', () => {
   test('should correctly check file existence', () => {
     // File should not exist initially
     expect(localStorage.exists(testFileName)).toBe(false);
-    
+
     // Save data
     localStorage.save(testFileName, testData);
-    
+
     // File should now exist
     expect(localStorage.exists(testFileName)).toBe(true);
   });
@@ -43,23 +43,23 @@ describe('Local Storage Tests', () => {
   test('should list files correctly', () => {
     // Save some test data
     localStorage.save(testFileName, testData);
-    
+
     // List files
     const files = localStorage.list();
-    
+
     expect(files).toContain(testFileName);
   });
 
   test('should delete files correctly', () => {
     // Save data
     localStorage.save(testFileName, testData);
-    
+
     // Verify file exists
     expect(localStorage.exists(testFileName)).toBe(true);
-    
+
     // Delete file
     localStorage.delete(testFileName);
-    
+
     // Verify file no longer exists
     expect(localStorage.exists(testFileName)).toBe(false);
   });

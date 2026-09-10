@@ -3,18 +3,40 @@ const { app, isAiMlPath } = require('../../gateway/gateway');
 
 describe('isAiMlPath()', () => {
   test('routes AI/ML domains to Python', () => {
-    const aiDomains = ['demand', 'demand-planning', 'routing', 'supplier',
-      'customer', 'anomaly', 'coordination', 'simulation', 'explain',
-      'nlp', 'kg', 'causal', 'vision', 'learning', 'uncertainty', 'monitoring'];
-    aiDomains.forEach(domain => {
+    const aiDomains = [
+      'demand',
+      'demand-planning',
+      'routing',
+      'supplier',
+      'customer',
+      'anomaly',
+      'coordination',
+      'simulation',
+      'explain',
+      'nlp',
+      'kg',
+      'causal',
+      'vision',
+      'learning',
+      'uncertainty',
+      'monitoring',
+    ];
+    aiDomains.forEach((domain) => {
       expect(isAiMlPath(`/api/v1/${domain}/forecast`)).toBe(true);
     });
   });
 
   test('routes inventory AI actions to Python', () => {
-    const actions = ['optimize', 'recommendation', 'ss-policy',
-      'stochastic-optimize', 'rl-train', 'mip-optimize', 'batch-optimize'];
-    actions.forEach(action => {
+    const actions = [
+      'optimize',
+      'recommendation',
+      'ss-policy',
+      'stochastic-optimize',
+      'rl-train',
+      'mip-optimize',
+      'batch-optimize',
+    ];
+    actions.forEach((action) => {
       expect(isAiMlPath(`/api/v1/inventory/${action}`)).toBe(true);
     });
   });
@@ -27,7 +49,7 @@ describe('isAiMlPath()', () => {
 
   test('routes Node.js CRUD domains to Node.js', () => {
     const crudDomains = ['auth', 'events', 'orders', 'shipments'];
-    crudDomains.forEach(domain => {
+    crudDomains.forEach((domain) => {
       expect(isAiMlPath(`/api/v1/${domain}/anything`)).toBe(false);
     });
   });

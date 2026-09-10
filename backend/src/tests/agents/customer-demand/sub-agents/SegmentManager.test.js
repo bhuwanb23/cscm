@@ -9,7 +9,7 @@ describe('SegmentManager', () => {
     apiService = {
       naturalLanguageProcessing: jest.fn(),
       segmentSimilarity: jest.fn(),
-      causalInference: jest.fn()
+      causalInference: jest.fn(),
     };
     manager = new SegmentManager(agentId, apiService);
   });
@@ -27,7 +27,7 @@ describe('SegmentManager', () => {
       { id: 1, totalSpending: 1500 },
       { id: 2, totalSpending: 700 },
       { id: 3, totalSpending: 200 },
-      { id: 4, totalSpending: 500 }
+      { id: 4, totalSpending: 500 },
     ];
 
     it('should return API result segments when present', async () => {
@@ -81,7 +81,7 @@ describe('SegmentManager', () => {
 
       expect(apiService.segmentSimilarity).toHaveBeenCalledWith({
         segment_a: segmentA,
-        segment_b: segmentB
+        segment_b: segmentB,
       });
       expect(result).toEqual(apiResult);
     });
@@ -122,7 +122,7 @@ describe('SegmentManager', () => {
       const customers = [
         { id: 1, totalSpending: 1500 },
         { id: 2, totalSpending: 700 },
-        { id: 3, totalSpending: 200 }
+        { id: 3, totalSpending: 200 },
       ];
 
       const result = manager._fallbackSegmentation(customers);
@@ -130,21 +130,21 @@ describe('SegmentManager', () => {
       expect(result).toEqual({
         premium: [1],
         standard: [2],
-        budget: [3]
+        budget: [3],
       });
     });
 
     it('should use spending field when totalSpending is missing', () => {
       const customers = [
         { customerId: 'C1', spending: 1200 },
-        { customerId: 'C2', spending: 400 }
+        { customerId: 'C2', spending: 400 },
       ];
 
       const result = manager._fallbackSegmentation(customers);
 
       expect(result).toEqual({
         premium: ['C1'],
-        budget: ['C2']
+        budget: ['C2'],
       });
     });
 
@@ -152,28 +152,28 @@ describe('SegmentManager', () => {
       const customers = [
         { id: 1, totalSpending: 1001 },
         { id: 2, totalSpending: 500 },
-        { id: 3, totalSpending: 0 }
+        { id: 3, totalSpending: 0 },
       ];
 
       const result = manager._fallbackSegmentation(customers);
 
       expect(result).toEqual({
         premium: [1],
-        budget: [2, 3]
+        budget: [2, 3],
       });
     });
 
     it('should fall back to id or customerId', () => {
       const customers = [
         { id: 'A', totalSpending: 2000 },
-        { customerId: 'B', totalSpending: 600 }
+        { customerId: 'B', totalSpending: 600 },
       ];
 
       const result = manager._fallbackSegmentation(customers);
 
       expect(result).toEqual({
         premium: ['A'],
-        standard: ['B']
+        standard: ['B'],
       });
     });
   });

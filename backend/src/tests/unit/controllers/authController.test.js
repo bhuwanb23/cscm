@@ -8,13 +8,29 @@ jest.mock('../../../storage/sqliteDatabase', () => ({
   initialize: jest.fn(),
   close: jest.fn(),
 }));
-jest.mock('../../../utils/logger', () => ({ info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() }));
+jest.mock('../../../utils/logger', () => ({
+  info: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+}));
 
 const { register, login, getProfile } = require('../../../api/controllers/authController');
 const sqliteDatabase = require('../../../storage/sqliteDatabase');
 
 function mockRes() {
-  const res = { statusCode: null, body: null, status(c) { this.statusCode = c; return this; }, json(d) { this.body = d; return this; } };
+  const res = {
+    statusCode: null,
+    body: null,
+    status(c) {
+      this.statusCode = c;
+      return this;
+    },
+    json(d) {
+      this.body = d;
+      return this;
+    },
+  };
   return res;
 }
 
@@ -65,7 +81,11 @@ describe('Auth Controller', () => {
       const bcrypt = require('bcryptjs');
       const hashedPassword = await bcrypt.hash('pass123', 10);
       sqliteDatabase.findUserByUsername.mockResolvedValue({
-        id: 1, username: 'user', email: 'u@u.com', password: hashedPassword, role: 'user',
+        id: 1,
+        username: 'user',
+        email: 'u@u.com',
+        password: hashedPassword,
+        role: 'user',
       });
       const req = { body: { username: 'user', password: 'pass123' } };
       const res = mockRes();
@@ -84,7 +104,11 @@ describe('Auth Controller', () => {
     it('should reject wrong password', async () => {
       const bcrypt = require('bcryptjs');
       const hashedPassword = await bcrypt.hash('correct', 10);
-      sqliteDatabase.findUserByUsername.mockResolvedValue({ id: 1, username: 'user', password: hashedPassword });
+      sqliteDatabase.findUserByUsername.mockResolvedValue({
+        id: 1,
+        username: 'user',
+        password: hashedPassword,
+      });
       const req = { body: { username: 'user', password: 'wrong' } };
       const res = mockRes();
       await login(req, res);
@@ -102,7 +126,12 @@ describe('Auth Controller', () => {
 
   describe('getProfile', () => {
     it('should return user profile', async () => {
-      sqliteDatabase.findUserById.mockResolvedValue({ id: 1, username: 'user', email: 'u@u.com', role: 'user' });
+      sqliteDatabase.findUserById.mockResolvedValue({
+        id: 1,
+        username: 'user',
+        email: 'u@u.com',
+        role: 'user',
+      });
       const req = { user: { id: 1 } };
       const res = mockRes();
       await getProfile(req, res);

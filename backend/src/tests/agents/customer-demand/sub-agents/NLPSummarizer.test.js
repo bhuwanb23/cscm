@@ -7,7 +7,7 @@ describe('NLPSummarizer', () => {
 
   beforeEach(() => {
     apiService = {
-      sentimentAnalysis: jest.fn()
+      sentimentAnalysis: jest.fn(),
     };
     summarizer = new NLPSummarizer(segmentId, apiService);
   });
@@ -30,7 +30,7 @@ describe('NLPSummarizer', () => {
         sentiment_label: 'positive',
         confidence: 0.95,
         key_phrases: ['great product', 'love it'],
-        model_version: 'v2'
+        model_version: 'v2',
       };
       apiService.sentimentAnalysis.mockResolvedValue(apiResult);
 
@@ -42,7 +42,11 @@ describe('NLPSummarizer', () => {
 
     it('should pass options when provided', async () => {
       apiService.sentimentAnalysis.mockResolvedValue({
-        sentiment_score: 0, sentiment_label: 'neutral', confidence: 0, key_phrases: [], model_version: 'v1'
+        sentiment_score: 0,
+        sentiment_label: 'neutral',
+        confidence: 0,
+        key_phrases: [],
+        model_version: 'v1',
       });
 
       const opts = { lang: 'en', extract_phrases: true };
@@ -61,7 +65,7 @@ describe('NLPSummarizer', () => {
         sentiment_label: 'neutral',
         confidence: 0,
         key_phrases: [],
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
 
@@ -72,7 +76,11 @@ describe('NLPSummarizer', () => {
 
     it('should accept empty string and still call API', async () => {
       apiService.sentimentAnalysis.mockResolvedValue({
-        sentiment_score: 0, sentiment_label: 'neutral', confidence: 0, key_phrases: [], model_version: 'v1'
+        sentiment_score: 0,
+        sentiment_label: 'neutral',
+        confidence: 0,
+        key_phrases: [],
+        model_version: 'v1',
       });
 
       const result = await summarizer.analyzeSentiment('');
@@ -101,7 +109,7 @@ describe('NLPSummarizer', () => {
       const apiResult = {
         summary: 'Long text summary',
         key_points: ['point a', 'point b'],
-        model_version: 'v2'
+        model_version: 'v2',
       };
       apiService.sentimentAnalysis.mockResolvedValue(apiResult);
 
@@ -110,14 +118,16 @@ describe('NLPSummarizer', () => {
       expect(apiService.sentimentAnalysis).toHaveBeenCalledWith({
         text,
         max_length: 50,
-        action: 'summarize'
+        action: 'summarize',
       });
       expect(result).toEqual(apiResult);
     });
 
     it('should default maxLength to 100', async () => {
       apiService.sentimentAnalysis.mockResolvedValue({
-        summary: 's', key_points: [], model_version: 'v1'
+        summary: 's',
+        key_points: [],
+        model_version: 'v1',
       });
 
       await summarizer.summarize(text);
@@ -125,7 +135,7 @@ describe('NLPSummarizer', () => {
       expect(apiService.sentimentAnalysis).toHaveBeenCalledWith({
         text,
         max_length: 100,
-        action: 'summarize'
+        action: 'summarize',
       });
     });
 
@@ -137,7 +147,7 @@ describe('NLPSummarizer', () => {
       expect(result).toEqual({
         summary: '',
         key_points: [],
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
 
@@ -153,7 +163,7 @@ describe('NLPSummarizer', () => {
         sentiment_label: 'neutral',
         confidence: 0,
         key_phrases: [],
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
   });
@@ -163,7 +173,7 @@ describe('NLPSummarizer', () => {
       expect(summarizer._fallbackSummary()).toEqual({
         summary: '',
         key_points: [],
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
   });

@@ -8,13 +8,34 @@ jest.mock('../../../storage/sqliteDatabase', () => ({
   updateOrderStatus: jest.fn(),
   getOrdersByStore: jest.fn(),
 }));
-jest.mock('../../../utils/logger', () => ({ info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() }));
+jest.mock('../../../utils/logger', () => ({
+  info: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+}));
 
-const { create, getById, updateStatus, getByStore } = require('../../../api/controllers/orderController');
+const {
+  create,
+  getById,
+  updateStatus,
+  getByStore,
+} = require('../../../api/controllers/orderController');
 const sqliteDatabase = require('../../../storage/sqliteDatabase');
 
 function mockRes() {
-  return { statusCode: null, body: null, status(c) { this.statusCode = c; return this; }, json(d) { this.body = d; return this; } };
+  return {
+    statusCode: null,
+    body: null,
+    status(c) {
+      this.statusCode = c;
+      return this;
+    },
+    json(d) {
+      this.body = d;
+      return this;
+    },
+  };
 }
 
 describe('Order Controller', () => {

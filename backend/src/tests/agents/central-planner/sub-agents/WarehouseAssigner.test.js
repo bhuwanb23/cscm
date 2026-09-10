@@ -2,7 +2,7 @@ const WarehouseAssigner = require('../../../../agents/central-planner/sub-agents
 
 describe('WarehouseAssigner', () => {
   const mockApiService = {
-    routingOptimization: jest.fn()
+    routingOptimization: jest.fn(),
   };
   const agentId = 'CP-001';
   let assigner;
@@ -32,7 +32,7 @@ describe('WarehouseAssigner', () => {
       expect(mockApiService.routingOptimization).toHaveBeenCalledWith({
         store_id: storeId,
         inventory,
-        demand
+        demand,
       });
       expect(result).toEqual(apiResult.assignment);
     });
@@ -56,7 +56,7 @@ describe('WarehouseAssigner', () => {
         warehouseId: 'WAREHOUSE-1',
         distance: 0,
         availableStock: 50,
-        fallback: true
+        fallback: true,
       });
     });
 
@@ -73,7 +73,7 @@ describe('WarehouseAssigner', () => {
     const storeLoc = { lat: 40.7128, lng: -74.006 };
     const warehouses = [
       { id: 'WH-1', location: { lat: 40.7282, lng: -73.7949 } },
-      { id: 'WH-2', location: { lat: 34.0522, lng: -118.2437 } }
+      { id: 'WH-2', location: { lat: 34.0522, lng: -118.2437 } },
     ];
 
     test('should return nearest warehouse by haversine distance', () => {
@@ -124,7 +124,7 @@ describe('WarehouseAssigner', () => {
         warehouseId: 'WAREHOUSE-1',
         distance: 0,
         availableStock: 50,
-        fallback: true
+        fallback: true,
       });
     });
 

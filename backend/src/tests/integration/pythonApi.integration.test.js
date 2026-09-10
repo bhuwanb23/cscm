@@ -37,40 +37,58 @@ dsl('Python AI/ML API contract (integration)', () => {
   let port;
   let host;
 
-  const post = (urlPath, body) => new Promise((resolve, reject) => {
-    const data = body == null ? '' : JSON.stringify(body);
-    const req = http.request({
-      host, port, path: urlPath, method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) },
-    }, (res) => {
-      let raw = '';
-      res.on('data', (c) => { raw += c; });
-      res.on('end', () => resolve({ status: res.statusCode, body: raw, json: safeJson(raw) }));
+  const post = (urlPath, body) =>
+    new Promise((resolve, reject) => {
+      const data = body == null ? '' : JSON.stringify(body);
+      const req = http.request(
+        {
+          host,
+          port,
+          path: urlPath,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(data),
+          },
+        },
+        (res) => {
+          let raw = '';
+          res.on('data', (c) => {
+            raw += c;
+          });
+          res.on('end', () => resolve({ status: res.statusCode, body: raw, json: safeJson(raw) }));
+        }
+      );
+      req.on('error', reject);
+      if (data) req.write(data);
+      req.end();
     });
-    req.on('error', reject);
-    if (data) req.write(data);
-    req.end();
-  });
 
-  const get = (urlPath) => new Promise((resolve, reject) => {
-    const req = http.request({ host, port, path: urlPath, method: 'GET' }, (res) => {
-      let raw = '';
-      res.on('data', (c) => { raw += c; });
-      res.on('end', () => resolve({ status: res.statusCode, body: raw, json: safeJson(raw) }));
+  const get = (urlPath) =>
+    new Promise((resolve, reject) => {
+      const req = http.request({ host, port, path: urlPath, method: 'GET' }, (res) => {
+        let raw = '';
+        res.on('data', (c) => {
+          raw += c;
+        });
+        res.on('end', () => resolve({ status: res.statusCode, body: raw, json: safeJson(raw) }));
+      });
+      req.on('error', reject);
+      req.end();
     });
-    req.on('error', reject);
-    req.end();
-  });
 
-  const del = (urlPath) => new Promise((resolve, reject) => {
-    const req = http.request({ host, port, path: urlPath, method: 'DELETE' }, (res) => {
-      let raw = '';
-      res.on('data', (c) => { raw += c; });
-      res.on('end', () => resolve({ status: res.statusCode, body: raw, json: safeJson(raw) }));
+  const del = (urlPath) =>
+    new Promise((resolve, reject) => {
+      const req = http.request({ host, port, path: urlPath, method: 'DELETE' }, (res) => {
+        let raw = '';
+        res.on('data', (c) => {
+          raw += c;
+        });
+        res.on('end', () => resolve({ status: res.statusCode, body: raw, json: safeJson(raw) }));
+      });
+      req.on('error', reject);
+      req.end();
     });
-    req.on('error', reject);
-    req.end();
-  });
 
   beforeAll(async () => {
     const { start } = require('../../../scripts/start_python_server');
@@ -194,7 +212,11 @@ dsl('Python AI/ML API contract (integration)', () => {
     it('accepts {model_state, new_data, learning_rate} and returns strategy', async () => {
       const res = await post('/api/v1/learning/strategic-update', {
         model_state: { model_id: 'M-1', learning_rate: 0.005, weights: [0.1, 0.2] },
-        new_data: [{ x: 1, y: 0 }, { x: 2, y: 1 }, { x: 3, y: 1 }],
+        new_data: [
+          { x: 1, y: 0 },
+          { x: 2, y: 1 },
+          { x: 3, y: 1 },
+        ],
         learning_rate: 0.005,
       });
       expect(res.status).toBe(200);
@@ -336,5 +358,9 @@ dsl('Python AI/ML API contract (integration)', () => {
 
 function safeJson(raw) {
   if (!raw) return {};
-  try { return JSON.parse(raw); } catch { return { __raw__: raw }; }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return { __raw__: raw };
+  }
 }

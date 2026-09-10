@@ -8,7 +8,7 @@ describe('VisionInspector', () => {
 
   beforeEach(() => {
     apiService = {
-      visionAnalyze: jest.fn()
+      visionAnalyze: jest.fn(),
     };
     inspector = new VisionInspector(warehouseId, apiService);
   });
@@ -30,11 +30,11 @@ describe('VisionInspector', () => {
       const apiResult = {
         detections: [
           { label: 'pallet', confidence: 0.95, bbox: [10, 20, 100, 200] },
-          { label: 'box', confidence: 0.87, bbox: [50, 60, 150, 250] }
+          { label: 'box', confidence: 0.87, bbox: [50, 60, 150, 250] },
         ],
         inventory_estimate: { pallet: 5, box: 12 },
         quality_issues: ['low_light'],
-        model_version: 'v3.0'
+        model_version: 'v3.0',
       };
       apiService.visionAnalyze.mockResolvedValue(apiResult);
 
@@ -43,7 +43,7 @@ describe('VisionInspector', () => {
       expect(apiService.visionAnalyze).toHaveBeenCalledWith({
         image: imageData,
         warehouse_id: warehouseId,
-        mode: 'full'
+        mode: 'full',
       });
       expect(result.detections).toEqual(apiResult.detections);
       expect(result.inventory_estimate).toEqual({ pallet: 5, box: 12 });
@@ -71,7 +71,7 @@ describe('VisionInspector', () => {
         detections: [],
         inventory_estimate: {},
         quality_issues: [],
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
 
@@ -82,7 +82,7 @@ describe('VisionInspector', () => {
         detections: [],
         inventory_estimate: {},
         quality_issues: [],
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
       expect(apiService.visionAnalyze).not.toHaveBeenCalled();
     });
@@ -94,7 +94,7 @@ describe('VisionInspector', () => {
 
       expect(apiService.visionAnalyze).toHaveBeenCalledWith({
         image: imageData,
-        warehouse_id: warehouseId
+        warehouse_id: warehouseId,
       });
     });
   });
@@ -105,7 +105,7 @@ describe('VisionInspector', () => {
     it('should return API result on success', async () => {
       const apiResult = {
         detections: [{ label: 'pallet', confidence: 0.9, bbox: [0, 0, 50, 50] }],
-        model_version: 'v3.0'
+        model_version: 'v3.0',
       };
       apiService.visionAnalyze.mockResolvedValue(apiResult);
 
@@ -113,7 +113,7 @@ describe('VisionInspector', () => {
 
       expect(apiService.visionAnalyze).toHaveBeenCalledWith({
         image: imageData,
-        target_objects: objectTypes
+        target_objects: objectTypes,
       });
       expect(result.detections).toEqual(apiResult.detections);
       expect(result.model_version).toBe('v3.0');
@@ -142,7 +142,7 @@ describe('VisionInspector', () => {
       const apiResult = {
         score: 0.82,
         issues: ['minor_blur'],
-        model_version: 'v3.0'
+        model_version: 'v3.0',
       };
       apiService.visionAnalyze.mockResolvedValue(apiResult);
 
@@ -150,7 +150,7 @@ describe('VisionInspector', () => {
 
       expect(apiService.visionAnalyze).toHaveBeenCalledWith({
         image: imageData,
-        quality_criteria: criteria
+        quality_criteria: criteria,
       });
       expect(result.score).toBe(0.82);
       expect(result.issues).toEqual(['minor_blur']);

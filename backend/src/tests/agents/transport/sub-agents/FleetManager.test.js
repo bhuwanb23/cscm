@@ -26,27 +26,42 @@ describe('FleetManager', () => {
     const vehicles = [{ id: 'v1' }];
 
     it('should return result on success', async () => {
-      const expected = { routes: [{ vehicleId: 'v1', deliveries: [{ id: 1 }] }], model_version: 'v2' };
+      const expected = {
+        routes: [{ vehicleId: 'v1', deliveries: [{ id: 1 }] }],
+        model_version: 'v2',
+      };
       mockApiService.gnnRoutePlanning.mockResolvedValue(expected);
       const result = await manager.gnnRoutePlanning(deliveries, vehicles);
-      expect(mockApiService.gnnRoutePlanning).toHaveBeenCalledWith({ deliveries, vehicles, transport_id: 3 });
+      expect(mockApiService.gnnRoutePlanning).toHaveBeenCalledWith({
+        deliveries,
+        vehicles,
+        transport_id: 3,
+      });
       expect(result).toEqual(expected);
     });
 
     it('should throw if deliveries is empty', async () => {
-      await expect(manager.gnnRoutePlanning([], vehicles)).rejects.toThrow('deliveries are required');
+      await expect(manager.gnnRoutePlanning([], vehicles)).rejects.toThrow(
+        'deliveries are required'
+      );
     });
 
     it('should throw if deliveries is null', async () => {
-      await expect(manager.gnnRoutePlanning(null, vehicles)).rejects.toThrow('deliveries are required');
+      await expect(manager.gnnRoutePlanning(null, vehicles)).rejects.toThrow(
+        'deliveries are required'
+      );
     });
 
     it('should throw if vehicles is empty', async () => {
-      await expect(manager.gnnRoutePlanning(deliveries, [])).rejects.toThrow('vehicles are required');
+      await expect(manager.gnnRoutePlanning(deliveries, [])).rejects.toThrow(
+        'vehicles are required'
+      );
     });
 
     it('should throw if vehicles is null', async () => {
-      await expect(manager.gnnRoutePlanning(deliveries, null)).rejects.toThrow('vehicles are required');
+      await expect(manager.gnnRoutePlanning(deliveries, null)).rejects.toThrow(
+        'vehicles are required'
+      );
     });
 
     it('should return fallback when apiService.gnnRoutePlanning rejects', async () => {
@@ -100,9 +115,7 @@ describe('FleetManager', () => {
 
     it('should skip capacity check when delivery has no weight', () => {
       const lightDelivery = { id: 'del-3' };
-      const vehicles = [
-        { id: 'v1', status: 'available', capacity: 100 },
-      ];
+      const vehicles = [{ id: 'v1', status: 'available', capacity: 100 }];
       const result = manager.assignVehicle(lightDelivery, vehicles);
       expect(result.id).toBe('v1');
     });

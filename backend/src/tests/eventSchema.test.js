@@ -9,8 +9,8 @@ describe('Event Schema Validation', () => {
         eventType: 'temperature_reading',
         payload: {
           temperature: 25.5,
-          humidity: 60
-        }
+          humidity: 60,
+        },
       };
 
       const result = validateEvent(event, 'telemetry');
@@ -19,7 +19,7 @@ describe('Event Schema Validation', () => {
 
     it('should reject telemetry event without required fields', () => {
       const event = {
-        sourceId: 'sensor-001'
+        sourceId: 'sensor-001',
         // Missing timestamp and eventType
       };
 
@@ -35,7 +35,7 @@ describe('Event Schema Validation', () => {
         storeId: 'store-456',
         quantity: 100,
         eventType: 'STOCK_UPDATE',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
 
       const result = validateEvent(event, 'inventory');
@@ -48,7 +48,7 @@ describe('Event Schema Validation', () => {
         storeId: 'store-456',
         quantity: 100,
         eventType: 'INVALID_TYPE',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
 
       const result = validateEvent(event, 'inventory');
@@ -65,12 +65,12 @@ describe('Event Schema Validation', () => {
           {
             productId: 'prod-123',
             quantity: 2,
-            price: 25.99
-          }
+            price: 25.99,
+          },
         ],
         totalAmount: 51.98,
         status: 'pending',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
 
       const result = validateEvent(event, 'order');
@@ -80,7 +80,7 @@ describe('Event Schema Validation', () => {
     it('should reject order event without required fields', () => {
       const event = {
         orderId: 'order-789',
-        customerId: 'customer-123'
+        customerId: 'customer-123',
         // Missing items, totalAmount, status, timestamp
       };
 

@@ -16,7 +16,7 @@ jest.mock('../../storage/sqliteDatabase', () => {
       return 1;
     }),
     getOrdersByStore: jest.fn(async (storeId) => {
-      return Object.values(orders).filter(o => o.store_id === storeId);
+      return Object.values(orders).filter((o) => o.store_id === storeId);
     }),
     initialize: jest.fn(),
     close: jest.fn(),
@@ -31,7 +31,7 @@ jest.mock('../../storage/sqliteDatabase', () => {
     getShipmentById: jest.fn(),
     getShipmentsByStatus: jest.fn(),
     getShipmentsByLocation: jest.fn(),
-    updateShipmentStatus: jest.fn()
+    updateShipmentStatus: jest.fn(),
   };
 });
 
@@ -53,7 +53,11 @@ describe('Orders API', () => {
       const res = await request(app)
         .post('/api/v1/orders')
         .set('Authorization', authHeader)
-        .send({ order_id: 'ORD-001', store_id: 'STORE-001', items: [{ product_id: 'P1', quantity: 2, unit_price: 10 }] })
+        .send({
+          order_id: 'ORD-001',
+          store_id: 'STORE-001',
+          items: [{ product_id: 'P1', quantity: 2, unit_price: 10 }],
+        })
         .expect(201);
 
       expect(res.body.success).toBe(true);

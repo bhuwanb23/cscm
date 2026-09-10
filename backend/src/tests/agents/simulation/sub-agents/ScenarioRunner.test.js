@@ -6,7 +6,7 @@ describe('ScenarioRunner', () => {
     simulationDiscreteEvent: jest.fn(),
     simulationResults: jest.fn(),
     simulationNetworkSim: jest.fn(),
-    simulationWhatIf: jest.fn()
+    simulationWhatIf: jest.fn(),
   };
   const agentId = 'SIM-001';
   let runner;
@@ -36,7 +36,7 @@ describe('ScenarioRunner', () => {
         simulationId: 'SIM-123',
         status: 'completed',
         summary: apiResult.summary,
-        timestamp: expect.any(String)
+        timestamp: expect.any(String),
       });
     });
 
@@ -79,7 +79,7 @@ describe('ScenarioRunner', () => {
         events: [],
         duration: 0,
         summary: { total_events: 0 },
-        fallback: true
+        fallback: true,
       });
     });
   });
@@ -113,7 +113,11 @@ describe('ScenarioRunner', () => {
 
   describe('networkSimulation', () => {
     const config = { nodes: 10, topology: 'mesh' };
-    const apiResult = { nodes: [{ id: 'N-1' }], edges: [{ from: 'N-1', to: 'N-2' }], metrics: { latency: 5 } };
+    const apiResult = {
+      nodes: [{ id: 'N-1' }],
+      edges: [{ from: 'N-1', to: 'N-2' }],
+      metrics: { latency: 5 },
+    };
 
     test('should return network simulation result on success', async () => {
       mockApiService.simulationNetworkSim.mockResolvedValue(apiResult);

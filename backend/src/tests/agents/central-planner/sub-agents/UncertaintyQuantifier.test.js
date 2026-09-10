@@ -7,7 +7,7 @@ describe('UncertaintyQuantifier', () => {
 
   beforeEach(() => {
     apiService = {
-      safetyStock: jest.fn()
+      safetyStock: jest.fn(),
     };
     quantifier = new UncertaintyQuantifier(plannerId, apiService);
   });
@@ -30,30 +30,32 @@ describe('UncertaintyQuantifier', () => {
         safety_stock: 100,
         uncertainty_bounds: { lower: 50, upper: 150 },
         confidence_level: 0.99,
-        model_version: 'v3'
+        model_version: 'v3',
       };
       apiService.safetyStock.mockResolvedValue(apiResult);
 
       const result = await quantifier.calculateSafetyStock(productId, {
         leadTimeDays: 14,
         serviceLevel: 0.99,
-        demandForecast: [10, 20, 30]
+        demandForecast: [10, 20, 30],
       });
 
       expect(apiService.safetyStock).toHaveBeenCalledWith({
         product_id: productId,
         lead_time_days: 14,
         service_level: 0.99,
-        demand_forecast: [10, 20, 30]
+        demand_forecast: [10, 20, 30],
       });
       expect(result).toEqual(apiResult);
     });
 
     it('should use defaults for missing options', async () => {
       apiService.safetyStock.mockResolvedValue({
-        product_id: productId, safety_stock: 30,
+        product_id: productId,
+        safety_stock: 30,
         uncertainty_bounds: { lower: 10, upper: 50 },
-        confidence_level: 0.95, model_version: 'v1'
+        confidence_level: 0.95,
+        model_version: 'v1',
       });
 
       await quantifier.calculateSafetyStock(productId);
@@ -62,7 +64,7 @@ describe('UncertaintyQuantifier', () => {
         product_id: productId,
         lead_time_days: 7,
         service_level: 0.95,
-        demand_forecast: null
+        demand_forecast: null,
       });
     });
 
@@ -76,7 +78,7 @@ describe('UncertaintyQuantifier', () => {
         safety_stock: 50,
         uncertainty_bounds: { lower: 25, upper: 75 },
         confidence_level: 0.95,
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
 
@@ -95,7 +97,7 @@ describe('UncertaintyQuantifier', () => {
         mean: 110,
         std_dev: 4.5,
         prediction_intervals: [{ lower: 100, upper: 120 }],
-        model_version: 'v2'
+        model_version: 'v2',
       };
       apiService.safetyStock.mockResolvedValue(apiResult);
 
@@ -103,21 +105,24 @@ describe('UncertaintyQuantifier', () => {
 
       expect(apiService.safetyStock).toHaveBeenCalledWith({
         forecast,
-        errors
+        errors,
       });
       expect(result).toEqual(apiResult);
     });
 
     it('should default errors to empty array when not provided', async () => {
       apiService.safetyStock.mockResolvedValue({
-        mean: 100, std_dev: 0, prediction_intervals: [], model_version: 'v1'
+        mean: 100,
+        std_dev: 0,
+        prediction_intervals: [],
+        model_version: 'v1',
       });
 
       await quantifier.quantifyDemandUncertainty(forecast);
 
       expect(apiService.safetyStock).toHaveBeenCalledWith({
         forecast,
-        errors: []
+        errors: [],
       });
     });
 
@@ -130,12 +135,14 @@ describe('UncertaintyQuantifier', () => {
         mean: 0,
         std_dev: 0,
         prediction_intervals: [],
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
 
     it('should throw when forecast is null', async () => {
-      await expect(quantifier.quantifyDemandUncertainty(null, errors)).rejects.toThrow('forecast is required');
+      await expect(quantifier.quantifyDemandUncertainty(null, errors)).rejects.toThrow(
+        'forecast is required'
+      );
     });
 
     it('should default missing API fields to safe values', async () => {
@@ -156,7 +163,7 @@ describe('UncertaintyQuantifier', () => {
         safety_stock: 50,
         uncertainty_bounds: { lower: 25, upper: 75 },
         confidence_level: 0.95,
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
   });
@@ -167,7 +174,7 @@ describe('UncertaintyQuantifier', () => {
         mean: 0,
         std_dev: 0,
         prediction_intervals: [],
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
   });

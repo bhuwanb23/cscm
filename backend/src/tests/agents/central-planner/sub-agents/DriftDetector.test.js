@@ -7,7 +7,7 @@ describe('DriftDetector', () => {
 
   beforeEach(() => {
     apiService = {
-      driftCheck: jest.fn()
+      driftCheck: jest.fn(),
     };
     detector = new DriftDetector(plannerId, apiService);
   });
@@ -36,7 +36,7 @@ describe('DriftDetector', () => {
         drift_score: 0.42,
         affected_features: ['price'],
         timestamp: '2024-01-01T00:00:00Z',
-        model_version: 'v2'
+        model_version: 'v2',
       };
       apiService.driftCheck.mockResolvedValue(apiResult);
 
@@ -48,8 +48,12 @@ describe('DriftDetector', () => {
 
     it('should pass custom timeWindow', async () => {
       apiService.driftCheck.mockResolvedValue({
-        model_id: modelId, drift_detected: false, drift_score: 0,
-        affected_features: [], timestamp: 't', model_version: 'v1'
+        model_id: modelId,
+        drift_detected: false,
+        drift_score: 0,
+        affected_features: [],
+        timestamp: 't',
+        model_version: 'v1',
       });
 
       await detector.checkDrift(modelId, '7d');
@@ -67,7 +71,7 @@ describe('DriftDetector', () => {
         drift_detected: false,
         drift_score: 0,
         affected_features: [],
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
 
@@ -92,7 +96,10 @@ describe('DriftDetector', () => {
   describe('checkAllModels', () => {
     it('should iterate knownModels and aggregate results', async () => {
       apiService.driftCheck.mockResolvedValue({
-        drift_detected: false, drift_score: 0, affected_features: [], model_version: 'v1'
+        drift_detected: false,
+        drift_score: 0,
+        affected_features: [],
+        model_version: 'v1',
       });
 
       const result = await detector.checkAllModels('1h');
@@ -112,7 +119,7 @@ describe('DriftDetector', () => {
           drift_detected: callCount === 2,
           drift_score: callCount === 2 ? 0.8 : 0,
           affected_features: [],
-          model_version: 'v1'
+          model_version: 'v1',
         });
       });
 
@@ -127,7 +134,7 @@ describe('DriftDetector', () => {
       const result = await detector.checkAllModels();
 
       expect(result.results).toHaveLength(detector.knownModels.length);
-      result.results.forEach(r => {
+      result.results.forEach((r) => {
         expect(r.drift_detected).toBe(false);
         expect(r.model_version).toBe('fallback');
       });
@@ -136,7 +143,10 @@ describe('DriftDetector', () => {
 
     it('should default window to 24h when not provided', async () => {
       apiService.driftCheck.mockResolvedValue({
-        drift_detected: false, drift_score: 0, affected_features: [], model_version: 'v1'
+        drift_detected: false,
+        drift_score: 0,
+        affected_features: [],
+        model_version: 'v1',
       });
 
       const result = await detector.checkAllModels();
@@ -147,12 +157,15 @@ describe('DriftDetector', () => {
 
     it('should pass timeWindow to each checkDrift call', async () => {
       apiService.driftCheck.mockResolvedValue({
-        drift_detected: false, drift_score: 0, affected_features: [], model_version: 'v1'
+        drift_detected: false,
+        drift_score: 0,
+        affected_features: [],
+        model_version: 'v1',
       });
 
       await detector.checkAllModels('30m');
 
-      apiService.driftCheck.mock.calls.forEach(call => {
+      apiService.driftCheck.mock.calls.forEach((call) => {
         expect(call[0].window).toBe('30m');
       });
     });
@@ -165,7 +178,7 @@ describe('DriftDetector', () => {
         drift_detected: false,
         drift_score: 0,
         affected_features: [],
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
   });

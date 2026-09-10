@@ -38,7 +38,7 @@ describe('Knowledge Graph Structure Tests', () => {
       type: entityType,
       name: 'Test Product',
       price: 99.99,
-      createdAt: expect.any(String)
+      createdAt: expect.any(String),
     });
   });
 
@@ -59,7 +59,7 @@ describe('Knowledge Graph Structure Tests', () => {
       to: 'entity2',
       type: 'stocked_at',
       metadata: { quantity: 10 },
-      direction: 'outgoing'
+      direction: 'outgoing',
     });
   });
 
@@ -77,7 +77,7 @@ describe('Knowledge Graph Structure Tests', () => {
     const neighbors = knowledgeGraph.getNeighbors('entity1');
 
     expect(neighbors).toHaveLength(2);
-    expect(neighbors.map(n => n.id)).toEqual(expect.arrayContaining(['entity2', 'entity3']));
+    expect(neighbors.map((n) => n.id)).toEqual(expect.arrayContaining(['entity2', 'entity3']));
   });
 
   test('should find shortest path between entities', () => {
@@ -132,7 +132,7 @@ describe('Knowledge Graph Structure Tests', () => {
     expect(initialStats).toEqual({
       nodeCount: 0,
       edgeCount: 0,
-      entityTypes: {}
+      entityTypes: {},
     });
 
     // Add entities and relationships
@@ -174,9 +174,15 @@ describe('Knowledge Graph Structure Tests', () => {
     expect(() => knowledgeGraph.addEntity('test', null)).toThrow('Entity type is required');
 
     // Test addRelationship validation
-    expect(() => knowledgeGraph.addRelationship(null, 'to', 'type')).toThrow('Both fromEntityId and toEntityId are required');
-    expect(() => knowledgeGraph.addRelationship('from', null, 'type')).toThrow('Both fromEntityId and toEntityId are required');
-    expect(() => knowledgeGraph.addRelationship('from', 'to', null)).toThrow('Relationship type is required');
+    expect(() => knowledgeGraph.addRelationship(null, 'to', 'type')).toThrow(
+      'Both fromEntityId and toEntityId are required'
+    );
+    expect(() => knowledgeGraph.addRelationship('from', null, 'type')).toThrow(
+      'Both fromEntityId and toEntityId are required'
+    );
+    expect(() => knowledgeGraph.addRelationship('from', 'to', null)).toThrow(
+      'Relationship type is required'
+    );
 
     // Test getEntity validation
     expect(() => knowledgeGraph.getEntity(null)).toThrow('Entity ID is required');

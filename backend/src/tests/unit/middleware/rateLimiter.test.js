@@ -36,9 +36,17 @@ describe('Rate Limiter Middleware', () => {
           statusCode: null,
           body: null,
           headers: {},
-          status(code) { this.statusCode = code; return this; },
-          json(data) { this.body = data; return this; },
-          setHeader() { return this; },
+          status(code) {
+            this.statusCode = code;
+            return this;
+          },
+          json(data) {
+            this.body = data;
+            return this;
+          },
+          setHeader() {
+            return this;
+          },
         };
         rateLimiter(testReq, testRes, jest.fn());
       }
@@ -49,9 +57,17 @@ describe('Rate Limiter Middleware', () => {
         statusCode: null,
         body: null,
         headers: {},
-        status(code) { this.statusCode = code; return this; },
-        json(data) { this.body = data; return this; },
-        setHeader() { return this; },
+        status(code) {
+          this.statusCode = code;
+          return this;
+        },
+        json(data) {
+          this.body = data;
+          return this;
+        },
+        setHeader() {
+          return this;
+        },
       };
       rateLimiter(blockReq, blockRes, jest.fn());
 

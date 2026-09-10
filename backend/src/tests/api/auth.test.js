@@ -13,7 +13,7 @@ jest.mock('../../storage/sqliteDatabase', () => {
       return users[username] || null;
     }),
     findUserById: jest.fn(async (id) => {
-      const found = Object.values(users).find(u => u.id === id);
+      const found = Object.values(users).find((u) => u.id === id);
       return found || null;
     }),
     initialize: jest.fn(),
@@ -31,7 +31,7 @@ jest.mock('../../storage/sqliteDatabase', () => {
     getShipmentById: jest.fn(),
     getShipmentsByStatus: jest.fn(),
     getShipmentsByLocation: jest.fn(),
-    updateShipmentStatus: jest.fn()
+    updateShipmentStatus: jest.fn(),
   };
 });
 
@@ -42,10 +42,7 @@ describe('Auth API', () => {
 
   describe('POST /api/v1/auth/register', () => {
     it('should register a new user', async () => {
-      const res = await request(app)
-        .post('/api/v1/auth/register')
-        .send(testUser)
-        .expect(201);
+      const res = await request(app).post('/api/v1/auth/register').send(testUser).expect(201);
 
       expect(res.body.success).toBe(true);
       expect(res.body.data.user.username).toBe('testuser');
@@ -55,20 +52,14 @@ describe('Auth API', () => {
     });
 
     it('should reject duplicate username', async () => {
-      const res = await request(app)
-        .post('/api/v1/auth/register')
-        .send(testUser)
-        .expect(409);
+      const res = await request(app).post('/api/v1/auth/register').send(testUser).expect(409);
 
       expect(res.body.success).toBe(false);
       expect(res.body.error).toContain('exists');
     });
 
     it('should require username, email, and password', async () => {
-      const res = await request(app)
-        .post('/api/v1/auth/register')
-        .send({})
-        .expect(400);
+      const res = await request(app).post('/api/v1/auth/register').send({}).expect(400);
 
       expect(res.body.success).toBe(false);
     });
@@ -122,9 +113,7 @@ describe('Auth API', () => {
     });
 
     it('should reject request without token', async () => {
-      const res = await request(app)
-        .get('/api/v1/auth/profile')
-        .expect(401);
+      const res = await request(app).get('/api/v1/auth/profile').expect(401);
 
       expect(res.body.success).toBe(false);
     });

@@ -8,7 +8,7 @@ describe('RiskAssessor', () => {
   beforeEach(() => {
     apiService = {
       supplierRiskAssessment: jest.fn(),
-      supplierSurvival: jest.fn()
+      supplierSurvival: jest.fn(),
     };
     assessor = new RiskAssessor(supplierId, apiService);
   });
@@ -28,7 +28,7 @@ describe('RiskAssessor', () => {
   describe('assess', () => {
     const historicalPerformance = [
       { quality_score: 0.9, delivery_date: '2024-01-10', promised_date: '2024-01-08' },
-      { quality_score: 0.8, delivery_date: '2024-02-10', promised_date: '2024-02-10' }
+      { quality_score: 0.8, delivery_date: '2024-02-10', promised_date: '2024-02-10' },
     ];
     const financialHealth = { revenue: 1000000, debt_ratio: 0.3 };
     const geographicRisk = { region: 'APAC', stability_score: 0.8 };
@@ -43,7 +43,7 @@ describe('RiskAssessor', () => {
         supplier_id: supplierId,
         historical_performance: historicalPerformance,
         financial_health: financialHealth,
-        geographic_risk: geographicRisk
+        geographic_risk: geographicRisk,
       });
       expect(result).toEqual(apiResult);
     });
@@ -63,7 +63,11 @@ describe('RiskAssessor', () => {
 
       const result = await assessor.assess([], financialHealth, geographicRisk);
 
-      expect(result).toEqual({ risk_score: 50, risk_level: 'medium', factors: ['insufficient_data'] });
+      expect(result).toEqual({
+        risk_score: 50,
+        risk_level: 'medium',
+        factors: ['insufficient_data'],
+      });
     });
   });
 
@@ -71,7 +75,11 @@ describe('RiskAssessor', () => {
     const data = { supplier_id: 'SUP-001', market_conditions: {} };
 
     it('should return API result on success', async () => {
-      const apiResult = { survival_probability: 0.92, risk_factors: ['market'], model_version: 'v2' };
+      const apiResult = {
+        survival_probability: 0.92,
+        risk_factors: ['market'],
+        model_version: 'v2',
+      };
       apiService.supplierSurvival.mockResolvedValue(apiResult);
 
       const result = await assessor.survivalAnalysis(data);
@@ -85,7 +93,11 @@ describe('RiskAssessor', () => {
 
       const result = await assessor.survivalAnalysis(data);
 
-      expect(result).toEqual({ survival_probability: 0.85, risk_factors: [], model_version: 'fallback' });
+      expect(result).toEqual({
+        survival_probability: 0.85,
+        risk_factors: [],
+        model_version: 'fallback',
+      });
     });
   });
 
@@ -93,19 +105,27 @@ describe('RiskAssessor', () => {
     it('should return medium risk for empty historical performance', () => {
       const result = assessor._fallbackAssessment([]);
 
-      expect(result).toEqual({ risk_score: 50, risk_level: 'medium', factors: ['insufficient_data'] });
+      expect(result).toEqual({
+        risk_score: 50,
+        risk_level: 'medium',
+        factors: ['insufficient_data'],
+      });
     });
 
     it('should return null/undefined guard', () => {
       const result = assessor._fallbackAssessment(null);
 
-      expect(result).toEqual({ risk_score: 50, risk_level: 'medium', factors: ['insufficient_data'] });
+      expect(result).toEqual({
+        risk_score: 50,
+        risk_level: 'medium',
+        factors: ['insufficient_data'],
+      });
     });
 
     it('should compute low risk for high quality on-time performance', () => {
       const perf = [
         { quality_score: 0.95, delivery_date: '2024-01-10', promised_date: '2024-01-10' },
-        { quality_score: 0.98, delivery_date: '2024-02-10', promised_date: '2024-02-10' }
+        { quality_score: 0.98, delivery_date: '2024-02-10', promised_date: '2024-02-10' },
       ];
 
       const result = assessor._fallbackAssessment(perf);
@@ -119,7 +139,7 @@ describe('RiskAssessor', () => {
     it('should compute high risk for poor quality and late deliveries', () => {
       const perf = [
         { quality_score: 0.3, delivery_date: '2024-01-15', promised_date: '2024-01-08' },
-        { quality_score: 0.2, delivery_date: '2024-02-20', promised_date: '2024-02-10' }
+        { quality_score: 0.2, delivery_date: '2024-02-20', promised_date: '2024-02-10' },
       ];
 
       const result = assessor._fallbackAssessment(perf);
@@ -129,9 +149,7 @@ describe('RiskAssessor', () => {
     });
 
     it('should treat missing quality_score as 1.0', () => {
-      const perf = [
-        { delivery_date: '2024-01-10', promised_date: '2024-01-10' }
-      ];
+      const perf = [{ delivery_date: '2024-01-10', promised_date: '2024-01-10' }];
 
       const result = assessor._fallbackAssessment(perf);
 

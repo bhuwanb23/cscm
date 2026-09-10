@@ -9,13 +9,35 @@ jest.mock('../../../storage/sqliteDatabase', () => ({
   getShipmentsByStatus: jest.fn(),
   getShipmentsByLocation: jest.fn(),
 }));
-jest.mock('../../../utils/logger', () => ({ info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() }));
+jest.mock('../../../utils/logger', () => ({
+  info: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+}));
 
-const { create, getById, updateStatus, getByStatus, getByLocation } = require('../../../api/controllers/shipmentController');
+const {
+  create,
+  getById,
+  updateStatus,
+  getByStatus,
+  getByLocation,
+} = require('../../../api/controllers/shipmentController');
 const sqliteDatabase = require('../../../storage/sqliteDatabase');
 
 function mockRes() {
-  return { statusCode: null, body: null, status(c) { this.statusCode = c; return this; }, json(d) { this.body = d; return this; } };
+  return {
+    statusCode: null,
+    body: null,
+    status(c) {
+      this.statusCode = c;
+      return this;
+    },
+    json(d) {
+      this.body = d;
+      return this;
+    },
+  };
 }
 
 describe('Shipment Controller', () => {

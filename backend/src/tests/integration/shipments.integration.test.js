@@ -9,7 +9,11 @@ jest.mock('../../storage/sqliteDatabase', () => {
   const shipments = {};
   return {
     createShipment: jest.fn(async (shipment) => {
-      shipments[shipment.shipment_id] = { id: Object.keys(shipments).length + 1, ...shipment, items: [] };
+      shipments[shipment.shipment_id] = {
+        id: Object.keys(shipments).length + 1,
+        ...shipment,
+        items: [],
+      };
       return shipments[shipment.shipment_id].id;
     }),
     addShipmentItem: jest.fn(async (item) => {
@@ -22,10 +26,12 @@ jest.mock('../../storage/sqliteDatabase', () => {
       return 1;
     }),
     getShipmentsByStatus: jest.fn(async (status) => {
-      return Object.values(shipments).filter(s => s.status === status);
+      return Object.values(shipments).filter((s) => s.status === status);
     }),
     getShipmentsByLocation: jest.fn(async (location) => {
-      return Object.values(shipments).filter(s => s.from_location === location || s.to_location === location);
+      return Object.values(shipments).filter(
+        (s) => s.from_location === location || s.to_location === location
+      );
     }),
     initialize: jest.fn(),
     close: jest.fn(),

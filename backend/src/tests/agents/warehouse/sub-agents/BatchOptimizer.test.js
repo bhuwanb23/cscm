@@ -7,7 +7,7 @@ describe('BatchOptimizer', () => {
 
   beforeEach(() => {
     apiService = {
-      batchOptimize: jest.fn()
+      batchOptimize: jest.fn(),
     };
     optimizer = new BatchOptimizer(warehouseId, apiService);
   });
@@ -31,10 +31,10 @@ describe('BatchOptimizer', () => {
       const apiResult = {
         recommendations: [
           { sku_id: 'SKU-A', reorder_quantity: 100, safety_stock: 30 },
-          { sku_id: 'SKU-B', reorder_quantity: 80, safety_stock: 20 }
+          { sku_id: 'SKU-B', reorder_quantity: 80, safety_stock: 20 },
         ],
-        total_savings: 1500.50,
-        model_version: 'v2.1'
+        total_savings: 1500.5,
+        model_version: 'v2.1',
       };
       apiService.batchOptimize.mockResolvedValue(apiResult);
 
@@ -42,7 +42,7 @@ describe('BatchOptimizer', () => {
 
       expect(apiService.batchOptimize).toHaveBeenCalledWith({ skus });
       expect(result.recommendations).toEqual(apiResult.recommendations);
-      expect(result.total_savings).toBe(1500.50);
+      expect(result.total_savings).toBe(1500.5);
       expect(result.model_version).toBe('v2.1');
     });
 
@@ -65,7 +65,7 @@ describe('BatchOptimizer', () => {
       expect(result.recommendations[0]).toEqual({
         sku_id: 'SKU-A',
         reorder_quantity: 50,
-        safety_stock: 25
+        safety_stock: 25,
       });
       expect(result.total_savings).toBe(0);
       expect(result.model_version).toBe('fallback');
@@ -89,16 +89,16 @@ describe('BatchOptimizer', () => {
   describe('optimizeBatchByStore', () => {
     const pairs = [
       { sku: 'SKU-A', store: 'STORE-1' },
-      { sku: 'SKU-B', store: 'STORE-2' }
+      { sku: 'SKU-B', store: 'STORE-2' },
     ];
 
     it('should return API result on success', async () => {
       const apiResult = {
         results: [
           { sku_id: 'SKU-A', store_id: 'STORE-1', reorder_quantity: 120 },
-          { sku_id: 'SKU-B', store_id: 'STORE-2', reorder_quantity: 90 }
+          { sku_id: 'SKU-B', store_id: 'STORE-2', reorder_quantity: 90 },
         ],
-        total_processed: 2
+        total_processed: 2,
       };
       apiService.batchOptimize.mockResolvedValue(apiResult);
 
@@ -118,7 +118,7 @@ describe('BatchOptimizer', () => {
       expect(result.results[0]).toEqual({
         sku_id: 'SKU-A',
         store_id: 'STORE-1',
-        reorder_quantity: 50
+        reorder_quantity: 50,
       });
       expect(result.total_processed).toBe(pairs.length);
       expect(result.model_version).toBe('fallback');
@@ -139,7 +139,7 @@ describe('BatchOptimizer', () => {
 
       expect(result.recommendations).toEqual([
         { sku_id: 'SKU-X', reorder_quantity: 50, safety_stock: 25 },
-        { sku_id: 'SKU-Y', reorder_quantity: 50, safety_stock: 25 }
+        { sku_id: 'SKU-Y', reorder_quantity: 50, safety_stock: 25 },
       ]);
       expect(result.total_savings).toBe(0);
       expect(result.model_version).toBe('fallback');
@@ -150,13 +150,13 @@ describe('BatchOptimizer', () => {
     it('should map each pair to a result with defaults', () => {
       const pairs = [
         { sku: 'SKU-A', store: 'STORE-1' },
-        { sku: 'SKU-B', store: 'STORE-2' }
+        { sku: 'SKU-B', store: 'STORE-2' },
       ];
       const result = optimizer._fallbackBatchByStore(pairs);
 
       expect(result.results).toEqual([
         { sku_id: 'SKU-A', store_id: 'STORE-1', reorder_quantity: 50 },
-        { sku_id: 'SKU-B', store_id: 'STORE-2', reorder_quantity: 50 }
+        { sku_id: 'SKU-B', store_id: 'STORE-2', reorder_quantity: 50 },
       ]);
       expect(result.total_processed).toBe(2);
       expect(result.model_version).toBe('fallback');

@@ -16,10 +16,12 @@ jest.mock('../../storage/sqliteDatabase', () => {
       return 1;
     }),
     getShipmentsByStatus: jest.fn(async (status) => {
-      return Object.values(shipments).filter(s => s.status === status);
+      return Object.values(shipments).filter((s) => s.status === status);
     }),
     getShipmentsByLocation: jest.fn(async (location) => {
-      return Object.values(shipments).filter(s => s.from_location === location || s.to_location === location);
+      return Object.values(shipments).filter(
+        (s) => s.from_location === location || s.to_location === location
+      );
     }),
     initialize: jest.fn(),
     close: jest.fn(),
@@ -33,7 +35,7 @@ jest.mock('../../storage/sqliteDatabase', () => {
     getOrdersByStore: jest.fn(),
     createUser: jest.fn(),
     findUserByUsername: jest.fn(),
-    findUserById: jest.fn()
+    findUserById: jest.fn(),
   };
 });
 

@@ -31,7 +31,7 @@ describe('EdgeDeployer', () => {
         deployment_id: 'DEP-123',
         status: 'deployed',
         endpoint_url: 'https://edge.example.com/v1',
-        model_version: 'v4'
+        model_version: 'v4',
       };
       mockApiService.edgeDeploy.mockResolvedValue(apiResult);
 
@@ -40,13 +40,13 @@ describe('EdgeDeployer', () => {
 
       expect(mockApiService.edgeDeploy).toHaveBeenCalledWith({
         model: modelConfig,
-        target: 'edge'
+        target: 'edge',
       });
       expect(result).toEqual({
         deployment_id: 'DEP-123',
         status: 'deployed',
         endpoint_url: 'https://edge.example.com/v1',
-        model_version: 'v4'
+        model_version: 'v4',
       });
     });
 
@@ -59,7 +59,7 @@ describe('EdgeDeployer', () => {
         deployment_id: 'DEP-fallback',
         status: 'deployed',
         endpoint_url: 'edge://local',
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
 
@@ -73,7 +73,7 @@ describe('EdgeDeployer', () => {
       const apiResult = {
         deployment_id: 'DEP-123',
         status: 'removed',
-        model_version: 'v4'
+        model_version: 'v4',
       };
       mockApiService.edgeUndeploy.mockResolvedValue(apiResult);
 
@@ -83,14 +83,14 @@ describe('EdgeDeployer', () => {
       expect(result).toEqual({
         deployment_id: 'DEP-123',
         status: 'removed',
-        model_version: 'v4'
+        model_version: 'v4',
       });
     });
 
     it('should use passed id when result.deployment_id is missing', async () => {
       mockApiService.edgeUndeploy.mockResolvedValue({
         status: 'removed',
-        model_version: 'v2'
+        model_version: 'v2',
       });
 
       const result = await deployer.undeployRouteModel('DEP-XYZ');
@@ -101,7 +101,7 @@ describe('EdgeDeployer', () => {
     it('should default status to removed when missing from result', async () => {
       mockApiService.edgeUndeploy.mockResolvedValue({
         deployment_id: 'DEP-1',
-        model_version: 'v1'
+        model_version: 'v1',
       });
 
       const result = await deployer.undeployRouteModel('DEP-1');
@@ -116,7 +116,7 @@ describe('EdgeDeployer', () => {
       expect(result).toEqual({
         deployment_id: 'DEP-001',
         status: 'removed',
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
 

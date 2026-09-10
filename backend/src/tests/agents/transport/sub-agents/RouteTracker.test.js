@@ -32,7 +32,7 @@ describe('RouteTracker', () => {
         current_location: { lat: 10, lng: 20 },
         eta_minutes: 45,
         progress_pct: 0.6,
-        model_version: 'v3'
+        model_version: 'v3',
       };
       mockApiService.routeStatus.mockResolvedValue(apiResult);
 
@@ -45,7 +45,7 @@ describe('RouteTracker', () => {
         current_location: { lat: 10, lng: 20 },
         eta_minutes: 45,
         progress_pct: 0.6,
-        model_version: 'v3'
+        model_version: 'v3',
       });
     });
 
@@ -55,7 +55,7 @@ describe('RouteTracker', () => {
         current_location: null,
         eta_minutes: null,
         progress_pct: 0,
-        model_version: 'v1'
+        model_version: 'v1',
       });
 
       const result = await tracker.trackRoute('R-XYZ');
@@ -73,7 +73,7 @@ describe('RouteTracker', () => {
         current_location: null,
         eta_minutes: null,
         progress_pct: 0,
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
 
@@ -92,7 +92,7 @@ describe('RouteTracker', () => {
           current_location: { lat: 1, lng: 2 },
           eta_minutes: 30,
           progress_pct: 0.5,
-          model_version: 'v2'
+          model_version: 'v2',
         })
       );
 
@@ -128,7 +128,7 @@ describe('RouteTracker', () => {
           current_location: { lat: 1, lng: 2 },
           eta_minutes: 30,
           progress_pct: 0.5,
-          model_version: 'v2'
+          model_version: 'v2',
         });
       });
 
@@ -150,7 +150,7 @@ describe('RouteTracker', () => {
         current_location: null,
         eta_minutes: null,
         progress_pct: 0,
-        model_version: 'fallback'
+        model_version: 'fallback',
       });
     });
   });

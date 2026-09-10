@@ -3,7 +3,7 @@ const UserModel = require('../../models/userModel');
 jest.mock('../../storage/sqliteDatabase', () => ({
   createUser: jest.fn(),
   findUserByUsername: jest.fn(),
-  findUserById: jest.fn()
+  findUserById: jest.fn(),
 }));
 
 const sqliteDatabase = require('../../storage/sqliteDatabase');
@@ -27,37 +27,56 @@ describe('User Model Tests', () => {
       const userData = { username: 'testuser', email: 'test@test.com', password: 'secret123' };
       const result = await UserModel.create(userData);
 
-      expect(result).toEqual({ id: 1, username: 'testuser', email: 'test@test.com', password: 'secret123' });
+      expect(result).toEqual({
+        id: 1,
+        username: 'testuser',
+        email: 'test@test.com',
+        password: 'secret123',
+      });
       expect(sqliteDatabase.createUser).toHaveBeenCalledWith({
-        username: 'testuser', email: 'test@test.com', password: 'secret123', role: 'user'
+        username: 'testuser',
+        email: 'test@test.com',
+        password: 'secret123',
+        role: 'user',
       });
     });
 
     test('should create a user with custom role', async () => {
       sqliteDatabase.createUser.mockResolvedValue(2);
 
-      const userData = { username: 'admin', email: 'admin@test.com', password: 'admin123', role: 'admin' };
+      const userData = {
+        username: 'admin',
+        email: 'admin@test.com',
+        password: 'admin123',
+        role: 'admin',
+      };
       const result = await UserModel.create(userData);
 
       expect(result).toEqual({ id: 2, ...userData });
       expect(sqliteDatabase.createUser).toHaveBeenCalledWith({
-        username: 'admin', email: 'admin@test.com', password: 'admin123', role: 'admin'
+        username: 'admin',
+        email: 'admin@test.com',
+        password: 'admin123',
+        role: 'admin',
       });
     });
 
     test('should throw when username is missing', async () => {
-      await expect(UserModel.create({ email: 'test@test.com', password: 'secret' }))
-        .rejects.toThrow('Username, email, and password are required');
+      await expect(
+        UserModel.create({ email: 'test@test.com', password: 'secret' })
+      ).rejects.toThrow('Username, email, and password are required');
     });
 
     test('should throw when email is missing', async () => {
-      await expect(UserModel.create({ username: 'testuser', password: 'secret' }))
-        .rejects.toThrow('Username, email, and password are required');
+      await expect(UserModel.create({ username: 'testuser', password: 'secret' })).rejects.toThrow(
+        'Username, email, and password are required'
+      );
     });
 
     test('should throw when password is missing', async () => {
-      await expect(UserModel.create({ username: 'testuser', email: 'test@test.com' }))
-        .rejects.toThrow('Username, email, and password are required');
+      await expect(
+        UserModel.create({ username: 'testuser', email: 'test@test.com' })
+      ).rejects.toThrow('Username, email, and password are required');
     });
   });
 

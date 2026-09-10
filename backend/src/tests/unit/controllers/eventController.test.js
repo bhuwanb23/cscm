@@ -1,7 +1,11 @@
 /**
  * Unit tests for event controller.
  */
-const { publishTelemetryEvent, publishInventoryEvent, publishOrderEvent } = require('../../../api/controllers/eventController');
+const {
+  publishTelemetryEvent,
+  publishInventoryEvent,
+  publishOrderEvent,
+} = require('../../../api/controllers/eventController');
 const { mockReqResNext } = require('../helpers');
 
 jest.mock('../../../messaging', () => ({
@@ -10,7 +14,12 @@ jest.mock('../../../messaging', () => ({
 jest.mock('../../../messaging/eventSchemas', () => ({
   validateEvent: jest.fn().mockReturnValue({ isValid: true, errors: [] }),
 }));
-jest.mock('../../../utils/logger', () => ({ info: jest.fn(), error: jest.fn(), warn: jest.fn(), debug: jest.fn() }));
+jest.mock('../../../utils/logger', () => ({
+  info: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+}));
 
 const messagingLayer = require('../../../messaging');
 const { validateEvent } = require('../../../messaging/eventSchemas');
@@ -63,7 +72,10 @@ describe('Event Controller', () => {
       await publishInventoryEvent(req, res);
 
       expect(res.statusCode).toBe(201);
-      expect(messagingLayer.publishMessage).toHaveBeenCalledWith('inventory.events', expect.any(Object));
+      expect(messagingLayer.publishMessage).toHaveBeenCalledWith(
+        'inventory.events',
+        expect.any(Object)
+      );
     });
 
     it('should reject missing fields', async () => {
@@ -79,15 +91,21 @@ describe('Event Controller', () => {
     it('should publish order event', async () => {
       const { req, res } = mockReqResNext({
         body: {
-          orderId: 'ORD-1', customerId: 'C1', items: [{ product_id: 'P1', quantity: 2 }],
-          totalAmount: 50, status: 'created',
+          orderId: 'ORD-1',
+          customerId: 'C1',
+          items: [{ product_id: 'P1', quantity: 2 }],
+          totalAmount: 50,
+          status: 'created',
         },
       });
 
       await publishOrderEvent(req, res);
 
       expect(res.statusCode).toBe(201);
-      expect(messagingLayer.publishMessage).toHaveBeenCalledWith('orders.events', expect.any(Object));
+      expect(messagingLayer.publishMessage).toHaveBeenCalledWith(
+        'orders.events',
+        expect.any(Object)
+      );
     });
 
     it('should reject missing fields', async () => {

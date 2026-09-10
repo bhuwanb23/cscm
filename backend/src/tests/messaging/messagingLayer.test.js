@@ -9,8 +9,8 @@ jest.mock('../../messaging/kafkaClient', () => ({
   disconnectConsumer: jest.fn(),
   consumer: {
     subscribe: jest.fn(),
-    run: jest.fn()
-  }
+    run: jest.fn(),
+  },
 }));
 
 jest.mock('../../messaging/mqttClient', () => ({
@@ -18,8 +18,8 @@ jest.mock('../../messaging/mqttClient', () => ({
   subscribeToTopic: jest.fn(),
   handleMessage: jest.fn(),
   client: {
-    end: jest.fn()
-  }
+    end: jest.fn(),
+  },
 }));
 
 // Mock Redis client
@@ -28,7 +28,7 @@ jest.mock('../../messaging/redisClient', () => ({
   disconnect: jest.fn(),
   sendMessage: jest.fn(),
   subscribeToTopic: jest.fn(),
-  getStatus: jest.fn(() => false)
+  getStatus: jest.fn(() => false),
 }));
 
 // Mock the logger to avoid console output during tests
@@ -36,13 +36,13 @@ jest.mock('../../utils/logger', () => ({
   info: jest.fn(),
   error: jest.fn(),
   warn: jest.fn(),
-  debug: jest.fn()
+  debug: jest.fn(),
 }));
 
 // Mock metrics tracking
 jest.mock('../../utils/metrics', () => ({
   trackKafkaMessage: jest.fn(),
-  trackMqttMessage: jest.fn()
+  trackMqttMessage: jest.fn(),
 }));
 
 describe('Messaging Layer Tests', () => {

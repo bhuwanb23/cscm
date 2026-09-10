@@ -20,11 +20,18 @@ describe('StockRecommender', () => {
     const forecast = { expectedDemand: 140, currentStock: 60 };
     const productAttrs = { holdingCost: 0.5, shortageCost: 2.0, supplierId: 'SUP-001' };
     const suppliers = {
-      'SUP-001': { onTimeDeliveryRate: 0.98, leadTimeDays: 5 }
+      'SUP-001': { onTimeDeliveryRate: 0.98, leadTimeDays: 5 },
     };
 
     test('should return a recommendation with all sections', async () => {
-      const result = await recommender.recommend('PROD-001', 100, 40, forecast, productAttrs, suppliers);
+      const result = await recommender.recommend(
+        'PROD-001',
+        100,
+        40,
+        forecast,
+        productAttrs,
+        suppliers
+      );
 
       expect(result).toHaveProperty('supplierAnalysis');
       expect(result).toHaveProperty('adjustedQuantity');
@@ -34,23 +41,44 @@ describe('StockRecommender', () => {
     });
 
     test('should adjust quantity down for low-risk supplier', async () => {
-      const result = await recommender.recommend('PROD-001', 100, 40, forecast, productAttrs, suppliers);
+      const result = await recommender.recommend(
+        'PROD-001',
+        100,
+        40,
+        forecast,
+        productAttrs,
+        suppliers
+      );
       expect(result.adjustedQuantity).toBe(95);
     });
 
     test('should adjust quantity up for high-risk supplier', async () => {
       const highRiskSuppliers = {
-        'SUP-001': { onTimeDeliveryRate: 0.7, leadTimeDays: 10 }
+        'SUP-001': { onTimeDeliveryRate: 0.7, leadTimeDays: 10 },
       };
-      const result = await recommender.recommend('PROD-001', 100, 40, forecast, productAttrs, highRiskSuppliers);
+      const result = await recommender.recommend(
+        'PROD-001',
+        100,
+        40,
+        forecast,
+        productAttrs,
+        highRiskSuppliers
+      );
       expect(result.adjustedQuantity).toBe(120);
     });
 
     test('should not adjust quantity for medium-risk supplier', async () => {
       const medRiskSuppliers = {
-        'SUP-001': { onTimeDeliveryRate: 0.9, leadTimeDays: 3 }
+        'SUP-001': { onTimeDeliveryRate: 0.9, leadTimeDays: 3 },
       };
-      const result = await recommender.recommend('PROD-001', 100, 40, forecast, productAttrs, medRiskSuppliers);
+      const result = await recommender.recommend(
+        'PROD-001',
+        100,
+        40,
+        forecast,
+        productAttrs,
+        medRiskSuppliers
+      );
       expect(result.adjustedQuantity).toBe(100);
     });
   });
@@ -143,7 +171,11 @@ describe('StockRecommender', () => {
 
   describe('_analyzeCosts', () => {
     test('should calculate holding and shortage costs', () => {
-      const result = recommender._analyzeCosts(100, { holdingCost: 1.0, shortageCost: 3.0 }, { expectedDemand: 200, currentStock: 50 });
+      const result = recommender._analyzeCosts(
+        100,
+        { holdingCost: 1.0, shortageCost: 3.0 },
+        { expectedDemand: 200, currentStock: 50 }
+      );
       expect(result.estimatedHoldingCost).toBe(100);
       expect(result.estimatedShortageCost).toBe(150);
     });

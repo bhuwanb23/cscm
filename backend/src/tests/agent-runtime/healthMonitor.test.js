@@ -13,7 +13,7 @@ describe('Health Monitor Tests', () => {
     // Start monitoring
     healthMonitor.startMonitoring();
     expect(healthMonitor.monitoringInterval).not.toBeNull();
-    
+
     // Stop monitoring
     healthMonitor.stopMonitoring();
     expect(healthMonitor.monitoringInterval).toBeNull();
@@ -23,7 +23,7 @@ describe('Health Monitor Tests', () => {
     // Start monitoring twice
     healthMonitor.startMonitoring();
     healthMonitor.startMonitoring(); // Should not throw
-    
+
     // Stop monitoring twice
     healthMonitor.stopMonitoring();
     healthMonitor.stopMonitoring(); // Should not throw

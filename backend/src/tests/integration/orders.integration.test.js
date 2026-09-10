@@ -22,7 +22,7 @@ jest.mock('../../storage/sqliteDatabase', () => {
       return 1;
     }),
     getOrdersByStore: jest.fn(async (storeId) => {
-      return Object.values(orders).filter(o => o.store_id === storeId);
+      return Object.values(orders).filter((o) => o.store_id === storeId);
     }),
     initialize: jest.fn(),
     close: jest.fn(),

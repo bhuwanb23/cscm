@@ -34,11 +34,25 @@ function mockReqResNext(overrides = {}) {
     statusCode: null,
     body: null,
     headers: {},
-    status(code) { this.statusCode = code; return this; },
-    json(data) { this.body = data; return this; },
-    setHeader(key, val) { this.headers[key] = val; return this; },
-    removeHeader() { return this; },
-    end(data) { this.body = data; return this; },
+    status(code) {
+      this.statusCode = code;
+      return this;
+    },
+    json(data) {
+      this.body = data;
+      return this;
+    },
+    setHeader(key, val) {
+      this.headers[key] = val;
+      return this;
+    },
+    removeHeader() {
+      return this;
+    },
+    end(data) {
+      this.body = data;
+      return this;
+    },
   };
   const next = jest.fn();
   return { req, res, next };
