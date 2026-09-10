@@ -18,7 +18,7 @@ class NLPSummarizer extends SubAgent {
         sentiment_label: result.sentiment_label || 'neutral',
         confidence: result.confidence !== undefined ? result.confidence : 0,
         key_phrases: result.key_phrases || [],
-        model_version: result.model_version || 'unknown'
+        model_version: result.model_version || 'unknown',
       };
     } catch (err) {
       this.error('Sentiment analysis failed:', err.message);
@@ -35,12 +35,12 @@ class NLPSummarizer extends SubAgent {
       const result = await this.apiService.sentimentAnalysis({
         text,
         max_length: maxLength,
-        action: 'summarize'
+        action: 'summarize',
       });
       return {
         summary: result.summary !== undefined ? result.summary : '',
         key_points: result.key_points || [],
-        model_version: result.model_version || 'unknown'
+        model_version: result.model_version || 'unknown',
       };
     } catch (err) {
       this.error('Summarization failed:', err.message);
@@ -54,7 +54,7 @@ class NLPSummarizer extends SubAgent {
       sentiment_label: 'neutral',
       confidence: 0,
       key_phrases: [],
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 
@@ -62,7 +62,7 @@ class NLPSummarizer extends SubAgent {
     return {
       summary: '',
       key_points: [],
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 }

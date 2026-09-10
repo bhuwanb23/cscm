@@ -4,8 +4,10 @@ class WarehouseApiService extends BaseApiService {
   _getFallback(method, path, data) {
     if (path === '/api/v1/inventory/optimize') {
       return {
-        sku_id: (data && data.sku_id) || '', store_id: (data && data.store_id) || '',
-        reorder_quantity: 50, safety_stock: 25,
+        sku_id: (data && data.sku_id) || '',
+        store_id: (data && data.store_id) || '',
+        reorder_quantity: 50,
+        safety_stock: 25,
         recommendations: [{ action: 'maintain', confidence: 0.5 }],
         model_version: 'fallback_v1',
       };
@@ -19,18 +21,18 @@ class WarehouseApiService extends BaseApiService {
     if (path === '/api/v1/inventory/batch-optimize') {
       const skus = (data && data.skus) || (data && data.pairs) || [];
       return {
-        recommendations: skus.map(s => ({
+        recommendations: skus.map((s) => ({
           sku_id: typeof s === 'string' ? s : s.sku,
           reorder_quantity: 50,
-          safety_stock: 25
+          safety_stock: 25,
         })),
-        results: (data && data.pairs ? data.pairs : []).map(p => ({
+        results: (data && data.pairs ? data.pairs : []).map((p) => ({
           sku_id: p.sku,
           store_id: p.store,
-          reorder_quantity: 50
+          reorder_quantity: 50,
         })),
         total_savings: 0,
-        model_version: 'fallback_v1'
+        model_version: 'fallback_v1',
       };
     }
     if (path === '/api/v1/vision/analyze') {
@@ -40,7 +42,7 @@ class WarehouseApiService extends BaseApiService {
         quality_issues: [],
         issues: [],
         score: 0.5,
-        model_version: 'fallback_v1'
+        model_version: 'fallback_v1',
       };
     }
     return null;

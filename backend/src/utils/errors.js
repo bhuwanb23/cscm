@@ -16,7 +16,7 @@ class AppError extends Error {
     this.details = details;
     this.timestamp = new Date().toISOString();
     this.isOperational = true; // Distinguishes operational errors from programming errors
-    
+
     Error.captureStackTrace(this, this.constructor);
   }
 
@@ -27,7 +27,7 @@ class AppError extends Error {
       code: this.code,
       statusCode: this.statusCode,
       details: this.details,
-      timestamp: this.timestamp
+      timestamp: this.timestamp,
     };
   }
 }
@@ -48,7 +48,7 @@ class ValidationError extends AppError {
  */
 class NotFoundError extends AppError {
   constructor(resource, identifier = null) {
-    const message = identifier 
+    const message = identifier
       ? `${resource} with identifier '${identifier}' not found`
       : `${resource} not found`;
     super(message, 'NOT_FOUND', 404, { resource, identifier });
@@ -272,10 +272,10 @@ function formatErrorResponse(error) {
   if (error instanceof AppError) {
     return {
       success: false,
-      error: error.toJSON()
+      error: error.toJSON(),
     };
   }
-  
+
   // For standard JavaScript errors
   return {
     success: false,
@@ -284,8 +284,8 @@ function formatErrorResponse(error) {
       message: error.message,
       code: 'INTERNAL_ERROR',
       statusCode: 500,
-      timestamp: new Date().toISOString()
-    }
+      timestamp: new Date().toISOString(),
+    },
   };
 }
 
@@ -298,7 +298,7 @@ function isOperationalError(error) {
   if (error instanceof AppError) {
     return error.isOperational;
   }
-  
+
   // Consider certain built-in errors as operational
   const operationalErrors = [
     'ValidationError',
@@ -306,9 +306,9 @@ function isOperationalError(error) {
     'UnauthorizedError',
     'ForbiddenError',
     'ConflictError',
-    'RateLimitError'
+    'RateLimitError',
   ];
-  
+
   return operationalErrors.includes(error.name);
 }
 
@@ -321,17 +321,17 @@ function getErrorStatusCode(error) {
   if (error instanceof AppError) {
     return error.statusCode;
   }
-  
+
   // Default status codes for standard errors
   const statusCodeMap = {
-    'ValidationError': 400,
-    'NotFoundError': 404,
-    'UnauthorizedError': 401,
-    'ForbiddenError': 403,
-    'ConflictError': 409,
-    'RateLimitError': 429
+    ValidationError: 400,
+    NotFoundError: 404,
+    UnauthorizedError: 401,
+    ForbiddenError: 403,
+    ConflictError: 409,
+    RateLimitError: 429,
   };
-  
+
   return statusCodeMap[error.name] || 500;
 }
 
@@ -361,5 +361,5 @@ module.exports = {
   HealthCheckError,
   formatErrorResponse,
   isOperationalError,
-  getErrorStatusCode
+  getErrorStatusCode,
 };

@@ -18,7 +18,7 @@ class PickingOptimizer extends SubAgent {
       warehouse_id: this.warehouseId,
       picking_queue: pickingQueue,
       warehouse_layout: warehouseLayout,
-      inventory
+      inventory,
     };
 
     try {
@@ -31,12 +31,12 @@ class PickingOptimizer extends SubAgent {
   }
 
   async generateRoute(pickingTask, warehouseLayout) {
-    this.log(`Generating picking route for task`);
+    this.log('Generating picking route for task');
 
     const data = {
       warehouse_id: this.warehouseId,
       picking_task: pickingTask,
-      warehouse_layout: warehouseLayout
+      warehouse_layout: warehouseLayout,
     };
 
     try {

@@ -17,7 +17,7 @@ class VisionInspector extends SubAgent {
     const data = {
       image: imageData,
       warehouse_id: this.warehouseId,
-      ...options
+      ...options,
     };
 
     try {
@@ -26,7 +26,7 @@ class VisionInspector extends SubAgent {
         detections: result.detections || [],
         inventory_estimate: result.inventory_estimate || {},
         quality_issues: result.quality_issues || [],
-        model_version: result.model_version || 'unknown'
+        model_version: result.model_version || 'unknown',
       };
     } catch (err) {
       this.error('Vision inspection failed:', err.message);
@@ -44,14 +44,14 @@ class VisionInspector extends SubAgent {
 
     const data = {
       image: imageData,
-      target_objects: objectTypes
+      target_objects: objectTypes,
     };
 
     try {
       const result = await this.apiService.visionAnalyze(data);
       return {
         detections: result.detections || [],
-        model_version: result.model_version || 'unknown'
+        model_version: result.model_version || 'unknown',
       };
     } catch (err) {
       this.error('Object detection failed:', err.message);
@@ -69,7 +69,7 @@ class VisionInspector extends SubAgent {
 
     const data = {
       image: imageData,
-      quality_criteria: criteria
+      quality_criteria: criteria,
     };
 
     try {
@@ -77,7 +77,7 @@ class VisionInspector extends SubAgent {
       return {
         score: result.score != null ? result.score : 0,
         issues: result.issues || result.quality_issues || [],
-        model_version: result.model_version || 'unknown'
+        model_version: result.model_version || 'unknown',
       };
     } catch (err) {
       this.error('Quality assessment failed:', err.message);
@@ -90,14 +90,14 @@ class VisionInspector extends SubAgent {
       detections: [],
       inventory_estimate: {},
       quality_issues: [],
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 
   _fallbackDetect() {
     return {
       detections: [],
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 
@@ -105,7 +105,7 @@ class VisionInspector extends SubAgent {
     return {
       score: 0.5,
       issues: [],
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 }

@@ -1,6 +1,6 @@
 /**
  * Shipment Model
- * 
+ *
  * This module defines the shipment data model and provides methods for
  * interacting with shipment data.
  */
@@ -28,18 +28,18 @@ class ShipmentModel {
         status: shipmentData.status || 'pending',
         carrier: shipmentData.carrier || null,
         tracking_number: shipmentData.tracking_number || null,
-        estimated_delivery: shipmentData.estimated_delivery || null
+        estimated_delivery: shipmentData.estimated_delivery || null,
       };
 
       // Insert shipment in database
       const id = await sqliteDatabase.createShipment(data);
-      
+
       // If shipment items are provided, add them
       if (shipmentData.items && Array.isArray(shipmentData.items)) {
         for (const item of shipmentData.items) {
           await this.addShipmentItem({
             shipment_id: data.shipment_id,
-            ...item
+            ...item,
           });
         }
       }
@@ -65,7 +65,7 @@ class ShipmentModel {
       const data = {
         shipment_id: itemData.shipment_id,
         product_id: itemData.product_id,
-        quantity: itemData.quantity || 1
+        quantity: itemData.quantity || 1,
       };
 
       // Insert shipment item in database
@@ -107,7 +107,11 @@ class ShipmentModel {
       }
 
       // Update shipment status in database
-      const changes = await sqliteDatabase.updateShipmentStatus(shipmentId, status, additionalFields);
+      const changes = await sqliteDatabase.updateShipmentStatus(
+        shipmentId,
+        status,
+        additionalFields
+      );
       return { shipment_id: shipmentId, status, changes };
     } catch (error) {
       throw new Error(`Failed to update shipment status: ${error.message}`);

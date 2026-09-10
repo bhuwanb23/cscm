@@ -4,7 +4,8 @@ class CustomerDemandApiService extends BaseApiService {
   _getFallback(method, path, data) {
     if (path === '/api/v1/demand/forecast') {
       return {
-        forecast_values: [100], forecast_dates: [new Date().toISOString().slice(0, 10)],
+        forecast_values: [100],
+        forecast_dates: [new Date().toISOString().slice(0, 10)],
         model_version: 'fallback_v1',
       };
     }
@@ -26,7 +27,7 @@ class CustomerDemandApiService extends BaseApiService {
         sentiment_label: 'neutral',
         confidence: 0,
         key_phrases: [],
-        model_version: 'fallback_v1'
+        model_version: 'fallback_v1',
       };
     }
     return null;
@@ -45,7 +46,10 @@ class CustomerDemandApiService extends BaseApiService {
   }
 
   async customerTrends(customerSegment) {
-    return this.call('get', `/api/v1/customer/trends/${customerSegment}`, null, { allowFallback: true, bypassCircuitBreaker: true });
+    return this.call('get', `/api/v1/customer/trends/${customerSegment}`, null, {
+      allowFallback: true,
+      bypassCircuitBreaker: true,
+    });
   }
 
   async segmentSimilarity(data) {

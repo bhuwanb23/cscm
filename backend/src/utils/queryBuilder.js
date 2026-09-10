@@ -14,7 +14,7 @@ function buildSelectQuery(table, filters = {}, options = {}) {
   const conditions = [];
   const params = [];
   let paramIndex = 1;
-  
+
   // Build WHERE clause
   for (const [key, value] of Object.entries(filters)) {
     if (value !== undefined && value !== null) {
@@ -23,32 +23,32 @@ function buildSelectQuery(table, filters = {}, options = {}) {
       paramIndex++;
     }
   }
-  
+
   // Build ORDER BY clause
-  let orderBy = options.orderBy || 'id';
-  let orderDirection = options.orderDirection || 'ASC';
-  
+  const orderBy = options.orderBy || 'id';
+  const orderDirection = options.orderDirection || 'ASC';
+
   // Build LIMIT and OFFSET
-  let limit = options.limit;
-  let offset = options.offset;
-  
+  const limit = options.limit;
+  const offset = options.offset;
+
   // Construct SQL
   let sql = `SELECT * FROM ${table}`;
-  
+
   if (conditions.length > 0) {
     sql += ` WHERE ${conditions.join(' AND ')}`;
   }
-  
+
   sql += ` ORDER BY ${orderBy} ${orderDirection}`;
-  
+
   if (limit) {
     sql += ` LIMIT ${limit}`;
   }
-  
+
   if (offset) {
     sql += ` OFFSET ${offset}`;
   }
-  
+
   return { sql, params };
 }
 
@@ -62,9 +62,9 @@ function buildInsertQuery(table, data) {
   const columns = Object.keys(data);
   const values = Object.values(data);
   const placeholders = values.map((_, index) => `$${index + 1}`).join(', ');
-  
+
   const sql = `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders})`;
-  
+
   return { sql, params: values };
 }
 
@@ -80,7 +80,7 @@ function buildUpdateQuery(table, data, filters) {
   const whereClauses = [];
   const params = [];
   let paramIndex = 1;
-  
+
   // Build SET clause
   for (const [key, value] of Object.entries(data)) {
     if (value !== undefined) {
@@ -89,16 +89,16 @@ function buildUpdateQuery(table, data, filters) {
       paramIndex++;
     }
   }
-  
+
   // Build WHERE clause
   for (const [key, value] of Object.entries(filters)) {
     whereClauses.push(`${key} = $${paramIndex}`);
     params.push(value);
     paramIndex++;
   }
-  
+
   const sql = `UPDATE ${table} SET ${setClauses.join(', ')} WHERE ${whereClauses.join(' AND ')}`;
-  
+
   return { sql, params };
 }
 
@@ -112,15 +112,15 @@ function buildDeleteQuery(table, filters) {
   const whereClauses = [];
   const params = [];
   let paramIndex = 1;
-  
+
   for (const [key, value] of Object.entries(filters)) {
     whereClauses.push(`${key} = $${paramIndex}`);
     params.push(value);
     paramIndex++;
   }
-  
+
   const sql = `DELETE FROM ${table} WHERE ${whereClauses.join(' AND ')}`;
-  
+
   return { sql, params };
 }
 
@@ -134,7 +134,7 @@ function buildCountQuery(table, filters = {}) {
   const conditions = [];
   const params = [];
   let paramIndex = 1;
-  
+
   for (const [key, value] of Object.entries(filters)) {
     if (value !== undefined && value !== null) {
       conditions.push(`${key} = $${paramIndex}`);
@@ -142,13 +142,13 @@ function buildCountQuery(table, filters = {}) {
       paramIndex++;
     }
   }
-  
+
   let sql = `SELECT COUNT(*) as count FROM ${table}`;
-  
+
   if (conditions.length > 0) {
     sql += ` WHERE ${conditions.join(' AND ')}`;
   }
-  
+
   return { sql, params };
 }
 
@@ -164,15 +164,15 @@ function buildJoinQuery(table, joins, filters = {}, options = {}) {
   const conditions = [];
   const params = [];
   let paramIndex = 1;
-  
+
   // Build JOIN clauses
-  const joinClauses = joins.map(join => {
+  const joinClauses = joins.map((join) => {
     const joinType = join.type || 'INNER';
     const joinTable = join.table;
     const joinCondition = join.on;
     return `${joinType} JOIN ${joinTable} ON ${joinCondition}`;
   });
-  
+
   // Build WHERE clause
   for (const [key, value] of Object.entries(filters)) {
     if (value !== undefined && value !== null) {
@@ -181,36 +181,36 @@ function buildJoinQuery(table, joins, filters = {}, options = {}) {
       paramIndex++;
     }
   }
-  
+
   // Build ORDER BY clause
-  let orderBy = options.orderBy || `${table}.id`;
-  let orderDirection = options.orderDirection || 'ASC';
-  
+  const orderBy = options.orderBy || `${table}.id`;
+  const orderDirection = options.orderDirection || 'ASC';
+
   // Build LIMIT and OFFSET
-  let limit = options.limit;
-  let offset = options.offset;
-  
+  const limit = options.limit;
+  const offset = options.offset;
+
   // Construct SQL
   let sql = `SELECT * FROM ${table}`;
-  
+
   if (joinClauses.length > 0) {
     sql += ` ${joinClauses.join(' ')}`;
   }
-  
+
   if (conditions.length > 0) {
     sql += ` WHERE ${conditions.join(' AND ')}`;
   }
-  
+
   sql += ` ORDER BY ${orderBy} ${orderDirection}`;
-  
+
   if (limit) {
     sql += ` LIMIT ${limit}`;
   }
-  
+
   if (offset) {
     sql += ` OFFSET ${offset}`;
   }
-  
+
   return { sql, params };
 }
 
@@ -224,20 +224,22 @@ function buildBatchInsertQuery(table, dataArray) {
   if (dataArray.length === 0) {
     throw new Error('Cannot build batch insert query with empty data array');
   }
-  
+
   const columns = Object.keys(dataArray[0]);
   const allValues = [];
   const valueGroups = [];
-  
+
   for (const data of dataArray) {
-    const values = columns.map(col => data[col]);
+    const values = columns.map((col) => data[col]);
     allValues.push(...values);
-    const placeholders = values.map((_, index) => `$${valueGroups.length * columns.length + index + 1}`);
+    const placeholders = values.map(
+      (_, index) => `$${valueGroups.length * columns.length + index + 1}`
+    );
     valueGroups.push(`(${placeholders.join(', ')})`);
   }
-  
+
   const sql = `INSERT INTO ${table} (${columns.join(', ')}) VALUES ${valueGroups.join(', ')}`;
-  
+
   return { sql, params: allValues };
 }
 
@@ -252,21 +254,19 @@ function buildUpsertQuery(table, data, conflictColumns) {
   const columns = Object.keys(data);
   const values = Object.values(data);
   const placeholders = values.map((_, index) => `$${index + 1}`).join(', ');
-  
-  const conflictColumnNames = Array.isArray(conflictColumns) 
-    ? conflictColumns 
-    : [conflictColumns];
-  
+
+  const conflictColumnNames = Array.isArray(conflictColumns) ? conflictColumns : [conflictColumns];
+
   const updateSet = columns
-    .filter(col => !conflictColumnNames.includes(col))
-    .map(col => `${col} = EXCLUDED.${col}`)
+    .filter((col) => !conflictColumnNames.includes(col))
+    .map((col) => `${col} = EXCLUDED.${col}`)
     .join(', ');
-  
+
   const sql = `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders}) 
                ON CONFLICT (${conflictColumnNames.join(', ')}) 
                DO UPDATE SET ${updateSet} 
                RETURNING *`;
-  
+
   return { sql, params: values };
 }
 
@@ -300,5 +300,5 @@ module.exports = {
   buildBatchInsertQuery,
   buildUpsertQuery,
   sanitizeColumnName,
-  validateTableName
+  validateTableName,
 };

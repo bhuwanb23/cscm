@@ -11,7 +11,9 @@ class DemandForecaster extends SubAgent {
 
     if (!productId) throw new Error('productId is required');
     if (!salesData || salesData.length < 7) {
-      this.warn(`Not enough sales data for ${productId} (${salesData ? salesData.length : 0} records)`);
+      this.warn(
+        `Not enough sales data for ${productId} (${salesData ? salesData.length : 0} records)`
+      );
       return null;
     }
 
@@ -19,7 +21,7 @@ class DemandForecaster extends SubAgent {
       product_id: productId,
       store_id: this.storeId,
       sales_data: salesData,
-      forecast_days: forecastDays
+      forecast_days: forecastDays,
     };
 
     try {
@@ -32,7 +34,7 @@ class DemandForecaster extends SubAgent {
         safetyStock: result.safety_stock,
         confidenceInterval: result.confidence_interval,
         trend: result.trend,
-        lastUpdated: new Date().toISOString()
+        lastUpdated: new Date().toISOString(),
       };
     } catch (err) {
       this.error(`Forecast failed for ${productId}:`, err.message);

@@ -11,7 +11,7 @@ class SupplierCalibrator extends SubAgent {
 
     const data = {
       assessments: historicalAssessments,
-      ground_truth: groundTruth
+      ground_truth: groundTruth,
     };
 
     try {
@@ -40,7 +40,7 @@ class SupplierCalibrator extends SubAgent {
     return {
       calibration_score: 0.5,
       threshold_adjustments: { low: 30, medium: 60, high: 80 },
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 
@@ -49,7 +49,7 @@ class SupplierCalibrator extends SubAgent {
       last_calibrated: null,
       sample_size: 0,
       drift_detected: false,
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 }

@@ -1,6 +1,6 @@
 /**
  * Order Model
- * 
+ *
  * This module defines the order data model and provides methods for
  * interacting with order data.
  */
@@ -25,18 +25,18 @@ class OrderModel {
         store_id: orderData.store_id,
         customer_id: orderData.customer_id || null,
         total_amount: orderData.total_amount || 0.0,
-        status: orderData.status || 'pending'
+        status: orderData.status || 'pending',
       };
 
       // Insert order in database
       const id = await sqliteDatabase.createOrder(data);
-      
+
       // If order items are provided, add them
       if (orderData.items && Array.isArray(orderData.items)) {
         for (const item of orderData.items) {
           await this.addOrderItem({
             order_id: data.order_id,
-            ...item
+            ...item,
           });
         }
       }
@@ -64,7 +64,8 @@ class OrderModel {
         product_id: itemData.product_id,
         quantity: itemData.quantity || 1,
         unit_price: itemData.unit_price || 0.0,
-        total_price: itemData.total_price || (itemData.quantity || 1) * (itemData.unit_price || 0.0)
+        total_price:
+          itemData.total_price || (itemData.quantity || 1) * (itemData.unit_price || 0.0),
       };
 
       // Insert order item in database

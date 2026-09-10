@@ -6,7 +6,14 @@ class StockRecommender extends SubAgent {
     this.storeId = storeId;
   }
 
-  async recommend(productId, optimalQuantity, reorderPoint, forecast, productAttrs = {}, suppliers = {}) {
+  async recommend(
+    productId,
+    optimalQuantity,
+    reorderPoint,
+    forecast,
+    productAttrs = {},
+    suppliers = {}
+  ) {
     this.log(`Generating restock recommendation for product ${productId}`);
 
     const supplierId = productAttrs.supplierId;
@@ -23,7 +30,7 @@ class StockRecommender extends SubAgent {
       adjustedQuantity,
       orderTiming,
       riskAssessment,
-      costAnalysis
+      costAnalysis,
     };
   }
 
@@ -33,12 +40,21 @@ class StockRecommender extends SubAgent {
     }
     const rate = supplierInfo.onTimeDeliveryRate || 0.9;
     if (rate < 0.8) {
-      return { riskLevel: 'high', recommendation: `High-risk supplier (${Math.round(rate * 100)}% on-time)` };
+      return {
+        riskLevel: 'high',
+        recommendation: `High-risk supplier (${Math.round(rate * 100)}% on-time)`,
+      };
     }
     if (rate > 0.95) {
-      return { riskLevel: 'low', recommendation: `Reliable supplier (${Math.round(rate * 100)}% on-time)` };
+      return {
+        riskLevel: 'low',
+        recommendation: `Reliable supplier (${Math.round(rate * 100)}% on-time)`,
+      };
     }
-    return { riskLevel: 'medium', recommendation: `Standard supplier (${Math.round(rate * 100)}% on-time)` };
+    return {
+      riskLevel: 'medium',
+      recommendation: `Standard supplier (${Math.round(rate * 100)}% on-time)`,
+    };
   }
 
   _adjustQuantity(optimalQuantity, riskLevel) {
@@ -62,7 +78,7 @@ class StockRecommender extends SubAgent {
       recommendedOrderDate: orderDate.toISOString().split('T')[0],
       expectedDeliveryDate: deliveryDate.toISOString().split('T')[0],
       daysUntilStockout,
-      leadTimeDays
+      leadTimeDays,
     };
   }
 
@@ -70,14 +86,18 @@ class StockRecommender extends SubAgent {
     const leadTime = (supplierInfo && supplierInfo.leadTimeDays) || 3;
     return {
       supplierRisk: 'medium',
-      stockoutRisk: daysUntilStockout < leadTime ? 'high' : 'low'
+      stockoutRisk: daysUntilStockout < leadTime ? 'high' : 'low',
     };
   }
 
   _analyzeCosts(adjustedQuantity, productAttrs, forecast) {
     return {
       estimatedHoldingCost: adjustedQuantity * (productAttrs.holdingCost || 0.5),
-      estimatedShortageCost: Math.max(0, ((forecast.expectedDemand || 100) - (forecast.currentStock || 0) - adjustedQuantity)) * (productAttrs.shortageCost || 2.0)
+      estimatedShortageCost:
+        Math.max(
+          0,
+          (forecast.expectedDemand || 100) - (forecast.currentStock || 0) - adjustedQuantity
+        ) * (productAttrs.shortageCost || 2.0),
     };
   }
 }

@@ -26,8 +26,8 @@ class FleetManager extends SubAgent {
   assignVehicle(delivery, availableVehicles) {
     if (!availableVehicles || availableVehicles.length === 0) return null;
 
-    const suitable = availableVehicles.filter(v =>
-      v.status === 'available' && (!delivery.weight || v.capacity >= delivery.weight)
+    const suitable = availableVehicles.filter(
+      (v) => v.status === 'available' && (!delivery.weight || v.capacity >= delivery.weight)
     );
 
     if (suitable.length === 0) return null;
@@ -42,7 +42,7 @@ class FleetManager extends SubAgent {
     vehicles[vehicleId] = {
       ...vehicles[vehicleId],
       status,
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
     };
 
     return vehicles[vehicleId];
@@ -50,8 +50,8 @@ class FleetManager extends SubAgent {
 
   generateAnalytics(deliveries) {
     const total = deliveries.length;
-    const completed = deliveries.filter(d => d.status === 'completed').length;
-    const delayed = deliveries.filter(d => d.status === 'delayed').length;
+    const completed = deliveries.filter((d) => d.status === 'completed').length;
+    const delayed = deliveries.filter((d) => d.status === 'delayed').length;
 
     return {
       totalDeliveries: total,
@@ -59,7 +59,7 @@ class FleetManager extends SubAgent {
       delayedDeliveries: delayed,
       completionRate: total > 0 ? completed / total : 0,
       delayRate: total > 0 ? delayed / total : 0,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 }

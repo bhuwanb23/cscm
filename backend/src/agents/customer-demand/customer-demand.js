@@ -8,7 +8,7 @@ const NLPSummarizer = require('./sub-agents/NLPSummarizer');
 
 /**
  * Customer Demand Agent
- * 
+ *
  * This agent senses demand from multiple sources, analyzes trends,
  * and models promotional impacts using advanced AI/ML models.
  */
@@ -20,7 +20,7 @@ class CustomerDemandAgent {
       promotionalEffects: {},
       customerSegments: {},
       externalFactors: {},
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     };
     this.storagePath = path.join(__dirname, '..', '..', '..', 'data', 'customer_demand_state.json');
     this.loadState();
@@ -57,7 +57,7 @@ class CustomerDemandAgent {
       if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
       }
-      
+
       fs.writeFileSync(this.storagePath, JSON.stringify(this.state, null, 2));
       console.log('Customer Demand Agent: State saved successfully');
     } catch (error) {
@@ -71,42 +71,42 @@ class CustomerDemandAgent {
   async initialize() {
     try {
       console.log('Customer Demand Agent: Initializing...');
-      
+
       // Subscribe to sales data from multiple sources
       await messagingLayer.subscribeToTopic(
-        'sales.data.*', 
+        'sales.data.*',
         this.handleSalesData.bind(this),
         'kafka'
       );
-      
+
       // Subscribe to external signals (weather, events, etc.)
       await messagingLayer.subscribeToTopic(
-        'external.signals.*', 
+        'external.signals.*',
         this.handleExternalSignals.bind(this),
         'kafka'
       );
-      
+
       // Subscribe to promotional events
       await messagingLayer.subscribeToTopic(
-        'promotions.active.*', 
+        'promotions.active.*',
         this.handlePromotions.bind(this),
         'kafka'
       );
-      
+
       // Subscribe to customer behavior data
       await messagingLayer.subscribeToTopic(
-        'customer.behavior.*', 
+        'customer.behavior.*',
         this.handleCustomerBehavior.bind(this),
         'kafka'
       );
-      
+
       // Subscribe to market research data
       await messagingLayer.subscribeToTopic(
-        'market.research.*', 
+        'market.research.*',
         this.handleMarketResearch.bind(this),
         'kafka'
       );
-      
+
       console.log('Customer Demand Agent: Initialized successfully');
     } catch (error) {
       console.error('Customer Demand Agent: Initialization failed:', error.message);
@@ -119,37 +119,37 @@ class CustomerDemandAgent {
   async handleSalesData(topic, message) {
     try {
       console.log('Customer Demand Agent: Received sales data', message);
-      
+
       // Update demand signals
       const { storeId, productId, sales, timestamp, source } = message;
-      
+
       if (!this.state.demandSignals[storeId]) {
         this.state.demandSignals[storeId] = {};
       }
-      
+
       if (!this.state.demandSignals[storeId][productId]) {
         this.state.demandSignals[storeId][productId] = [];
       }
-      
+
       // Add new sales data point
       this.state.demandSignals[storeId][productId].push({
         sales,
         timestamp: timestamp || new Date().toISOString(),
-        source
+        source,
       });
-      
+
       // Keep only last 90 days of data
       const ninetyDaysAgo = new Date();
       ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-      
-      this.state.demandSignals[storeId][productId] = this.state.demandSignals[storeId][productId]
-        .filter(record => new Date(record.timestamp) > ninetyDaysAgo);
-      
+
+      this.state.demandSignals[storeId][productId] = this.state.demandSignals[storeId][
+        productId
+      ].filter((record) => new Date(record.timestamp) > ninetyDaysAgo);
+
       this.saveState();
-      
+
       // Trigger trend analysis
       this.analyzeTrends(storeId, productId);
-      
     } catch (error) {
       console.error('Customer Demand Agent: Failed to handle sales data:', error.message);
     }
@@ -161,22 +161,21 @@ class CustomerDemandAgent {
   async handleExternalSignals(topic, message) {
     try {
       console.log('Customer Demand Agent: Received external signals', message);
-      
+
       const { signalType, data, timestamp, location } = message;
-      
+
       if (!this.state.externalFactors[signalType]) {
         this.state.externalFactors[signalType] = [];
       }
-      
+
       // Add new external factor data
       this.state.externalFactors[signalType].push({
         data,
         timestamp: timestamp || new Date().toISOString(),
-        location
+        location,
       });
-      
+
       this.saveState();
-      
     } catch (error) {
       console.error('Customer Demand Agent: Failed to handle external signals:', error.message);
     }
@@ -188,13 +187,13 @@ class CustomerDemandAgent {
   async handlePromotions(topic, message) {
     try {
       console.log('Customer Demand Agent: Received promotional data', message);
-      
+
       const { promotionId, storeId, productId, discount, startDate, endDate, type } = message;
-      
+
       if (!this.state.promotionalEffects[promotionId]) {
         this.state.promotionalEffects[promotionId] = {};
       }
-      
+
       this.state.promotionalEffects[promotionId] = {
         storeId,
         productId,
@@ -202,14 +201,13 @@ class CustomerDemandAgent {
         startDate,
         endDate,
         type,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
-      
+
       this.saveState();
-      
+
       // Trigger promotional impact analysis
       this.analyzePromotionalImpact(promotionId);
-      
     } catch (error) {
       console.error('Customer Demand Agent: Failed to handle promotions:', error.message);
     }
@@ -221,14 +219,13 @@ class CustomerDemandAgent {
   async handleCustomerBehavior(topic, message) {
     try {
       console.log('Customer Demand Agent: Received customer behavior data', message);
-      
+
       const { customerId, storeId, actions, timestamp } = message;
-      
+
       // Update customer segments based on behavior
       await this.segmentCustomers(customerId, actions);
-      
+
       this.saveState();
-      
     } catch (error) {
       console.error('Customer Demand Agent: Failed to handle customer behavior:', error.message);
     }
@@ -240,12 +237,11 @@ class CustomerDemandAgent {
   async handleMarketResearch(topic, message) {
     try {
       console.log('Customer Demand Agent: Received market research data', message);
-      
+
       // Store market research data for trend analysis
       // In a real implementation, this would be used to adjust forecasts
-      
+
       this.saveState();
-      
     } catch (error) {
       console.error('Customer Demand Agent: Failed to handle market research:', error.message);
     }
@@ -256,7 +252,9 @@ class CustomerDemandAgent {
    */
   async analyzeTrends(storeId, productId) {
     try {
-      console.log(`Customer Demand Agent: Analyzing trends for store ${storeId}, product ${productId}`);
+      console.log(
+        `Customer Demand Agent: Analyzing trends for store ${storeId}, product ${productId}`
+      );
 
       const salesData = this.state.demandSignals[storeId]?.[productId] || [];
       if (salesData.length < 10) {
@@ -272,10 +270,15 @@ class CustomerDemandAgent {
       }
       this.state.trendAnalysis[storeId][productId] = {
         trendDirection: trendAnalysis.trend,
-        trendPercentage: trendAnalysis.trend === 'increasing' ? 10 : trendAnalysis.trend === 'decreasing' ? -10 : 0,
+        trendPercentage:
+          trendAnalysis.trend === 'increasing'
+            ? 10
+            : trendAnalysis.trend === 'decreasing'
+              ? -10
+              : 0,
         recentAverage: trendAnalysis.expectedDemand,
         confidence: trendAnalysis.confidenceInterval || 0.5,
-        lastAnalyzed: new Date().toISOString()
+        lastAnalyzed: new Date().toISOString(),
       };
 
       this.saveState();
@@ -286,7 +289,9 @@ class CustomerDemandAgent {
         'kafka'
       );
 
-      console.log(`Customer Demand Agent: Trend analysis complete for ${storeId}-${productId}: ${trendAnalysis.trend} (expected: ${trendAnalysis.expectedDemand})`);
+      console.log(
+        `Customer Demand Agent: Trend analysis complete for ${storeId}-${productId}: ${trendAnalysis.trend} (expected: ${trendAnalysis.expectedDemand})`
+      );
     } catch (error) {
       console.error('Customer Demand Agent: Failed to analyze trends:', error.message);
     }
@@ -322,7 +327,7 @@ class CustomerDemandAgent {
           store_id: storeId,
           product_id: productId,
           discount: discount,
-          sales_data: salesData
+          sales_data: salesData,
         };
         const result = await this.apiService.causalInference(requestData);
         const liftPct = result.treatment_effect !== undefined ? result.treatment_effect * 100 : 0;
@@ -331,32 +336,36 @@ class CustomerDemandAgent {
           promotionSales: result.promotion_sales || 0,
           liftPercentage: parseFloat(liftPct.toFixed(2)),
           estimatedROI: result.roi !== undefined ? result.roi : 0,
-          confidence: result.confidence || 0.5
+          confidence: result.confidence || 0.5,
         };
       } catch (apiError) {
-        console.warn(`Customer Demand Agent: AI/ML API unavailable, using inline simulation: ${apiError.message}`);
+        console.warn(
+          `Customer Demand Agent: AI/ML API unavailable, using inline simulation: ${apiError.message}`
+        );
 
         // Inline fallback
-        const baselineSales = salesData
-          .slice(0, Math.floor(salesData.length / 2))
-          .reduce((sum, record) => sum + record.sales, 0) / Math.floor(salesData.length / 2);
-        const promotionSales = salesData
-          .slice(Math.floor(salesData.length / 2))
-          .reduce((sum, record) => sum + record.sales, 0) / Math.floor(salesData.length / 2);
+        const baselineSales =
+          salesData
+            .slice(0, Math.floor(salesData.length / 2))
+            .reduce((sum, record) => sum + record.sales, 0) / Math.floor(salesData.length / 2);
+        const promotionSales =
+          salesData
+            .slice(Math.floor(salesData.length / 2))
+            .reduce((sum, record) => sum + record.sales, 0) / Math.floor(salesData.length / 2);
         const liftPercentage = ((promotionSales - baselineSales) / baselineSales) * 100;
         analysis = {
           baselineSales: parseFloat(baselineSales.toFixed(2)),
           promotionSales: parseFloat(promotionSales.toFixed(2)),
           liftPercentage: parseFloat(liftPercentage.toFixed(2)),
           estimatedROI: parseFloat((liftPercentage / (discount * 100)).toFixed(2)),
-          confidence: 0.8
+          confidence: 0.8,
         };
       }
 
       // Store promotional analysis
       this.state.promotionalEffects[promotionId].analysis = {
         ...analysis,
-        lastAnalyzed: new Date().toISOString()
+        lastAnalyzed: new Date().toISOString(),
       };
 
       this.saveState();
@@ -368,7 +377,9 @@ class CustomerDemandAgent {
         'kafka'
       );
 
-      console.log(`Customer Demand Agent: Promotional impact analysis complete for ${promotionId}: ${analysis.liftPercentage}% lift`);
+      console.log(
+        `Customer Demand Agent: Promotional impact analysis complete for ${promotionId}: ${analysis.liftPercentage}% lift`
+      );
     } catch (error) {
       console.error('Customer Demand Agent: Failed to analyze promotional impact:', error.message);
     }
@@ -381,11 +392,15 @@ class CustomerDemandAgent {
     try {
       console.log(`Customer Demand Agent: Segmenting customer ${customerId}`);
 
-      const customers = [{
-        id: customerId,
-        actions,
-        totalSpending: actions.filter(a => a.type === 'purchase').reduce((s, a) => s + (a.value || 0), 0)
-      }];
+      const customers = [
+        {
+          id: customerId,
+          actions,
+          totalSpending: actions
+            .filter((a) => a.type === 'purchase')
+            .reduce((s, a) => s + (a.value || 0), 0),
+        },
+      ];
 
       const segments = await this.segmentManager.segment(customers);
 
@@ -400,11 +415,11 @@ class CustomerDemandAgent {
       this.state.customerSegments[customerId] = {
         segment,
         metrics: {
-          views: actions.filter(a => a.type === 'view').length,
-          cartAdds: actions.filter(a => a.type === 'addToCart').length,
-          purchases: actions.filter(a => a.type === 'purchase').length
+          views: actions.filter((a) => a.type === 'view').length,
+          cartAdds: actions.filter((a) => a.type === 'addToCart').length,
+          purchases: actions.filter((a) => a.type === 'purchase').length,
         },
-        lastSegmented: new Date().toISOString()
+        lastSegmented: new Date().toISOString(),
       };
 
       messagingLayer.publishMessage(
@@ -424,7 +439,7 @@ class CustomerDemandAgent {
    */
   getState() {
     return {
-      ...this.state
+      ...this.state,
     };
   }
 }
@@ -432,30 +447,30 @@ class CustomerDemandAgent {
 // If run directly, start the agent
 if (require.main === module) {
   const agent = new CustomerDemandAgent();
-  
+
   // Initialize agent
   agent.initialize().then(() => {
     console.log('Customer Demand Agent is running...');
-    
+
     // For demo purposes, simulate some sales data
     setInterval(() => {
       // Simulate random sales data
       const storeIds = ['STORE-1', 'STORE-2'];
       const productIds = ['product_a', 'product_b', 'product_c'];
-      
+
       const randomStoreId = storeIds[Math.floor(Math.random() * storeIds.length)];
       const randomProductId = productIds[Math.floor(Math.random() * productIds.length)];
       const randomSales = Math.floor(Math.random() * 50) + 10; // 10-60 units
       const sources = ['pos', 'online', 'mobile'];
       const randomSource = sources[Math.floor(Math.random() * sources.length)];
-      
+
       messagingLayer.publishMessage(
         `sales.data.${randomStoreId}`,
         {
           storeId: randomStoreId,
           productId: randomProductId,
           sales: randomSales,
-          source: randomSource
+          source: randomSource,
         },
         'kafka'
       );

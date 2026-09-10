@@ -11,7 +11,7 @@ const RiskMetricsAnalyzer = require('./sub-agents/RiskMetricsAnalyzer');
 
 /**
  * Supplier Agent
- * 
+ *
  * This agent manages supplier relationships, lead time tracking,
  * performance monitoring, and risk assessment.
  */
@@ -26,17 +26,24 @@ class SupplierAgent {
         qualityScore: 0,
         responsiveness: 0,
         leadTimes: [],
-        orderHistory: []
+        orderHistory: [],
       },
       riskAssessment: {
         overallRisk: 'unknown',
         riskFactors: [],
-        lastAssessed: null
+        lastAssessed: null,
       },
       sourcingRecommendations: [],
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     };
-    this.storagePath = path.join(__dirname, '..', '..', '..', 'data', `supplier_${supplierId}_state.json`);
+    this.storagePath = path.join(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      'data',
+      `supplier_${supplierId}_state.json`
+    );
     this.loadState();
     this.apiService = new SupplierApiService();
     this.riskAssessor = new RiskAssessor(supplierId, this.apiService);
@@ -74,7 +81,7 @@ class SupplierAgent {
       if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
       }
-      
+
       fs.writeFileSync(this.storagePath, JSON.stringify(this.state, null, 2));
       console.log(`Supplier Agent ${this.supplierId}: State saved successfully`);
     } catch (error) {
@@ -88,26 +95,26 @@ class SupplierAgent {
   async initialize() {
     try {
       console.log(`Supplier Agent ${this.supplierId}: Initializing...`);
-      
+
       // Subscribe to relevant topics
       await messagingLayer.subscribeToTopic(
-        `supplier.performance.update.${this.supplierId}`, 
+        `supplier.performance.update.${this.supplierId}`,
         this.handlePerformanceUpdate.bind(this),
         'kafka'
       );
-      
+
       await messagingLayer.subscribeToTopic(
-        `supplier.order.status.${this.supplierId}`, 
+        `supplier.order.status.${this.supplierId}`,
         this.handleOrderStatusUpdate.bind(this),
         'kafka'
       );
-      
+
       await messagingLayer.subscribeToTopic(
-        `supplier.risk.assessment.request`, 
+        'supplier.risk.assessment.request',
         this.handleRiskAssessmentRequest.bind(this),
         'kafka'
       );
-      
+
       console.log(`Supplier Agent ${this.supplierId}: Initialized successfully`);
     } catch (error) {
       console.error(`Supplier Agent ${this.supplierId}: Initialization failed:`, error.message);
@@ -120,29 +127,32 @@ class SupplierAgent {
   async handlePerformanceUpdate(topic, message) {
     try {
       console.log(`Supplier Agent ${this.supplierId}: Received performance update`, message);
-      
+
       // Update supplier information
       if (message.supplierInfo) {
         this.state.supplierInfo = {
           ...this.state.supplierInfo,
           ...message.supplierInfo,
-          lastUpdated: new Date().toISOString()
+          lastUpdated: new Date().toISOString(),
         };
       }
-      
+
       // Update performance metrics
       if (message.metrics) {
         this.updatePerformanceMetrics(message.metrics);
       }
-      
+
       this.saveState();
-      
+
       // Trigger risk assessment if significant changes occurred
       if (message.triggerRiskAssessment) {
         this.performRiskAssessment();
       }
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to handle performance update:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to handle performance update:`,
+        error.message
+      );
     }
   }
 
@@ -152,47 +162,52 @@ class SupplierAgent {
   async handleOrderStatusUpdate(topic, message) {
     try {
       console.log(`Supplier Agent ${this.supplierId}: Received order status update`, message);
-      
+
       // Update order history
       if (message.orderId) {
         // Add to order history
         this.state.performanceMetrics.orderHistory.push({
           ...message,
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         });
-        
+
         // Keep only last 100 orders
         if (this.state.performanceMetrics.orderHistory.length > 100) {
-          this.state.performanceMetrics.orderHistory = this.state.performanceMetrics.orderHistory.slice(-100);
+          this.state.performanceMetrics.orderHistory =
+            this.state.performanceMetrics.orderHistory.slice(-100);
         }
-        
+
         // Update lead times if order is completed
         if (message.status === 'completed' && message.orderDate && message.deliveryDate) {
           const orderDate = new Date(message.orderDate);
           const deliveryDate = new Date(message.deliveryDate);
           const leadTimeDays = (deliveryDate - orderDate) / (1000 * 60 * 60 * 24);
-          
+
           this.state.performanceMetrics.leadTimes.push({
             orderId: message.orderId,
             leadTimeDays: leadTimeDays,
             orderDate: message.orderDate,
             deliveryDate: message.deliveryDate,
-            recordedAt: new Date().toISOString()
+            recordedAt: new Date().toISOString(),
           });
-          
+
           // Keep only last 50 lead times
           if (this.state.performanceMetrics.leadTimes.length > 50) {
-            this.state.performanceMetrics.leadTimes = this.state.performanceMetrics.leadTimes.slice(-50);
+            this.state.performanceMetrics.leadTimes =
+              this.state.performanceMetrics.leadTimes.slice(-50);
           }
-          
+
           // Recalculate performance metrics
           this.calculatePerformanceMetrics();
         }
-        
+
         this.saveState();
       }
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to handle order status update:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to handle order status update:`,
+        error.message
+      );
     }
   }
 
@@ -208,16 +223,19 @@ class SupplierAgent {
 
       // Publish risk assessment results
       messagingLayer.publishMessage(
-        `supplier.risk.assessment.result`,
+        'supplier.risk.assessment.result',
         {
           supplierId: this.supplierId,
           riskAssessment: riskAssessment,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         'kafka'
       );
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to handle risk assessment request:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to handle risk assessment request:`,
+        error.message
+      );
     }
   }
 
@@ -232,7 +250,10 @@ class SupplierAgent {
 
       this.calculateOverallPerformanceScore();
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to update performance metrics:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to update performance metrics:`,
+        error.message
+      );
     }
   }
 
@@ -243,33 +264,41 @@ class SupplierAgent {
     try {
       // Calculate on-time delivery rate
       if (this.state.performanceMetrics.orderHistory.length > 0) {
-        const completedOrders = this.state.performanceMetrics.orderHistory.filter(order => order.status === 'completed');
-        const onTimeOrders = completedOrders.filter(order => {
+        const completedOrders = this.state.performanceMetrics.orderHistory.filter(
+          (order) => order.status === 'completed'
+        );
+        const onTimeOrders = completedOrders.filter((order) => {
           if (order.promisedDeliveryDate && order.deliveryDate) {
             return new Date(order.deliveryDate) <= new Date(order.promisedDeliveryDate);
           }
           return true; // Assume on-time if no promised date
         });
-        
-        this.state.performanceMetrics.onTimeDeliveryRate = completedOrders.length > 0 ? 
-          onTimeOrders.length / completedOrders.length : 0;
+
+        this.state.performanceMetrics.onTimeDeliveryRate =
+          completedOrders.length > 0 ? onTimeOrders.length / completedOrders.length : 0;
       }
-      
+
       // Calculate average lead time
       if (this.state.performanceMetrics.leadTimes.length > 0) {
-        const totalLeadTime = this.state.performanceMetrics.leadTimes.reduce((sum, record) => sum + record.leadTimeDays, 0);
+        const totalLeadTime = this.state.performanceMetrics.leadTimes.reduce(
+          (sum, record) => sum + record.leadTimeDays,
+          0
+        );
         const averageLeadTime = totalLeadTime / this.state.performanceMetrics.leadTimes.length;
-        
+
         // Update supplier info with average lead time
         this.state.supplierInfo.averageLeadTime = averageLeadTime;
       }
-      
+
       // Recalculate overall performance score
       this.calculateOverallPerformanceScore();
-      
+
       this.saveState();
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to calculate performance metrics:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to calculate performance metrics:`,
+        error.message
+      );
     }
   }
 
@@ -283,31 +312,35 @@ class SupplierAgent {
         onTimeDeliveryRate: 0.4,
         qualityScore: 0.3,
         responsiveness: 0.2,
-        leadTimeConsistency: 0.1
+        leadTimeConsistency: 0.1,
       };
-      
+
       // Calculate lead time consistency (lower variance = higher score)
       let leadTimeConsistency = 1.0;
       if (this.state.performanceMetrics.leadTimes.length > 1) {
-        const leadTimes = this.state.performanceMetrics.leadTimes.map(lt => lt.leadTimeDays);
+        const leadTimes = this.state.performanceMetrics.leadTimes.map((lt) => lt.leadTimeDays);
         const mean = leadTimes.reduce((sum, lt) => sum + lt, 0) / leadTimes.length;
-        const variance = leadTimes.reduce((sum, lt) => sum + Math.pow(lt - mean, 2), 0) / leadTimes.length;
+        const variance =
+          leadTimes.reduce((sum, lt) => sum + Math.pow(lt - mean, 2), 0) / leadTimes.length;
         const stdDev = Math.sqrt(variance);
-        
+
         // Normalize consistency score (0-1, where 0 is high variance, 1 is low variance)
-        leadTimeConsistency = Math.max(0, 1 - (stdDev / mean));
+        leadTimeConsistency = Math.max(0, 1 - stdDev / mean);
       }
-      
+
       // Calculate weighted score
-      const weightedScore = 
-        (this.state.performanceMetrics.onTimeDeliveryRate * weights.onTimeDeliveryRate) +
-        (this.state.performanceMetrics.qualityScore * weights.qualityScore) +
-        (this.state.performanceMetrics.responsiveness * weights.responsiveness) +
-        (leadTimeConsistency * weights.leadTimeConsistency);
-      
+      const weightedScore =
+        this.state.performanceMetrics.onTimeDeliveryRate * weights.onTimeDeliveryRate +
+        this.state.performanceMetrics.qualityScore * weights.qualityScore +
+        this.state.performanceMetrics.responsiveness * weights.responsiveness +
+        leadTimeConsistency * weights.leadTimeConsistency;
+
       this.state.performanceMetrics.overallScore = weightedScore;
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to calculate overall performance score:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to calculate overall performance score:`,
+        error.message
+      );
     }
   }
 
@@ -318,10 +351,10 @@ class SupplierAgent {
     try {
       console.log(`Supplier Agent ${this.supplierId}: Performing risk assessment`);
 
-      const historicalPerformance = this.state.performanceMetrics.orderHistory.map(o => ({
+      const historicalPerformance = this.state.performanceMetrics.orderHistory.map((o) => ({
         delivery_date: o.deliveryDate,
         promised_date: o.promisedDeliveryDate,
-        quality_score: this.state.performanceMetrics.qualityScore
+        quality_score: this.state.performanceMetrics.qualityScore,
       }));
 
       const result = await this.riskAssessor.assess(
@@ -334,15 +367,15 @@ class SupplierAgent {
         supplierId: this.supplierId,
         overallRisk: result.risk_level || 'medium',
         riskScore: result.risk_score || 0.5,
-        riskFactors: (result.factors || []).map(f => ({
+        riskFactors: (result.factors || []).map((f) => ({
           factor: typeof f === 'string' ? f : f.factor || 'unknown',
           severity: typeof f === 'string' ? 'medium' : f.severity || 'medium',
           description: typeof f === 'string' ? `Risk factor: ${f}` : f.description || '',
           impact: typeof f === 'string' ? '' : f.impact || '',
-          confidence: typeof f === 'string' ? 0.5 : f.confidence || 0.5
+          confidence: typeof f === 'string' ? 0.5 : f.confidence || 0.5,
         })),
         assessmentDate: new Date().toISOString(),
-        nextAssessmentDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+        nextAssessmentDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       };
 
       this.state.riskAssessment = riskAssessment;
@@ -352,10 +385,15 @@ class SupplierAgent {
         this.generateSourcingRecommendationsWithML();
       }
 
-      console.log(`Supplier Agent ${this.supplierId}: Risk assessment completed - Risk Level: ${riskAssessment.overallRisk}`);
+      console.log(
+        `Supplier Agent ${this.supplierId}: Risk assessment completed - Risk Level: ${riskAssessment.overallRisk}`
+      );
       return riskAssessment;
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to perform risk assessment:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to perform risk assessment:`,
+        error.message
+      );
       return null;
     }
   }
@@ -366,32 +404,40 @@ class SupplierAgent {
   identifyRiskFactorsWithML() {
     try {
       const riskFactors = [];
-      
+
       // Use ML models to analyze supplier data and identify risk factors
       // This would interface with the AI/ML risk prediction models
-      
+
       // 1. Use gradient boosted model for supplier risk prediction
       const gbRiskPrediction = this.predictRiskWithGradientBoostedModel();
-      
+
       // 2. Use survival analysis for failure risk prediction
       const survivalRisk = this.predictFailureRiskWithSurvivalAnalysis();
-      
+
       // 3. Use Bayesian networks for causal relationships
       const bayesianRiskFactors = this.analyzeCausalRelationshipsWithBayesianNetworks();
-      
+
       // 4. Use graph embeddings for supplier network analysis
       const networkRisk = this.analyzeSupplierNetworkWithGraphEmbeddings();
-      
+
       // Combine all ML-based risk factors
-      riskFactors.push(...gbRiskPrediction, ...survivalRisk, ...bayesianRiskFactors, ...networkRisk);
-      
+      riskFactors.push(
+        ...gbRiskPrediction,
+        ...survivalRisk,
+        ...bayesianRiskFactors,
+        ...networkRisk
+      );
+
       // Add traditional risk factors as well
       const traditionalRiskFactors = this.identifyTraditionalRiskFactors();
       riskFactors.push(...traditionalRiskFactors);
-      
+
       return riskFactors;
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to identify risk factors with ML:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to identify risk factors with ML:`,
+        error.message
+      );
       // Fallback to traditional risk factors
       return this.identifyTraditionalRiskFactors();
     }
@@ -403,7 +449,7 @@ class SupplierAgent {
   identifyTraditionalRiskFactors() {
     try {
       const riskFactors = [];
-      
+
       // Delivery performance risk
       if (this.state.performanceMetrics.onTimeDeliveryRate < 0.8) {
         riskFactors.push({
@@ -411,28 +457,30 @@ class SupplierAgent {
           severity: this.state.performanceMetrics.onTimeDeliveryRate < 0.6 ? 'high' : 'medium',
           description: `On-time delivery rate is low: ${(this.state.performanceMetrics.onTimeDeliveryRate * 100).toFixed(1)}%`,
           impact: 'supply_chain_disruption',
-          confidence: 0.8
+          confidence: 0.8,
         });
       }
-      
+
       // Lead time variability risk
       if (this.state.performanceMetrics.leadTimes.length > 5) {
-        const leadTimes = this.state.performanceMetrics.leadTimes.map(lt => lt.leadTimeDays);
+        const leadTimes = this.state.performanceMetrics.leadTimes.map((lt) => lt.leadTimeDays);
         const mean = leadTimes.reduce((sum, lt) => sum + lt, 0) / leadTimes.length;
-        const variance = leadTimes.reduce((sum, lt) => sum + Math.pow(lt - mean, 2), 0) / leadTimes.length;
+        const variance =
+          leadTimes.reduce((sum, lt) => sum + Math.pow(lt - mean, 2), 0) / leadTimes.length;
         const stdDev = Math.sqrt(variance);
-        
-        if (stdDev > mean * 0.3) { // High variability if std dev > 30% of mean
+
+        if (stdDev > mean * 0.3) {
+          // High variability if std dev > 30% of mean
           riskFactors.push({
             factor: 'lead_time_variability',
             severity: stdDev > mean * 0.5 ? 'high' : 'medium',
             description: `High lead time variability (std dev: ${stdDev.toFixed(1)} days)`,
             impact: 'planning_difficulty',
-            confidence: 0.7
+            confidence: 0.7,
           });
         }
       }
-      
+
       // Quality risk
       if (this.state.performanceMetrics.qualityScore < 0.8) {
         riskFactors.push({
@@ -440,21 +488,24 @@ class SupplierAgent {
           severity: this.state.performanceMetrics.qualityScore < 0.6 ? 'high' : 'medium',
           description: `Quality score is low: ${(this.state.performanceMetrics.qualityScore * 100).toFixed(1)}%`,
           impact: 'return_costs',
-          confidence: 0.85
+          confidence: 0.85,
         });
       }
-      
+
       // Financial stability risk (based on supplier info)
-      if (this.state.supplierInfo.financialHealth && this.state.supplierInfo.financialHealth < 0.6) {
+      if (
+        this.state.supplierInfo.financialHealth &&
+        this.state.supplierInfo.financialHealth < 0.6
+      ) {
         riskFactors.push({
           factor: 'financial_stability',
           severity: this.state.supplierInfo.financialHealth < 0.4 ? 'high' : 'medium',
           description: `Financial health score is low: ${(this.state.supplierInfo.financialHealth * 100).toFixed(1)}%`,
           impact: 'bankruptcy_risk',
-          confidence: 0.9
+          confidence: 0.9,
         });
       }
-      
+
       // Geographic risk (based on supplier location)
       if (this.state.supplierInfo.location) {
         // Check for political/economic instability in supplier region
@@ -466,14 +517,17 @@ class SupplierAgent {
             severity: 'medium',
             description: `Supplier located in high-risk region: ${this.state.supplierInfo.location.region}`,
             impact: 'disruption_risk',
-            confidence: 0.75
+            confidence: 0.75,
           });
         }
       }
-      
+
       return riskFactors;
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to identify traditional risk factors:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to identify traditional risk factors:`,
+        error.message
+      );
       return [];
     }
   }
@@ -485,7 +539,7 @@ class SupplierAgent {
     try {
       // In a real implementation, this would interface with the AI/ML gradient boosted risk predictor
       // For now, we'll simulate the ML prediction based on current data
-      
+
       // Prepare features for the model
       const features = {
         onTimeDeliveryRate: this.state.performanceMetrics.onTimeDeliveryRate,
@@ -494,15 +548,15 @@ class SupplierAgent {
         orderVolume: this.state.performanceMetrics.orderHistory.length,
         supplierAge: this.calculateSupplierAge(),
         financialHealth: this.state.supplierInfo.financialHealth || 0.5,
-        geographicRisk: this.state.supplierInfo.location ? this.calculateGeographicRisk() : 0.5
+        geographicRisk: this.state.supplierInfo.location ? this.calculateGeographicRisk() : 0.5,
       };
-      
+
       // Simulate ML prediction (in reality, this would call the actual model)
       const riskProbability = this.simulateGradientBoostedPrediction(features);
-      
+
       // Convert probability to risk factors
       const riskFactors = [];
-      
+
       if (riskProbability > 0.7) {
         riskFactors.push({
           factor: 'ml_predicted_risk',
@@ -510,7 +564,7 @@ class SupplierAgent {
           description: `ML model predicts high risk (${(riskProbability * 100).toFixed(1)}%)`,
           impact: 'overall_supply_chain_risk',
           confidence: 0.9,
-          model: 'gradient_boosted'
+          model: 'gradient_boosted',
         });
       } else if (riskProbability > 0.4) {
         riskFactors.push({
@@ -519,13 +573,16 @@ class SupplierAgent {
           description: `ML model predicts medium risk (${(riskProbability * 100).toFixed(1)}%)`,
           impact: 'moderate_supply_chain_risk',
           confidence: 0.85,
-          model: 'gradient_boosted'
+          model: 'gradient_boosted',
         });
       }
-      
+
       return riskFactors;
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to predict risk with gradient boosted model:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to predict risk with gradient boosted model:`,
+        error.message
+      );
       return [];
     }
   }
@@ -537,17 +594,20 @@ class SupplierAgent {
     try {
       // In a real implementation, this would interface with the AI/ML survival analysis models
       // For now, we'll simulate the prediction
-      
+
       // Calculate supplier tenure and performance consistency
       const supplierAge = this.calculateSupplierAge();
       const performanceConsistency = this.calculatePerformanceConsistency();
-      
+
       // Simulate survival analysis prediction
-      const failureProbability = this.simulateSurvivalAnalysisPrediction(supplierAge, performanceConsistency);
-      
+      const failureProbability = this.simulateSurvivalAnalysisPrediction(
+        supplierAge,
+        performanceConsistency
+      );
+
       // Convert to risk factors
       const riskFactors = [];
-      
+
       if (failureProbability > 0.6) {
         riskFactors.push({
           factor: 'survival_analysis_risk',
@@ -555,7 +615,7 @@ class SupplierAgent {
           description: `Survival analysis predicts high failure risk (${(failureProbability * 100).toFixed(1)}%)`,
           impact: 'supplier_bankruptcy_or_exit',
           confidence: 0.85,
-          model: 'survival_analysis'
+          model: 'survival_analysis',
         });
       } else if (failureProbability > 0.3) {
         riskFactors.push({
@@ -564,13 +624,16 @@ class SupplierAgent {
           description: `Survival analysis predicts medium failure risk (${(failureProbability * 100).toFixed(1)}%)`,
           impact: 'potential_supplier_issues',
           confidence: 0.8,
-          model: 'survival_analysis'
+          model: 'survival_analysis',
         });
       }
-      
+
       return riskFactors;
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to predict failure risk with survival analysis:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to predict failure risk with survival analysis:`,
+        error.message
+      );
       return [];
     }
   }
@@ -582,27 +645,30 @@ class SupplierAgent {
     try {
       // In a real implementation, this would interface with the AI/ML Bayesian network models
       // For now, we'll simulate the analysis
-      
+
       // Analyze relationships between different performance metrics
       const causalFactors = this.identifyCausalRelationships();
-      
+
       // Convert to risk factors
       const riskFactors = [];
-      
-      causalFactors.forEach(factor => {
+
+      causalFactors.forEach((factor) => {
         riskFactors.push({
           factor: `causal_factor_${factor.name}`,
           severity: factor.riskLevel,
           description: factor.description,
           impact: factor.impact,
           confidence: factor.confidence,
-          model: 'bayesian_network'
+          model: 'bayesian_network',
         });
       });
-      
+
       return riskFactors;
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to analyze causal relationships with Bayesian networks:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to analyze causal relationships with Bayesian networks:`,
+        error.message
+      );
       return [];
     }
   }
@@ -614,13 +680,13 @@ class SupplierAgent {
     try {
       // In a real implementation, this would interface with the AI/ML graph embedding models
       // For now, we'll simulate the analysis
-      
+
       // Analyze supplier's position in the supply network
       const networkMetrics = this.calculateNetworkMetrics();
-      
+
       // Convert to risk factors
       const riskFactors = [];
-      
+
       if (networkMetrics.centrality < 0.3) {
         riskFactors.push({
           factor: 'network_isolation',
@@ -628,10 +694,10 @@ class SupplierAgent {
           description: 'Supplier has low network centrality, indicating limited connections',
           impact: 'information_flow_risk',
           confidence: 0.7,
-          model: 'graph_embeddings'
+          model: 'graph_embeddings',
         });
       }
-      
+
       if (networkMetrics.clusteringCoefficient < 0.4) {
         riskFactors.push({
           factor: 'network_fragmentation',
@@ -639,13 +705,16 @@ class SupplierAgent {
           description: 'Supplier belongs to poorly connected network cluster',
           impact: 'collaboration_risk',
           confidence: 0.65,
-          model: 'graph_embeddings'
+          model: 'graph_embeddings',
         });
       }
-      
+
       return riskFactors;
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to analyze supplier network with graph embeddings:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to analyze supplier network with graph embeddings:`,
+        error.message
+      );
       return [];
     }
   }
@@ -656,35 +725,38 @@ class SupplierAgent {
   calculateRiskScoreWithML(riskFactors) {
     try {
       if (riskFactors.length === 0) return 0.1; // Low baseline risk
-      
+
       // Use ML ensemble approach to calculate risk score
       // Weight risk factors by model confidence and severity
-      
+
       const severityWeights = {
         low: 0.3,
         medium: 0.6,
-        high: 1.0
+        high: 1.0,
       };
-      
+
       // Calculate weighted risk score with ML confidence weighting
       let totalWeightedRisk = 0;
       let totalConfidenceWeight = 0;
-      
-      riskFactors.forEach(factor => {
+
+      riskFactors.forEach((factor) => {
         const severityWeight = severityWeights[factor.severity] || 0.5;
         const confidenceWeight = factor.confidence || 0.5;
         const combinedWeight = severityWeight * confidenceWeight;
-        
+
         totalWeightedRisk += combinedWeight;
         totalConfidenceWeight += confidenceWeight;
       });
-      
+
       // Normalize to 0-1 scale
       const riskScore = totalConfidenceWeight > 0 ? totalWeightedRisk / totalConfidenceWeight : 0.1;
-      
+
       return Math.min(1.0, riskScore);
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to calculate risk score with ML:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to calculate risk score with ML:`,
+        error.message
+      );
       return 0.5; // Default medium risk
     }
   }
@@ -698,31 +770,37 @@ class SupplierAgent {
 
       const supplierData = {
         supplier_id: this.supplierId,
-        historical_performance: this.state.performanceMetrics.orderHistory.map(o => ({
+        historical_performance: this.state.performanceMetrics.orderHistory.map((o) => ({
           ...o,
-          quality_score: this.state.performanceMetrics.qualityScore
+          quality_score: this.state.performanceMetrics.qualityScore,
         })),
-        financial_health: this.state.supplierInfo.financialHealth || 0.5
+        financial_health: this.state.supplierInfo.financialHealth || 0.5,
       };
 
       const result = await this.sourcingAdvisor.recommend(supplierData);
-      const recommendations = [{
-        type: 'ml_sourcing_advice',
-        priority: result.recommended ? 'low' : 'high',
-        description: result.reason || 'Sourcing recommendation based on ML analysis',
-        actionItems: ['Review supplier portfolio', 'Evaluate alternatives', 'Adjust sourcing strategy'],
-        timeline: '30 days',
-        confidence: result.confidence || 0.5
-      }];
+      const recommendations = [
+        {
+          type: 'ml_sourcing_advice',
+          priority: result.recommended ? 'low' : 'high',
+          description: result.reason || 'Sourcing recommendation based on ML analysis',
+          actionItems: [
+            'Review supplier portfolio',
+            'Evaluate alternatives',
+            'Adjust sourcing strategy',
+          ],
+          timeline: '30 days',
+          confidence: result.confidence || 0.5,
+        },
+      ];
 
       if (result.alternatives) {
-        result.alternatives.forEach(alt => {
+        result.alternatives.forEach((alt) => {
           recommendations.push({
             type: 'alternative_supplier',
             priority: 'medium',
             description: `Alternative supplier: ${alt.supplierId || 'unknown'} (similarity: ${alt.similarityScore || 0})`,
             actionItems: ['Evaluate alternative supplier', 'Compare pricing', 'Assess quality'],
-            timeline: '45 days'
+            timeline: '45 days',
           });
         });
       }
@@ -735,15 +813,20 @@ class SupplierAgent {
         {
           supplierId: this.supplierId,
           recommendations,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         'kafka'
       );
 
-      console.log(`Supplier Agent ${this.supplierId}: Generated ${recommendations.length} ML-enhanced sourcing recommendations`);
+      console.log(
+        `Supplier Agent ${this.supplierId}: Generated ${recommendations.length} ML-enhanced sourcing recommendations`
+      );
       return recommendations;
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to generate sourcing recommendations with ML:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to generate sourcing recommendations with ML:`,
+        error.message
+      );
       return this.generateSourcingRecommendations();
     }
   }
@@ -755,13 +838,17 @@ class SupplierAgent {
   calculateLeadTimeVariability() {
     try {
       if (this.state.performanceMetrics.leadTimes.length < 2) return 0;
-      
-      const leadTimes = this.state.performanceMetrics.leadTimes.map(lt => lt.leadTimeDays);
+
+      const leadTimes = this.state.performanceMetrics.leadTimes.map((lt) => lt.leadTimeDays);
       const mean = leadTimes.reduce((sum, lt) => sum + lt, 0) / leadTimes.length;
-      const variance = leadTimes.reduce((sum, lt) => sum + Math.pow(lt - mean, 2), 0) / leadTimes.length;
+      const variance =
+        leadTimes.reduce((sum, lt) => sum + Math.pow(lt - mean, 2), 0) / leadTimes.length;
       return Math.sqrt(variance); // Standard deviation
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to calculate lead time variability:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to calculate lead time variability:`,
+        error.message
+      );
       return 0;
     }
   }
@@ -769,13 +856,16 @@ class SupplierAgent {
   calculateSupplierAge() {
     try {
       if (!this.state.supplierInfo.registrationDate) return 0;
-      
+
       const registrationDate = new Date(this.state.supplierInfo.registrationDate);
       const currentDate = new Date();
       const ageInDays = (currentDate - registrationDate) / (1000 * 60 * 60 * 24);
       return ageInDays / 365; // Age in years
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to calculate supplier age:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to calculate supplier age:`,
+        error.message
+      );
       return 0;
     }
   }
@@ -786,7 +876,10 @@ class SupplierAgent {
       // In reality, this would integrate with external geopolitical risk databases
       return 0.5; // Neutral risk as default
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to calculate geographic risk:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to calculate geographic risk:`,
+        error.message
+      );
       return 0.5;
     }
   }
@@ -796,26 +889,31 @@ class SupplierAgent {
       // Calculate consistency based on performance metrics over time
       const recentMetrics = this.state.performanceMetrics.orderHistory.slice(-20); // Last 20 orders
       if (recentMetrics.length < 5) return 0.5; // Neutral consistency
-      
+
       // Calculate variance in delivery times
       const deliveryTimes = recentMetrics
-        .filter(order => order.deliveryDate && order.orderDate)
-        .map(order => {
+        .filter((order) => order.deliveryDate && order.orderDate)
+        .map((order) => {
           const orderDate = new Date(order.orderDate);
           const deliveryDate = new Date(order.deliveryDate);
           return (deliveryDate - orderDate) / (1000 * 60 * 60 * 24); // Days
         });
-      
+
       if (deliveryTimes.length < 3) return 0.5;
-      
+
       const mean = deliveryTimes.reduce((sum, time) => sum + time, 0) / deliveryTimes.length;
-      const variance = deliveryTimes.reduce((sum, time) => sum + Math.pow(time - mean, 2), 0) / deliveryTimes.length;
+      const variance =
+        deliveryTimes.reduce((sum, time) => sum + Math.pow(time - mean, 2), 0) /
+        deliveryTimes.length;
       const stdDev = Math.sqrt(variance);
-      
+
       // Consistency score: lower std dev = higher consistency (0-1 scale)
-      return Math.max(0, 1 - (stdDev / mean));
+      return Math.max(0, 1 - stdDev / mean);
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to calculate performance consistency:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to calculate performance consistency:`,
+        error.message
+      );
       return 0.5;
     }
   }
@@ -824,22 +922,25 @@ class SupplierAgent {
     try {
       // Simplified simulation of gradient boosted model prediction
       // In reality, this would call the actual ML model
-      
+
       // Weighted combination of features
-      const weightedSum = 
-        (features.onTimeDeliveryRate * -0.3) + // Lower delivery rate increases risk
-        (features.qualityScore * -0.2) + // Lower quality increases risk
-        (features.leadTimeVariability * 0.25) + // Higher variability increases risk
-        (features.supplierAge * -0.1) + // Younger suppliers may be riskier
-        ((1 - features.financialHealth) * 0.3) + // Lower financial health increases risk
-        (features.geographicRisk * 0.2); // Higher geographic risk increases risk
-      
+      const weightedSum =
+        features.onTimeDeliveryRate * -0.3 + // Lower delivery rate increases risk
+        features.qualityScore * -0.2 + // Lower quality increases risk
+        features.leadTimeVariability * 0.25 + // Higher variability increases risk
+        features.supplierAge * -0.1 + // Younger suppliers may be riskier
+        (1 - features.financialHealth) * 0.3 + // Lower financial health increases risk
+        features.geographicRisk * 0.2; // Higher geographic risk increases risk
+
       // Sigmoid function to convert to probability
       const probability = 1 / (1 + Math.exp(-weightedSum));
-      
+
       return probability;
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to simulate gradient boosted prediction:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to simulate gradient boosted prediction:`,
+        error.message
+      );
       return 0.5; // Neutral probability
     }
   }
@@ -848,15 +949,18 @@ class SupplierAgent {
     try {
       // Simplified simulation of survival analysis prediction
       // In reality, this would call the actual ML model
-      
+
       // Combination of age and consistency factors
-      const riskScore = 
+      const riskScore =
         (1 / (1 + supplierAge)) * 0.4 + // Younger suppliers are riskier
         (1 - performanceConsistency) * 0.6; // Lower consistency increases risk
-      
+
       return Math.min(1.0, riskScore);
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to simulate survival analysis prediction:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to simulate survival analysis prediction:`,
+        error.message
+      );
       return 0.5; // Neutral probability
     }
   }
@@ -865,21 +969,23 @@ class SupplierAgent {
     try {
       // Simplified identification of causal relationships
       // In reality, this would use Bayesian network analysis
-      
+
       const relationships = [];
-      
+
       // Relationship between delivery performance and quality
-      if (this.state.performanceMetrics.onTimeDeliveryRate < 0.7 && 
-          this.state.performanceMetrics.qualityScore < 0.7) {
+      if (
+        this.state.performanceMetrics.onTimeDeliveryRate < 0.7 &&
+        this.state.performanceMetrics.qualityScore < 0.7
+      ) {
         relationships.push({
           name: 'delivery_quality_correlation',
           riskLevel: 'high',
           description: 'Poor delivery performance correlates with quality issues',
           impact: 'systemic_supplier_problems',
-          confidence: 0.8
+          confidence: 0.8,
         });
       }
-      
+
       // Relationship between lead time variability and order volume
       const leadTimeVar = this.calculateLeadTimeVariability();
       if (leadTimeVar > 5 && this.state.performanceMetrics.orderHistory.length > 50) {
@@ -888,13 +994,16 @@ class SupplierAgent {
           riskLevel: 'medium',
           description: 'High order volume with high lead time variability suggests capacity issues',
           impact: 'scaling_risk',
-          confidence: 0.7
+          confidence: 0.7,
         });
       }
-      
+
       return relationships;
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to identify causal relationships:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to identify causal relationships:`,
+        error.message
+      );
       return [];
     }
   }
@@ -903,20 +1012,23 @@ class SupplierAgent {
     try {
       // Simplified network metrics calculation
       // In reality, this would use graph embedding analysis
-      
+
       return {
         centrality: 0.6, // Simulated centrality score
         clusteringCoefficient: 0.5, // Simulated clustering coefficient
         betweenness: 0.4, // Simulated betweenness score
-        degree: 8 // Simulated degree (number of connections)
+        degree: 8, // Simulated degree (number of connections)
       };
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to calculate network metrics:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to calculate network metrics:`,
+        error.message
+      );
       return {
         centrality: 0.5,
         clusteringCoefficient: 0.5,
         betweenness: 0.5,
-        degree: 5
+        degree: 5,
       };
     }
   }
@@ -925,25 +1037,28 @@ class SupplierAgent {
     try {
       // Simulated ML-based supplier similarity search
       // In reality, this would use actual ML models
-      
+
       return [
         {
           supplierId: 'backup_supplier_1',
           similarityScore: 0.85,
           riskProfile: 'low',
           capabilities: ['sku_a', 'sku_b'],
-          leadTime: 5
+          leadTime: 5,
         },
         {
           supplierId: 'backup_supplier_2',
           similarityScore: 0.78,
           riskProfile: 'medium',
           capabilities: ['sku_b', 'sku_c'],
-          leadTime: 7
-        }
+          leadTime: 7,
+        },
       ];
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to find similar suppliers with ML:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to find similar suppliers with ML:`,
+        error.message
+      );
       return [];
     }
   }
@@ -952,15 +1067,18 @@ class SupplierAgent {
     try {
       // Simulated ML-based impact prediction
       // In reality, this would use actual ML models
-      
-      return similarSuppliers.map(supplier => ({
+
+      return similarSuppliers.map((supplier) => ({
         supplierId: supplier.supplierId,
         costImpact: Math.random() * 0.2 - 0.1, // -10% to +10% cost change
         qualityImpact: Math.random() * 0.15 - 0.05, // -5% to +10% quality change
-        leadTimeImpact: Math.random() * 0.3 - 0.1 // -10% to +20% lead time change
+        leadTimeImpact: Math.random() * 0.3 - 0.1, // -10% to +20% lead time change
       }));
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to predict switching impact with ML:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to predict switching impact with ML:`,
+        error.message
+      );
       return [];
     }
   }
@@ -968,7 +1086,7 @@ class SupplierAgent {
   createEnhancedRecommendations(similarSuppliers, impactPredictions) {
     try {
       // Create enhanced recommendations based on ML insights
-      
+
       const recommendations = [
         {
           type: 'backup_supplier',
@@ -977,13 +1095,15 @@ class SupplierAgent {
           actionItems: [
             `Evaluate ${similarSuppliers.length} ML-identified similar suppliers`,
             'Validate quality and capability of backup suppliers',
-            'Negotiate contracts with top 2 backup suppliers'
+            'Negotiate contracts with top 2 backup suppliers',
           ],
           timeline: '45 days',
           mlInsights: {
             similarSuppliersCount: similarSuppliers.length,
-            avgSimilarityScore: similarSuppliers.reduce((sum, s) => sum + s.similarityScore, 0) / similarSuppliers.length
-          }
+            avgSimilarityScore:
+              similarSuppliers.reduce((sum, s) => sum + s.similarityScore, 0) /
+              similarSuppliers.length,
+          },
         },
         {
           type: 'inventory_buffer',
@@ -992,13 +1112,17 @@ class SupplierAgent {
           actionItems: [
             'Recalculate safety stock using impact predictions',
             'Adjust inventory policies for critical SKUs',
-            'Monitor inventory turnover and adjust as needed'
+            'Monitor inventory turnover and adjust as needed',
           ],
           timeline: '30 days',
           mlInsights: {
-            predictedCostImpact: impactPredictions.reduce((sum, p) => sum + p.costImpact, 0) / impactPredictions.length,
-            predictedLeadTimeImpact: impactPredictions.reduce((sum, p) => sum + p.leadTimeImpact, 0) / impactPredictions.length
-          }
+            predictedCostImpact:
+              impactPredictions.reduce((sum, p) => sum + p.costImpact, 0) /
+              impactPredictions.length,
+            predictedLeadTimeImpact:
+              impactPredictions.reduce((sum, p) => sum + p.leadTimeImpact, 0) /
+              impactPredictions.length,
+          },
         },
         {
           type: 'contract_review',
@@ -1007,19 +1131,24 @@ class SupplierAgent {
           actionItems: [
             'Add penalty clauses based on identified risk factors',
             'Include quality guarantees tied to ML predictions',
-            'Establish flexible exit strategies'
+            'Establish flexible exit strategies',
           ],
           timeline: '60 days',
           mlInsights: {
             riskFactorsCount: this.state.riskAssessment.riskFactors.length,
-            highRiskFactors: this.state.riskAssessment.riskFactors.filter(f => f.severity === 'high').length
-          }
-        }
+            highRiskFactors: this.state.riskAssessment.riskFactors.filter(
+              (f) => f.severity === 'high'
+            ).length,
+          },
+        },
       ];
-      
+
       return recommendations;
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to create enhanced recommendations:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to create enhanced recommendations:`,
+        error.message
+      );
       // Fallback to basic recommendations
       return this.generateSourcingRecommendations();
     }
@@ -1031,10 +1160,10 @@ class SupplierAgent {
   generateSourcingRecommendations() {
     try {
       console.log(`Supplier Agent ${this.supplierId}: Generating sourcing recommendations`);
-      
+
       // In a real implementation, this would interface with the AI/ML models
       // to find alternative suppliers with similar capabilities but lower risk
-      
+
       // For now, we'll generate some basic recommendations
       const recommendations = [
         {
@@ -1044,9 +1173,9 @@ class SupplierAgent {
           actionItems: [
             'Research alternative suppliers in low-risk regions',
             'Validate quality and capability of backup suppliers',
-            'Negotiate contracts with backup suppliers'
+            'Negotiate contracts with backup suppliers',
           ],
-          timeline: '30 days'
+          timeline: '30 days',
         },
         {
           type: 'inventory_buffer',
@@ -1055,9 +1184,9 @@ class SupplierAgent {
           actionItems: [
             'Calculate increased safety stock levels',
             'Adjust inventory policies',
-            'Monitor inventory turnover'
+            'Monitor inventory turnover',
           ],
-          timeline: '15 days'
+          timeline: '15 days',
         },
         {
           type: 'contract_review',
@@ -1066,31 +1195,36 @@ class SupplierAgent {
           actionItems: [
             'Add penalty clauses for late delivery',
             'Include quality guarantees',
-            'Establish exit strategies'
+            'Establish exit strategies',
           ],
-          timeline: '45 days'
-        }
+          timeline: '45 days',
+        },
       ];
-      
+
       // Update state
       this.state.sourcingRecommendations = recommendations;
       this.saveState();
-      
+
       // Publish recommendations
       messagingLayer.publishMessage(
         `supplier.sourcing.recommendations.${this.supplierId}`,
         {
           supplierId: this.supplierId,
           recommendations: recommendations,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         'kafka'
       );
-      
-      console.log(`Supplier Agent ${this.supplierId}: Generated ${recommendations.length} sourcing recommendations`);
+
+      console.log(
+        `Supplier Agent ${this.supplierId}: Generated ${recommendations.length} sourcing recommendations`
+      );
       return recommendations;
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to generate sourcing recommendations:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to generate sourcing recommendations:`,
+        error.message
+      );
       return [];
     }
   }
@@ -1104,7 +1238,10 @@ class SupplierAgent {
       if (riskScore < 0.7) return 'medium';
       return 'high';
     } catch (error) {
-      console.error(`Supplier Agent ${this.supplierId}: Failed to determine risk category:`, error.message);
+      console.error(
+        `Supplier Agent ${this.supplierId}: Failed to determine risk category:`,
+        error.message
+      );
       return 'unknown';
     }
   }
@@ -1115,7 +1252,7 @@ class SupplierAgent {
   getState() {
     return {
       supplierId: this.supplierId,
-      ...this.state
+      ...this.state,
     };
   }
 }
@@ -1124,7 +1261,7 @@ class SupplierAgent {
 if (require.main === module) {
   const supplierId = process.argv[2] || 'default';
   const agent = new SupplierAgent(supplierId);
-  
+
   // Initialize agent
   agent.initialize().then(() => {
     console.log(`Supplier Agent ${supplierId} is running...`);

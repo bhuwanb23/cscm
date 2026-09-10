@@ -1,6 +1,6 @@
 /**
  * Message Schemas
- * 
+ *
  * This module defines the schema structures for different message types
  * used in the CSCM messaging system.
  */
@@ -14,10 +14,10 @@ const INVENTORY_UPDATE_SCHEMA = {
     quantity: { type: 'number' },
     timestamp: { type: 'string', format: 'date-time' },
     source: { type: 'string' },
-    reason: { type: 'string' }
+    reason: { type: 'string' },
   },
   required: ['productId', 'storeId', 'quantity', 'timestamp'],
-  additionalProperties: true
+  additionalProperties: true,
 };
 
 // Schema for demand forecast messages
@@ -32,15 +32,15 @@ const DEMAND_FORECAST_SCHEMA = {
         expectedDemand: { type: 'number' },
         safetyStock: { type: 'number' },
         confidence: { type: 'number' },
-        period: { type: 'string' }
+        period: { type: 'string' },
       },
-      required: ['expectedDemand', 'safetyStock', 'confidence', 'period']
+      required: ['expectedDemand', 'safetyStock', 'confidence', 'period'],
     },
     timestamp: { type: 'string', format: 'date-time' },
-    source: { type: 'string' }
+    source: { type: 'string' },
   },
   required: ['productId', 'storeId', 'forecast', 'timestamp'],
-  additionalProperties: true
+  additionalProperties: true,
 };
 
 // Schema for shipment status messages
@@ -53,15 +53,15 @@ const SHIPMENT_STATUS_SCHEMA = {
       type: 'object',
       properties: {
         lat: { type: 'number' },
-        lng: { type: 'number' }
-      }
+        lng: { type: 'number' },
+      },
     },
     estimatedDelivery: { type: 'string', format: 'date-time' },
     timestamp: { type: 'string', format: 'date-time' },
-    source: { type: 'string' }
+    source: { type: 'string' },
   },
   required: ['shipmentId', 'status', 'timestamp'],
-  additionalProperties: true
+  additionalProperties: true,
 };
 
 // Schema for alert messages
@@ -75,10 +75,10 @@ const ALERT_SCHEMA = {
     entityId: { type: 'string' },
     entityType: { type: 'string' },
     timestamp: { type: 'string', format: 'date-time' },
-    source: { type: 'string' }
+    source: { type: 'string' },
   },
   required: ['type', 'severity', 'message', 'timestamp'],
-  additionalProperties: true
+  additionalProperties: true,
 };
 
 // Schema for decision messages
@@ -93,13 +93,13 @@ const DECISION_SCHEMA = {
     confidence: { type: 'number' },
     factors: {
       type: 'array',
-      items: { type: 'string' }
+      items: { type: 'string' },
     },
     timestamp: { type: 'string', format: 'date-time' },
-    source: { type: 'string' }
+    source: { type: 'string' },
   },
   required: ['decisionId', 'type', 'recommendation', 'confidence', 'timestamp'],
-  additionalProperties: true
+  additionalProperties: true,
 };
 
 // Export all schemas
@@ -108,5 +108,5 @@ module.exports = {
   DEMAND_FORECAST_SCHEMA,
   SHIPMENT_STATUS_SCHEMA,
   ALERT_SCHEMA,
-  DECISION_SCHEMA
+  DECISION_SCHEMA,
 };

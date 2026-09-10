@@ -1,6 +1,6 @@
 /**
  * Data Access Layer
- * 
+ *
  * This module provides a unified interface for accessing data models.
  * It abstracts the underlying data storage implementation.
  */

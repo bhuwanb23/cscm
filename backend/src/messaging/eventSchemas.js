@@ -5,7 +5,7 @@ const logger = require('../utils/logger');
 // Initialize AJV validator
 const ajv = new Ajv({
   allErrors: true,
-  strict: false
+  strict: false,
 });
 
 // Add format support
@@ -18,10 +18,10 @@ const telemetryEventSchema = {
     sourceId: { type: 'string' },
     timestamp: { type: 'string', format: 'date-time' },
     eventType: { type: 'string' },
-    payload: { type: 'object' }
+    payload: { type: 'object' },
   },
   required: ['sourceId', 'timestamp', 'eventType'],
-  additionalProperties: true
+  additionalProperties: true,
 };
 
 // Order event schema
@@ -37,17 +37,17 @@ const orderEventSchema = {
         properties: {
           productId: { type: 'string' },
           quantity: { type: 'number' },
-          price: { type: 'number' }
+          price: { type: 'number' },
         },
-        required: ['productId', 'quantity', 'price']
-      }
+        required: ['productId', 'quantity', 'price'],
+      },
     },
     totalAmount: { type: 'number' },
     status: { type: 'string' },
-    timestamp: { type: 'string', format: 'date-time' }
+    timestamp: { type: 'string', format: 'date-time' },
   },
   required: ['orderId', 'customerId', 'items', 'totalAmount', 'status', 'timestamp'],
-  additionalProperties: false
+  additionalProperties: false,
 };
 
 // Inventory event schema
@@ -57,14 +57,14 @@ const inventoryEventSchema = {
     productId: { type: 'string' },
     storeId: { type: 'string' },
     quantity: { type: 'number' },
-    eventType: { 
+    eventType: {
       type: 'string',
-      enum: ['STOCK_UPDATE', 'LOW_STOCK_ALERT', 'OUT_OF_STOCK', 'RESTOCK']
+      enum: ['STOCK_UPDATE', 'LOW_STOCK_ALERT', 'OUT_OF_STOCK', 'RESTOCK'],
     },
-    timestamp: { type: 'string', format: 'date-time' }
+    timestamp: { type: 'string', format: 'date-time' },
   },
   required: ['productId', 'storeId', 'quantity', 'eventType', 'timestamp'],
-  additionalProperties: false
+  additionalProperties: false,
 };
 
 // Agent action event schema
@@ -75,10 +75,10 @@ const agentActionEventSchema = {
     actionType: { type: 'string' },
     payload: { type: 'object' },
     timestamp: { type: 'string', format: 'date-time' },
-    result: { type: 'object' }
+    result: { type: 'object' },
   },
   required: ['agentId', 'actionType', 'payload', 'timestamp'],
-  additionalProperties: false
+  additionalProperties: false,
 };
 
 // Compile schemas for validation
@@ -90,7 +90,7 @@ const validateAgentActionEvent = ajv.compile(agentActionEventSchema);
 // Validation function
 function validateEvent(event, schemaType) {
   let validator;
-  
+
   switch (schemaType) {
     case 'telemetry':
       validator = validateTelemetryEvent;
@@ -107,20 +107,20 @@ function validateEvent(event, schemaType) {
     default:
       throw new Error(`Unknown schema type: ${schemaType}`);
   }
-  
+
   const isValid = validator(event);
-  
+
   if (!isValid) {
     logger.warn(`Event validation failed for ${schemaType}:`, validator.errors);
     return {
       isValid: false,
-      errors: validator.errors
+      errors: validator.errors,
     };
   }
-  
+
   return {
     isValid: true,
-    errors: null
+    errors: null,
   };
 }
 
@@ -129,5 +129,5 @@ module.exports = {
   orderEventSchema,
   inventoryEventSchema,
   agentActionEventSchema,
-  validateEvent
+  validateEvent,
 };

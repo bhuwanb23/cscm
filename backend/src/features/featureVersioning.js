@@ -1,6 +1,6 @@
 /**
  * Feature Versioning
- * 
+ *
  * This module provides basic feature versioning capabilities for the CSCM backend.
  * It manages feature versions, metadata, and version comparison.
  */
@@ -31,12 +31,12 @@ class FeatureVersioning {
         this.versionMetadata.set(featureName, {
           versions: [],
           currentVersion: 0,
-          createdAt: new Date().toISOString()
+          createdAt: new Date().toISOString(),
         });
       }
 
       const featureVersions = this.versionMetadata.get(featureName);
-      
+
       // Create new version
       const newVersionNumber = featureVersions.currentVersion + 1;
       const versionInfo = {
@@ -46,8 +46,8 @@ class FeatureVersioning {
         metadata: {
           ...metadata,
           createdBy: metadata.createdBy || 'system',
-          description: metadata.description || `Version ${newVersionNumber} of ${featureName}`
-        }
+          description: metadata.description || `Version ${newVersionNumber} of ${featureName}`,
+        },
       };
 
       // Add to version history
@@ -84,7 +84,7 @@ class FeatureVersioning {
         return null;
       }
 
-      const versionInfo = featureVersions.versions.find(v => v.version === version);
+      const versionInfo = featureVersions.versions.find((v) => v.version === version);
       if (!versionInfo) {
         logger.debug(`Version ${version} not found for feature: ${featureName}`);
         return null;
@@ -115,7 +115,7 @@ class FeatureVersioning {
       }
 
       // Return the latest version (highest version number)
-      const latestVersion = Math.max(...featureVersions.versions.map(v => v.version));
+      const latestVersion = Math.max(...featureVersions.versions.map((v) => v.version));
       return this.getVersion(featureName, latestVersion);
     } catch (error) {
       logger.error(`Failed to get latest version for feature ${featureName}:`, error.message);
@@ -178,7 +178,7 @@ class FeatureVersioning {
 
       // Simple comparison based on timestamps
       const timeDiff = new Date(version2Info.timestamp) - new Date(version1Info.timestamp);
-      
+
       // Check if data is different (simple JSON comparison)
       const data1Str = JSON.stringify(version1Info.data);
       const data2Str = JSON.stringify(version2Info.data);
@@ -191,7 +191,7 @@ class FeatureVersioning {
         timeDifference: timeDiff, // milliseconds
         dataChanged: dataChanged,
         version1Info: version1Info,
-        version2Info: version2Info
+        version2Info: version2Info,
       };
 
       logger.debug(`Compared versions ${version1} and ${version2} for feature: ${featureName}`);
@@ -249,15 +249,15 @@ class FeatureVersioning {
       }
 
       const initialLength = featureVersions.versions.length;
-      featureVersions.versions = featureVersions.versions.filter(v => v.version !== version);
+      featureVersions.versions = featureVersions.versions.filter((v) => v.version !== version);
 
       const deleted = featureVersions.versions.length < initialLength;
       if (deleted) {
         logger.debug(`Deleted version ${version} for feature: ${featureName}`);
-        
+
         // Update current version if necessary
         if (featureVersions.currentVersion === version && featureVersions.versions.length > 0) {
-          const remainingVersions = featureVersions.versions.map(v => v.version);
+          const remainingVersions = featureVersions.versions.map((v) => v.version);
           featureVersions.currentVersion = Math.max(...remainingVersions);
         }
       } else {
@@ -266,7 +266,10 @@ class FeatureVersioning {
 
       return deleted;
     } catch (error) {
-      logger.error(`Failed to delete version ${version} for feature ${featureName}:`, error.message);
+      logger.error(
+        `Failed to delete version ${version} for feature ${featureName}:`,
+        error.message
+      );
       throw error;
     }
   }
@@ -304,7 +307,7 @@ class FeatureVersioning {
     const stats = {
       totalFeatures: this.versionMetadata.size,
       totalVersions: 0,
-      featuresWithMultipleVersions: 0
+      featuresWithMultipleVersions: 0,
     };
 
     for (const [featureName, metadata] of this.versionMetadata.entries()) {

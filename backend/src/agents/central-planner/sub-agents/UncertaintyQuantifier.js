@@ -15,7 +15,7 @@ class UncertaintyQuantifier extends SubAgent {
       product_id: productId,
       lead_time_days: options.leadTimeDays !== undefined ? options.leadTimeDays : 7,
       service_level: options.serviceLevel !== undefined ? options.serviceLevel : 0.95,
-      demand_forecast: options.demandForecast || null
+      demand_forecast: options.demandForecast || null,
     };
 
     try {
@@ -24,8 +24,9 @@ class UncertaintyQuantifier extends SubAgent {
         product_id: result.product_id || productId,
         safety_stock: result.safety_stock !== undefined ? result.safety_stock : 0,
         uncertainty_bounds: result.uncertainty_bounds || { lower: 0, upper: 0 },
-        confidence_level: result.confidence_level !== undefined ? result.confidence_level : data.service_level,
-        model_version: result.model_version || 'unknown'
+        confidence_level:
+          result.confidence_level !== undefined ? result.confidence_level : data.service_level,
+        model_version: result.model_version || 'unknown',
       };
     } catch (err) {
       this.error('Safety stock calculation failed:', err.message);
@@ -41,13 +42,13 @@ class UncertaintyQuantifier extends SubAgent {
     try {
       const result = await this.apiService.safetyStock({
         forecast,
-        errors: historicalErrors || []
+        errors: historicalErrors || [],
       });
       return {
         mean: result.mean !== undefined ? result.mean : 0,
         std_dev: result.std_dev !== undefined ? result.std_dev : 0,
         prediction_intervals: result.prediction_intervals || [],
-        model_version: result.model_version || 'unknown'
+        model_version: result.model_version || 'unknown',
       };
     } catch (err) {
       this.error('Demand uncertainty quantification failed:', err.message);
@@ -61,7 +62,7 @@ class UncertaintyQuantifier extends SubAgent {
       safety_stock: 50,
       uncertainty_bounds: { lower: 25, upper: 75 },
       confidence_level: 0.95,
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 
@@ -70,7 +71,7 @@ class UncertaintyQuantifier extends SubAgent {
       mean: 0,
       std_dev: 0,
       prediction_intervals: [],
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 }

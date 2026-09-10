@@ -24,7 +24,7 @@ class BaseApiService {
   }
 
   _buildClient(timeout) {
-    const headers = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
+    const headers = { 'Content-Type': 'application/json', Accept: 'application/json' };
     if (this.authToken) {
       headers['Authorization'] = `Bearer ${this.authToken}`;
     }
@@ -115,15 +115,17 @@ class BaseApiService {
         const detail = error.response.data;
         logger.error(
           `[BaseApiService] 422 Unprocessable Entity on ${method} ${path} ` +
-          `(contract mismatch - check Pydantic schema vs caller payload). ` +
-          `detail=${JSON.stringify(detail)}`
+            '(contract mismatch - check Pydantic schema vs caller payload). ' +
+            `detail=${JSON.stringify(detail)}`
         );
       }
 
       if (this._shouldRetry(error, attempt)) {
         const delay = Math.min(200 * Math.pow(2, attempt), 2000);
-        logger.warn(`[BaseApiService] Retry ${attempt + 1}/${this.maxRetries} after ${delay}ms: ${method} ${path} (${status})`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        logger.warn(
+          `[BaseApiService] Retry ${attempt + 1}/${this.maxRetries} after ${delay}ms: ${method} ${path} (${status})`
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
         return this._request(method, path, data, attempt + 1);
       }
       throw error;

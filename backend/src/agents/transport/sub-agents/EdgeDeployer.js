@@ -19,7 +19,7 @@ class EdgeDeployer extends SubAgent {
         deployment_id: result.deployment_id,
         status: result.status,
         endpoint_url: result.endpoint_url,
-        model_version: result.model_version
+        model_version: result.model_version,
       };
     } catch (err) {
       this.error('Edge deploy failed:', err.message);
@@ -37,7 +37,7 @@ class EdgeDeployer extends SubAgent {
       return {
         deployment_id: result.deployment_id || deploymentId,
         status: result.status || 'removed',
-        model_version: result.model_version
+        model_version: result.model_version,
       };
     } catch (err) {
       this.error('Edge undeploy failed:', err.message);
@@ -51,7 +51,7 @@ class EdgeDeployer extends SubAgent {
       deployments: [],
       total: 0,
       note: 'No list endpoint available; returning empty result',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -60,7 +60,7 @@ class EdgeDeployer extends SubAgent {
       deployment_id: 'DEP-fallback',
       status: 'deployed',
       endpoint_url: 'edge://local',
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 
@@ -68,7 +68,7 @@ class EdgeDeployer extends SubAgent {
     return {
       deployment_id: id,
       status: 'removed',
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 }

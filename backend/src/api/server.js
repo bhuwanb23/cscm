@@ -10,8 +10,18 @@ const { rateLimiter, securityHeaders, corsOptions } = require('./middleware/rate
 const messagingLayer = require('../messaging');
 const sqliteDatabase = require('../storage/sqliteDatabase');
 const { requestTracker, getMetrics, getContentType } = require('../utils/metrics');
-const swaggerSpecs = require('../../../docs/swagger');
 const cacheService = require('../services/cacheService');
+
+// Swagger specs - note: using inline specs until swagger.js is fixed
+const swaggerSpecs = {
+  openapi: '3.0.0',
+  info: {
+    title: 'CSCM Backend API',
+    version: '1.0.0',
+    description: 'Cognitive Supply Chain Mesh Backend API',
+  },
+  paths: {},
+};
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -56,18 +66,18 @@ app.use(requestTracker);
 
 // Routes
 app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Cognitive Supply Chain Mesh API', 
+  res.json({
+    message: 'Cognitive Supply Chain Mesh API',
     version: '1.0.0',
-    status: 'running'
+    status: 'running',
   });
 });
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
+  res.json({
     status: 'healthy',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -92,11 +102,15 @@ app.get('/cache/stats', (req, res) => {
 });
 
 // API Documentation endpoint
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
-  explorer: true,
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'CSCM API Documentation'
-}));
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpecs, {
+    explorer: true,
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'CSCM API Documentation',
+  })
+);
 
 // API Routes
 const authRoutes = require('./routes/auth');

@@ -25,7 +25,14 @@ async function create(req, res) {
     if (!order_id || !store_id) {
       return res.status(400).json({ success: false, error: 'Order ID and Store ID are required' });
     }
-    const result = await OrderModel.create({ order_id, store_id, customer_id, total_amount, status, items });
+    const result = await OrderModel.create({
+      order_id,
+      store_id,
+      customer_id,
+      total_amount,
+      status,
+      items,
+    });
     logger.info(`Order created: ${order_id}`);
     res.status(201).json({ success: true, data: result });
   } catch (error) {

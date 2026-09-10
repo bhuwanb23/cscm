@@ -10,7 +10,7 @@ if (config.kafka.brokers.length > 0) {
   // Create Kafka client
   kafka = new Kafka({
     clientId: config.kafka.clientId,
-    brokers: config.kafka.brokers
+    brokers: config.kafka.brokers,
   });
 
   // Create producer
@@ -26,7 +26,7 @@ const connectProducer = async () => {
     logger.info('Kafka producer skipped (no brokers configured)');
     return;
   }
-  
+
   try {
     await producer.connect();
     logger.info('Kafka producer connected');
@@ -43,7 +43,7 @@ const connectConsumer = async () => {
     logger.info('Kafka consumer skipped (no brokers configured)');
     return;
   }
-  
+
   try {
     await consumer.connect();
     logger.info('Kafka consumer connected');
@@ -60,7 +60,7 @@ const disconnectProducer = async () => {
     logger.info('Kafka producer disconnect skipped (no brokers configured)');
     return;
   }
-  
+
   try {
     await producer.disconnect();
     logger.info('Kafka producer disconnected');
@@ -76,7 +76,7 @@ const disconnectConsumer = async () => {
     logger.info('Kafka consumer disconnect skipped (no brokers configured)');
     return;
   }
-  
+
   try {
     await consumer.disconnect();
     logger.info('Kafka consumer disconnected');
@@ -91,11 +91,11 @@ const sendMessage = async (topic, message) => {
     logger.debug('Kafka message send skipped (no brokers configured)');
     return;
   }
-  
+
   try {
     await producer.send({
       topic,
-      messages: [{ value: JSON.stringify(message) }]
+      messages: [{ value: JSON.stringify(message) }],
     });
     logger.info(`Message sent to topic ${topic}`);
   } catch (error) {
@@ -111,5 +111,5 @@ module.exports = {
   connectConsumer,
   disconnectProducer,
   disconnectConsumer,
-  sendMessage
+  sendMessage,
 };

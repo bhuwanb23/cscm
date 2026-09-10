@@ -15,7 +15,7 @@ function successResponse(data, message = 'Success', metadata = {}) {
     success: true,
     message,
     data,
-    ...metadata
+    ...metadata,
   };
 }
 
@@ -34,8 +34,8 @@ function errorResponse(message, statusCode = 500, code = 'INTERNAL_ERROR', detai
       message,
       code,
       statusCode,
-      ...details
-    }
+      ...details,
+    },
   };
 }
 
@@ -51,8 +51,8 @@ function validationErrorResponse(errors) {
       message: 'Validation failed',
       code: 'VALIDATION_ERROR',
       statusCode: 400,
-      details: { errors }
-    }
+      details: { errors },
+    },
   };
 }
 
@@ -69,8 +69,8 @@ function notFoundResponse(resource, identifier) {
       message: `${resource} not found`,
       code: 'NOT_FOUND',
       statusCode: 404,
-      details: { resource, identifier }
-    }
+      details: { resource, identifier },
+    },
   };
 }
 
@@ -85,8 +85,8 @@ function unauthorizedResponse(message = 'Unauthorized access') {
     error: {
       message,
       code: 'UNAUTHORIZED',
-      statusCode: 401
-    }
+      statusCode: 401,
+    },
   };
 }
 
@@ -101,8 +101,8 @@ function forbiddenResponse(message = 'Access forbidden') {
     error: {
       message,
       code: 'FORBIDDEN',
-      statusCode: 403
-    }
+      statusCode: 403,
+    },
   };
 }
 
@@ -117,8 +117,8 @@ function conflictResponse(message = 'Resource conflict') {
     error: {
       message,
       code: 'CONFLICT',
-      statusCode: 409
-    }
+      statusCode: 409,
+    },
   };
 }
 
@@ -136,8 +136,8 @@ function paginatedResponse(data, pagination) {
       page: pagination.page,
       limit: pagination.limit,
       total: pagination.total,
-      totalPages: Math.ceil(pagination.total / pagination.limit)
-    }
+      totalPages: Math.ceil(pagination.total / pagination.limit),
+    },
   };
 }
 
@@ -151,7 +151,7 @@ function createdResponse(data, resource = 'Resource') {
   return {
     success: true,
     message: `${resource} created successfully`,
-    data
+    data,
   };
 }
 
@@ -165,7 +165,7 @@ function updatedResponse(data, resource = 'Resource') {
   return {
     success: true,
     message: `${resource} updated successfully`,
-    data
+    data,
   };
 }
 
@@ -177,7 +177,7 @@ function updatedResponse(data, resource = 'Resource') {
 function deletedResponse(resource = 'Resource') {
   return {
     success: true,
-    message: `${resource} deleted successfully`
+    message: `${resource} deleted successfully`,
   };
 }
 
@@ -193,8 +193,8 @@ function rateLimitResponse(retryAfter) {
       message: 'Rate limit exceeded',
       code: 'RATE_LIMIT_EXCEEDED',
       statusCode: 429,
-      details: { retryAfter }
-    }
+      details: { retryAfter },
+    },
   };
 }
 
@@ -209,8 +209,8 @@ function serviceUnavailableResponse(service = 'Service') {
     error: {
       message: `${service} unavailable`,
       code: 'SERVICE_UNAVAILABLE',
-      statusCode: 503
-    }
+      statusCode: 503,
+    },
   };
 }
 
@@ -226,7 +226,7 @@ function degradedResponse(data, level = 'partial') {
     data,
     degradation: true,
     level,
-    message: `Service operating in ${level} degradation mode`
+    message: `Service operating in ${level} degradation mode`,
   };
 }
 
@@ -244,5 +244,5 @@ module.exports = {
   deletedResponse,
   rateLimitResponse,
   serviceUnavailableResponse,
-  degradedResponse
+  degradedResponse,
 };

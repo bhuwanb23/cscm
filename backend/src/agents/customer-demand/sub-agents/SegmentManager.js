@@ -25,7 +25,10 @@ class SegmentManager extends SubAgent {
     this.log('Comparing segments');
 
     try {
-      const result = await this.apiService.segmentSimilarity({ segment_a: segmentA, segment_b: segmentB });
+      const result = await this.apiService.segmentSimilarity({
+        segment_a: segmentA,
+        segment_b: segmentB,
+      });
       return result;
     } catch (err) {
       this.error('Segment comparison failed:', err.message);
@@ -45,7 +48,7 @@ class SegmentManager extends SubAgent {
         impact: 0,
         confidence: 0,
         segments_affected: [],
-        fallback: true
+        fallback: true,
       };
     }
   }

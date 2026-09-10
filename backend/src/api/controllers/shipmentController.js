@@ -24,11 +24,36 @@ const logger = require('../../utils/logger');
  */
 async function create(req, res) {
   try {
-    const { shipment_id, order_id, from_location, to_location, status, carrier, tracking_number, estimated_delivery, items } = req.body;
+    const {
+      shipment_id,
+      order_id,
+      from_location,
+      to_location,
+      status,
+      carrier,
+      tracking_number,
+      estimated_delivery,
+      items,
+    } = req.body;
     if (!shipment_id || !from_location || !to_location) {
-      return res.status(400).json({ success: false, error: 'Shipment ID, From Location, and To Location are required' });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error: 'Shipment ID, From Location, and To Location are required',
+        });
     }
-    const result = await ShipmentModel.create({ shipment_id, order_id, from_location, to_location, status, carrier, tracking_number, estimated_delivery, items });
+    const result = await ShipmentModel.create({
+      shipment_id,
+      order_id,
+      from_location,
+      to_location,
+      status,
+      carrier,
+      tracking_number,
+      estimated_delivery,
+      items,
+    });
     logger.info(`Shipment created: ${shipment_id}`);
     res.status(201).json({ success: true, data: result });
   } catch (error) {

@@ -25,7 +25,7 @@ class RiskMetricsAnalyzer extends SubAgent {
     try {
       const result = await this.apiService.supplierRiskMetrics({
         range: timeRange,
-        supplier_id: supplierId
+        supplier_id: supplierId,
       });
       return result;
     } catch (err) {
@@ -41,7 +41,7 @@ class RiskMetricsAnalyzer extends SubAgent {
       avg_risk_score: 0,
       distribution: { low: 0, medium: 0, high: 0 },
       trends: [],
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 }

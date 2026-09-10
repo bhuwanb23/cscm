@@ -7,7 +7,7 @@ class PackingPlanner extends SubAgent {
   }
 
   async generatePlan(pickingTask, packingConfigurations = {}) {
-    this.log(`Generating packing plan`);
+    this.log('Generating packing plan');
 
     if (!pickingTask || !pickingTask.items) {
       throw new Error('pickingTask with items is required');
@@ -16,7 +16,7 @@ class PackingPlanner extends SubAgent {
     const data = {
       warehouse_id: this.warehouseId,
       picking_task: pickingTask,
-      packing_configurations: packingConfigurations
+      packing_configurations: packingConfigurations,
     };
 
     try {
@@ -30,24 +30,26 @@ class PackingPlanner extends SubAgent {
 
   _fallbackPlan(pickingTask, packingConfigurations) {
     const items = pickingTask.items || [];
-    return items.map(item => {
+    return items.map((item) => {
       const config = this._getDefaultConfig(item.productId, packingConfigurations);
       return {
         productId: item.productId,
         quantity: item.quantity,
         packagingType: config.packagingType,
         estimatedTime: this._estimateTime(config, item.quantity),
-        specialHandling: config.specialHandling || []
+        specialHandling: config.specialHandling || [],
       };
     });
   }
 
   _getDefaultConfig(productId, configurations) {
-    return configurations[productId] || {
-      packagingType: 'standard_box',
-      estimatedTimePerUnit: 30,
-      specialHandling: []
-    };
+    return (
+      configurations[productId] || {
+        packagingType: 'standard_box',
+        estimatedTimePerUnit: 30,
+        specialHandling: [],
+      }
+    );
   }
 
   _estimateTime(config, quantity) {

@@ -9,7 +9,7 @@ class UserModel {
       username: userData.username,
       email: userData.email,
       password: userData.password,
-      role: userData.role || 'user'
+      role: userData.role || 'user',
     });
     return { id, ...userData };
   }

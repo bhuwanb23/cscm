@@ -13,7 +13,7 @@ class TrendAnalyzer extends SubAgent {
     const data = {
       sales_data: salesData,
       forecast_horizon: options.forecastHorizon || 14,
-      include_seasonality: options.includeSeasonality !== false
+      include_seasonality: options.includeSeasonality !== false,
     };
 
     try {
@@ -23,7 +23,7 @@ class TrendAnalyzer extends SubAgent {
         trend: result.trend,
         seasonality: result.seasonality,
         confidenceInterval: result.confidence_interval,
-        dailyForecasts: result.daily_forecasts
+        dailyForecasts: result.daily_forecasts,
       };
     } catch (err) {
       this.error('Trend analysis failed:', err.message);
@@ -46,15 +46,16 @@ class TrendAnalyzer extends SubAgent {
   }
 
   _fallbackAnalysis(salesData) {
-    const values = salesData.map(s => s.sales || s.value || 0);
+    const values = salesData.map((s) => s.sales || s.value || 0);
     const avg = values.reduce((a, b) => a + b, 0) / values.length;
-    const trend = values.length > 1 && values[values.length - 1] > values[0] ? 'increasing' : 'decreasing';
+    const trend =
+      values.length > 1 && values[values.length - 1] > values[0] ? 'increasing' : 'decreasing';
 
     return {
       expectedDemand: Math.round(avg),
       trend,
-      dailyForecasts: values.slice(-7).map(v => v),
-      fallback: true
+      dailyForecasts: values.slice(-7).map((v) => v),
+      fallback: true,
     };
   }
 }

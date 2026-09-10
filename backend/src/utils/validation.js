@@ -13,16 +13,16 @@ const logger = require('./logger');
  */
 function validateRequiredFields(data, requiredFields) {
   const errors = [];
-  
+
   for (const field of requiredFields) {
     if (data[field] === undefined || data[field] === null || data[field] === '') {
       errors.push(`${field} is required`);
     }
   }
-  
+
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -139,33 +139,33 @@ function sanitizeString(str) {
 function validateObject(obj, schema) {
   const errors = [];
   const sanitized = {};
-  
+
   for (const [field, rules] of Object.entries(schema)) {
     const value = obj[field];
-    
+
     // Check if required
     if (rules.required && (value === undefined || value === null || value === '')) {
       errors.push(`${field} is required`);
       continue;
     }
-    
+
     // Skip validation if not required and value is missing
     if (!rules.required && (value === undefined || value === null)) {
       continue;
     }
-    
+
     // Type validation
     if (rules.type && typeof value !== rules.type) {
       errors.push(`${field} must be of type ${rules.type}`);
       continue;
     }
-    
+
     // Custom validation
     if (rules.validate && !rules.validate(value)) {
       errors.push(`${field} is invalid`);
       continue;
     }
-    
+
     // Sanitization
     if (rules.type === 'string') {
       sanitized[field] = rules.sanitize ? sanitizeString(value) : value;
@@ -173,11 +173,11 @@ function validateObject(obj, schema) {
       sanitized[field] = value;
     }
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors,
-    sanitized
+    sanitized,
   };
 }
 
@@ -190,7 +190,7 @@ function validatePagination(params) {
   const page = Math.max(1, parseInt(params.page) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(params.limit) || 10));
   const offset = (page - 1) * limit;
-  
+
   return { page, limit, offset };
 }
 
@@ -203,15 +203,15 @@ function validatePagination(params) {
 function validateSort(params, allowedFields) {
   const sortBy = params.sortBy || 'id';
   const sortOrder = (params.sortOrder || 'asc').toLowerCase();
-  
+
   if (!allowedFields.includes(sortBy)) {
     return { sortBy: 'id', sortOrder: 'asc' };
   }
-  
+
   if (sortOrder !== 'asc' && sortOrder !== 'desc') {
     return { sortBy, sortOrder: 'asc' };
   }
-  
+
   return { sortBy, sortOrder };
 }
 
@@ -229,5 +229,5 @@ module.exports = {
   sanitizeString,
   validateObject,
   validatePagination,
-  validateSort
+  validateSort,
 };

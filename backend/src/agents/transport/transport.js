@@ -22,9 +22,16 @@ class TransportAgent {
       routes: {},
       deliveries: {},
       deliveryAnalytics: {},
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     };
-    this.storagePath = path.join(__dirname, '..', '..', '..', 'data', `transport_${transportId}_state.json`);
+    this.storagePath = path.join(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      'data',
+      `transport_${transportId}_state.json`
+    );
     this.loadState();
   }
 
@@ -55,7 +62,7 @@ class TransportAgent {
       if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
       }
-      
+
       fs.writeFileSync(this.storagePath, JSON.stringify(this.state, null, 2));
       console.log(`Transport Agent ${this.transportId}: State saved successfully`);
     } catch (error) {
@@ -69,48 +76,48 @@ class TransportAgent {
   async initialize() {
     try {
       console.log(`Transport Agent ${this.transportId}: Initializing...`);
-      
+
       // Subscribe to relevant topics
       await messagingLayer.subscribeToTopic(
-        `delivery.assignment.${this.transportId}`, 
+        `delivery.assignment.${this.transportId}`,
         this.handleDeliveryAssignment.bind(this),
         'kafka'
       );
-      
+
       await messagingLayer.subscribeToTopic(
-        `route.optimization.request`, 
+        'route.optimization.request',
         this.handleRouteOptimizationRequest.bind(this),
         'kafka'
       );
-      
+
       // Subscribe to traffic condition updates
       await messagingLayer.subscribeToTopic(
-        `traffic.conditions.${this.transportId}`, 
+        `traffic.conditions.${this.transportId}`,
         this.handleTrafficConditionUpdate.bind(this),
         'kafka'
       );
-      
+
       // Subscribe to road condition updates
       await messagingLayer.subscribeToTopic(
-        `road.conditions.${this.transportId}`, 
+        `road.conditions.${this.transportId}`,
         this.handleRoadConditionUpdate.bind(this),
         'kafka'
       );
-      
+
       // Subscribe to vehicle tracking updates
       await messagingLayer.subscribeToTopic(
-        `vehicle.tracking.${this.transportId}`, 
+        `vehicle.tracking.${this.transportId}`,
         this.handleVehicleTrackingUpdate.bind(this),
         'kafka'
       );
-      
+
       // Subscribe to delivery completion notifications
       await messagingLayer.subscribeToTopic(
-        `delivery.completed.${this.transportId}`, 
+        `delivery.completed.${this.transportId}`,
         this.handleDeliveryCompletion.bind(this),
         'kafka'
       );
-      
+
       console.log(`Transport Agent ${this.transportId}: Initialized successfully`);
     } catch (error) {
       console.error(`Transport Agent ${this.transportId}: Initialization failed:`, error.message);
@@ -121,17 +128,29 @@ class TransportAgent {
     try {
       console.log(`Transport Agent ${this.transportId}: Received delivery assignment`, message);
       const deliveryId = message.deliveryId || `DEL-${Date.now()}`;
-      this.state.deliveries[deliveryId] = { ...message, status: 'assigned', assignedAt: new Date().toISOString() };
+      this.state.deliveries[deliveryId] = {
+        ...message,
+        status: 'assigned',
+        assignedAt: new Date().toISOString(),
+      };
       this.saveState();
     } catch (error) {
-      console.error(`Transport Agent ${this.transportId}: Failed to handle delivery assignment:`, error.message);
+      console.error(
+        `Transport Agent ${this.transportId}: Failed to handle delivery assignment:`,
+        error.message
+      );
     }
   }
 
   async handleRouteOptimizationRequest(topic, message) {
     try {
-      console.log(`Transport Agent ${this.transportId}: Received route optimization request`, message);
-      const deliveries = message.deliveries || Object.values(this.state.deliveries).filter(d => d.status !== 'completed');
+      console.log(
+        `Transport Agent ${this.transportId}: Received route optimization request`,
+        message
+      );
+      const deliveries =
+        message.deliveries ||
+        Object.values(this.state.deliveries).filter((d) => d.status !== 'completed');
       const vehicles = message.vehicles || Object.values(this.state.vehicles);
 
       const routes = await this.routeOptimizer.optimize(deliveries, vehicles);
@@ -144,19 +163,29 @@ class TransportAgent {
         'kafka'
       );
     } catch (error) {
-      console.error(`Transport Agent ${this.transportId}: Failed to handle route optimization request:`, error.message);
+      console.error(
+        `Transport Agent ${this.transportId}: Failed to handle route optimization request:`,
+        error.message
+      );
     }
   }
 
   async handleTrafficConditionUpdate(topic, message) {
     try {
-      console.log(`Transport Agent ${this.transportId}: Received traffic condition update`, message);
+      console.log(
+        `Transport Agent ${this.transportId}: Received traffic condition update`,
+        message
+      );
       if (!this.state.trafficConditions) this.state.trafficConditions = [];
       this.state.trafficConditions.push({ ...message, receivedAt: new Date().toISOString() });
-      if (this.state.trafficConditions.length > 50) this.state.trafficConditions = this.state.trafficConditions.slice(-50);
+      if (this.state.trafficConditions.length > 50)
+        this.state.trafficConditions = this.state.trafficConditions.slice(-50);
       this.saveState();
     } catch (error) {
-      console.error(`Transport Agent ${this.transportId}: Failed to handle traffic condition update:`, error.message);
+      console.error(
+        `Transport Agent ${this.transportId}: Failed to handle traffic condition update:`,
+        error.message
+      );
     }
   }
 
@@ -165,31 +194,38 @@ class TransportAgent {
       console.log(`Transport Agent ${this.transportId}: Received road condition update`, message);
       if (!this.state.roadConditions) this.state.roadConditions = [];
       this.state.roadConditions.push({ ...message, receivedAt: new Date().toISOString() });
-      if (this.state.roadConditions.length > 50) this.state.roadConditions = this.state.roadConditions.slice(-50);
+      if (this.state.roadConditions.length > 50)
+        this.state.roadConditions = this.state.roadConditions.slice(-50);
       this.saveState();
     } catch (error) {
-      console.error(`Transport Agent ${this.transportId}: Failed to handle road condition update:`, error.message);
+      console.error(
+        `Transport Agent ${this.transportId}: Failed to handle road condition update:`,
+        error.message
+      );
     }
   }
 
   async handleVehicleTrackingUpdate(topic, message) {
     try {
       console.log(`Transport Agent ${this.transportId}: Received vehicle tracking update`, message);
-      
+
       // Update vehicle location and status
       if (message.vehicleId) {
         this.updateVehicleTracking(message.vehicleId, message);
-        
+
         // Update delivery tracking information
         if (message.deliveryId) {
           this.updateDeliveryTracking(message.deliveryId, message);
         }
-        
+
         // Publish tracking update to customers
         this.publishTrackingUpdate(message);
       }
     } catch (error) {
-      console.error(`Transport Agent ${this.transportId}: Failed to handle vehicle tracking update:`, error.message);
+      console.error(
+        `Transport Agent ${this.transportId}: Failed to handle vehicle tracking update:`,
+        error.message
+      );
     }
   }
 
@@ -199,7 +235,7 @@ class TransportAgent {
   async handleDeliveryCompletion(topic, message) {
     try {
       console.log(`Transport Agent ${this.transportId}: Received delivery completion`, message);
-      
+
       // Update delivery status
       if (message.deliveryId) {
         const delivery = this.state.deliveries[message.deliveryId];
@@ -208,9 +244,9 @@ class TransportAgent {
           delivery.actualCompletionTime = message.completionTime || new Date().toISOString();
           delivery.signature = message.signature;
           delivery.notes = message.notes;
-          
+
           this.saveState();
-          
+
           // Publish delivery completion notification
           messagingLayer.publishMessage(
             `delivery.completed.notification.${this.transportId}`,
@@ -222,14 +258,17 @@ class TransportAgent {
               recipient: message.recipient,
               signature: message.signature,
               notes: message.notes,
-              timestamp: new Date().toISOString()
+              timestamp: new Date().toISOString(),
             },
             'kafka'
           );
         }
       }
     } catch (error) {
-      console.error(`Transport Agent ${this.transportId}: Failed to handle delivery completion:`, error.message);
+      console.error(
+        `Transport Agent ${this.transportId}: Failed to handle delivery completion:`,
+        error.message
+      );
     }
   }
 
@@ -245,12 +284,12 @@ class TransportAgent {
           capacity: 100,
           currentLoad: 0,
           status: 'available',
-          location: { lat: 0, lng: 0 }
+          location: { lat: 0, lng: 0 },
         };
       }
-      
+
       const vehicle = this.state.vehicles[vehicleId];
-      
+
       // Update vehicle information
       vehicle.location = trackingData.location || vehicle.location;
       vehicle.status = trackingData.status || vehicle.status;
@@ -258,7 +297,7 @@ class TransportAgent {
       vehicle.heading = trackingData.heading;
       vehicle.fuelLevel = trackingData.fuelLevel;
       vehicle.lastTracked = new Date().toISOString();
-      
+
       // Update delivery information if provided
       if (trackingData.deliveryId) {
         const delivery = this.state.deliveries[trackingData.deliveryId];
@@ -268,12 +307,15 @@ class TransportAgent {
           delivery.lastTracked = new Date().toISOString();
         }
       }
-      
+
       this.saveState();
-      
+
       console.log(`Transport Agent ${this.transportId}: Updated tracking for vehicle ${vehicleId}`);
     } catch (error) {
-      console.error(`Transport Agent ${this.transportId}: Failed to update vehicle tracking:`, error.message);
+      console.error(
+        `Transport Agent ${this.transportId}: Failed to update vehicle tracking:`,
+        error.message
+      );
     }
   }
 
@@ -287,28 +329,35 @@ class TransportAgent {
         console.error(`Transport Agent ${this.transportId}: Delivery ${deliveryId} not found`);
         return;
       }
-      
+
       // Update delivery tracking information
       delivery.currentLocation = trackingData.location || delivery.currentLocation;
       delivery.estimatedArrival = trackingData.estimatedArrival || delivery.estimatedArrival;
       delivery.distanceRemaining = trackingData.distanceRemaining;
       delivery.timeRemaining = trackingData.timeRemaining;
       delivery.lastTracked = new Date().toISOString();
-      
+
       // Update status based on proximity to destination
       if (trackingData.proximityToDestination !== undefined) {
-        if (trackingData.proximityToDestination < 0.1) { // Less than 100 meters
+        if (trackingData.proximityToDestination < 0.1) {
+          // Less than 100 meters
           delivery.status = 'arriving';
-        } else if (trackingData.proximityToDestination < 1) { // Less than 1 km
+        } else if (trackingData.proximityToDestination < 1) {
+          // Less than 1 km
           delivery.status = 'approaching';
         }
       }
-      
+
       this.saveState();
-      
-      console.log(`Transport Agent ${this.transportId}: Updated tracking for delivery ${deliveryId}`);
+
+      console.log(
+        `Transport Agent ${this.transportId}: Updated tracking for delivery ${deliveryId}`
+      );
     } catch (error) {
-      console.error(`Transport Agent ${this.transportId}: Failed to update delivery tracking:`, error.message);
+      console.error(
+        `Transport Agent ${this.transportId}: Failed to update delivery tracking:`,
+        error.message
+      );
     }
   }
 
@@ -320,7 +369,7 @@ class TransportAgent {
       // Only publish significant updates to avoid spam
       if (this.shouldPublishTrackingUpdate(trackingData)) {
         messagingLayer.publishMessage(
-          `delivery.tracking.update`,
+          'delivery.tracking.update',
           {
             deliveryId: trackingData.deliveryId,
             vehicleId: trackingData.vehicleId,
@@ -329,15 +378,20 @@ class TransportAgent {
             distanceRemaining: trackingData.distanceRemaining,
             timeRemaining: trackingData.timeRemaining,
             status: trackingData.status,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           },
           'kafka'
         );
-        
-        console.log(`Transport Agent ${this.transportId}: Published tracking update for delivery ${trackingData.deliveryId}`);
+
+        console.log(
+          `Transport Agent ${this.transportId}: Published tracking update for delivery ${trackingData.deliveryId}`
+        );
       }
     } catch (error) {
-      console.error(`Transport Agent ${this.transportId}: Failed to publish tracking update:`, error.message);
+      console.error(
+        `Transport Agent ${this.transportId}: Failed to publish tracking update:`,
+        error.message
+      );
     }
   }
 
@@ -348,36 +402,46 @@ class TransportAgent {
     try {
       // Don't publish if no delivery ID
       if (!trackingData.deliveryId) return false;
-      
+
       const delivery = this.state.deliveries[trackingData.deliveryId];
       if (!delivery) return false;
-      
+
       // Check if this is a significant update
       const lastPublished = delivery.lastTrackingPublished || new Date(0);
       const currentTime = new Date();
       const timeSinceLastPublish = (currentTime - lastPublished) / 1000; // Seconds
-      
+
       // Publish if:
       // 1. More than 5 minutes since last publish, OR
       // 2. Location has changed significantly (more than 500m), OR
       // 3. Status has changed, OR
       // 4. It's been more than 30 seconds since last tracking update
       const significantTimePassed = timeSinceLastPublish > 300; // 5 minutes
-      const locationChangedSignificantly = this.hasLocationChangedSignificantly(delivery, trackingData);
+      const locationChangedSignificantly = this.hasLocationChangedSignificantly(
+        delivery,
+        trackingData
+      );
       const statusChanged = delivery.lastPublishedStatus !== trackingData.status;
       const regularUpdateInterval = timeSinceLastPublish > 30; // 30 seconds
-      
-      const shouldPublish = significantTimePassed || locationChangedSignificantly || statusChanged || regularUpdateInterval;
-      
+
+      const shouldPublish =
+        significantTimePassed ||
+        locationChangedSignificantly ||
+        statusChanged ||
+        regularUpdateInterval;
+
       if (shouldPublish) {
         delivery.lastTrackingPublished = currentTime.toISOString();
         delivery.lastPublishedStatus = trackingData.status;
         this.saveState();
       }
-      
+
       return shouldPublish;
     } catch (error) {
-      console.error(`Transport Agent ${this.transportId}: Failed to determine if tracking update should be published:`, error.message);
+      console.error(
+        `Transport Agent ${this.transportId}: Failed to determine if tracking update should be published:`,
+        error.message
+      );
       return true; // Default to publishing if in doubt
     }
   }
@@ -388,11 +452,14 @@ class TransportAgent {
   hasLocationChangedSignificantly(delivery, trackingData) {
     try {
       if (!delivery.currentLocation || !trackingData.location) return true;
-      
+
       const distance = this.calculateDistance(delivery.currentLocation, trackingData.location);
       return distance > 0.5; // More than 500 meters
     } catch (error) {
-      console.error(`Transport Agent ${this.transportId}: Failed to check location change significance:`, error.message);
+      console.error(
+        `Transport Agent ${this.transportId}: Failed to check location change significance:`,
+        error.message
+      );
       return true; // Default to significant change if in doubt
     }
   }
@@ -403,33 +470,38 @@ class TransportAgent {
   sendProactiveNotifications() {
     try {
       const currentTime = new Date();
-      
+
       // Check each delivery for proactive notification opportunities
-      Object.values(this.state.deliveries).forEach(delivery => {
+      Object.values(this.state.deliveries).forEach((delivery) => {
         if (delivery.status === 'scheduled' && delivery.schedule) {
           // Check if delivery is approaching
           const estimatedArrival = new Date(delivery.schedule.estimatedCompletion);
           const timeUntilArrival = (estimatedArrival - currentTime) / 1000; // Seconds
-          
+
           // Send notification 1 hour before estimated arrival
-          if (timeUntilArrival > 3500 && timeUntilArrival < 3700) { // ~1 hour
+          if (timeUntilArrival > 3500 && timeUntilArrival < 3700) {
+            // ~1 hour
             this.sendDeliveryNotification(delivery, 'approaching', {
               estimatedArrival: estimatedArrival.toISOString(),
-              timeUntilArrival: timeUntilArrival
+              timeUntilArrival: timeUntilArrival,
             });
           }
-          
+
           // Send notification 30 minutes before estimated arrival
-          if (timeUntilArrival > 1700 && timeUntilArrival < 1900) { // ~30 minutes
+          if (timeUntilArrival > 1700 && timeUntilArrival < 1900) {
+            // ~30 minutes
             this.sendDeliveryNotification(delivery, 'arriving_soon', {
               estimatedArrival: estimatedArrival.toISOString(),
-              timeUntilArrival: timeUntilArrival
+              timeUntilArrival: timeUntilArrival,
             });
           }
         }
       });
     } catch (error) {
-      console.error(`Transport Agent ${this.transportId}: Failed to send proactive notifications:`, error.message);
+      console.error(
+        `Transport Agent ${this.transportId}: Failed to send proactive notifications:`,
+        error.message
+      );
     }
   }
 
@@ -444,14 +516,19 @@ class TransportAgent {
           deliveryId: delivery.deliveryId,
           notificationType: notificationType,
           details: details,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         'kafka'
       );
-      
-      console.log(`Transport Agent ${this.transportId}: Sent ${notificationType} notification for delivery ${delivery.deliveryId}`);
+
+      console.log(
+        `Transport Agent ${this.transportId}: Sent ${notificationType} notification for delivery ${delivery.deliveryId}`
+      );
     } catch (error) {
-      console.error(`Transport Agent ${this.transportId}: Failed to send delivery notification:`, error.message);
+      console.error(
+        `Transport Agent ${this.transportId}: Failed to send delivery notification:`,
+        error.message
+      );
     }
   }
 
@@ -465,18 +542,18 @@ class TransportAgent {
         console.error(`Transport Agent ${this.transportId}: Delivery ${deliveryId} not found`);
         return;
       }
-      
+
       // Log exception
       if (!delivery.exceptions) {
         delivery.exceptions = [];
       }
-      
+
       delivery.exceptions.push({
         type: exceptionType,
         details: details,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       // Update delivery status based on exception type
       switch (exceptionType) {
         case 'delay':
@@ -494,9 +571,9 @@ class TransportAgent {
         default:
           delivery.status = 'exception';
       }
-      
+
       this.saveState();
-      
+
       // Notify stakeholders
       messagingLayer.publishMessage(
         `delivery.exception.${this.transportId}`,
@@ -505,14 +582,19 @@ class TransportAgent {
           exceptionType: exceptionType,
           details: details,
           status: delivery.status,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         'kafka'
       );
-      
-      console.log(`Transport Agent ${this.transportId}: Handled ${exceptionType} exception for delivery ${deliveryId}`);
+
+      console.log(
+        `Transport Agent ${this.transportId}: Handled ${exceptionType} exception for delivery ${deliveryId}`
+      );
     } catch (error) {
-      console.error(`Transport Agent ${this.transportId}: Failed to handle delivery exception:`, error.message);
+      console.error(
+        `Transport Agent ${this.transportId}: Failed to handle delivery exception:`,
+        error.message
+      );
     }
   }
 
@@ -530,18 +612,18 @@ class TransportAgent {
         totalDistance: 0,
         fuelConsumed: 0,
         exceptions: 0,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-      
+
       let totalDeliveryTime = 0;
       let deliveryCount = 0;
-      
-      Object.values(this.state.deliveries).forEach(delivery => {
+
+      Object.values(this.state.deliveries).forEach((delivery) => {
         analytics.totalDeliveries++;
-        
+
         if (delivery.status === 'completed') {
           analytics.completedDeliveries++;
-          
+
           // Calculate delivery time
           if (delivery.assignedAt && delivery.actualCompletionTime) {
             const assignedTime = new Date(delivery.assignedAt);
@@ -550,12 +632,12 @@ class TransportAgent {
             totalDeliveryTime += deliveryTime;
             deliveryCount++;
           }
-          
+
           // Check if on-time
           if (delivery.schedule && delivery.actualCompletionTime) {
             const scheduledCompletion = new Date(delivery.schedule.estimatedCompletion);
             const actualCompletion = new Date(delivery.actualCompletionTime);
-            
+
             if (actualCompletion <= scheduledCompletion) {
               analytics.onTimeDeliveries++;
             } else {
@@ -563,41 +645,40 @@ class TransportAgent {
             }
           }
         }
-        
+
         // Add distance
         if (delivery.schedule && delivery.schedule.totalDistance) {
           analytics.totalDistance += delivery.schedule.totalDistance;
         }
-        
+
         // Count exceptions
         if (delivery.exceptions && delivery.exceptions.length > 0) {
           analytics.exceptions += delivery.exceptions.length;
         }
       });
-      
+
       // Calculate averages
       if (deliveryCount > 0) {
         analytics.averageDeliveryTime = totalDeliveryTime / deliveryCount;
       }
-      
+
       // Estimate fuel consumption (simplified)
       analytics.fuelConsumed = analytics.totalDistance * 0.1; // 0.1 liters per km
-      
+
       // Save analytics
       this.state.deliveryAnalytics = analytics;
       this.saveState();
-      
+
       // Publish analytics
-      messagingLayer.publishMessage(
-        `delivery.analytics.${this.transportId}`,
-        analytics,
-        'kafka'
-      );
-      
+      messagingLayer.publishMessage(`delivery.analytics.${this.transportId}`, analytics, 'kafka');
+
       console.log(`Transport Agent ${this.transportId}: Generated delivery analytics`);
       return analytics;
     } catch (error) {
-      console.error(`Transport Agent ${this.transportId}: Failed to generate delivery analytics:`, error.message);
+      console.error(
+        `Transport Agent ${this.transportId}: Failed to generate delivery analytics:`,
+        error.message
+      );
       return null;
     }
   }
@@ -608,17 +689,22 @@ class TransportAgent {
   calculateDistance(point1, point2) {
     try {
       const R = 6371; // Earth radius in kilometers
-      const dLat = (point2.lat - point1.lat) * Math.PI / 180;
-      const dLon = (point2.lng - point1.lng) * Math.PI / 180;
-      const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(point1.lat * Math.PI / 180) * Math.cos(point2.lat * Math.PI / 180) * 
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      const dLat = ((point2.lat - point1.lat) * Math.PI) / 180;
+      const dLon = ((point2.lng - point1.lng) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((point1.lat * Math.PI) / 180) *
+          Math.cos((point2.lat * Math.PI) / 180) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const d = R * c; // Distance in kilometers
       return d;
     } catch (error) {
-      console.error(`Transport Agent ${this.transportId}: Failed to calculate distance:`, error.message);
+      console.error(
+        `Transport Agent ${this.transportId}: Failed to calculate distance:`,
+        error.message
+      );
       return 0;
     }
   }
@@ -629,7 +715,7 @@ class TransportAgent {
   getState() {
     return {
       transportId: this.transportId,
-      ...this.state
+      ...this.state,
     };
   }
 }
@@ -638,7 +724,7 @@ class TransportAgent {
 if (require.main === module) {
   const transportId = process.argv[2] || 'default';
   const agent = new TransportAgent(transportId);
-  
+
   // Initialize agent
   agent.initialize().then(() => {
     console.log(`Transport Agent ${transportId} is running...`);

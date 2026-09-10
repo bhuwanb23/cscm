@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { 
+const {
   publishTelemetryEvent,
   publishInventoryEvent,
-  publishOrderEvent
+  publishOrderEvent,
 } = require('../controllers/eventController');
 
 const { authenticate } = require('../middleware/auth');

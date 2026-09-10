@@ -5,7 +5,9 @@ const logger = require('../utils/logger');
 
 const app = express();
 const PORT = process.env.GATEWAY_PORT || 8080;
-const aiMlTarget = config.aiMl ? config.aiMl.apiUrl : (process.env.AI_ML_API_URL || 'http://localhost:8000');
+const aiMlTarget = config.aiMl
+  ? config.aiMl.apiUrl
+  : process.env.AI_ML_API_URL || 'http://localhost:8000';
 const apiTarget = `http://localhost:${config.server.port}`;
 
 // NOTE: Do NOT use express.json() here — it consumes the request body
@@ -32,9 +34,7 @@ function proxyErrorHandler(err, req, res) {
   if (!res.headersSent) {
     res.status(502).json({
       error: 'Upstream service unavailable',
-      message: err.code === 'ECONNREFUSED'
-        ? 'Service not running'
-        : err.message
+      message: err.code === 'ECONNREFUSED' ? 'Service not running' : err.message,
     });
   }
 }
@@ -46,8 +46,8 @@ const aiMlProxy = createProxyMiddleware({
     proxyReq: (proxyReq, req, res) => {
       logger.info(`[gateway] → Python AI/ML: ${req.method} ${req.originalUrl}`);
     },
-    error: proxyErrorHandler
-  }
+    error: proxyErrorHandler,
+  },
 });
 
 const apiProxy = createProxyMiddleware({
@@ -57,17 +57,37 @@ const apiProxy = createProxyMiddleware({
     proxyReq: (proxyReq, req, res) => {
       logger.info(`[gateway] → Express API: ${req.method} ${req.originalUrl}`);
     },
-    error: proxyErrorHandler
-  }
+    error: proxyErrorHandler,
+  },
 });
 
 const aiMlDomains = [
-  'demand', 'demand-planning', 'routing', 'supplier', 'customer',
-  'anomaly', 'coordination', 'simulation', 'explain', 'nlp', 'kg',
-  'causal', 'vision', 'learning', 'uncertainty', 'monitoring'
+  'demand',
+  'demand-planning',
+  'routing',
+  'supplier',
+  'customer',
+  'anomaly',
+  'coordination',
+  'simulation',
+  'explain',
+  'nlp',
+  'kg',
+  'causal',
+  'vision',
+  'learning',
+  'uncertainty',
+  'monitoring',
 ];
-const aiMlActions = ['optimize', 'recommendation', 'ss-policy', 'stochastic-optimize',
-  'rl-train', 'mip-optimize', 'batch-optimize'];
+const aiMlActions = [
+  'optimize',
+  'recommendation',
+  'ss-policy',
+  'stochastic-optimize',
+  'rl-train',
+  'mip-optimize',
+  'batch-optimize',
+];
 
 function isAiMlPath(pathname) {
   // req.originalUrl is absolute (e.g. /api/v1/demand/forecast),
@@ -107,7 +127,9 @@ function probePythonHealth(timeoutMs) {
   return new Promise((resolve) => {
     const clientReq = http.get(`${pythonUrl.protocol}//${pythonUrl.host}/health`, (pythonRes) => {
       let data = '';
-      pythonRes.on('data', (chunk) => { data += chunk; });
+      pythonRes.on('data', (chunk) => {
+        data += chunk;
+      });
       pythonRes.on('end', () => {
         resolve(pythonRes.statusCode === 200 ? 'healthy' : 'unhealthy');
       });
@@ -144,15 +166,15 @@ app.get('/health', async (req, res) => {
 app.get('/health/python', async (req, res) => {
   const http = require('http');
   const pythonUrl = new URL(aiMlTarget);
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const clientReq = http.get(`${pythonUrl.protocol}//${pythonUrl.host}/health`, (pythonRes) => {
       let data = '';
-      pythonRes.on('data', chunk => data += chunk);
+      pythonRes.on('data', (chunk) => (data += chunk));
       pythonRes.on('end', () => {
         res.json({
           service: 'ai-ml-python',
           status: pythonRes.statusCode === 200 ? 'healthy' : 'unhealthy',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
         resolve();
       });
@@ -161,7 +183,7 @@ app.get('/health/python', async (req, res) => {
       res.status(503).json({
         service: 'ai-ml-python',
         status: 'unreachable',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
       resolve();
     });
@@ -170,7 +192,7 @@ app.get('/health/python', async (req, res) => {
       res.status(504).json({
         service: 'ai-ml-python',
         status: 'timeout',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
       resolve();
     });
@@ -181,7 +203,7 @@ app.use((err, req, res, next) => {
   logger.error('Gateway error:', err);
   res.status(500).json({
     error: 'Internal server error',
-    message: err.message
+    message: err.message,
   });
 });
 

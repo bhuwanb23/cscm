@@ -11,7 +11,7 @@ const {
   getCircuitBreakerMetrics,
   getCircuitBreakerStatus,
   forceCircuitBreakerState,
-  circuitBreakerOptions
+  circuitBreakerOptions,
 } = require('./circuitBreaker');
 
 const {
@@ -23,7 +23,7 @@ const {
   getCachedFallbackResponse,
   clearFallbackCache,
   configureFallback,
-  fallbackConfig
+  fallbackConfig,
 } = require('./fallbacks');
 
 const {
@@ -40,7 +40,7 @@ const {
   retryWithIdempotencyCheck,
   configureRetry,
   retryableStatusCodes,
-  retryableNetworkErrors
+  retryableNetworkErrors,
 } = require('./retry');
 
 const {
@@ -56,7 +56,7 @@ const {
   startAutoRecovery,
   stopAutoRecovery,
   determineDegradationLevel,
-  serviceDependencies
+  serviceDependencies,
 } = require('./degradation');
 
 module.exports = {
@@ -69,7 +69,7 @@ module.exports = {
   getCircuitBreakerStatus,
   forceCircuitBreakerState,
   circuitBreakerOptions,
-  
+
   // Fallbacks
   aiMlFallbacks,
   databaseFallbacks,
@@ -80,7 +80,7 @@ module.exports = {
   clearFallbackCache,
   configureFallback,
   fallbackConfig,
-  
+
   // Retry
   retry,
   retryHttpRequest,
@@ -96,7 +96,7 @@ module.exports = {
   configureRetry,
   retryableStatusCodes,
   retryableNetworkErrors,
-  
+
   // Degradation
   DegradationLevel,
   setDegradationLevel,
@@ -110,5 +110,5 @@ module.exports = {
   startAutoRecovery,
   stopAutoRecovery,
   determineDegradationLevel,
-  serviceDependencies
+  serviceDependencies,
 };

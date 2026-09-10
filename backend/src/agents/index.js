@@ -1,6 +1,6 @@
 /**
  * Agent Framework Entry Point
- * 
+ *
  * This module exports all agent classes and provides utilities for managing agents.
  */
 
@@ -19,5 +19,5 @@ module.exports = {
   SupplierAgent,
   CustomerDemandAgent,
   CentralPlannerAgent,
-  SimulationAgent
+  SimulationAgent,
 };

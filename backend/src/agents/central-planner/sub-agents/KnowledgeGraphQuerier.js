@@ -17,7 +17,7 @@ class KnowledgeGraphQuerier extends SubAgent {
         entities: result.entities || [],
         relationships: result.relationships || [],
         paths: result.paths || [],
-        model_version: result.model_version || 'unknown'
+        model_version: result.model_version || 'unknown',
       };
     } catch (err) {
       this.error('Knowledge graph query failed:', err.message);
@@ -35,13 +35,13 @@ class KnowledgeGraphQuerier extends SubAgent {
       const result = await this.apiService.kgQuery({
         entity_id: entityId,
         entity_type: entityType,
-        depth
+        depth,
       });
       const related = result.related || result.entities || [];
       return {
         related,
         total: result.total !== undefined ? result.total : related.length,
-        model_version: result.model_version || 'unknown'
+        model_version: result.model_version || 'unknown',
       };
     } catch (err) {
       this.error('findRelated failed:', err.message);
@@ -57,13 +57,13 @@ class KnowledgeGraphQuerier extends SubAgent {
     try {
       const result = await this.apiService.kgQuery({
         query_type: 'supplier_graph',
-        supplier_id: supplierId
+        supplier_id: supplierId,
       });
       return {
         entities: result.entities || [],
         relationships: result.relationships || [],
         paths: result.paths || [],
-        model_version: result.model_version || 'unknown'
+        model_version: result.model_version || 'unknown',
       };
     } catch (err) {
       this.error('getSupplierGraph failed:', err.message);
@@ -76,7 +76,7 @@ class KnowledgeGraphQuerier extends SubAgent {
       entities: [],
       relationships: [],
       paths: [],
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 
@@ -84,7 +84,7 @@ class KnowledgeGraphQuerier extends SubAgent {
     return {
       related: [],
       total: 0,
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 }

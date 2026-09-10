@@ -11,7 +11,12 @@ class DeliveryScheduler extends SubAgent {
 
     if (!deliveries || deliveries.length === 0) throw new Error('deliveries are required');
 
-    const data = { deliveries, time_windows: timeWindows, vehicles, transport_id: this.transportId };
+    const data = {
+      deliveries,
+      time_windows: timeWindows,
+      vehicles,
+      transport_id: this.transportId,
+    };
 
     try {
       const result = await this.apiService.routingOptimization(data);
@@ -31,7 +36,7 @@ class DeliveryScheduler extends SubAgent {
     return {
       deliveryId,
       ...trackingData,
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
     };
   }
 
@@ -42,20 +47,28 @@ class DeliveryScheduler extends SubAgent {
   }
 
   sendNotification(delivery, notificationType, details) {
-    this.log(`Sending ${notificationType} notification for delivery ${delivery.deliveryId || delivery}`);
+    this.log(
+      `Sending ${notificationType} notification for delivery ${delivery.deliveryId || delivery}`
+    );
     return { delivery, notificationType, details, sent: true, timestamp: new Date().toISOString() };
   }
 
   handleException(deliveryId, exceptionType, details) {
     this.log(`Handling exception ${exceptionType} for delivery ${deliveryId}`);
-    return { deliveryId, exceptionType, details, resolved: false, timestamp: new Date().toISOString() };
+    return {
+      deliveryId,
+      exceptionType,
+      details,
+      resolved: false,
+      timestamp: new Date().toISOString(),
+    };
   }
 
   _fallbackSchedule(deliveries) {
-    return deliveries.map(d => ({
+    return deliveries.map((d) => ({
       deliveryId: d.id || d.deliveryId,
       scheduledTime: new Date(Date.now() + Math.random() * 86400000).toISOString(),
-      status: 'scheduled'
+      status: 'scheduled',
     }));
   }
 }

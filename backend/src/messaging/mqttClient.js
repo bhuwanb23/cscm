@@ -30,7 +30,7 @@ if (config.mqtt.url && config.mqtt.url.trim() !== '') {
     publish: () => {},
     subscribe: () => {},
     on: () => {},
-    end: () => {}
+    end: () => {},
   };
 }
 
@@ -79,5 +79,5 @@ module.exports = {
   client,
   publishMessage,
   subscribeToTopic,
-  handleMessage
+  handleMessage,
 };

@@ -1,6 +1,6 @@
 /**
  * Feature Storage
- * 
+ *
  * This module provides in-memory feature storage for the CSCM backend.
  * It manages feature data, transformations, and versioning.
  */
@@ -33,7 +33,7 @@ class FeatureStorage {
         data: data,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        metadata: metadata
+        metadata: metadata,
       };
 
       // Store feature
@@ -50,7 +50,7 @@ class FeatureStorage {
         version: versions.length + 1,
         data: data,
         timestamp: featureEntry.createdAt,
-        metadata: metadata
+        metadata: metadata,
       };
       versions.push(version);
 
@@ -109,7 +109,7 @@ class FeatureStorage {
         ...existingFeature,
         data: data,
         updatedAt: new Date().toISOString(),
-        metadata: { ...existingFeature.metadata, ...metadata }
+        metadata: { ...existingFeature.metadata, ...metadata },
       };
 
       // Store updated feature
@@ -121,7 +121,7 @@ class FeatureStorage {
         version: versions.length + 1,
         data: data,
         timestamp: updatedFeature.updatedAt,
-        metadata: updatedFeature.metadata
+        metadata: updatedFeature.metadata,
       };
       versions.push(version);
 
@@ -211,7 +211,7 @@ class FeatureStorage {
         return null;
       }
 
-      const featureVersion = versions.find(v => v.version === version);
+      const featureVersion = versions.find((v) => v.version === version);
       if (!featureVersion) {
         logger.debug(`Version ${version} not found for feature: ${featureName}`);
         return null;
@@ -278,11 +278,14 @@ class FeatureStorage {
 
       // Apply transformation
       const transformedData = transformFn(feature.data, params);
-      
+
       logger.debug(`Applied transformation ${transformName} to feature ${featureName}`);
       return transformedData;
     } catch (error) {
-      logger.error(`Failed to apply transformation ${transformName} to feature ${featureName}:`, error.message);
+      logger.error(
+        `Failed to apply transformation ${transformName} to feature ${featureName}:`,
+        error.message
+      );
       throw error;
     }
   }
@@ -313,7 +316,10 @@ class FeatureStorage {
     return {
       featureCount: this.features.size,
       transformationCount: this.transformations.size,
-      totalVersions: Array.from(this.featureVersions.values()).reduce((sum, versions) => sum + versions.length, 0)
+      totalVersions: Array.from(this.featureVersions.values()).reduce(
+        (sum, versions) => sum + versions.length,
+        0
+      ),
     };
   }
 }

@@ -1,6 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { getByStore, getItem, upsert, updateQuantity } = require('../controllers/inventoryController');
+const {
+  getByStore,
+  getItem,
+  upsert,
+  updateQuantity,
+} = require('../controllers/inventoryController');
 const { authenticate } = require('../middleware/auth');
 
 router.use(authenticate);

@@ -22,12 +22,12 @@ const aiMlFallbacks = {
       store_id: request.store_id,
       forecast_dates: generateFutureDates(request.forecast_horizon),
       forecast_values: Array(request.forecast_horizon).fill(100), // Default to 100 units
-      confidence_intervals: request.include_confidence_intervals 
+      confidence_intervals: request.include_confidence_intervals
         ? generateConfidenceIntervals(100, request.forecast_horizon)
         : null,
       model_version: 'fallback-v1.0',
       timestamp: new Date().toISOString(),
-      fallback: true
+      fallback: true,
     };
     return fallbackForecast;
   },
@@ -39,13 +39,13 @@ const aiMlFallbacks = {
   inventoryOptimization: async (request) => {
     logger.info('Using inventory optimization fallback');
     // Simple fallback: reorder when stock < min_level
-    const recommendations = request.products.map(product => {
+    const recommendations = request.products.map((product) => {
       const needsReorder = product.current_stock < (product.min_stock_level || 20);
       return {
         product_id: product.product_id,
         action: needsReorder ? 'reorder' : 'hold',
         recommended_quantity: needsReorder ? product.max_stock_level : product.current_stock,
-        fallback: true
+        fallback: true,
       };
     });
     return { recommendations };
@@ -65,10 +65,10 @@ const aiMlFallbacks = {
       estimated_time: Math.floor(Math.random() * 120) + 30, // Random 30-150 minutes
       vehicle_id: request.fleet[index % request.fleet.length].vehicle_id,
       status: 'planned',
-      fallback: true
+      fallback: true,
     }));
     return { routes };
-  }
+  },
 };
 
 /**
@@ -86,7 +86,7 @@ const databaseFallbacks = {
       success: true,
       data: [],
       fallback: true,
-      message: 'Database unavailable, returning empty results'
+      message: 'Database unavailable, returning empty results',
     };
   },
 
@@ -100,7 +100,7 @@ const databaseFallbacks = {
       success: true,
       data: [],
       fallback: true,
-      message: 'Database unavailable, returning empty results'
+      message: 'Database unavailable, returning empty results',
     };
   },
 
@@ -114,9 +114,9 @@ const databaseFallbacks = {
       success: true,
       data: [],
       fallback: true,
-      message: 'Database unavailable, returning empty results'
+      message: 'Database unavailable, returning empty results',
     };
-  }
+  },
 };
 
 /**
@@ -134,7 +134,7 @@ const redisFallbacks = {
       success: true,
       fallback: true,
       method: 'log',
-      message: 'Redis unavailable, message logged instead'
+      message: 'Redis unavailable, message logged instead',
     };
   },
 
@@ -147,9 +147,9 @@ const redisFallbacks = {
     return {
       success: false,
       fallback: true,
-      message: 'Redis unavailable, subscription failed'
+      message: 'Redis unavailable, subscription failed',
     };
-  }
+  },
 };
 
 /**
@@ -179,7 +179,7 @@ function generateConfidenceIntervals(meanValue, horizon) {
   for (let i = 0; i < horizon; i++) {
     intervals.push({
       lower: Math.round(meanValue - margin),
-      upper: Math.round(meanValue + margin)
+      upper: Math.round(meanValue + margin),
     });
   }
   return intervals;
@@ -200,13 +200,13 @@ function getFallbackResponse(service, operation, fallbackData) {
     if (service === 'redis' && redisFallbacks[operation]) {
       return redisFallbacks[operation](fallbackData);
     }
-    
+
     // Generic fallback
     return {
       success: false,
       error: `Service ${service} unavailable for operation ${operation}`,
       fallback: true,
-      data: null
+      data: null,
     };
   } catch (error) {
     logger.error('Fallback handler error:', error);
@@ -214,7 +214,7 @@ function getFallbackResponse(service, operation, fallbackData) {
       success: false,
       error: 'Fallback failed',
       fallback: true,
-      data: null
+      data: null,
     };
   }
 }
@@ -233,7 +233,7 @@ function cacheFallbackResponse(key, response, ttl = 300000) {
   fallbackCache.set(key, {
     data: response,
     timestamp: Date.now(),
-    ttl: ttl
+    ttl: ttl,
   });
 }
 
@@ -244,13 +244,13 @@ function cacheFallbackResponse(key, response, ttl = 300000) {
 function getCachedFallbackResponse(key) {
   const cached = fallbackCache.get(key);
   if (!cached) return null;
-  
+
   const now = Date.now();
   if (now - cached.timestamp > cached.ttl) {
     fallbackCache.delete(key);
     return null;
   }
-  
+
   return cached.data;
 }
 
@@ -271,7 +271,7 @@ const fallbackConfig = {
   enabled: true,
   cacheEnabled: true,
   defaultTTL: 300000, // 5 minutes
-  logFallbacks: true
+  logFallbacks: true,
 };
 
 /**
@@ -291,5 +291,5 @@ module.exports = {
   getCachedFallbackResponse,
   clearFallbackCache,
   configureFallback,
-  fallbackConfig
+  fallbackConfig,
 };

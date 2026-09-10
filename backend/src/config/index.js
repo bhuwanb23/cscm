@@ -6,50 +6,52 @@ const config = {
   server: {
     port: process.env.PORT || 3000,
     host: process.env.HOST || 'localhost',
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
   },
 
   // Database configuration
   database: {
     // The project uses SQLite via src/storage/sqliteDatabase.js.
     // DATABASE_URI is reserved for future MongoDB integration.
-    uri: process.env.DATABASE_URI || ''
+    uri: process.env.DATABASE_URI || '',
   },
 
   // Kafka configuration
   kafka: {
-    brokers: process.env.KAFKA_BROKERS ? process.env.KAFKA_BROKERS.split(',').filter(broker => broker.trim() !== '') : [],
-    clientId: process.env.KAFKA_CLIENT_ID || 'cscm-backend'
+    brokers: process.env.KAFKA_BROKERS
+      ? process.env.KAFKA_BROKERS.split(',').filter((broker) => broker.trim() !== '')
+      : [],
+    clientId: process.env.KAFKA_CLIENT_ID || 'cscm-backend',
   },
 
   // MQTT configuration
   mqtt: {
-    url: process.env.MQTT_URL || ''
+    url: process.env.MQTT_URL || '',
   },
 
   // Authentication
   auth: {
     jwtSecret: process.env.JWT_SECRET || 'cscm-secret-key',
-    jwtExpiration: process.env.JWT_EXPIRATION || '24h'
+    jwtExpiration: process.env.JWT_EXPIRATION || '24h',
   },
 
   // AI/ML
   aiMl: {
     apiUrl: process.env.AI_ML_API_URL || 'http://localhost:8000',
     apiKey: process.env.AI_ML_API_KEY || '',
-    timeout: parseInt(process.env.AI_ML_API_TIMEOUT_MS, 10) || 30000
+    timeout: parseInt(process.env.AI_ML_API_TIMEOUT_MS, 10) || 30000,
   },
 
   // Logging
   logging: {
-    level: process.env.LOG_LEVEL || 'info'
+    level: process.env.LOG_LEVEL || 'info',
   },
 
   // Security
   security: {
     rateLimitWindowMs: process.env.RATE_LIMIT_WINDOW_MS || 900000, // 15 minutes
-    rateLimitMaxRequests: process.env.RATE_LIMIT_MAX_REQUESTS || 100 // limit each IP to 100 requests per windowMs
-  }
+    rateLimitMaxRequests: process.env.RATE_LIMIT_MAX_REQUESTS || 100, // limit each IP to 100 requests per windowMs
+  },
 };
 
 module.exports = config;

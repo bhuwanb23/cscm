@@ -27,7 +27,7 @@ class ShipmentConsolidator extends SubAgent {
           shipmentId: otherId,
           combinedItems: [...(pickingTask.items || []), ...(other.items || [])],
           destination: targetDestinations[0] || otherDestinations[0],
-          savings: this._estimateSavings(pickingTask, other)
+          savings: this._estimateSavings(pickingTask, other),
         };
       }
     }
@@ -36,10 +36,10 @@ class ShipmentConsolidator extends SubAgent {
   }
 
   processConsolidated(consolidationTarget) {
-    this.log(`Processing consolidated shipment`);
+    this.log('Processing consolidated shipment');
     return {
       consolidated: true,
-      ...consolidationTarget
+      ...consolidationTarget,
     };
   }
 
@@ -50,7 +50,7 @@ class ShipmentConsolidator extends SubAgent {
 
   _isSameDestinationRoute(destsA, destsB) {
     if (destsA.length === 0 || destsB.length === 0) return false;
-    return destsA.some(d => destsB.includes(d));
+    return destsA.some((d) => destsB.includes(d));
   }
 
   _estimateSavings(taskA, taskB) {
@@ -58,7 +58,7 @@ class ShipmentConsolidator extends SubAgent {
     const itemsB = (taskB.items || []).length;
     return {
       pickingTimeSaved: Math.min(itemsA, itemsB) * 15,
-      packagingSaved: 1
+      packagingSaved: 1,
     };
   }
 }

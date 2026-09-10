@@ -13,7 +13,7 @@ class RiskAssessor extends SubAgent {
       supplier_id: this.supplierId,
       historical_performance: historicalPerformance,
       financial_health: financialHealth,
-      geographic_risk: geographicRisk
+      geographic_risk: geographicRisk,
     };
 
     try {
@@ -43,14 +43,23 @@ class RiskAssessor extends SubAgent {
       return { risk_score: 50, risk_level: 'medium', factors: ['insufficient_data'] };
     }
 
-    const avgQuality = historicalPerformance.reduce((s, r) => s + (r.quality_score || 1), 0) / historicalPerformance.length;
-    const lateDeliveries = historicalPerformance.filter(r => new Date(r.delivery_date) > new Date(r.promised_date)).length;
+    const avgQuality =
+      historicalPerformance.reduce((s, r) => s + (r.quality_score || 1), 0) /
+      historicalPerformance.length;
+    const lateDeliveries = historicalPerformance.filter(
+      (r) => new Date(r.delivery_date) > new Date(r.promised_date)
+    ).length;
     const lateRate = lateDeliveries / historicalPerformance.length;
 
     const score = Math.round((1 - avgQuality) * 50 + lateRate * 50);
     const level = score > 70 ? 'high' : score > 40 ? 'medium' : 'low';
 
-    return { risk_score: score, risk_level: level, factors: ['quality', 'timeliness'], model_version: 'fallback' };
+    return {
+      risk_score: score,
+      risk_level: level,
+      factors: ['quality', 'timeliness'],
+      model_version: 'fallback',
+    };
   }
 }
 

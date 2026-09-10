@@ -16,8 +16,9 @@ class StoreApiService extends BaseApiService {
       return {
         sku_id: (data && data.sku_id) || '',
         store_id: (data && data.store_id) || '',
-        forecast_dates: dates, forecast_values: values,
-        confidence_intervals: values.map(v => ({ lower: v - 15, upper: v + 15 })),
+        forecast_dates: dates,
+        forecast_values: values,
+        confidence_intervals: values.map((v) => ({ lower: v - 15, upper: v + 15 })),
         model_version: 'fallback_v1',
         timestamp: now.toISOString(),
       };
@@ -40,7 +41,7 @@ class StoreApiService extends BaseApiService {
       return {
         model_version: 'fallback_v1',
         training_metrics: { loss: 0, accuracy: 0, samples_seen: 0 },
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       };
     }
     return null;

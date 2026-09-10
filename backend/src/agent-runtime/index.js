@@ -4,7 +4,7 @@ const logger = require('../utils/logger');
 
 /**
  * Agent Runtime Entry Point
- * 
+ *
  * This module provides the main interface for managing agent processes.
  */
 
@@ -19,10 +19,10 @@ class AgentRuntime {
   async initialize() {
     try {
       logger.info('Initializing agent runtime');
-      
+
       // Initialize process manager
       await processManager.initialize();
-      
+
       this.isRunning = true;
       logger.info('Agent runtime initialized successfully');
     } catch (error) {
@@ -39,13 +39,13 @@ class AgentRuntime {
       if (!this.isRunning) {
         await this.initialize();
       }
-      
+
       logger.info('Starting all agents');
       await processManager.startAllAgents();
-      
+
       // Start health monitoring
       healthMonitor.startMonitoring();
-      
+
       logger.info('All agents started successfully');
     } catch (error) {
       logger.error('Failed to start all agents:', error.message);
@@ -59,10 +59,10 @@ class AgentRuntime {
   async stopAllAgents() {
     try {
       logger.info('Stopping all agents');
-      
+
       // Stop health monitoring
       healthMonitor.stopMonitoring();
-      
+
       await processManager.stopAllAgents();
       logger.info('All agents stopped successfully');
     } catch (error) {
@@ -80,7 +80,7 @@ class AgentRuntime {
       if (!this.isRunning) {
         await this.initialize();
       }
-      
+
       await processManager.startAgent(agentName);
     } catch (error) {
       logger.error(`Failed to start agent ${agentName}:`, error.message);

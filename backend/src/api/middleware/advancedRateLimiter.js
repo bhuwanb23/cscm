@@ -8,25 +8,25 @@ const config = require('../../config');
  */
 const rateLimitConfig = {
   anonymous: {
-    windowMs: 900000,        // 15 minutes
-    maxRequests: 100
+    windowMs: 900000, // 15 minutes
+    maxRequests: 100,
   },
   user: {
-    windowMs: 900000,        // 15 minutes
-    maxRequests: 500
+    windowMs: 900000, // 15 minutes
+    maxRequests: 500,
   },
   premium: {
-    windowMs: 900000,        // 15 minutes
-    maxRequests: 2000
+    windowMs: 900000, // 15 minutes
+    maxRequests: 2000,
   },
   admin: {
-    windowMs: 900000,        // 15 minutes
-    maxRequests: 5000
+    windowMs: 900000, // 15 minutes
+    maxRequests: 5000,
   },
   internal: {
-    windowMs: 900000,        // 15 minutes
-    maxRequests: 10000
-  }
+    windowMs: 900000, // 15 minutes
+    maxRequests: 10000,
+  },
 };
 
 /**
@@ -51,22 +51,22 @@ async function initRedisClient() {
             return new Error('Redis reconnection failed');
           }
           return retries * 100; // Exponential backoff
-        }
-      }
+        },
+      },
     });
-    
+
     redisClient.on('error', (err) => {
       logger.error('Redis client error:', err);
     });
-    
+
     redisClient.on('connect', () => {
       logger.info('Redis client connected for rate limiting');
     });
-    
+
     redisClient.on('disconnect', () => {
       logger.warn('Redis client disconnected');
     });
-    
+
     await redisClient.connect();
     logger.info('Redis client initialized for rate limiting');
     return redisClient;
@@ -92,22 +92,22 @@ function determineUserTier(req) {
   if (req.headers['x-internal-service'] === 'true') {
     return 'internal';
   }
-  
+
   // Check for admin role
   if (req.user && req.user.role === 'admin') {
     return 'admin';
   }
-  
+
   // Check for premium user
   if (req.user && req.user.role === 'premium') {
     return 'premium';
   }
-  
+
   // Check for authenticated user
   if (req.user) {
     return 'user';
   }
-  
+
   // Default to anonymous
   return 'anonymous';
 }
@@ -129,33 +129,33 @@ async function checkRateLimitRedis(identifier, tier, endpoint = 'global') {
     if (!redisClient) {
       redisClient = await initRedisClient();
     }
-    
+
     if (!redisClient) {
       // Fall back to in-memory
       return checkRateLimitInMemory(identifier, tier, endpoint);
     }
-    
+
     const config = rateLimitConfig[tier] || rateLimitConfig.anonymous;
     const key = generateRateLimitKey(identifier, tier, endpoint);
     const windowMs = config.windowMs;
     const maxRequests = config.maxRequests;
-    
+
     // Use Redis INCR with expiration for sliding window
     const pipeline = redisClient.multi();
     pipeline.incr(key);
     pipeline.pexpire(key, windowMs);
-    
+
     const results = await pipeline.exec();
     const currentCount = results[0].value;
-    
+
     const resetTime = Date.now() + windowMs;
-    
+
     return {
       success: currentCount <= maxRequests,
       limit: maxRequests,
       remaining: Math.max(0, maxRequests - currentCount),
       reset: resetTime,
-      current: currentCount
+      current: currentCount,
     };
   } catch (error) {
     logger.error('Redis rate limit check failed, falling back to in-memory:', error);
@@ -173,36 +173,36 @@ function checkRateLimitInMemory(identifier, tier, endpoint = 'global') {
   const windowMs = config.windowMs;
   const maxRequests = config.maxRequests;
   const now = Date.now();
-  
+
   const entry = inMemoryStore.get(key);
-  
+
   if (!entry || now > entry.resetTime) {
     // Create new entry
     const newEntry = {
       count: 1,
-      resetTime: now + windowMs
+      resetTime: now + windowMs,
     };
     inMemoryStore.set(key, newEntry);
-    
+
     return {
       success: true,
       limit: maxRequests,
       remaining: maxRequests - 1,
       reset: newEntry.resetTime,
-      current: 1
+      current: 1,
     };
   }
-  
+
   // Increment count
   entry.count++;
   const remaining = Math.max(0, maxRequests - entry.count);
-  
+
   return {
     success: entry.count <= maxRequests,
     limit: maxRequests,
     remaining: remaining,
     reset: entry.resetTime,
-    current: entry.count
+    current: entry.count,
   };
 }
 
@@ -215,49 +215,49 @@ function advancedRateLimiter(options = {}) {
     keyGenerator = defaultKeyGenerator,
     endpoint = 'global',
     skipSuccessfulRequests = false,
-    skipFailedRequests = false
+    skipFailedRequests = false,
   } = options;
-  
+
   return async (req, res, next) => {
     try {
       const tier = determineUserTier(req);
       const identifier = keyGenerator(req);
-      
+
       const result = await checkRateLimitRedis(identifier, tier, endpoint);
-      
+
       // Set rate limit headers
       res.setHeader('X-RateLimit-Limit', result.limit);
       res.setHeader('X-RateLimit-Remaining', result.remaining);
       res.setHeader('X-RateLimit-Reset', result.reset);
       res.setHeader('X-RateLimit-Tier', tier);
-      
+
       if (!result.success) {
         logger.warn(`Rate limit exceeded for ${identifier} (${tier}) on ${endpoint}`);
-        
+
         return res.status(429).json({
           success: false,
           error: 'Too many requests',
           message: `Rate limit exceeded. Try again after ${new Date(result.reset).toISOString()}`,
           retryAfter: Math.ceil((result.reset - Date.now()) / 1000),
           tier: tier,
-          limit: result.limit
+          limit: result.limit,
         });
       }
-      
+
       // Track successful/failed requests
       const originalJson = res.json;
-      res.json = function(data) {
+      res.json = function (data) {
         const statusCode = res.statusCode;
-        
+
         if (statusCode >= 200 && statusCode < 400 && !skipSuccessfulRequests) {
           // Success - count it
         } else if (statusCode >= 400 && !skipFailedRequests) {
           // Error - could decrement count
         }
-        
+
         return originalJson.call(this, data);
       };
-      
+
       next();
     } catch (error) {
       logger.error('Rate limiter error:', error);
@@ -276,7 +276,7 @@ function defaultKeyGenerator(req) {
   if (req.user && req.user.id) {
     return `user:${req.user.id}`;
   }
-  
+
   // Fall back to IP address
   return req.ip || req.connection.remoteAddress || 'unknown';
 }
@@ -288,7 +288,7 @@ function defaultKeyGenerator(req) {
 function apiKeyRateLimiter(apiKey) {
   return advancedRateLimiter({
     keyGenerator: () => `apikey:${apiKey}`,
-    endpoint: 'api'
+    endpoint: 'api',
   });
 }
 
@@ -351,14 +351,14 @@ function getRateLimitConfig() {
 function cleanupInMemoryStore() {
   const now = Date.now();
   let cleaned = 0;
-  
+
   for (const [key, entry] of inMemoryStore.entries()) {
     if (now > entry.resetTime) {
       inMemoryStore.delete(key);
       cleaned++;
     }
   }
-  
+
   if (cleaned > 0) {
     logger.debug(`Cleaned ${cleaned} expired rate limit entries from in-memory store`);
   }
@@ -379,5 +379,5 @@ module.exports = {
   getRateLimitConfig,
   rateLimitConfig,
   determineUserTier,
-  defaultKeyGenerator
+  defaultKeyGenerator,
 };

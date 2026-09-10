@@ -10,29 +10,29 @@ const retryConfig = {
     initialDelayMs: 1000,
     maxDelayMs: 10000,
     backoffMultiplier: 2,
-    jitter: true
+    jitter: true,
   },
   network: {
     maxAttempts: 5,
     initialDelayMs: 500,
     maxDelayMs: 5000,
     backoffMultiplier: 1.5,
-    jitter: true
+    jitter: true,
   },
   database: {
     maxAttempts: 3,
     initialDelayMs: 2000,
     maxDelayMs: 10000,
     backoffMultiplier: 2,
-    jitter: false
+    jitter: false,
   },
   aiMl: {
     maxAttempts: 2,
     initialDelayMs: 1000,
     maxDelayMs: 5000,
     backoffMultiplier: 2,
-    jitter: true
-  }
+    jitter: true,
+  },
 };
 
 /**
@@ -46,7 +46,7 @@ const retryableStatusCodes = [
   502, // Bad Gateway
   503, // Service Unavailable
   504, // Gateway Timeout
-  499 // Client Closed Request
+  499, // Client Closed Request
 ];
 
 /**
@@ -60,7 +60,7 @@ const retryableNetworkErrors = [
   'ENOTFOUND',
   'EAI_AGAIN',
   'EPIPE',
-  'EHOSTUNREACH'
+  'EHOSTUNREACH',
 ];
 
 /**
@@ -70,7 +70,7 @@ const retryableNetworkErrors = [
 function calculateDelay(attempt, config) {
   const baseDelay = config.initialDelayMs * Math.pow(config.backoffMultiplier, attempt);
   const cappedDelay = Math.min(baseDelay, config.maxDelayMs);
-  
+
   if (config.jitter) {
     // Add random jitter (±25%)
     const jitterFactor = 0.25;
@@ -78,7 +78,7 @@ function calculateDelay(attempt, config) {
     const randomJitter = (Math.random() * 2 - 1) * jitterAmount;
     return Math.max(0, Math.round(cappedDelay + randomJitter));
   }
-  
+
   return cappedDelay;
 }
 
@@ -91,22 +91,22 @@ function isRetryableError(error, config) {
   if (error.code && retryableNetworkErrors.includes(error.code)) {
     return true;
   }
-  
+
   // Check for HTTP status codes
   if (error.response && error.response.status) {
     return retryableStatusCodes.includes(error.response.status);
   }
-  
+
   // Check for timeout errors
   if (error.message && error.message.includes('timeout')) {
     return true;
   }
-  
+
   // Check for ECONNRESET
   if (error.message && error.message.includes('ECONNRESET')) {
     return true;
   }
-  
+
   return false;
 }
 
@@ -120,28 +120,28 @@ async function retry(fn, options = {}) {
   const onRetry = options.onRetry || null;
   const onFinalFailure = options.onFinalFailure || null;
   const context = options.context || 'unknown';
-  
+
   let lastError = null;
-  
+
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
       logger.debug(`Retry attempt ${attempt + 1}/${maxAttempts} for ${context}`);
       const result = await fn();
-      
+
       if (attempt > 0) {
         logger.info(`Retry succeeded for ${context} on attempt ${attempt + 1}`);
       }
-      
+
       return result;
     } catch (error) {
       lastError = error;
-      
+
       // Check if error is retryable
       if (!isRetryableError(error, config)) {
         logger.error(`Non-retryable error for ${context}:`, error.message);
         throw error;
       }
-      
+
       // Check if we've exhausted retries
       if (attempt === maxAttempts - 1) {
         logger.error(`Max retries (${maxAttempts}) exhausted for ${context}`);
@@ -150,19 +150,21 @@ async function retry(fn, options = {}) {
         }
         throw error;
       }
-      
+
       // Calculate delay and wait
       const delay = calculateDelay(attempt, config);
-      logger.warn(`Retry ${attempt + 1}/${maxAttempts} for ${context} failed, retrying in ${delay}ms: ${error.message}`);
-      
+      logger.warn(
+        `Retry ${attempt + 1}/${maxAttempts} for ${context} failed, retrying in ${delay}ms: ${error.message}`
+      );
+
       if (onRetry) {
         onRetry(error, attempt + 1, delay);
       }
-      
+
       await sleep(delay);
     }
   }
-  
+
   // This should never be reached, but just in case
   throw lastError;
 }
@@ -174,9 +176,9 @@ async function retry(fn, options = {}) {
 async function retryHttpRequest(axiosInstance, config, options = {}) {
   const retryOptions = {
     ...options,
-    context: `HTTP ${config.method || 'GET'} ${config.url}`
+    context: `HTTP ${config.method || 'GET'} ${config.url}`,
   };
-  
+
   return retry(async () => {
     return await axiosInstance(config);
   }, retryOptions);
@@ -190,9 +192,9 @@ async function retryDatabaseOperation(fn, options = {}) {
   const retryOptions = {
     ...options,
     config: retryConfig.database,
-    context: 'database operation'
+    context: 'database operation',
   };
-  
+
   return retry(fn, retryOptions);
 }
 
@@ -204,9 +206,9 @@ async function retryAiMlCall(fn, options = {}) {
   const retryOptions = {
     ...options,
     config: retryConfig.aiMl,
-    context: 'AI/ML service call'
+    context: 'AI/ML service call',
   };
-  
+
   return retry(fn, retryOptions);
 }
 
@@ -215,7 +217,7 @@ async function retryAiMlCall(fn, options = {}) {
  * Helper function to pause execution
  */
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -226,7 +228,7 @@ const retryMetrics = {
   totalAttempts: 0,
   successfulRetries: 0,
   failedRetries: 0,
-  totalDelayMs: 0
+  totalDelayMs: 0,
 };
 
 /**
@@ -250,9 +252,8 @@ function recordRetryMetric(attempt, success, delay) {
 function getRetryMetrics() {
   return {
     ...retryMetrics,
-    averageDelayMs: retryMetrics.totalAttempts > 0 
-      ? retryMetrics.totalDelayMs / retryMetrics.totalAttempts 
-      : 0
+    averageDelayMs:
+      retryMetrics.totalAttempts > 0 ? retryMetrics.totalDelayMs / retryMetrics.totalAttempts : 0,
   };
 }
 
@@ -274,12 +275,12 @@ function resetRetryMetrics() {
  */
 async function retryWithIdempotencyCheck(fn, isIdempotent, options = {}) {
   const config = options.config || retryConfig.default;
-  
+
   if (!isIdempotent) {
     logger.warn('Operation is not idempotent, retrying once only');
     return retry(fn, { ...options, maxAttempts: 1 });
   }
-  
+
   return retry(fn, options);
 }
 
@@ -310,5 +311,5 @@ module.exports = {
   retryWithIdempotencyCheck,
   configureRetry,
   retryableStatusCodes,
-  retryableNetworkErrors
+  retryableNetworkErrors,
 };

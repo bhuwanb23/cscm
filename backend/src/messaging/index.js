@@ -6,7 +6,7 @@ const { trackKafkaMessage, trackMqttMessage } = require('../utils/metrics');
 
 /**
  * Messaging Layer
- * 
+ *
  * This module provides a unified interface for Kafka, MQTT, and Redis messaging systems.
  * It handles connection management, message publishing, and subscription handling.
  */
@@ -32,7 +32,7 @@ class MessagingLayer {
       } else {
         logger.info('Kafka messaging disabled (no brokers configured)');
       }
-      
+
       // Only connect to MQTT if URL is configured
       if (process.env.MQTT_URL && process.env.MQTT_URL.trim() !== '') {
         // MQTT connection is handled automatically by the client
@@ -41,16 +41,19 @@ class MessagingLayer {
       } else {
         logger.info('MQTT messaging disabled (no URL configured)');
       }
-      
+
       // Connect to Redis for local development
       try {
         await redisClient.connect();
         this.redisConnected = true;
         logger.info('Redis messaging initialized successfully');
       } catch (redisError) {
-        logger.warn('Redis messaging initialization failed (local development may be limited):', redisError.message);
+        logger.warn(
+          'Redis messaging initialization failed (local development may be limited):',
+          redisError.message
+        );
       }
-      
+
       logger.info('Messaging layer initialized successfully');
     } catch (error) {
       logger.warn('Failed to initialize messaging layer:', error.message);
@@ -79,7 +82,9 @@ class MessagingLayer {
         trackKafkaMessage(topic);
       } else {
         // If messaging isn't connected, log a warning but don't throw an error
-        logger.debug(`Messaging not connected, skipping message publish to ${topic} via ${protocol}`);
+        logger.debug(
+          `Messaging not connected, skipping message publish to ${topic} via ${protocol}`
+        );
         return;
       }
     } catch (error) {
@@ -134,17 +139,17 @@ class MessagingLayer {
         await kafkaClient.disconnectConsumer();
         this.kafkaConnected = false;
       }
-      
+
       if (this.mqttConnected) {
         mqttClient.client.end();
         this.mqttConnected = false;
       }
-      
+
       if (this.redisConnected) {
         await redisClient.disconnect();
         this.redisConnected = false;
       }
-      
+
       logger.info('Messaging layer shutdown successfully');
     } catch (error) {
       logger.error('Failed to shutdown messaging layer:', error);

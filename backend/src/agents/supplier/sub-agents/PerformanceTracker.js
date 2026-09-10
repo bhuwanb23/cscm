@@ -12,7 +12,7 @@ class PerformanceTracker extends SubAgent {
     if (!this.state.metrics) this.state.metrics = [];
     this.state.metrics.push({
       ...newMetrics,
-      recordedAt: new Date().toISOString()
+      recordedAt: new Date().toISOString(),
     });
 
     if (this.state.metrics.length > 100) {
@@ -33,14 +33,14 @@ class PerformanceTracker extends SubAgent {
       qualityScore: metrics.reduce((s, m) => s + (m.qualityScore || 1), 0) / metrics.length,
       averageLeadTime: metrics.reduce((s, m) => s + (m.leadTimeDays || 0), 0) / metrics.length,
       dataPoints: metrics.length,
-      lastUpdated: new Date().toISOString()
+      lastUpdated: new Date().toISOString(),
     };
   }
 
   async getHistoricalMetrics(options = {}) {
     const data = {
       supplier_id: this.supplierId,
-      days: options.days || 90
+      days: options.days || 90,
     };
 
     try {

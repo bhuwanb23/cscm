@@ -10,7 +10,8 @@ class InventoryOptimizer extends SubAgent {
     this.log(`Optimizing inventory for product ${productId} (stock: ${currentStock})`);
 
     if (!productId) throw new Error('productId is required');
-    if (currentStock === undefined || currentStock === null) throw new Error('currentStock is required');
+    if (currentStock === undefined || currentStock === null)
+      throw new Error('currentStock is required');
 
     const optimizationData = {
       product_id: productId,
@@ -18,12 +19,14 @@ class InventoryOptimizer extends SubAgent {
       current_stock: currentStock,
       forecast,
       product_attributes: productAttributes,
-      suppliers
+      suppliers,
     };
 
     try {
       const result = await this.apiService.inventoryOptimization(optimizationData);
-      this.log(`Optimization for ${productId}: reorder=${result.reorder_point}, orderQty=${result.order_quantity}`);
+      this.log(
+        `Optimization for ${productId}: reorder=${result.reorder_point}, orderQty=${result.order_quantity}`
+      );
       return result;
     } catch (err) {
       this.error(`Optimization failed for ${productId}:`, err.message);

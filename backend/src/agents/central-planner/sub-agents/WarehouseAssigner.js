@@ -14,7 +14,7 @@ class WarehouseAssigner extends SubAgent {
     const data = {
       store_id: storeId,
       inventory,
-      demand
+      demand,
     };
 
     try {
@@ -49,16 +49,20 @@ class WarehouseAssigner extends SubAgent {
       warehouseId: 'WAREHOUSE-1',
       distance: 0,
       availableStock: Object.values(inventory || {}).reduce((s, i) => s + (i.quantity || 0), 0),
-      fallback: true
+      fallback: true,
     };
   }
 
   _haversine(p1, p2) {
     if (!p1 || !p2) return Infinity;
     const R = 6371;
-    const dLat = (p2.lat - p1.lat) * Math.PI / 180;
-    const dLon = (p2.lng - p1.lng) * Math.PI / 180;
-    const a = Math.sin(dLat / 2) ** 2 + Math.cos(p1.lat * Math.PI / 180) * Math.cos(p2.lat * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+    const dLat = ((p2.lat - p1.lat) * Math.PI) / 180;
+    const dLon = ((p2.lng - p1.lng) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos((p1.lat * Math.PI) / 180) *
+        Math.cos((p2.lat * Math.PI) / 180) *
+        Math.sin(dLon / 2) ** 2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
 }

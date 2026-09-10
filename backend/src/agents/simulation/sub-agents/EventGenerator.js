@@ -13,7 +13,7 @@ class EventGenerator extends SubAgent {
       store_id: meta.storeId,
       product_id: meta.productId || 'PROD-001',
       magnitude: meta.magnitude || 0.3,
-      duration_days: meta.durationDays || 3
+      duration_days: meta.durationDays || 3,
     };
 
     try {
@@ -23,7 +23,7 @@ class EventGenerator extends SubAgent {
         storeId: meta.storeId,
         expectedImpact: result.expected_demand,
         forecast: result,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (err) {
       this.error('Demand spike generation failed:', err.message);
@@ -32,7 +32,7 @@ class EventGenerator extends SubAgent {
         storeId: meta.storeId,
         expectedImpact: 100 + Math.round(Math.random() * 200),
         timestamp: new Date().toISOString(),
-        fallback: true
+        fallback: true,
       };
     }
   }
@@ -44,7 +44,7 @@ class EventGenerator extends SubAgent {
       event_type: 'inventory_update',
       store_id: meta.storeId,
       product_id: meta.productId || 'PROD-001',
-      current_stock: meta.currentStock || 100
+      current_stock: meta.currentStock || 100,
     };
 
     try {
@@ -54,7 +54,7 @@ class EventGenerator extends SubAgent {
         storeId: meta.storeId,
         optimalQuantity: result.order_quantity,
         reorderPoint: result.reorder_point,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (err) {
       this.error('Inventory update generation failed:', err.message);
@@ -64,7 +64,7 @@ class EventGenerator extends SubAgent {
         optimalQuantity: 50,
         reorderPoint: 20,
         timestamp: new Date().toISOString(),
-        fallback: true
+        fallback: true,
       };
     }
   }
@@ -74,7 +74,7 @@ class EventGenerator extends SubAgent {
     return {
       eventType,
       ...payload,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 }

@@ -7,7 +7,7 @@ const ScenarioRunner = require('./sub-agents/ScenarioRunner');
 
 /**
  * Simulation Agent
- * 
+ *
  * This agent generates simulated data for testing and demonstration purposes.
  * It simulates real-world events like inventory changes, demand fluctuations,
  * and supply chain disruptions.
@@ -20,7 +20,7 @@ class SimulationAgent {
       activeScenario: null,
       simulationSpeed: 1000, // milliseconds between events
       isRunning: false,
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     };
     this.storagePath = path.join(__dirname, '..', '..', '..', 'data', 'simulation_state.json');
     this.loadState();
@@ -57,7 +57,7 @@ class SimulationAgent {
       if (!fs.existsSync(dataDir)) {
         fs.mkdirSync(dataDir, { recursive: true });
       }
-      
+
       fs.writeFileSync(this.storagePath, JSON.stringify(this.state, null, 2));
       console.log('Simulation Agent: State saved successfully');
     } catch (error) {
@@ -71,14 +71,14 @@ class SimulationAgent {
   async initialize() {
     try {
       console.log('Simulation Agent: Initializing...');
-      
+
       // Subscribe to control topics
       await messagingLayer.subscribeToTopic(
-        'simulation.control', 
+        'simulation.control',
         this.handleControlMessage.bind(this),
         'kafka'
       );
-      
+
       console.log('Simulation Agent: Initialized successfully');
     } catch (error) {
       console.error('Simulation Agent: Initialization failed:', error.message);
@@ -91,7 +91,7 @@ class SimulationAgent {
   async handleControlMessage(topic, message) {
     try {
       console.log('Simulation Agent: Received control message', message);
-      
+
       switch (message.command) {
         case 'start':
           this.startSimulation(message.scenarioId);
@@ -128,34 +128,34 @@ class SimulationAgent {
         console.log('Simulation Agent: Simulation is already running');
         return;
       }
-      
+
       // Load scenario if specified
       if (scenarioId) {
         this.loadScenario(scenarioId);
       }
-      
+
       // If no active scenario, use default
       if (!this.state.activeScenario) {
         this.loadDefaultScenario();
       }
-      
+
       this.state.isRunning = true;
       this.saveState();
-      
+
       // Start simulation loop
       this.eventInterval = setInterval(() => {
         this.generateSimulationEvent();
       }, this.state.simulationSpeed);
-      
+
       console.log('Simulation Agent: Simulation started');
-      
+
       // Publish simulation start notification
       messagingLayer.publishMessage(
         'simulation.status',
         {
           status: 'started',
           scenario: this.state.activeScenario,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         'kafka'
       );
@@ -173,19 +173,19 @@ class SimulationAgent {
         console.log('Simulation Agent: Simulation is not running');
         return;
       }
-      
+
       clearInterval(this.eventInterval);
       this.state.isRunning = false;
       this.saveState();
-      
+
       console.log('Simulation Agent: Simulation stopped');
-      
+
       // Publish simulation stop notification
       messagingLayer.publishMessage(
         'simulation.status',
         {
           status: 'stopped',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         'kafka'
       );
@@ -203,19 +203,19 @@ class SimulationAgent {
         console.log('Simulation Agent: Simulation is not running');
         return;
       }
-      
+
       clearInterval(this.eventInterval);
       this.state.isRunning = false;
       this.saveState();
-      
+
       console.log('Simulation Agent: Simulation paused');
-      
+
       // Publish simulation pause notification
       messagingLayer.publishMessage(
         'simulation.status',
         {
           status: 'paused',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         'kafka'
       );
@@ -233,28 +233,28 @@ class SimulationAgent {
         console.log('Simulation Agent: Simulation is already running');
         return;
       }
-      
+
       if (!this.state.activeScenario) {
         console.log('Simulation Agent: No active scenario to resume');
         return;
       }
-      
+
       this.state.isRunning = true;
       this.saveState();
-      
+
       // Resume simulation loop
       this.eventInterval = setInterval(() => {
         this.generateSimulationEvent();
       }, this.state.simulationSpeed);
-      
+
       console.log('Simulation Agent: Simulation resumed');
-      
+
       // Publish simulation resume notification
       messagingLayer.publishMessage(
         'simulation.status',
         {
           status: 'resumed',
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         'kafka'
       );
@@ -270,7 +270,7 @@ class SimulationAgent {
     try {
       this.state.simulationSpeed = speed;
       this.saveState();
-      
+
       // If simulation is running, restart the interval with new speed
       if (this.state.isRunning) {
         clearInterval(this.eventInterval);
@@ -278,16 +278,16 @@ class SimulationAgent {
           this.generateSimulationEvent();
         }, this.state.simulationSpeed);
       }
-      
+
       console.log(`Simulation Agent: Simulation speed set to ${speed}ms`);
-      
+
       // Publish speed change notification
       messagingLayer.publishMessage(
         'simulation.status',
         {
           status: 'speed_changed',
           speed: speed,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         'kafka'
       );
@@ -306,23 +306,23 @@ class SimulationAgent {
         console.log(`Simulation Agent: Scenario ${scenarioId} not found`);
         return false;
       }
-      
+
       this.state.activeScenario = scenarioId;
       this.saveState();
-      
+
       console.log(`Simulation Agent: Loaded scenario ${scenarioId}`);
-      
+
       // Publish scenario load notification
       messagingLayer.publishMessage(
         'simulation.status',
         {
           status: 'scenario_loaded',
           scenario: scenarioId,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         },
         'kafka'
       );
-      
+
       return true;
     } catch (error) {
       console.error('Simulation Agent: Failed to load scenario:', error.message);
@@ -336,7 +336,7 @@ class SimulationAgent {
   loadDefaultScenario() {
     try {
       const defaultScenarioId = 'default_supply_chain';
-      
+
       // Create default scenario if it doesn't exist
       if (!this.state.scenarios[defaultScenarioId]) {
         this.state.scenarios[defaultScenarioId] = {
@@ -346,25 +346,20 @@ class SimulationAgent {
           entities: {
             stores: ['STORE-1', 'STORE-2', 'STORE-3'],
             warehouses: ['WAREHOUSE-1', 'WAREHOUSE-2'],
-            transporters: ['TRANSPORTER-1']
+            transporters: ['TRANSPORTER-1'],
           },
-          eventTypes: [
-            'inventory_update',
-            'demand_spike',
-            'supplier_delay',
-            'quality_issue'
-          ],
+          eventTypes: ['inventory_update', 'demand_spike', 'supplier_delay', 'quality_issue'],
           parameters: {
             base_inventory_level: 100,
             demand_variance: 0.2,
-            supplier_reliability: 0.95
-          }
+            supplier_reliability: 0.95,
+          },
         };
       }
-      
+
       this.state.activeScenario = defaultScenarioId;
       this.saveState();
-      
+
       console.log('Simulation Agent: Loaded default scenario');
     } catch (error) {
       console.error('Simulation Agent: Failed to load default scenario:', error.message);
@@ -415,7 +410,8 @@ class SimulationAgent {
    */
   async generateInventoryUpdateEvent(scenario) {
     try {
-      const storeId = scenario.entities.stores[Math.floor(Math.random() * scenario.entities.stores.length)];
+      const storeId =
+        scenario.entities.stores[Math.floor(Math.random() * scenario.entities.stores.length)];
       const productIds = ['product_a', 'product_b', 'product_c', 'product_d'];
       const productId = productIds[Math.floor(Math.random() * productIds.length)];
       const baseLevel = scenario.parameters.base_inventory_level || 100;
@@ -423,12 +419,14 @@ class SimulationAgent {
       const result = await this.eventGenerator.generateInventoryUpdate({
         storeId,
         productId,
-        currentStock: baseLevel
+        currentStock: baseLevel,
       });
 
       const newQuantity = result.optimalQuantity || baseLevel;
 
-      console.log(`Simulation Agent: Generating inventory update for ${storeId}, product ${productId}: ${newQuantity}`);
+      console.log(
+        `Simulation Agent: Generating inventory update for ${storeId}, product ${productId}: ${newQuantity}`
+      );
 
       messagingLayer.publishMessage(
         `inventory.update.${storeId}`,
@@ -436,7 +434,7 @@ class SimulationAgent {
           productId,
           quantity: newQuantity,
           timestamp: new Date().toISOString(),
-          source: 'simulation'
+          source: 'simulation',
         },
         'kafka'
       );
@@ -450,16 +448,23 @@ class SimulationAgent {
    */
   async generateDemandSpikeEvent(scenario) {
     try {
-      const storeId = scenario.entities.stores[Math.floor(Math.random() * scenario.entities.stores.length)];
+      const storeId =
+        scenario.entities.stores[Math.floor(Math.random() * scenario.entities.stores.length)];
       const productIds = ['product_a', 'product_b', 'product_c', 'product_d'];
       const productId = productIds[Math.floor(Math.random() * productIds.length)];
 
-      const result = await this.eventGenerator.generateDemandSpike({ storeId, productId, magnitude: 0.3 });
+      const result = await this.eventGenerator.generateDemandSpike({
+        storeId,
+        productId,
+        magnitude: 0.3,
+      });
 
       const expectedDemand = result.expectedImpact || 100;
       const safetyStock = Math.floor(expectedDemand * 0.2);
 
-      console.log(`Simulation Agent: Generating demand spike for ${storeId}, product ${productId}: ${expectedDemand}`);
+      console.log(
+        `Simulation Agent: Generating demand spike for ${storeId}, product ${productId}: ${expectedDemand}`
+      );
 
       messagingLayer.publishMessage(
         `demand.forecast.${storeId}`,
@@ -467,7 +472,7 @@ class SimulationAgent {
           productId,
           forecast: { expectedDemand, safetyStock, confidence: 0.85, period: 'next_24_hours' },
           timestamp: new Date().toISOString(),
-          source: 'simulation'
+          source: 'simulation',
         },
         'kafka'
       );
@@ -482,23 +487,28 @@ class SimulationAgent {
   generateSupplierDelayEvent(scenario) {
     try {
       // Select random warehouse
-      const warehouseId = scenario.entities.warehouses[Math.floor(Math.random() * scenario.entities.warehouses.length)];
-      
+      const warehouseId =
+        scenario.entities.warehouses[
+          Math.floor(Math.random() * scenario.entities.warehouses.length)
+        ];
+
       // Generate delay information
       const delayMinutes = Math.floor(Math.random() * 120) + 30; // 30-150 minutes delay
       const affectedProducts = ['product_a', 'product_b', 'product_c'];
       const productCount = Math.floor(Math.random() * 3) + 1; // 1-3 products
       const affectedItems = [];
-      
+
       for (let i = 0; i < productCount; i++) {
         affectedItems.push({
           productId: affectedProducts[Math.floor(Math.random() * affectedProducts.length)],
-          quantity: Math.floor(Math.random() * 100) + 50 // 50-150 units
+          quantity: Math.floor(Math.random() * 100) + 50, // 50-150 units
         });
       }
-      
-      console.log(`Simulation Agent: Generating supplier delay for ${warehouseId}: ${delayMinutes} minutes`);
-      
+
+      console.log(
+        `Simulation Agent: Generating supplier delay for ${warehouseId}: ${delayMinutes} minutes`
+      );
+
       // Publish supplier delay alert
       messagingLayer.publishMessage(
         'alerts',
@@ -509,7 +519,7 @@ class SimulationAgent {
           affectedItems: affectedItems,
           severity: 'warning',
           timestamp: new Date().toISOString(),
-          source: 'simulation'
+          source: 'simulation',
         },
         'kafka'
       );
@@ -524,16 +534,19 @@ class SimulationAgent {
   generateQualityIssueEvent(scenario) {
     try {
       // Select random store
-      const storeId = scenario.entities.stores[Math.floor(Math.random() * scenario.entities.stores.length)];
-      
+      const storeId =
+        scenario.entities.stores[Math.floor(Math.random() * scenario.entities.stores.length)];
+
       // Generate quality issue information
       const affectedProducts = ['product_a', 'product_b', 'product_c'];
       const productId = affectedProducts[Math.floor(Math.random() * affectedProducts.length)];
       const affectedQuantity = Math.floor(Math.random() * 30) + 10; // 10-40 units
       const issueType = ['expiration', 'damage', 'contamination'][Math.floor(Math.random() * 3)];
-      
-      console.log(`Simulation Agent: Generating quality issue for ${storeId}, product ${productId}: ${issueType}`);
-      
+
+      console.log(
+        `Simulation Agent: Generating quality issue for ${storeId}, product ${productId}: ${issueType}`
+      );
+
       // Publish quality issue alert
       messagingLayer.publishMessage(
         'alerts',
@@ -545,7 +558,7 @@ class SimulationAgent {
           issueType: issueType,
           severity: 'moderate',
           timestamp: new Date().toISOString(),
-          source: 'simulation'
+          source: 'simulation',
         },
         'kafka'
       );
@@ -559,7 +572,7 @@ class SimulationAgent {
    */
   getState() {
     return {
-      ...this.state
+      ...this.state,
     };
   }
 }
@@ -567,11 +580,11 @@ class SimulationAgent {
 // If run directly, start the agent
 if (require.main === module) {
   const agent = new SimulationAgent();
-  
+
   // Initialize agent
   agent.initialize().then(() => {
     console.log('Simulation Agent is running...');
-    
+
     // Start simulation after a short delay
     setTimeout(() => {
       agent.startSimulation();

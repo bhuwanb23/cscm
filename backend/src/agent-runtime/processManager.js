@@ -4,7 +4,7 @@ const path = require('path');
 
 /**
  * Agent Process Manager
- * 
+ *
  * This module manages the lifecycle of agent processes, including
  * registration, startup, shutdown, and health monitoring.
  */
@@ -25,10 +25,10 @@ class ProcessManager {
       }
 
       logger.info('Initializing process manager');
-      
+
       // Register all agents
       this._registerAgents();
-      
+
       this.isInitialized = true;
       logger.info('Process manager initialized successfully');
     } catch (error) {
@@ -44,59 +44,59 @@ class ProcessManager {
   _registerAgents() {
     try {
       logger.info('Registering agents for supervision');
-      
+
       // Register store agents
       agentSupervisor.registerAgent(
-        'StoreAgent1', 
+        'StoreAgent1',
         path.join(__dirname, '..', 'agents', 'store', 'store.js'),
         { storeId: 'STORE-1' }
       );
-      
+
       agentSupervisor.registerAgent(
-        'StoreAgent2', 
+        'StoreAgent2',
         path.join(__dirname, '..', 'agents', 'store', 'store.js'),
         { storeId: 'STORE-2' }
       );
-      
+
       // Register warehouse agents
       agentSupervisor.registerAgent(
-        'WarehouseAgent1', 
+        'WarehouseAgent1',
         path.join(__dirname, '..', 'agents', 'warehouse', 'warehouse.js'),
         { warehouseId: 'WAREHOUSE-1' }
       );
-      
+
       // Register transport agents
       agentSupervisor.registerAgent(
-        'TransportAgent1', 
+        'TransportAgent1',
         path.join(__dirname, '..', 'agents', 'transport', 'transport.js'),
         { transportId: 'TRANSPORT-1' }
       );
-      
+
       // Register supplier agents
       agentSupervisor.registerAgent(
-        'SupplierAgent1', 
+        'SupplierAgent1',
         path.join(__dirname, '..', 'agents', 'supplier', 'supplier.js'),
         { supplierId: 'SUPPLIER-1' }
       );
-      
+
       // Register customer demand agents
       agentSupervisor.registerAgent(
-        'CustomerDemandAgent', 
+        'CustomerDemandAgent',
         path.join(__dirname, '..', 'agents', 'customer-demand', 'customer-demand.js')
       );
-      
+
       // Register central planner agent
       agentSupervisor.registerAgent(
-        'CentralPlannerAgent', 
+        'CentralPlannerAgent',
         path.join(__dirname, '..', 'agents', 'central-planner', 'central-planner.js')
       );
-      
+
       // Register simulation agent
       agentSupervisor.registerAgent(
-        'SimulationAgent', 
+        'SimulationAgent',
         path.join(__dirname, '..', 'agents', 'simulation', 'simulation.js')
       );
-      
+
       logger.info('All agents registered successfully');
     } catch (error) {
       logger.error('Failed to register agents:', error.message);
@@ -112,7 +112,7 @@ class ProcessManager {
       if (!this.isInitialized) {
         await this.initialize();
       }
-      
+
       logger.info('Starting all agents');
       await agentSupervisor.startAllAgents();
       logger.info('All agents started successfully');
@@ -145,7 +145,7 @@ class ProcessManager {
       if (!this.isInitialized) {
         await this.initialize();
       }
-      
+
       logger.info(`Starting agent ${agentName}`);
       await agentSupervisor.startAgent(agentName);
       logger.info(`Agent ${agentName} started successfully`);
@@ -212,23 +212,23 @@ class ProcessManager {
       const healthReport = {
         timestamp: new Date().toISOString(),
         overallStatus: 'healthy',
-        agents: {}
+        agents: {},
       };
-      
+
       for (const [agentName, status] of Object.entries(statuses)) {
         healthReport.agents[agentName] = {
           status: status.status,
           lastStarted: status.lastStarted,
           lastStopped: status.lastStopped,
-          error: status.error
+          error: status.error,
         };
-        
+
         // If any agent is in error state, mark overall as unhealthy
         if (status.status === 'error' || status.status === 'failed') {
           healthReport.overallStatus = 'unhealthy';
         }
       }
-      
+
       return healthReport;
     } catch (error) {
       logger.error('Health check failed:', error.message);

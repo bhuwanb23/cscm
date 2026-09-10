@@ -15,8 +15,8 @@ class BackupSupplierFinder extends SubAgent {
         product_category: requirements.product_category,
         min_quality: requirements.min_quality,
         max_lead_time: requirements.max_lead_time,
-        region: requirements.region
-      }
+        region: requirements.region,
+      },
     };
 
     try {
@@ -37,7 +37,7 @@ class BackupSupplierFinder extends SubAgent {
       quality: 0.3,
       leadTime: 0.1,
       distance: 0.05,
-      ...(criteria || {})
+      ...(criteria || {}),
     };
 
     const normalizeLeadTime = (days) => {
@@ -51,29 +51,33 @@ class BackupSupplierFinder extends SubAgent {
     };
 
     return [...candidates].sort((a, b) => {
-      const aScore = (a.score || 0) * weights.score
-        + (a.quality_score || 0) * weights.quality
-        + normalizeLeadTime(a.lead_time_days) * weights.leadTime
-        + normalizeDistance(a.distance_km) * weights.distance;
-      const bScore = (b.score || 0) * weights.score
-        + (b.quality_score || 0) * weights.quality
-        + normalizeLeadTime(b.lead_time_days) * weights.leadTime
-        + normalizeDistance(b.distance_km) * weights.distance;
+      const aScore =
+        (a.score || 0) * weights.score +
+        (a.quality_score || 0) * weights.quality +
+        normalizeLeadTime(a.lead_time_days) * weights.leadTime +
+        normalizeDistance(a.distance_km) * weights.distance;
+      const bScore =
+        (b.score || 0) * weights.score +
+        (b.quality_score || 0) * weights.quality +
+        normalizeLeadTime(b.lead_time_days) * weights.leadTime +
+        normalizeDistance(b.distance_km) * weights.distance;
       return bScore - aScore;
     });
   }
 
   _fallbackBackups(primaryId, requirements) {
     return {
-      backups: [{
-        supplier_id: `BACKUP-001`,
-        score: 0.7,
-        lead_time_days: 14,
-        quality_score: 0.8,
-        distance_km: 100
-      }],
+      backups: [
+        {
+          supplier_id: 'BACKUP-001',
+          score: 0.7,
+          lead_time_days: 14,
+          quality_score: 0.8,
+          distance_km: 100,
+        },
+      ],
       total_candidates: 1,
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 }

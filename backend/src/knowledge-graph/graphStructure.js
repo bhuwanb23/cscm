@@ -1,6 +1,6 @@
 /**
  * Knowledge Graph Structure
- * 
+ *
  * This module provides a simple graph structure for representing relationships
  * between entities in the supply chain.
  */
@@ -15,7 +15,8 @@ class KnowledgeGraph {
     this.graph = new Graph();
     this.entityMetadata = new Map();
     this.relationshipMetadata = new Map();
-    this._persistPath = options.persistPath || path.join(__dirname, '..', '..', 'data', 'knowledge-graph.json');
+    this._persistPath =
+      options.persistPath || path.join(__dirname, '..', '..', 'data', 'knowledge-graph.json');
     this._persistTimer = null;
     this._persistDelay = options.persistDelay || 2000;
     this._disabled = options.disableAutoPersist || process.env.NODE_ENV === 'test';
@@ -39,13 +40,13 @@ class KnowledgeGraph {
 
       // Add vertex to graph
       this.graph.addVertex(entityId);
-      
+
       // Store entity metadata
       this.entityMetadata.set(entityId, {
         id: entityId,
         type: entityType,
         ...metadata,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       });
 
       this._schedulePersist();
@@ -84,21 +85,26 @@ class KnowledgeGraph {
 
       // Use a simple numeric weight (we'll store detailed metadata separately)
       const weight = 1;
-      
+
       // Add edge to graph with numeric weight
       this.graph.addEdge(fromEntityId, toEntityId, weight);
-      
+
       // Store relationship metadata
       const relationshipKey = `${fromEntityId}-${toEntityId}`;
       this.relationshipMetadata.set(relationshipKey, {
         type: relationshipType,
-        ...metadata
+        ...metadata,
       });
-      
+
       this._schedulePersist();
-      logger.debug(`Added relationship to knowledge graph: ${fromEntityId} -> ${toEntityId} (${relationshipType})`);
+      logger.debug(
+        `Added relationship to knowledge graph: ${fromEntityId} -> ${toEntityId} (${relationshipType})`
+      );
     } catch (error) {
-      logger.error(`Failed to add relationship from ${fromEntityId} to ${toEntityId}:`, error.message);
+      logger.error(
+        `Failed to add relationship from ${fromEntityId} to ${toEntityId}:`,
+        error.message
+      );
       throw error;
     }
   }
@@ -141,7 +147,7 @@ class KnowledgeGraph {
       }
 
       const neighbors = this.graph.getConnectedVertices(entityId);
-      return neighbors.map(neighborId => this.getEntity(neighborId));
+      return neighbors.map((neighborId) => this.getEntity(neighborId));
     } catch (error) {
       logger.error(`Failed to get neighbors of entity ${entityId}:`, error.message);
       throw error;
@@ -165,27 +171,27 @@ class KnowledgeGraph {
 
       // Get connected edges
       const connectedEdges = this.graph.getConnectedEdges(entityId);
-      
+
       // Format relationships
       const relationships = [];
-      
+
       // Convert object to array of relationships
       for (const [dest, weight] of Object.entries(connectedEdges)) {
         const relationshipKey = `${entityId}-${dest}`;
         const relationshipMetadata = this.relationshipMetadata.get(relationshipKey) || {};
-        
+
         // Extract type and metadata separately
         const { type, ...metadataWithoutType } = relationshipMetadata;
-        
+
         relationships.push({
           from: entityId,
           to: dest,
           type: type || 'unknown',
           metadata: metadataWithoutType,
-          direction: 'outgoing'
+          direction: 'outgoing',
         });
       }
-      
+
       return relationships;
     } catch (error) {
       logger.error(`Failed to get relationships of entity ${entityId}:`, error.message);
@@ -237,7 +243,10 @@ class KnowledgeGraph {
 
       return null; // No path found
     } catch (error) {
-      logger.error(`Failed to find shortest path from ${fromEntityId} to ${toEntityId}:`, error.message);
+      logger.error(
+        `Failed to find shortest path from ${fromEntityId} to ${toEntityId}:`,
+        error.message
+      );
       throw error;
     }
   }
@@ -284,7 +293,7 @@ class KnowledgeGraph {
 
       // Remove entity from graph
       this.graph.removeVertex(entityId);
-      
+
       // Remove entity metadata
       this.entityMetadata.delete(entityId);
 
@@ -304,7 +313,7 @@ class KnowledgeGraph {
     return {
       nodeCount: this.graph.getVerticesCount(),
       edgeCount: this.graph.getEdgesCount(),
-      entityTypes: this._getEntityTypes()
+      entityTypes: this._getEntityTypes(),
     };
   }
 
@@ -380,7 +389,7 @@ class KnowledgeGraph {
     for (const entityId of this.entityMetadata.keys()) {
       nodes.push({
         id: entityId,
-        ...this.entityMetadata.get(entityId)
+        ...this.entityMetadata.get(entityId),
       });
     }
 
@@ -388,11 +397,11 @@ class KnowledgeGraph {
     // We need to iterate through all vertices and their connected edges
     for (const entityId of this.entityMetadata.keys()) {
       const relationships = this.getRelationships(entityId);
-      relationships.forEach(rel => {
+      relationships.forEach((rel) => {
         // Create a unique identifier for this edge to avoid duplicates
         const edgeId = `${rel.from}-${rel.to}`;
         const reverseEdgeId = `${rel.to}-${rel.from}`;
-        
+
         // Only add each edge once
         if (rel.from === entityId && !addedEdges.has(edgeId) && !addedEdges.has(reverseEdgeId)) {
           addedEdges.add(edgeId);
@@ -400,7 +409,7 @@ class KnowledgeGraph {
             from: rel.from,
             to: rel.to,
             type: rel.type,
-            metadata: rel.metadata
+            metadata: rel.metadata,
           });
         }
       });

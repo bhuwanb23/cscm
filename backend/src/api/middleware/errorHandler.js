@@ -14,8 +14,8 @@ const errorHandler = (err, req, res, next) => {
     success: false,
     error: {
       message: message,
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-    }
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    },
   });
 };
 
@@ -28,5 +28,5 @@ const notFound = (req, res, next) => {
 
 module.exports = {
   errorHandler,
-  notFound
+  notFound,
 };

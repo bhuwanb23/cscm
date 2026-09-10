@@ -1,6 +1,6 @@
 /**
  * Inventory Optimizer
- * 
+ *
  * Provides simple inventory optimization algorithms for local development.
  * This includes basic reorder point calculation and economic order quantity.
  */
@@ -18,7 +18,7 @@ class InventoryOptimizer {
       if (annualDemand <= 0 || orderingCost <= 0 || holdingCost <= 0) {
         throw new Error('All parameters must be positive');
       }
-      
+
       const eoq = Math.sqrt((2 * annualDemand * orderingCost) / holdingCost);
       return Math.round(eoq);
     } catch (error) {
@@ -39,8 +39,8 @@ class InventoryOptimizer {
       if (dailyDemand < 0 || leadTime < 0 || safetyStock < 0) {
         throw new Error('Parameters must be non-negative');
       }
-      
-      const reorderPoint = (dailyDemand * leadTime) + safetyStock;
+
+      const reorderPoint = dailyDemand * leadTime + safetyStock;
       return Math.round(reorderPoint);
     } catch (error) {
       console.error('Inventory Optimizer: Failed to calculate reorder point:', error.message);
@@ -59,18 +59,25 @@ class InventoryOptimizer {
    */
   calculateSafetyStock(dailyDemand, demandStdDev, leadTime, leadTimeStdDev, serviceLevel = 0.95) {
     try {
-      if (dailyDemand < 0 || demandStdDev < 0 || leadTime < 0 || leadTimeStdDev < 0 || serviceLevel < 0 || serviceLevel > 1) {
+      if (
+        dailyDemand < 0 ||
+        demandStdDev < 0 ||
+        leadTime < 0 ||
+        leadTimeStdDev < 0 ||
+        serviceLevel < 0 ||
+        serviceLevel > 1
+      ) {
         throw new Error('Invalid parameters');
       }
-      
+
       // Z-score for service level (approximation)
       const zScore = this.getZScore(serviceLevel);
-      
+
       // Safety stock formula
       const term1 = Math.pow(zScore * demandStdDev * Math.sqrt(leadTime), 2);
       const term2 = Math.pow(zScore * dailyDemand * leadTimeStdDev, 2);
       const safetyStock = Math.sqrt(term1 + term2);
-      
+
       return Math.round(safetyStock);
     } catch (error) {
       console.error('Inventory Optimizer: Failed to calculate safety stock:', error.message);
@@ -88,11 +95,11 @@ class InventoryOptimizer {
     const zScores = {
       0.99: 2.33,
       0.95: 1.645,
-      0.90: 1.28,
+      0.9: 1.28,
       0.85: 1.04,
-      0.80: 0.84
+      0.8: 0.84,
     };
-    
+
     return zScores[serviceLevel] || 1.645; // Default to 95%
   }
 
@@ -104,7 +111,7 @@ class InventoryOptimizer {
   optimizeInventoryLevels(products) {
     try {
       const recommendations = [];
-      
+
       for (const product of products) {
         const {
           productId,
@@ -115,26 +122,31 @@ class InventoryOptimizer {
           leadTime,
           demandStdDev = 0,
           leadTimeStdDev = 0,
-          currentStock = 0
+          currentStock = 0,
         } = product;
-        
+
         // Calculate optimal values
         const eoq = this.calculateEOQ(annualDemand, orderingCost, holdingCost);
-        const safetyStock = this.calculateSafetyStock(dailyDemand, demandStdDev, leadTime, leadTimeStdDev);
+        const safetyStock = this.calculateSafetyStock(
+          dailyDemand,
+          demandStdDev,
+          leadTime,
+          leadTimeStdDev
+        );
         const reorderPoint = this.calculateReorderPoint(dailyDemand, leadTime, safetyStock);
-        
+
         // Determine action needed
         let action = 'none';
         let quantity = 0;
-        
+
         if (currentStock <= reorderPoint) {
           action = 'order';
           quantity = eoq;
-        } else if (currentStock > (reorderPoint + eoq * 2)) {
+        } else if (currentStock > reorderPoint + eoq * 2) {
           action = 'reduce';
           quantity = currentStock - (reorderPoint + eoq);
         }
-        
+
         recommendations.push({
           productId,
           eoq,
@@ -143,10 +155,10 @@ class InventoryOptimizer {
           currentStock,
           action,
           quantity,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
-      
+
       return recommendations;
     } catch (error) {
       console.error('Inventory Optimizer: Failed to optimize inventory levels:', error.message);

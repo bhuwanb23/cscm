@@ -1,6 +1,6 @@
 /**
  * Entity Relationship Models
- * 
+ *
  * This module defines the entity relationship models for the knowledge graph,
  * specifically for SKU-store-supplier relationships.
  */
@@ -20,9 +20,9 @@ class EntityModels {
         name: attributes.name || skuId,
         category: attributes.category || 'unknown',
         price: attributes.price || 0,
-        ...attributes
+        ...attributes,
       });
-      
+
       logger.debug(`Created SKU entity: ${skuId}`);
     } catch (error) {
       logger.error(`Failed to create SKU entity ${skuId}:`, error.message);
@@ -41,9 +41,9 @@ class EntityModels {
         name: attributes.name || storeId,
         location: attributes.location || 'unknown',
         capacity: attributes.capacity || 0,
-        ...attributes
+        ...attributes,
       });
-      
+
       logger.debug(`Created Store entity: ${storeId}`);
     } catch (error) {
       logger.error(`Failed to create Store entity ${storeId}:`, error.message);
@@ -62,9 +62,9 @@ class EntityModels {
         name: attributes.name || supplierId,
         contact: attributes.contact || 'unknown',
         leadTime: attributes.leadTime || 0,
-        ...attributes
+        ...attributes,
       });
-      
+
       logger.debug(`Created Supplier entity: ${supplierId}`);
     } catch (error) {
       logger.error(`Failed to create Supplier entity ${supplierId}:`, error.message);
@@ -85,12 +85,15 @@ class EntityModels {
         quantity: attributes.quantity || 0,
         minStock: attributes.minStock || 0,
         maxStock: attributes.maxStock || 0,
-        lastRestocked: attributes.lastRestocked || null
+        lastRestocked: attributes.lastRestocked || null,
       });
-      
+
       logger.debug(`Created SKU-Store relationship: ${skuId} -> ${storeId}`);
     } catch (error) {
-      logger.error(`Failed to create SKU-Store relationship ${skuId} -> ${storeId}:`, error.message);
+      logger.error(
+        `Failed to create SKU-Store relationship ${skuId} -> ${storeId}:`,
+        error.message
+      );
       throw error;
     }
   }
@@ -107,12 +110,15 @@ class EntityModels {
       knowledgeGraph.addRelationship(storeId, supplierId, 'procures_from', {
         contractStart: attributes.contractStart || null,
         contractEnd: attributes.contractEnd || null,
-        preferred: attributes.preferred || false
+        preferred: attributes.preferred || false,
       });
-      
+
       logger.debug(`Created Store-Supplier relationship: ${storeId} -> ${supplierId}`);
     } catch (error) {
-      logger.error(`Failed to create Store-Supplier relationship ${storeId} -> ${supplierId}:`, error.message);
+      logger.error(
+        `Failed to create Store-Supplier relationship ${storeId} -> ${supplierId}:`,
+        error.message
+      );
       throw error;
     }
   }
@@ -129,12 +135,15 @@ class EntityModels {
       knowledgeGraph.addRelationship(skuId, supplierId, 'supplied_by', {
         cost: attributes.cost || 0,
         moq: attributes.moq || 1, // Minimum order quantity
-        leadTime: attributes.leadTime || 0
+        leadTime: attributes.leadTime || 0,
       });
-      
+
       logger.debug(`Created SKU-Supplier relationship: ${skuId} -> ${supplierId}`);
     } catch (error) {
-      logger.error(`Failed to create SKU-Supplier relationship ${skuId} -> ${supplierId}:`, error.message);
+      logger.error(
+        `Failed to create SKU-Supplier relationship ${skuId} -> ${supplierId}:`,
+        error.message
+      );
       throw error;
     }
   }
@@ -148,10 +157,10 @@ class EntityModels {
     try {
       // We need to find SKUs that have a 'stocked_at' relationship to this store
       const skus = [];
-      
+
       // Get all entities from the knowledge graph
       const allEntities = Array.from(knowledgeGraph.entityMetadata.keys());
-      
+
       // For each entity, check if it has a 'stocked_at' relationship to this store
       for (const entityId of allEntities) {
         const relationships = knowledgeGraph.getRelationships(entityId);
@@ -164,7 +173,7 @@ class EntityModels {
           }
         }
       }
-      
+
       return skus;
     } catch (error) {
       logger.error(`Failed to get SKUs at store ${storeId}:`, error.message);
@@ -181,9 +190,9 @@ class EntityModels {
     try {
       const relationships = knowledgeGraph.getRelationships(skuId);
       const stores = [];
-      
+
       // Find outgoing 'stocked_at' relationships (stores where this SKU is stocked)
-      relationships.forEach(rel => {
+      relationships.forEach((rel) => {
         if (rel.from === skuId && rel.type === 'stocked_at') {
           const store = knowledgeGraph.getEntity(rel.to);
           if (store && store.type === 'store') {
@@ -191,7 +200,7 @@ class EntityModels {
           }
         }
       });
-      
+
       return stores;
     } catch (error) {
       logger.error(`Failed to get stores with SKU ${skuId}:`, error.message);
@@ -208,9 +217,9 @@ class EntityModels {
     try {
       const relationships = knowledgeGraph.getRelationships(storeId);
       const suppliers = [];
-      
+
       // Find outgoing 'procures_from' relationships (suppliers this store procures from)
-      relationships.forEach(rel => {
+      relationships.forEach((rel) => {
         if (rel.from === storeId && rel.type === 'procures_from') {
           const supplier = knowledgeGraph.getEntity(rel.to);
           if (supplier && supplier.type === 'supplier') {
@@ -218,7 +227,7 @@ class EntityModels {
           }
         }
       });
-      
+
       return suppliers;
     } catch (error) {
       logger.error(`Failed to get suppliers for store ${storeId}:`, error.message);
@@ -235,9 +244,9 @@ class EntityModels {
     try {
       const relationships = knowledgeGraph.getRelationships(skuId);
       const suppliers = [];
-      
+
       // Find outgoing 'supplied_by' relationships (suppliers that supply this SKU)
-      relationships.forEach(rel => {
+      relationships.forEach((rel) => {
         if (rel.from === skuId && rel.type === 'supplied_by') {
           const supplier = knowledgeGraph.getEntity(rel.to);
           if (supplier && supplier.type === 'supplier') {
@@ -245,7 +254,7 @@ class EntityModels {
           }
         }
       });
-      
+
       return suppliers;
     } catch (error) {
       logger.error(`Failed to get suppliers for SKU ${skuId}:`, error.message);
@@ -262,10 +271,10 @@ class EntityModels {
     try {
       // We need to find SKUs that have a 'supplied_by' relationship to this supplier
       const skus = [];
-      
+
       // Get all entities from the knowledge graph
       const allEntities = Array.from(knowledgeGraph.entityMetadata.keys());
-      
+
       // For each entity, check if it has a 'supplied_by' relationship to this supplier
       for (const entityId of allEntities) {
         const relationships = knowledgeGraph.getRelationships(entityId);
@@ -278,7 +287,7 @@ class EntityModels {
           }
         }
       }
-      
+
       return skus;
     } catch (error) {
       logger.error(`Failed to get SKUs from supplier ${supplierId}:`, error.message);

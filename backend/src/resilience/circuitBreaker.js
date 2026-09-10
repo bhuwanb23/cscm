@@ -10,7 +10,7 @@ const circuitBreakerOptions = {
   errorThresholdPercentage: 50, // Open circuit after 50% failures
   resetTimeout: 60000, // Reset after 60 seconds
   rollingCountTimeout: 10000, // Consider last 10 seconds
-  rollingCountBuckets: 10
+  rollingCountBuckets: 10,
 };
 
 /**
@@ -33,9 +33,9 @@ const aiMlCircuitBreaker = new CircuitBreaker({
       success: false,
       error: 'AI/ML service unavailable',
       fallback: true,
-      data: null
+      data: null,
     };
-  }
+  },
 });
 
 /**
@@ -51,9 +51,9 @@ const redisCircuitBreaker = new CircuitBreaker({
       success: false,
       error: 'Redis service unavailable',
       fallback: true,
-      data: null
+      data: null,
     };
-  }
+  },
 });
 
 /**
@@ -69,9 +69,9 @@ const databaseCircuitBreaker = new CircuitBreaker({
       success: false,
       error: 'Database service unavailable',
       fallback: true,
-      data: null
+      data: null,
     };
-  }
+  },
 });
 
 /**
@@ -122,20 +122,20 @@ function emitCircuitBreakerMetric(serviceName, state) {
     const metric = {
       service: serviceName,
       state: state,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
+
     // Store metric for monitoring endpoint
     if (!global.circuitBreakerMetrics) {
       global.circuitBreakerMetrics = [];
     }
     global.circuitBreakerMetrics.push(metric);
-    
+
     // Keep only last 100 metrics
     if (global.circuitBreakerMetrics.length > 100) {
       global.circuitBreakerMetrics = global.circuitBreakerMetrics.slice(-100);
     }
-    
+
     logger.debug(`Circuit breaker metric: ${JSON.stringify(metric)}`);
   } catch (error) {
     logger.error('Failed to emit circuit breaker metric:', error);
@@ -157,17 +157,29 @@ function getCircuitBreakerMetrics() {
 function getCircuitBreakerStatus() {
   return {
     aiMl: {
-      state: aiMlCircuitBreaker.opened ? 'open' : (aiMlCircuitBreaker.halfOpen ? 'half-open' : 'closed'),
-      stats: aiMlCircuitBreaker.stats
+      state: aiMlCircuitBreaker.opened
+        ? 'open'
+        : aiMlCircuitBreaker.halfOpen
+          ? 'half-open'
+          : 'closed',
+      stats: aiMlCircuitBreaker.stats,
     },
     redis: {
-      state: redisCircuitBreaker.opened ? 'open' : (redisCircuitBreaker.halfOpen ? 'half-open' : 'closed'),
-      stats: redisCircuitBreaker.stats
+      state: redisCircuitBreaker.opened
+        ? 'open'
+        : redisCircuitBreaker.halfOpen
+          ? 'half-open'
+          : 'closed',
+      stats: redisCircuitBreaker.stats,
     },
     database: {
-      state: databaseCircuitBreaker.opened ? 'open' : (databaseCircuitBreaker.halfOpen ? 'half-open' : 'closed'),
-      stats: databaseCircuitBreaker.stats
-    }
+      state: databaseCircuitBreaker.opened
+        ? 'open'
+        : databaseCircuitBreaker.halfOpen
+          ? 'half-open'
+          : 'closed',
+      stats: databaseCircuitBreaker.stats,
+    },
   };
 }
 
@@ -193,15 +205,15 @@ function forceCircuitBreakerState(circuitBreaker, state) {
   switch (state) {
     case 'open':
       circuitBreaker.open();
-      logger.warn(`Manually opened circuit breaker`);
+      logger.warn('Manually opened circuit breaker');
       break;
     case 'close':
       circuitBreaker.close();
-      logger.info(`Manually closed circuit breaker`);
+      logger.info('Manually closed circuit breaker');
       break;
     case 'halfOpen':
       circuitBreaker.halfOpen();
-      logger.warn(`Manually set circuit breaker to half-open`);
+      logger.warn('Manually set circuit breaker to half-open');
       break;
     default:
       throw new Error(`Invalid circuit breaker state: ${state}`);
@@ -221,5 +233,5 @@ module.exports = {
   getCircuitBreakerMetrics,
   getCircuitBreakerStatus,
   forceCircuitBreakerState,
-  circuitBreakerOptions
+  circuitBreakerOptions,
 };

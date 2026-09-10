@@ -1,6 +1,6 @@
 /**
  * Inventory Model
- * 
+ *
  * This module defines the inventory data model and provides methods for
  * interacting with inventory data.
  */
@@ -28,7 +28,7 @@ class InventoryModel {
         min_stock_level: inventoryData.min_stock_level || 0,
         max_stock_level: inventoryData.max_stock_level || 0,
         unit_cost: inventoryData.unit_cost || 0.0,
-        selling_price: inventoryData.selling_price || 0.0
+        selling_price: inventoryData.selling_price || 0.0,
       };
 
       // Insert or update in database
@@ -68,7 +68,7 @@ class InventoryModel {
       }
 
       const items = await sqliteDatabase.getInventoryByStore(storeId);
-      const item = items.find(i => i.product_id === productId);
+      const item = items.find((i) => i.product_id === productId);
       return item || null;
     } catch (error) {
       throw new Error(`Failed to get inventory item: ${error.message}`);
@@ -100,7 +100,7 @@ class InventoryModel {
       // Update the quantity
       const updatedData = {
         ...existingItem,
-        quantity: quantity
+        quantity: quantity,
       };
 
       const result = await this.upsert(updatedData);
@@ -135,13 +135,15 @@ class InventoryModel {
       // Check if enough quantity is available
       const availableQuantity = existingItem.quantity - existingItem.reserved_quantity;
       if (availableQuantity < quantity) {
-        throw new Error(`Insufficient inventory. Available: ${availableQuantity}, Requested: ${quantity}`);
+        throw new Error(
+          `Insufficient inventory. Available: ${availableQuantity}, Requested: ${quantity}`
+        );
       }
 
       // Update the reserved quantity
       const updatedData = {
         ...existingItem,
-        reserved_quantity: existingItem.reserved_quantity + quantity
+        reserved_quantity: existingItem.reserved_quantity + quantity,
       };
 
       const result = await this.upsert(updatedData);
@@ -175,13 +177,15 @@ class InventoryModel {
 
       // Check if enough quantity is reserved
       if (existingItem.reserved_quantity < quantity) {
-        throw new Error(`Cannot release more than reserved. Reserved: ${existingItem.reserved_quantity}, Requested: ${quantity}`);
+        throw new Error(
+          `Cannot release more than reserved. Reserved: ${existingItem.reserved_quantity}, Requested: ${quantity}`
+        );
       }
 
       // Update the reserved quantity
       const updatedData = {
         ...existingItem,
-        reserved_quantity: existingItem.reserved_quantity - quantity
+        reserved_quantity: existingItem.reserved_quantity - quantity,
       };
 
       const result = await this.upsert(updatedData);

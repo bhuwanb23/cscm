@@ -47,7 +47,9 @@ async function getItem(req, res) {
   try {
     const { storeId, productId } = req.params;
     if (!storeId || !productId) {
-      return res.status(400).json({ success: false, error: 'Store ID and Product ID are required' });
+      return res
+        .status(400)
+        .json({ success: false, error: 'Store ID and Product ID are required' });
     }
     const item = await InventoryModel.get(productId, storeId);
     if (!item) {
@@ -86,16 +88,19 @@ async function upsert(req, res) {
     const productId = body.productId || body.product_id;
     const storeId = body.storeId || body.store_id;
     if (!productId || !storeId) {
-      return res.status(400).json({ success: false, error: 'Product ID and Store ID are required' });
+      return res
+        .status(400)
+        .json({ success: false, error: 'Product ID and Store ID are required' });
     }
     const result = await InventoryModel.upsert({
-      product_id: productId, store_id: storeId,
+      product_id: productId,
+      store_id: storeId,
       quantity: body.quantity,
       reserved_quantity: body.reserved_quantity || body.reservedQuantity,
       min_stock_level: body.min_stock_level || body.minStockLevel,
       max_stock_level: body.max_stock_level || body.maxStockLevel,
       unit_cost: body.unit_cost || body.unitCost,
-      selling_price: body.selling_price || body.sellingPrice
+      selling_price: body.selling_price || body.sellingPrice,
     });
     logger.info(`Inventory upserted: ${productId} at ${storeId}`);
     res.status(201).json({ success: true, data: result });
@@ -125,7 +130,9 @@ async function updateQuantity(req, res) {
     const { storeId, productId } = req.params;
     const { quantity } = req.body;
     if (!storeId || !productId) {
-      return res.status(400).json({ success: false, error: 'Store ID and Product ID are required' });
+      return res
+        .status(400)
+        .json({ success: false, error: 'Store ID and Product ID are required' });
     }
     if (typeof quantity !== 'number') {
       return res.status(400).json({ success: false, error: 'Quantity must be a number' });

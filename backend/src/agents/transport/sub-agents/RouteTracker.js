@@ -19,7 +19,7 @@ class RouteTracker extends SubAgent {
         current_location: result.current_location,
         eta_minutes: result.eta_minutes,
         progress_pct: result.progress_pct,
-        model_version: result.model_version
+        model_version: result.model_version,
       };
     } catch (err) {
       this.error('Route tracking failed:', err.message);
@@ -61,7 +61,7 @@ class RouteTracker extends SubAgent {
       current_location: null,
       eta_minutes: null,
       progress_pct: 0,
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 }

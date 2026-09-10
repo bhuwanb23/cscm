@@ -17,7 +17,7 @@ class ContinualLearner extends SubAgent {
     const payload = {
       model_state: modelState,
       new_data: newData,
-      learning_rate: learningRate
+      learning_rate: learningRate,
     };
 
     try {
@@ -25,7 +25,7 @@ class ContinualLearner extends SubAgent {
       return {
         model_version: result.model_version || 'unknown',
         training_metrics: result.training_metrics || { loss: 0, accuracy: 0, samples_seen: 0 },
-        updated_at: result.updated_at || new Date().toISOString()
+        updated_at: result.updated_at || new Date().toISOString(),
       };
     } catch (err) {
       this.error('Strategic update failed:', err.message);
@@ -56,7 +56,7 @@ class ContinualLearner extends SubAgent {
       model_id: modelId,
       status: 'unknown',
       last_update: null,
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 
@@ -64,7 +64,7 @@ class ContinualLearner extends SubAgent {
     return {
       model_version: 'fallback',
       training_metrics: { loss: 0, accuracy: 0, samples_seen: 0 },
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
   }
 }

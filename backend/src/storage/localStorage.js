@@ -68,9 +68,10 @@ class LocalStorage {
   list() {
     try {
       if (fs.existsSync(this.dataDir)) {
-        return fs.readdirSync(this.dataDir)
-          .filter(file => file.endsWith('.json'))
-          .map(file => file.replace('.json', ''));
+        return fs
+          .readdirSync(this.dataDir)
+          .filter((file) => file.endsWith('.json'))
+          .map((file) => file.replace('.json', ''));
       }
       return [];
     } catch (error) {

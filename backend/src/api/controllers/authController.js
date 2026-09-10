@@ -43,7 +43,7 @@ async function register(req, res) {
     if (!username || !email || !password) {
       return res.status(400).json({
         success: false,
-        error: 'Username, email, and password are required'
+        error: 'Username, email, and password are required',
       });
     }
 
@@ -51,7 +51,7 @@ async function register(req, res) {
     if (existing) {
       return res.status(409).json({
         success: false,
-        error: 'Username already exists'
+        error: 'Username already exists',
       });
     }
 
@@ -67,15 +67,15 @@ async function register(req, res) {
       message: 'User registered successfully',
       data: {
         user: { id: saved.id, username, email, role: role || 'user' },
-        token
-      }
+        token,
+      },
     });
   } catch (error) {
     console.error('Registration failed:', error.message, error.stack);
     logger.error('Registration failed:', error);
     res.status(500).json({
       success: false,
-      error: 'Registration failed'
+      error: 'Registration failed',
     });
   }
 }
@@ -102,7 +102,7 @@ async function login(req, res) {
     if (!username || !password) {
       return res.status(400).json({
         success: false,
-        error: 'Username and password are required'
+        error: 'Username and password are required',
       });
     }
 
@@ -110,7 +110,7 @@ async function login(req, res) {
     if (!user) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid username or password'
+        error: 'Invalid username or password',
       });
     }
 
@@ -118,7 +118,7 @@ async function login(req, res) {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid username or password'
+        error: 'Invalid username or password',
       });
     }
 
@@ -131,14 +131,14 @@ async function login(req, res) {
       message: 'Login successful',
       data: {
         user: { id: user.id, username: user.username, email: user.email, role: user.role },
-        token
-      }
+        token,
+      },
     });
   } catch (error) {
     logger.error('Login failed:', error);
     res.status(500).json({
       success: false,
-      error: 'Login failed'
+      error: 'Login failed',
     });
   }
 }
@@ -163,21 +163,21 @@ async function getProfile(req, res) {
     if (!user) {
       return res.status(404).json({
         success: false,
-        error: 'User not found'
+        error: 'User not found',
       });
     }
 
     res.status(200).json({
       success: true,
       data: {
-        user: { id: user.id, username: user.username, email: user.email, role: user.role }
-      }
+        user: { id: user.id, username: user.username, email: user.email, role: user.role },
+      },
     });
   } catch (error) {
     logger.error('Failed to get profile:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to get profile'
+      error: 'Failed to get profile',
     });
   }
 }
@@ -185,5 +185,5 @@ async function getProfile(req, res) {
 module.exports = {
   register,
   login,
-  getProfile
+  getProfile,
 };

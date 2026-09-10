@@ -10,7 +10,7 @@ class DeliveryCoordinator extends SubAgent {
 
     const data = {
       assignments,
-      transporters
+      transporters,
     };
 
     try {
@@ -41,13 +41,13 @@ class DeliveryCoordinator extends SubAgent {
 
     if (!transporters || transporters.length === 0) return null;
 
-    const available = transporters.filter(t => t.status === 'available');
+    const available = transporters.filter((t) => t.status === 'available');
 
     if (available.length === 0) return null;
 
     if (urgency === 'high') {
       return available.reduce((best, t) =>
-        (!best || (t.priorityScore || 0) > (best.priorityScore || 0)) ? t : best
+        !best || (t.priorityScore || 0) > (best.priorityScore || 0) ? t : best
       );
     }
 
@@ -59,12 +59,12 @@ class DeliveryCoordinator extends SubAgent {
     return {
       planId,
       status: 'created',
-      steps: (assignments || []).map(a => ({
+      steps: (assignments || []).map((a) => ({
         storeId: a.storeId || a,
         transporterId: transporters && transporters.length > 0 ? transporters[0].id : 'TRANSPORT-1',
-        status: 'pending'
+        status: 'pending',
       })),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 }

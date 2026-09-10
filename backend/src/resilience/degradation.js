@@ -5,10 +5,10 @@ const logger = require('../utils/logger');
  * Defines different levels of service degradation
  */
 const DegradationLevel = {
-  FULL: 'full',           // All services operational
-  PARTIAL: 'partial',     // Some services degraded
-  MINIMAL: 'minimal',     // Core services only
-  CRITICAL: 'critical'     // Emergency mode
+  FULL: 'full', // All services operational
+  PARTIAL: 'partial', // Some services degraded
+  MINIMAL: 'minimal', // Core services only
+  CRITICAL: 'critical', // Emergency mode
 };
 
 /**
@@ -19,7 +19,7 @@ const degradationState = {
   level: DegradationLevel.FULL,
   affectedServices: new Set(),
   timestamp: null,
-  reason: null
+  reason: null,
 };
 
 /**
@@ -32,7 +32,7 @@ const serviceDependencies = {
   gateway: ['backend', 'aiMl'],
   inventory: ['backend', 'aiMl'],
   orders: ['backend'],
-  shipments: ['backend']
+  shipments: ['backend'],
 };
 
 /**
@@ -58,15 +58,15 @@ async function checkServiceHealth(serviceName) {
 async function determineDegradationLevel() {
   const services = ['backend', 'aiMl', 'database', 'redis'];
   const healthStatus = {};
-  
+
   for (const service of services) {
     healthStatus[service] = await checkServiceHealth(service);
   }
-  
+
   // Count healthy services
   const healthyCount = Object.values(healthStatus).filter(Boolean).length;
   const totalServices = services.length;
-  
+
   let level;
   if (healthyCount === totalServices) {
     level = DegradationLevel.FULL;
@@ -77,10 +77,10 @@ async function determineDegradationLevel() {
   } else {
     level = DegradationLevel.CRITICAL;
   }
-  
+
   // Track affected services
-  const affectedServices = services.filter(s => !healthStatus[s]);
-  
+  const affectedServices = services.filter((s) => !healthStatus[s]);
+
   return { level, affectedServices, healthStatus };
 }
 
@@ -93,9 +93,9 @@ function setDegradationLevel(level, reason = 'Manual intervention') {
   degradationState.level = level;
   degradationState.timestamp = new Date().toISOString();
   degradationState.reason = reason;
-  
+
   logger.info(`Degradation level changed from ${previousLevel} to ${level}. Reason: ${reason}`);
-  
+
   // Emit degradation event for monitoring
   emitDegradationEvent(level, previousLevel, reason);
 }
@@ -109,7 +109,7 @@ function getDegradationState() {
     level: degradationState.level,
     affectedServices: Array.from(degradationState.affectedServices),
     timestamp: degradationState.timestamp,
-    reason: degradationState.reason
+    reason: degradationState.reason,
   };
 }
 
@@ -128,7 +128,7 @@ function isServiceDegraded(serviceName) {
 function markServiceDegraded(serviceName, reason) {
   degradationState.affectedServices.add(serviceName);
   logger.warn(`Service marked as degraded: ${serviceName}. Reason: ${reason}`);
-  
+
   // Recalculate degradation level
   updateDegradationLevelBasedOnServices();
 }
@@ -140,7 +140,7 @@ function markServiceDegraded(serviceName, reason) {
 function markServiceRecovered(serviceName) {
   degradationState.affectedServices.delete(serviceName);
   logger.info(`Service marked as recovered: ${serviceName}`);
-  
+
   // Recalculate degradation level
   updateDegradationLevelBasedOnServices();
 }
@@ -152,7 +152,7 @@ function markServiceRecovered(serviceName) {
 function updateDegradationLevelBasedOnServices() {
   const totalServices = Object.keys(serviceDependencies).length;
   const affectedCount = degradationState.affectedServices.size;
-  
+
   let newLevel;
   if (affectedCount === 0) {
     newLevel = DegradationLevel.FULL;
@@ -163,7 +163,7 @@ function updateDegradationLevelBasedOnServices() {
   } else {
     newLevel = DegradationLevel.CRITICAL;
   }
-  
+
   if (newLevel !== degradationState.level) {
     setDegradationLevel(newLevel, 'Automatic based on service health');
   }
@@ -179,10 +179,20 @@ function shouldFeatureBeEnabled(feature, currentLevel = degradationState.level) 
     'ai-ml-optimization': [DegradationLevel.FULL],
     'real-time-updates': [DegradationLevel.FULL, DegradationLevel.PARTIAL],
     'batch-processing': [DegradationLevel.FULL, DegradationLevel.PARTIAL, DegradationLevel.MINIMAL],
-    'basic-crud': [DegradationLevel.FULL, DegradationLevel.PARTIAL, DegradationLevel.MINIMAL, DegradationLevel.CRITICAL],
-    'authentication': [DegradationLevel.FULL, DegradationLevel.PARTIAL, DegradationLevel.MINIMAL, DegradationLevel.CRITICAL]
+    'basic-crud': [
+      DegradationLevel.FULL,
+      DegradationLevel.PARTIAL,
+      DegradationLevel.MINIMAL,
+      DegradationLevel.CRITICAL,
+    ],
+    authentication: [
+      DegradationLevel.FULL,
+      DegradationLevel.PARTIAL,
+      DegradationLevel.MINIMAL,
+      DegradationLevel.CRITICAL,
+    ],
   };
-  
+
   const allowedLevels = featureRequirements[feature] || [DegradationLevel.FULL];
   return allowedLevels.includes(currentLevel);
 }
@@ -193,47 +203,47 @@ function shouldFeatureBeEnabled(feature, currentLevel = degradationState.level) 
  */
 function getDegradedResponse(operation, originalError = null) {
   const level = degradationState.level;
-  
+
   switch (level) {
     case DegradationLevel.FULL:
       return {
         success: false,
         error: originalError?.message || 'Operation failed',
-        degradation: false
+        degradation: false,
       };
-      
+
     case DegradationLevel.PARTIAL:
       return {
         success: true,
         data: getPartialFallback(operation),
         degradation: true,
         level: 'partial',
-        message: 'Service partially degraded, using limited functionality'
+        message: 'Service partially degraded, using limited functionality',
       };
-      
+
     case DegradationLevel.MINIMAL:
       return {
         success: true,
         data: getMinimalFallback(operation),
         degradation: true,
         level: 'minimal',
-        message: 'Service minimally available, basic functionality only'
+        message: 'Service minimally available, basic functionality only',
       };
-      
+
     case DegradationLevel.CRITICAL:
       return {
         success: false,
         error: 'Service critically degraded, please try again later',
         degradation: true,
         level: 'critical',
-        retryAfter: 60
+        retryAfter: 60,
       };
-      
+
     default:
       return {
         success: false,
         error: 'Unknown degradation state',
-        degradation: true
+        degradation: true,
       };
   }
 }
@@ -247,9 +257,9 @@ function getPartialFallback(operation) {
     'demand-forecast': { forecast: [100, 100, 100], source: 'cached' },
     'inventory-query': { items: [], cached: true },
     'order-create': { orderId: null, queued: true },
-    'shipment-update': { status: 'pending', cached: true }
+    'shipment-update': { status: 'pending', cached: true },
   };
-  
+
   return fallbacks[operation] || { message: 'Limited functionality available' };
 }
 
@@ -262,9 +272,9 @@ function getMinimalFallback(operation) {
     'demand-forecast': { forecast: [50, 50, 50], source: 'default' },
     'inventory-query': { items: [], cached: false },
     'order-create': { orderId: null, queued: false },
-    'shipment-update': { status: 'unknown' }
+    'shipment-update': { status: 'unknown' },
   };
-  
+
   return fallbacks[operation] || { message: 'Basic functionality only' };
 }
 
@@ -279,20 +289,20 @@ function emitDegradationEvent(newLevel, previousLevel, reason) {
     newLevel,
     reason,
     timestamp: new Date().toISOString(),
-    affectedServices: Array.from(degradationState.affectedServices)
+    affectedServices: Array.from(degradationState.affectedServices),
   };
-  
+
   // Store event for monitoring
   if (!global.degradationEvents) {
     global.degradationEvents = [];
   }
   global.degradationEvents.push(event);
-  
+
   // Keep only last 50 events
   if (global.degradationEvents.length > 50) {
     global.degradationEvents = global.degradationEvents.slice(-50);
   }
-  
+
   logger.info('Degradation event emitted:', event);
 }
 
@@ -311,14 +321,14 @@ function getDegradationEvents() {
 async function autoRecoveryCheck() {
   try {
     const { level, affectedServices, healthStatus } = await determineDegradationLevel();
-    
+
     // Recover services that are now healthy
     for (const service of affectedServices) {
       if (healthStatus[service]) {
         markServiceRecovered(service);
       }
     }
-    
+
     logger.info('Auto-recovery check completed', { level, healthStatus });
   } catch (error) {
     logger.error('Auto-recovery check failed:', error);
@@ -336,7 +346,7 @@ function startAutoRecovery(intervalMs = 30000) {
     logger.warn('Auto-recovery already running');
     return;
   }
-  
+
   logger.info(`Starting auto-recovery with ${intervalMs}ms interval`);
   autoRecoveryInterval = setInterval(autoRecoveryCheck, intervalMs);
 }
@@ -366,5 +376,5 @@ module.exports = {
   startAutoRecovery,
   stopAutoRecovery,
   determineDegradationLevel,
-  serviceDependencies
+  serviceDependencies,
 };

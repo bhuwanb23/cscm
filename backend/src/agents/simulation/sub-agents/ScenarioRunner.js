@@ -6,7 +6,7 @@ class ScenarioRunner extends SubAgent {
   }
 
   async run(scenario) {
-    this.log(`Running simulation scenario`);
+    this.log('Running simulation scenario');
 
     if (!scenario) throw new Error('scenario is required');
 
@@ -16,7 +16,7 @@ class ScenarioRunner extends SubAgent {
         simulationId: result.simulation_id,
         status: result.status,
         summary: result.summary,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (err) {
       this.error('Simulation run failed:', err.message);
@@ -25,7 +25,7 @@ class ScenarioRunner extends SubAgent {
         status: 'completed',
         summary: { events_generated: 5, entities_affected: [scenario.storeId || 'STORE-1'] },
         timestamp: new Date().toISOString(),
-        fallback: true
+        fallback: true,
       };
     }
   }
@@ -42,7 +42,7 @@ class ScenarioRunner extends SubAgent {
         events: [],
         duration: 0,
         summary: { total_events: 0 },
-        fallback: true
+        fallback: true,
       };
     }
   }

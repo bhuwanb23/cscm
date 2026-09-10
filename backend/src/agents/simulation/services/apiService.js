@@ -3,11 +3,17 @@ const BaseApiService = require('../../../services/BaseApiService');
 class SimulationApiService extends BaseApiService {
   _getFallback(method, path, data) {
     if (path === '/api/v1/simulation/run') {
-      return { simulation_id: 'fallback', status: 'completed', results: {}, model_version: 'fallback_v1' };
+      return {
+        simulation_id: 'fallback',
+        status: 'completed',
+        results: {},
+        model_version: 'fallback_v1',
+      };
     }
     if (path === '/api/v1/demand/forecast') {
       return {
-        forecast_values: [100], forecast_dates: [new Date().toISOString().slice(0, 10)],
+        forecast_values: [100],
+        forecast_dates: [new Date().toISOString().slice(0, 10)],
         model_version: 'fallback_v1',
       };
     }
@@ -15,10 +21,20 @@ class SimulationApiService extends BaseApiService {
       return { reorder_quantity: 50, safety_stock: 25, model_version: 'fallback_v1' };
     }
     if (path === '/api/v1/simulation/run') {
-      return { simulation_id: `SIM-${Date.now()}`, status: 'completed', summary: { events_generated: 5 }, model_version: 'fallback_v1' };
+      return {
+        simulation_id: `SIM-${Date.now()}`,
+        status: 'completed',
+        summary: { events_generated: 5 },
+        model_version: 'fallback_v1',
+      };
     }
     if (path === '/api/v1/simulation/discrete-event-sim') {
-      return { events: [], duration: 0, summary: { total_events: 0 }, model_version: 'fallback_v1' };
+      return {
+        events: [],
+        duration: 0,
+        summary: { total_events: 0 },
+        model_version: 'fallback_v1',
+      };
     }
     if (path === '/api/v1/simulation/results') {
       return { status: 'unknown', model_version: 'fallback_v1' };
@@ -49,11 +65,16 @@ class SimulationApiService extends BaseApiService {
   }
 
   async simulationDiscreteEvent(data) {
-    return this.call('post', '/api/v1/simulation/discrete-event-sim', data, { allowFallback: true });
+    return this.call('post', '/api/v1/simulation/discrete-event-sim', data, {
+      allowFallback: true,
+    });
   }
 
   async simulationResults(simulationId) {
-    return this.call('get', `/api/v1/simulation/results/${simulationId}`, null, { allowFallback: true, bypassCircuitBreaker: true });
+    return this.call('get', `/api/v1/simulation/results/${simulationId}`, null, {
+      allowFallback: true,
+      bypassCircuitBreaker: true,
+    });
   }
 
   async simulationNetworkSim(data) {

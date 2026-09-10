@@ -28,18 +28,16 @@ class AnomalyAlerter extends SubAgent {
     if (this.apiService && typeof this.apiService.call === 'function') {
       try {
         const qs = new URLSearchParams(filterObj).toString();
-        const result = await this.apiService.call(
-          'get',
-          `/api/v1/anomaly/alerts?${qs}`,
-          null,
-          { allowFallback: true, bypassCircuitBreaker: true }
-        );
+        const result = await this.apiService.call('get', `/api/v1/anomaly/alerts?${qs}`, null, {
+          allowFallback: true,
+          bypassCircuitBreaker: true,
+        });
         if (result && Array.isArray(result.alerts)) {
           return {
             alerts: result.alerts,
             total: result.total !== undefined ? result.total : result.alerts.length,
             model_version: result.model_version || 'unknown',
-            filters: filterObj
+            filters: filterObj,
           };
         }
         return { ...this._fallbackList(), filters: filterObj };
@@ -61,7 +59,7 @@ class AnomalyAlerter extends SubAgent {
       alert_id: alertId,
       acknowledged: true,
       acknowledged_by: userId,
-      acknowledged_at: new Date().toISOString()
+      acknowledged_at: new Date().toISOString(),
     };
 
     if (this.apiService && typeof this.apiService.call === 'function') {
@@ -88,7 +86,7 @@ class AnomalyAlerter extends SubAgent {
       alert_id: alertId,
       severity: 'unknown',
       status: 'unknown',
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 
@@ -96,7 +94,7 @@ class AnomalyAlerter extends SubAgent {
     return {
       alerts: [],
       total: 0,
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 }

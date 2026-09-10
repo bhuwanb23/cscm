@@ -16,7 +16,7 @@ const cacheConfig = {
   userProfileTTL: 1800, // 30 minutes
   demandForecastTTL: 900, // 15 minutes
   aiMlResponseTTL: 300, // 5 minutes
-  enabled: true
+  enabled: true,
 };
 
 // Cache statistics
@@ -25,7 +25,7 @@ const cacheStats = {
   misses: 0,
   sets: 0,
   deletes: 0,
-  errors: 0
+  errors: 0,
 };
 
 /**
@@ -34,7 +34,7 @@ const cacheStats = {
 async function initCache() {
   try {
     const redisUrl = process.env.REDIS_URL || process.env.REDIS_HOST || 'redis://localhost:6379';
-    
+
     redisClient = redis.createClient({
       url: redisUrl,
       socket: {
@@ -44,23 +44,23 @@ async function initCache() {
             return new Error('Redis reconnection failed');
           }
           return retries * 100; // Exponential backoff
-        }
-      }
+        },
+      },
     });
-    
+
     redisClient.on('error', (err) => {
       logger.error('Redis cache client error:', err);
       cacheStats.errors++;
     });
-    
+
     redisClient.on('connect', () => {
       logger.info('Redis cache client connected');
     });
-    
+
     redisClient.on('disconnect', () => {
       logger.warn('Redis cache client disconnected');
     });
-    
+
     await redisClient.connect();
     logger.info('Redis cache service initialized');
     return true;
@@ -91,7 +91,7 @@ async function get(key) {
     cacheStats.misses++;
     return null;
   }
-  
+
   try {
     const value = await redisClient.get(key);
     if (value) {
@@ -119,7 +119,7 @@ async function set(key, value, ttl = cacheConfig.defaultTTL) {
   if (!cacheConfig.enabled || !redisClient) {
     return false;
   }
-  
+
   try {
     const serialized = JSON.stringify(value);
     await redisClient.setEx(key, ttl, serialized);
@@ -141,7 +141,7 @@ async function del(key) {
   if (!cacheConfig.enabled || !redisClient) {
     return false;
   }
-  
+
   try {
     await redisClient.del(key);
     cacheStats.deletes++;
@@ -162,7 +162,7 @@ async function delPattern(pattern) {
   if (!cacheConfig.enabled || !redisClient) {
     return 0;
   }
-  
+
   try {
     const keys = await redisClient.keys(pattern);
     if (keys.length > 0) {
@@ -185,7 +185,7 @@ async function clear() {
   if (!cacheConfig.enabled || !redisClient) {
     return false;
   }
-  
+
   try {
     await redisClient.flushDb();
     logger.info('Cache cleared');
@@ -206,7 +206,7 @@ async function exists(key) {
   if (!cacheConfig.enabled || !redisClient) {
     return false;
   }
-  
+
   try {
     const result = await redisClient.exists(key);
     return result === 1;
@@ -230,14 +230,14 @@ async function getOrSet(key, fetchFn, ttl = cacheConfig.defaultTTL) {
   if (cached !== null) {
     return cached;
   }
-  
+
   // Fetch value
   try {
     const value = await fetchFn();
-    
+
     // Set in cache
     await set(key, value, ttl);
-    
+
     return value;
   } catch (error) {
     logger.error('Fetch function error in getOrSet:', error);
@@ -371,12 +371,12 @@ async function getCachedAiMlResponse(endpoint, requestId) {
 function getCacheStats() {
   const total = cacheStats.hits + cacheStats.misses;
   const hitRate = total > 0 ? (cacheStats.hits / total) * 100 : 0;
-  
+
   return {
     ...cacheStats,
     total,
     hitRate: hitRate.toFixed(2) + '%',
-    enabled: cacheConfig.enabled
+    enabled: cacheConfig.enabled,
   };
 }
 
@@ -410,24 +410,24 @@ async function warmCache(initialData) {
     logger.warn('Cache is disabled, skipping cache warming');
     return;
   }
-  
+
   try {
     logger.info('Warming cache with initial data');
-    
+
     // Cache inventory data
     if (initialData.inventory) {
       for (const [storeId, inventory] of Object.entries(initialData.inventory)) {
         await cacheInventory(storeId, inventory);
       }
     }
-    
+
     // Cache user profiles
     if (initialData.users) {
       for (const [userId, profile] of Object.entries(initialData.users)) {
         await cacheUserProfile(userId, profile);
       }
     }
-    
+
     logger.info('Cache warming completed');
   } catch (error) {
     logger.error('Cache warming failed:', error);
@@ -473,5 +473,5 @@ module.exports = {
   configureCache,
   warmCache,
   closeCache,
-  cacheConfig
+  cacheConfig,
 };

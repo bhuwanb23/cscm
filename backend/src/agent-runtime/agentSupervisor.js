@@ -4,7 +4,7 @@ const logger = require('../utils/logger');
 
 /**
  * Agent Supervisor
- * 
+ *
  * This module manages agent processes, monitors their health,
  * and provides restart capabilities.
  */
@@ -29,17 +29,17 @@ class AgentSupervisor {
         scriptPath,
         options,
         process: null,
-        status: 'stopped'
+        status: 'stopped',
       });
-      
+
       this.agentStatus.set(agentName, {
         status: 'stopped',
         lastStarted: null,
         lastStopped: null,
         restartCount: 0,
-        error: null
+        error: null,
       });
-      
+
       logger.info(`Registered agent ${agentName} for supervision`);
     } catch (error) {
       logger.error(`Failed to register agent ${agentName}:`, error.message);
@@ -65,23 +65,23 @@ class AgentSupervisor {
 
       // Spawn the agent process
       logger.info(`Starting agent ${agentName} with script ${agent.scriptPath}`);
-      
+
       const agentProcess = spawn('node', [agent.scriptPath], {
         cwd: process.cwd(),
         env: process.env,
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: ['pipe', 'pipe', 'pipe'],
       });
 
       // Update agent info
       agent.process = agentProcess;
       agent.status = 'running';
-      
+
       // Update status
       const status = this.agentStatus.get(agentName);
       status.status = 'running';
       status.lastStarted = new Date();
       status.error = null;
-      
+
       this.agentStatus.set(agentName, status);
 
       // Handle process events
@@ -123,7 +123,7 @@ class AgentSupervisor {
       }
 
       logger.info(`Stopping agent ${agentName}`);
-      
+
       // Update status
       const status = this.agentStatus.get(agentName);
       status.status = 'stopping';
@@ -131,10 +131,10 @@ class AgentSupervisor {
 
       // Mark as intentionally stopping to prevent auto-restart
       agent.intentionallyStopping = true;
-      
+
       // Kill the process
       agent.process.kill('SIGTERM');
-      
+
       // Wait for process to exit
       await new Promise((resolve) => {
         setTimeout(() => {
@@ -149,7 +149,7 @@ class AgentSupervisor {
       agent.process = null;
       agent.status = 'stopped';
       delete agent.intentionallyStopping;
-      
+
       // Update status
       status.status = 'stopped';
       status.lastStopped = new Date();
@@ -170,25 +170,27 @@ class AgentSupervisor {
   async restartAgent(agentName) {
     try {
       logger.info(`Restarting agent ${agentName}`);
-      
+
       // Increment restart count
       const status = this.agentStatus.get(agentName);
       status.restartCount = (status.restartCount || 0) + 1;
       this.agentStatus.set(agentName, status);
-      
+
       // Check if we've exceeded max restart attempts
       if (status.restartCount > this.maxRestartAttempts) {
-        logger.error(`Agent ${agentName} has exceeded maximum restart attempts (${this.maxRestartAttempts})`);
+        logger.error(
+          `Agent ${agentName} has exceeded maximum restart attempts (${this.maxRestartAttempts})`
+        );
         status.status = 'failed';
         status.error = 'Max restart attempts exceeded';
         this.agentStatus.set(agentName, status);
         return false;
       }
-      
+
       // Stop and start the agent
       await this.stopAgent(agentName);
       await this.startAgent(agentName);
-      
+
       logger.info(`Agent ${agentName} restarted successfully`);
       return true;
     } catch (error) {
@@ -226,34 +228,34 @@ class AgentSupervisor {
     try {
       const agent = this.agents.get(agentName);
       const status = this.agentStatus.get(agentName);
-      
+
       logger.info(`Agent ${agentName} exited with code ${code} and signal ${signal}`);
-      
+
       // Update agent info
       if (agent) {
         agent.process = null;
         agent.status = 'stopped';
       }
-      
+
       // Update status
       if (status) {
         status.status = 'stopped';
         status.lastStopped = new Date();
-        
+
         if (code !== 0) {
           status.error = `Exited with code ${code}`;
         }
-        
+
         this.agentStatus.set(agentName, status);
       }
-      
+
       // Attempt restart if the agent exited unexpectedly
       // Skip restart if the agent was intentionally stopped
       if (!agent || !agent.intentionallyStopping) {
         if (code !== 0 && status && status.restartCount < this.maxRestartAttempts) {
           logger.info(`Attempting to restart agent ${agentName} after unexpected exit`);
           setTimeout(() => {
-            this.restartAgent(agentName).catch(error => {
+            this.restartAgent(agentName).catch((error) => {
               logger.error(`Failed to restart agent ${agentName}:`, error.message);
             });
           }, 1000); // Wait 1 second before restart
@@ -273,21 +275,21 @@ class AgentSupervisor {
   _handleAgentError(agentName, error) {
     try {
       const status = this.agentStatus.get(agentName);
-      
+
       logger.error(`Agent ${agentName} encountered an error:`, error.message);
-      
+
       // Update status
       if (status) {
         status.status = 'error';
         status.error = error.message;
         this.agentStatus.set(agentName, status);
       }
-      
+
       // Attempt restart if we haven't exceeded max attempts
       if (status && status.restartCount < this.maxRestartAttempts) {
         logger.info(`Attempting to restart agent ${agentName} after error`);
         setTimeout(() => {
-          this.restartAgent(agentName).catch(restartError => {
+          this.restartAgent(agentName).catch((restartError) => {
             logger.error(`Failed to restart agent ${agentName}:`, restartError.message);
           });
         }, 1000); // Wait 1 second before restart
@@ -303,12 +305,12 @@ class AgentSupervisor {
   async startAllAgents() {
     try {
       logger.info('Starting all registered agents');
-      
+
       const promises = [];
       for (const [agentName, agent] of this.agents.entries()) {
         promises.push(this.startAgent(agentName));
       }
-      
+
       await Promise.all(promises);
       logger.info('All agents started successfully');
     } catch (error) {
@@ -323,14 +325,14 @@ class AgentSupervisor {
   async stopAllAgents() {
     try {
       logger.info('Stopping all registered agents');
-      
+
       const promises = [];
       for (const [agentName, agent] of this.agents.entries()) {
         if (agent.status === 'running') {
           promises.push(this.stopAgent(agentName));
         }
       }
-      
+
       await Promise.all(promises);
       logger.info('All agents stopped successfully');
     } catch (error) {

@@ -4,7 +4,7 @@ const logger = require('../utils/logger');
 
 /**
  * SQLite Database
- * 
+ *
  * This module provides a SQLite database implementation for local data storage.
  * It handles connection management, table creation, and data access.
  */
@@ -40,10 +40,10 @@ class SQLiteDatabase {
 
       // Create tables
       await this.createTables();
-      
+
       // Create indexes for performance
       await this.createIndexes();
-      
+
       logger.info('SQLite database initialized successfully');
     } catch (error) {
       logger.error('Failed to initialize SQLite database:', error.message);
@@ -149,7 +149,7 @@ class SQLiteDatabase {
         orderItemsTable,
         shipmentsTable,
         shipmentItemsTable,
-        usersTable
+        usersTable,
       ];
 
       let completed = 0;
@@ -161,7 +161,7 @@ class SQLiteDatabase {
         }
       };
 
-      queries.forEach(query => {
+      queries.forEach((query) => {
         this.db.run(query, (err) => {
           if (err) {
             logger.error('Failed to create table:', err.message);
@@ -185,18 +185,18 @@ class SQLiteDatabase {
         'CREATE INDEX IF NOT EXISTS idx_inventory_store_id ON inventory(store_id)',
         'CREATE INDEX IF NOT EXISTS idx_inventory_quantity ON inventory(quantity)',
         'CREATE INDEX IF NOT EXISTS idx_inventory_store_product ON inventory(store_id, product_id)',
-        
+
         // Orders indexes
         'CREATE INDEX IF NOT EXISTS idx_orders_order_id ON orders(order_id)',
         'CREATE INDEX IF NOT EXISTS idx_orders_store_id ON orders(store_id)',
         'CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)',
         'CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at)',
         'CREATE INDEX IF NOT EXISTS idx_orders_store_status ON orders(store_id, status)',
-        
+
         // Order items indexes
         'CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id)',
         'CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id)',
-        
+
         // Shipments indexes
         'CREATE INDEX IF NOT EXISTS idx_shipments_shipment_id ON shipments(shipment_id)',
         'CREATE INDEX IF NOT EXISTS idx_shipments_order_id ON shipments(order_id)',
@@ -204,11 +204,11 @@ class SQLiteDatabase {
         'CREATE INDEX IF NOT EXISTS idx_shipments_from_location ON shipments(from_location)',
         'CREATE INDEX IF NOT EXISTS idx_shipments_to_location ON shipments(to_location)',
         'CREATE INDEX IF NOT EXISTS idx_shipments_tracking_number ON shipments(tracking_number)',
-        
+
         // Users indexes
         'CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)',
         'CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)',
-        'CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)'
+        'CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)',
       ];
 
       let completed = 0;
@@ -220,7 +220,7 @@ class SQLiteDatabase {
         }
       };
 
-      indexes.forEach(indexQuery => {
+      indexes.forEach((indexQuery) => {
         this.db.run(indexQuery, (err) => {
           if (err) {
             logger.error('Failed to create index:', err.message);
@@ -283,10 +283,10 @@ class SQLiteDatabase {
         item.min_stock_level || 0,
         item.max_stock_level || 0,
         item.unit_cost || 0.0,
-        item.selling_price || 0.0
+        item.selling_price || 0.0,
       ];
 
-      this.db.run(query, params, function(err) {
+      this.db.run(query, params, function (err) {
         if (err) {
           logger.error('Failed to upsert inventory item:', err.message);
           reject(err);
@@ -332,10 +332,10 @@ class SQLiteDatabase {
         order.store_id,
         order.customer_id,
         order.total_amount || 0.0,
-        order.status || 'pending'
+        order.status || 'pending',
       ];
 
-      this.db.run(query, params, function(err) {
+      this.db.run(query, params, function (err) {
         if (err) {
           logger.error('Failed to create order:', err.message);
           reject(err);
@@ -363,10 +363,10 @@ class SQLiteDatabase {
         item.product_id,
         item.quantity || 1,
         item.unit_price || 0.0,
-        item.total_price || 0.0
+        item.total_price || 0.0,
       ];
 
-      this.db.run(query, params, function(err) {
+      this.db.run(query, params, function (err) {
         if (err) {
           logger.error('Failed to add order item:', err.message);
           reject(err);
@@ -399,10 +399,10 @@ class SQLiteDatabase {
         shipment.status || 'pending',
         shipment.carrier,
         shipment.tracking_number,
-        shipment.estimated_delivery
+        shipment.estimated_delivery,
       ];
 
-      this.db.run(query, params, function(err) {
+      this.db.run(query, params, function (err) {
         if (err) {
           logger.error('Failed to create shipment:', err.message);
           reject(err);
@@ -425,13 +425,9 @@ class SQLiteDatabase {
         VALUES (?, ?, ?)
       `;
 
-      const params = [
-        item.shipment_id,
-        item.product_id,
-        item.quantity || 1
-      ];
+      const params = [item.shipment_id, item.product_id, item.quantity || 1];
 
-      this.db.run(query, params, function(err) {
+      this.db.run(query, params, function (err) {
         if (err) {
           logger.error('Failed to add shipment item:', err.message);
           reject(err);
@@ -481,7 +477,7 @@ class SQLiteDatabase {
       query += ' WHERE shipment_id = ?';
       params.push(shipmentId);
 
-      this.db.run(query, params, function(err) {
+      this.db.run(query, params, function (err) {
         if (err) {
           logger.error('Failed to update shipment status:', err.message);
           reject(err);
@@ -504,17 +500,22 @@ class SQLiteDatabase {
   async getOrderById(orderId) {
     return new Promise((resolve, reject) => {
       this.db.get('SELECT * FROM orders WHERE order_id = ?', [orderId], (err, order) => {
-        if (err) { reject(err); return; }
-        if (!order) { resolve(null); return; }
-        this.db.all(
-          'SELECT * FROM order_items WHERE order_id = ?',
-          [orderId],
-          (err2, items) => {
-            if (err2) { reject(err2); return; }
-            order.items = items || [];
-            resolve(order);
+        if (err) {
+          reject(err);
+          return;
+        }
+        if (!order) {
+          resolve(null);
+          return;
+        }
+        this.db.all('SELECT * FROM order_items WHERE order_id = ?', [orderId], (err2, items) => {
+          if (err2) {
+            reject(err2);
+            return;
           }
-        );
+          order.items = items || [];
+          resolve(order);
+        });
       });
     });
   }
@@ -530,8 +531,11 @@ class SQLiteDatabase {
       this.db.run(
         'UPDATE orders SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ?',
         [status, orderId],
-        function(err) {
-          if (err) { reject(err); return; }
+        function (err) {
+          if (err) {
+            reject(err);
+            return;
+          }
           resolve(this.changes);
         }
       );
@@ -554,7 +558,10 @@ class SQLiteDatabase {
       }
       query += ' ORDER BY created_at DESC';
       this.db.all(query, params, (err, rows) => {
-        if (err) { reject(err); return; }
+        if (err) {
+          reject(err);
+          return;
+        }
         resolve(rows);
       });
     });
@@ -571,19 +578,32 @@ class SQLiteDatabase {
    */
   async getShipmentById(shipmentId) {
     return new Promise((resolve, reject) => {
-      this.db.get('SELECT * FROM shipments WHERE shipment_id = ?', [shipmentId], (err, shipment) => {
-        if (err) { reject(err); return; }
-        if (!shipment) { resolve(null); return; }
-        this.db.all(
-          'SELECT * FROM shipment_items WHERE shipment_id = ?',
-          [shipmentId],
-          (err2, items) => {
-            if (err2) { reject(err2); return; }
-            shipment.items = items || [];
-            resolve(shipment);
+      this.db.get(
+        'SELECT * FROM shipments WHERE shipment_id = ?',
+        [shipmentId],
+        (err, shipment) => {
+          if (err) {
+            reject(err);
+            return;
           }
-        );
-      });
+          if (!shipment) {
+            resolve(null);
+            return;
+          }
+          this.db.all(
+            'SELECT * FROM shipment_items WHERE shipment_id = ?',
+            [shipmentId],
+            (err2, items) => {
+              if (err2) {
+                reject(err2);
+                return;
+              }
+              shipment.items = items || [];
+              resolve(shipment);
+            }
+          );
+        }
+      );
     });
   }
 
@@ -598,7 +618,10 @@ class SQLiteDatabase {
         'SELECT * FROM shipments WHERE from_location = ? OR to_location = ? ORDER BY created_at DESC',
         [location, location],
         (err, rows) => {
-          if (err) { reject(err); return; }
+          if (err) {
+            reject(err);
+            return;
+          }
           resolve(rows);
         }
       );
@@ -621,7 +644,7 @@ class SQLiteDatabase {
         VALUES (?, ?, ?, ?)
       `;
       const params = [user.username, user.email, user.password, user.role || 'user'];
-      this.db.run(query, params, function(err) {
+      this.db.run(query, params, function (err) {
         if (err) {
           logger.error('Failed to create user:', err.message);
           reject(err);

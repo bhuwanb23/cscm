@@ -36,12 +36,14 @@ class SourcingAdvisor extends SubAgent {
       return { recommended: true, confidence: 0.5, reason: 'Insufficient data for evaluation' };
     }
 
-    const avgQuality = performance.reduce((s, r) => s + (r.quality_score || 1), 0) / performance.length;
+    const avgQuality =
+      performance.reduce((s, r) => s + (r.quality_score || 1), 0) / performance.length;
     return {
       recommended: avgQuality > 0.8,
       confidence: avgQuality,
-      reason: avgQuality > 0.8 ? 'Consistent quality performance' : 'Below average quality performance',
-      alternatives: []
+      reason:
+        avgQuality > 0.8 ? 'Consistent quality performance' : 'Below average quality performance',
+      alternatives: [],
     };
   }
 }

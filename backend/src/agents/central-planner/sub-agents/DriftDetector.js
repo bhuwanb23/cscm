@@ -4,7 +4,7 @@ const KNOWN_MODELS = [
   'demand-forecaster',
   'inventory-optimizer',
   'routing-optimizer',
-  'supplier-risk'
+  'supplier-risk',
 ];
 
 class DriftDetector extends SubAgent {
@@ -22,7 +22,7 @@ class DriftDetector extends SubAgent {
     try {
       const result = await this.apiService.driftCheck({
         model_id: modelId,
-        window: timeWindow
+        window: timeWindow,
       });
       return {
         model_id: result.model_id || modelId,
@@ -30,7 +30,7 @@ class DriftDetector extends SubAgent {
         drift_score: result.drift_score !== undefined ? result.drift_score : 0,
         affected_features: result.affected_features || [],
         timestamp: result.timestamp || new Date().toISOString(),
-        model_version: result.model_version || 'unknown'
+        model_version: result.model_version || 'unknown',
       };
     } catch (err) {
       this.error('Drift check failed:', err.message);
@@ -54,9 +54,9 @@ class DriftDetector extends SubAgent {
 
     return {
       results,
-      any_drift_detected: results.some(r => r.drift_detected === true),
+      any_drift_detected: results.some((r) => r.drift_detected === true),
       total: results.length,
-      window: timeWindow
+      window: timeWindow,
     };
   }
 
@@ -66,7 +66,7 @@ class DriftDetector extends SubAgent {
       drift_detected: false,
       drift_score: 0,
       affected_features: [],
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 }

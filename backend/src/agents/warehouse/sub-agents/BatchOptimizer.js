@@ -21,7 +21,7 @@ class BatchOptimizer extends SubAgent {
       return {
         recommendations: result.recommendations || [],
         total_savings: result.total_savings || 0,
-        model_version: result.model_version || 'unknown'
+        model_version: result.model_version || 'unknown',
       };
     } catch (err) {
       this.error('Batch optimization failed:', err.message);
@@ -43,7 +43,7 @@ class BatchOptimizer extends SubAgent {
       const result = await this.apiService.batchOptimize(data);
       return {
         results: result.results || result.recommendations || [],
-        total_processed: (result.results || result.recommendations || []).length
+        total_processed: (result.results || result.recommendations || []).length,
       };
     } catch (err) {
       this.error('Batch-by-store optimization failed:', err.message);
@@ -53,25 +53,25 @@ class BatchOptimizer extends SubAgent {
 
   _fallbackBatch(skus) {
     return {
-      recommendations: skus.map(s => ({
+      recommendations: skus.map((s) => ({
         sku_id: s,
         reorder_quantity: 50,
-        safety_stock: 25
+        safety_stock: 25,
       })),
       total_savings: 0,
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 
   _fallbackBatchByStore(pairs) {
     return {
-      results: pairs.map(p => ({
+      results: pairs.map((p) => ({
         sku_id: p.sku,
         store_id: p.store,
-        reorder_quantity: 50
+        reorder_quantity: 50,
       })),
       total_processed: pairs.length,
-      model_version: 'fallback'
+      model_version: 'fallback',
     };
   }
 }

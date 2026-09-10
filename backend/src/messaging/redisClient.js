@@ -4,7 +4,7 @@ const { trackKafkaMessage } = require('../utils/metrics'); // Reusing this for R
 
 /**
  * Redis Client
- * 
+ *
  * This module provides a Redis client for local pub/sub messaging.
  * It handles connection management, message publishing, and subscription handling.
  */
@@ -24,7 +24,8 @@ class RedisClient {
       const redisPassword = process.env.REDIS_PASSWORD
         ? `:${encodeURIComponent(process.env.REDIS_PASSWORD)}@`
         : '';
-      const redisUrl = process.env.REDIS_URL ||
+      const redisUrl =
+        process.env.REDIS_URL ||
         `redis://${redisPassword}${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT || 6379}`;
 
       // Create publisher client
@@ -70,11 +71,11 @@ class RedisClient {
       if (this.client) {
         await this.client.quit();
       }
-      
+
       if (this.subscriber) {
         await this.subscriber.quit();
       }
-      
+
       this.isConnected = false;
       logger.info('Redis messaging disconnected successfully');
     } catch (error) {
@@ -98,15 +99,15 @@ class RedisClient {
       const serializedMessage = JSON.stringify({
         ...message,
         timestamp: new Date().toISOString(),
-        source: 'redis'
+        source: 'redis',
       });
 
       // Publish to Redis
       await this.client.publish(topic, serializedMessage);
-      
+
       // Track message for metrics
       trackKafkaMessage(topic); // Reusing this function for tracking
-      
+
       logger.debug(`Message published to topic ${topic}`);
     } catch (error) {
       logger.error(`Failed to publish message to topic ${topic}:`, error.message);
@@ -130,7 +131,7 @@ class RedisClient {
         try {
           // Parse message
           const parsedMessage = JSON.parse(message);
-          
+
           // Call callback with topic and message
           await callback(topic, parsedMessage);
         } catch (parseError) {
