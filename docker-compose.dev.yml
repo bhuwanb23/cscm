@@ -1,0 +1,99 @@
+services:
+  # Redis for messaging (lightweight for dev)
+  redis:
+    image: redis:7-alpine
+    container_name: cscm-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - cscm-network
+
+  # Backend API Service (development mode with hot reload)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cscm-backend-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - AI_ML_API_URL=http://ai-ml:8000
+    volumes:
+      - backend_data:/app/data
+      - ./backend/src:/app/src
+      - ./backend:/app
+    command: npm run dev
+    depends_on:
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - cscm-network
+
+  # AI/ML Service (development mode)
+  ai-ml:
+    build:
+      context: ./ai-ml
+      dockerfile: Dockerfile
+    container_name: cscm-ai-ml-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+    volumes:
+      - ai_ml_data:/app/data
+      - ./ai-ml/api:/app/api
+      - ./ai-ml/legacy_models:/app/legacy_models
+      - ./ai-ml:/app
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      backend:
+        condition: service_started
+    networks:
+      - cscm-network
+
+  # API Gateway (development mode)
+  gateway:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.gateway
+    container_name: cscm-gateway-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - GATEWAY_PORT=8080
+      - AI_ML_API_URL=http://ai-ml:8000
+    volumes:
+      - ./backend/src/gateway:/app/src/gateway
+      - ./backend/src/config:/app/src/config
+      - ./backend/src/utils:/app/src/utils
+    command: node src/gateway/gateway.js
+    depends_on:
+      backend:
+        condition: service_started
+      ai-ml:
+        condition: service_started
+    networks:
+      - cscm-network
+
+networks:
+  cscm-network:
+    driver: bridge
+
+volumes:
+  redis_data:
+  backend_data:
+  ai_ml_data:

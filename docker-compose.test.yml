@@ -1,0 +1,100 @@
+services:
+  # Redis for messaging
+  redis:
+    image: redis:7-alpine
+    container_name: cscm-redis-test
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cscm-network
+
+  # Backend API Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cscm-backend-test
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - AI_ML_API_URL=http://ai-ml:8000
+    volumes:
+      - backend_data:/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - cscm-network
+
+  # AI/ML Service
+  ai-ml:
+    build:
+      context: ./ai-ml
+      dockerfile: Dockerfile
+    container_name: cscm-ai-ml-test
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ai_ml_data:/app/data
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - cscm-network
+
+  # API Gateway
+  gateway:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.gateway
+    container_name: cscm-gateway-test
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=development
+      - GATEWAY_PORT=8080
+      - AI_ML_API_URL=http://ai-ml:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+      ai-ml:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - cscm-network
+
+networks:
+  cscm-network:
+    driver: bridge
+
+volumes:
+  redis_data:
+  backend_data:
+  ai_ml_data:
