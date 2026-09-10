@@ -5,7 +5,8 @@
   "main": "src/api/server.js",
   "scripts": {
     "start": "node src/api/server.js",
-    "dev": "nodemon src/api/server.js",
+    "dev": "nodemon",
+    "dev:gateway": "nodemon src/gateway/gateway.js",
     "test": "jest",
     "test:integration": "node scripts/run_integration_tests.js",
     "lint": "eslint src/**/*.js",
