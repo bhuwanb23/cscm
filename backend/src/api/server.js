@@ -10,6 +10,8 @@ require('dotenv').config();
 
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 const { rateLimiter, securityHeaders, corsOptions } = require('./middleware/rateLimiter');
+const { userRateLimiter, userRateLimitInfo } = require('./middleware/userRateLimiter');
+const { validateRequest } = require('./middleware/requestValidator');
 const {
   requestLogger,
   queryLogger,
@@ -52,7 +54,12 @@ app.use(securityHeaders);
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(rateLimiter);
+app.use(userRateLimiter);
+app.use(userRateLimitInfo);
 app.use(requestTracker);
+
+// Request validation middleware (will be applied to specific routes)
+// For POST/PUT requests, we'll add validation in route definitions
 
 // Debug middleware (development only)
 if (process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true') {
