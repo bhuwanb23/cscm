@@ -1,0 +1,13 @@
+node_modules
+dist
+build
+logs
+*.log
+.env
+.env.local
+coverage
+.nyc_output
+.vscode
+.idea
+*.min.js
+*.min.css
