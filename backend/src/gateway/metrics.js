@@ -74,6 +74,9 @@ const activeConnections = new client.Gauge({
   help: 'Number of active connections'
 });
 
+// Track active connections count
+let activeConnectionsCount = 0;
+
 const authenticationSuccess = new client.Counter({
   name: 'gateway_authentication_success_total',
   help: 'Total number of successful authentications',
@@ -168,6 +171,7 @@ function recordRateLimitHit(limitType, userId = 'anonymous') {
  * Update active connections
  */
 function updateActiveConnections(count) {
+  activeConnectionsCount = count;
   activeConnections.set(count);
 }
 
@@ -200,15 +204,16 @@ function metricsMiddleware(req, res, next) {
   const start = Date.now();
   
   // Increment active connections
-  updateActiveConnections(activeConnections.hashMap.get('')?.value + 1 || 1);
+  activeConnectionsCount++;
+  updateActiveConnections(activeConnectionsCount);
   
   res.on('finish', () => {
     const duration = (Date.now() - start) / 1000; // Convert to seconds
     recordHttpRequest(req.method, req.path, res.statusCode, duration);
     
     // Decrement active connections
-    const currentConnections = activeConnections.hashMap.get('')?.value || 1;
-    updateActiveConnections(Math.max(0, currentConnections - 1));
+    activeConnectionsCount = Math.max(0, activeConnectionsCount - 1);
+    updateActiveConnections(activeConnectionsCount);
   });
   
   next();
@@ -234,6 +239,7 @@ module.exports = {
   circuitBreakerFailures,
   rateLimitHits,
   activeConnections,
+  activeConnectionsCount,
   authenticationSuccess,
   authenticationFailure,
   recordHttpRequest,
