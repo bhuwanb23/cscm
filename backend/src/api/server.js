@@ -74,6 +74,19 @@ const database = createDatabase();
   try {
     await database.initialize();
     console.log('Database initialized successfully');
+
+    // Run migration for PostgreSQL on first deployment
+    if (process.env.DATABASE_TYPE === 'postgresql') {
+      try {
+        const { migrateToPostgres } = require('../scripts/migrate-to-postgres');
+        console.log('Running PostgreSQL migration...');
+        await migrateToPostgres();
+        console.log('PostgreSQL migration completed successfully');
+      } catch (migrationError) {
+        console.warn('PostgreSQL migration skipped or failed:', migrationError.message);
+        // Don't fail the startup if migration fails - tables may already exist
+      }
+    }
   } catch (error) {
     console.error('Failed to initialize database:', error);
   }

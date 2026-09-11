@@ -29,7 +29,7 @@ async function migrateToPostgres() {
   if (!databaseUrl) {
     logger.error('DATABASE_URL environment variable is not set');
     logger.error('This script requires DATABASE_URL to be set (provided by Render)');
-    process.exit(1);
+    throw new Error('DATABASE_URL not set');
   }
 
   // Create connection pool
@@ -52,7 +52,7 @@ async function migrateToPostgres() {
 
     if (!fs.existsSync(schemaPath)) {
       logger.error('Schema file not found');
-      process.exit(1);
+      throw new Error('Schema file not found');
     }
 
     const schemaSql = fs.readFileSync(schemaPath, 'utf8');
@@ -69,7 +69,7 @@ async function migrateToPostgres() {
         await pool.query(statement);
         logger.debug(`Executed: ${statement.substring(0, 50)}...`);
       } catch (error) {
-        // Ignore errors for IF NOT EXISTS statements
+        // Ignore errors for IF NOT EXISTS statements and already exists errors
         if (!error.message.includes('already exists')) {
           logger.warn(`Statement warning: ${error.message}`);
         }
@@ -78,7 +78,7 @@ async function migrateToPostgres() {
 
     logger.info('Schema created successfully');
 
-    // Seed initial test data
+    // Seed initial test data (idempotent - uses ON CONFLICT DO NOTHING)
     logger.info('Seeding initial test data...');
     await seedTestData(pool);
     logger.info('Test data seeded successfully');
@@ -87,7 +87,7 @@ async function migrateToPostgres() {
   } catch (error) {
     logger.error(`Migration failed: ${error.message}`);
     logger.error(error.stack);
-    process.exit(1);
+    throw error;
   } finally {
     await pool.end();
   }

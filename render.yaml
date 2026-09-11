@@ -32,7 +32,6 @@ services:
         value: info
       - key: DEBUG
         value: false
-    preDeployCommand: node scripts/migrate-to-postgres.js
 
   # AI/ML Service
   - type: web

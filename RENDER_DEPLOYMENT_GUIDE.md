@@ -56,9 +56,10 @@ git push origin main
 
 Render will automatically:
 - Build each service
-- Run the migration script on the backend
 - Start all services
 - Configure environment variables
+
+The database migration will run automatically on the first backend startup (using the PostgreSQL schema).
 
 Monitor the deployment logs in the Render dashboard.
 
