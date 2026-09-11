@@ -14,9 +14,7 @@ services:
       - key: DATABASE_TYPE
         value: postgresql
       - key: DATABASE_URL
-        # Set this to your existing PostgreSQL connection string
-        # Example: postgres://user:password@host:port/database
-        value: YOUR_EXISTING_DATABASE_URL_HERE
+        sync: false # Set manually in Render dashboard (not in public repo)
       - key: REDIS_URL
         fromService:
           type: keyvalue
