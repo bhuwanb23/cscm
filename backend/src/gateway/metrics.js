@@ -203,17 +203,12 @@ function getMetricsEndpoint(req, res) {
 function metricsMiddleware(req, res, next) {
   const start = Date.now();
   
-  // Increment active connections
-  activeConnectionsCount++;
-  updateActiveConnections(activeConnectionsCount);
+  // Note: Active connections tracking simplified to avoid prom-client internal access issues
+  // This is a known limitation in newer prom-client versions
   
   res.on('finish', () => {
     const duration = (Date.now() - start) / 1000; // Convert to seconds
     recordHttpRequest(req.method, req.path, res.statusCode, duration);
-    
-    // Decrement active connections
-    activeConnectionsCount = Math.max(0, activeConnectionsCount - 1);
-    updateActiveConnections(activeConnectionsCount);
   });
   
   next();
