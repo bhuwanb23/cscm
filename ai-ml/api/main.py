@@ -52,7 +52,7 @@ app = FastAPI(
             "description": "Development server"
         },
         {
-            "url": "https://api.cscm.example.com",
+            "url": os.getenv("SERVER_URL", "https://api.cscm.example.com"),
             "description": "Production server"
         }
     ]
@@ -243,6 +243,8 @@ async def metrics():
 
 if __name__ == "__main__":
     import uvicorn
+    port = int(os.getenv("PORT", 8000))
+    reload = os.getenv("DEBUG", "false").lower() == "true"
     logger.info("Starting CSCM AI/ML API server with Uvicorn")
-    logger.info("Server configuration: host=0.0.0.0, port=8000, reload=True")
-    uvicorn.run("api.main:app", host="0.0.0.0", port=8000, reload=True)
+    logger.info(f"Server configuration: host=0.0.0.0, port={port}, reload={reload}")
+    uvicorn.run("api.main:app", host="0.0.0.0", port=port, reload=reload)

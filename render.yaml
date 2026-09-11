@@ -1,0 +1,86 @@
+services:
+  # Backend API Service
+  - type: web
+    name: cscm-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm ci --only=production
+    startCommand: node src/api/server.js
+    plan: free
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_TYPE
+        value: postgresql
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cscm-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: cscm-redis
+          property: connectionString
+      - key: AI_ML_API_URL
+        value: https://cscm-aiml.onrender.com
+      - key: GATEWAY_PORT
+        value: 8080
+      - key: JWT_SECRET
+        generateValue: true
+      - key: LOG_LEVEL
+        value: info
+      - key: DEBUG
+        value: false
+    preDeployCommand: node scripts/migrate-to-postgres.js
+
+  # AI/ML Service
+  - type: web
+    name: cscm-aiml
+    runtime: python
+    rootDir: ai-ml
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    region: oregon
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PORT
+        value: 8000
+      - key: DEBUG
+        value: false
+
+  # API Gateway Service
+  - type: web
+    name: cscm-gateway
+    runtime: node
+    rootDir: backend
+    buildCommand: npm ci --only=production
+    startCommand: node src/gateway/gateway.js
+    plan: free
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BACKEND_URL
+        value: http://cscm-backend:3000
+      - key: AI_ML_API_URL
+        value: http://cscm-aiml:8000
+      - key: DEBUG
+        value: false
+
+databases:
+  # PostgreSQL Database
+  - name: cscm-postgres
+    databaseName: cscm
+    user: cscm_user
+    plan: free
+    region: oregon
+
+# Redis Key Value
+  - type: redis
+    name: cscm-redis
+    plan: free
+    region: oregon
+    maxmemoryPolicy: allkeys-lru

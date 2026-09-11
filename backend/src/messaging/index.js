@@ -30,7 +30,7 @@ class MessagingLayer {
         this.kafkaConnected = true;
         logger.info('Kafka messaging initialized successfully');
       } else {
-        logger.info('Kafka messaging disabled (no brokers configured)');
+        logger.info('Kafka messaging disabled (no brokers configured - skipped for Render free tier)');
       }
 
       // Only connect to MQTT if URL is configured
@@ -39,10 +39,10 @@ class MessagingLayer {
         this.mqttConnected = true;
         logger.info('MQTT messaging initialized successfully');
       } else {
-        logger.info('MQTT messaging disabled (no URL configured)');
+        logger.info('MQTT messaging disabled (no URL configured - skipped for Render free tier)');
       }
 
-      // Connect to Redis for local development
+      // Connect to Redis for local development or Render Redis
       try {
         await redisClient.connect();
         this.redisConnected = true;

@@ -21,7 +21,7 @@ const {
   debugMiddleware
 } = require('./middleware/debug');
 const messagingLayer = require('../messaging');
-const sqliteDatabase = require('../storage/sqliteDatabase');
+const createDatabase = require('../storage/database');
 const { requestTracker, getMetrics, getContentType } = require('../utils/metrics');
 const cacheService = require('../services/cacheService');
 
@@ -69,9 +69,10 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true') {
 }
 
 // Initialize database
+const database = createDatabase();
 (async () => {
   try {
-    await sqliteDatabase.initialize();
+    await database.initialize();
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Failed to initialize database:', error);

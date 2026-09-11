@@ -1,0 +1,35 @@
+name: Keep Services Alive
+
+on:
+  schedule:
+    # Every 14 minutes, 8 AM - 6 PM UTC (adjust timezone as needed)
+    - cron: '*/14 8-17 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Backend
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://cscm-backend.onrender.com/health)
+          if [ $response -ne 200 ]; then
+            echo "Backend health check failed with status: $response"
+            exit 1
+          fi
+          echo "Backend health check passed: $response"
+
+      - name: Ping Gateway
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://cscm-gateway.onrender.com/health)
+          if [ $response -ne 200 ]; then
+            echo "Gateway health check failed with status: $response"
+            exit 1
+          fi
+          echo "Gateway health check passed: $response"
+
+      - name: Check Usage Hours
+        run: |
+          echo "Note: This workflow uses ~2 GitHub Actions minutes per run"
+          echo "Estimated monthly usage: ~2 × 43 runs/day × 30 days = ~2580 minutes"
+          echo "This exceeds the 2000 minute free limit. Consider switching to external cron service."

@@ -11,13 +11,14 @@ const { getServiceUrl, getServiceMetrics, startHealthChecks } = require('./servi
 const { metricsMiddleware, getMetricsEndpoint, recordAuthenticationSuccess, recordAuthenticationFailure } = require('./metrics');
 
 const app = express();
-const PORT = process.env.GATEWAY_PORT || 8080;
+const PORT = process.env.PORT || process.env.GATEWAY_PORT || 8080;
 
 // Use service discovery for dynamic service URLs
-const aiMlTarget = getServiceUrl('aiMl') || (config.aiMl
+// For Render deployment, use internal network URLs
+const aiMlTarget = getServiceUrl('aiMl') || process.env.AI_ML_API_URL || (config.aiMl
   ? config.aiMl.apiUrl
-  : process.env.AI_ML_API_URL || 'http://localhost:8000');
-const apiTarget = getServiceUrl('backend') || `http://localhost:${config.server.port}`;
+  : 'http://localhost:8000');
+const apiTarget = getServiceUrl('backend') || process.env.BACKEND_URL || `http://localhost:${config.server.port}`;
 
 // NOTE: Do NOT use express.json() here — it consumes the request body
 // before http-proxy-middleware can forward it, causing POST requests to hang.
