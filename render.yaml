@@ -19,7 +19,7 @@ services:
           property: connectionString
       - key: REDIS_URL
         fromService:
-          type: redis
+          type: keyvalue
           name: cscm-redis
           property: connectionString
       - key: AI_ML_API_URL
@@ -70,6 +70,14 @@ services:
       - key: DEBUG
         value: false
 
+  # Redis Key Value Instance
+  - type: keyvalue
+    name: cscm-redis
+    plan: free
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
+
 databases:
   # PostgreSQL Database
   - name: cscm-postgres
@@ -77,10 +85,3 @@ databases:
     user: cscm_user
     plan: free
     region: oregon
-
-# Redis Key Value
-  - type: redis
-    name: cscm-redis
-    plan: free
-    region: oregon
-    maxmemoryPolicy: allkeys-lru
