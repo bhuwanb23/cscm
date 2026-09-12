@@ -39,12 +39,12 @@ def package_models():
                         zipf.write(file_path, rel_path)
                         print(f"  - {rel_path}")
     
-    print(f"\n✅ Models packaged successfully: {zip_path}")
+    print(f"\n[OK] Models packaged successfully: {zip_path}")
     print(f"File size: {zip_path.stat().st_size / (1024*1024):.2f} MB")
     
     # Also create a simple model info file
     info_file = output_dir / f"model-info-{version}.txt"
-    with open(info_file, 'w') as f:
+    with open(info_file, 'w', encoding='utf-8') as f:
         f.write(f"CSCM ML Models Package\n")
         f.write(f"Version: {version}\n")
         f.write(f"Date: {datetime.now().isoformat()}\n")
