@@ -94,6 +94,61 @@ The database migration will run automatically on the first backend startup (usin
 
 Monitor the deployment logs in the Render dashboard.
 
+### Step 6: Deploy ML Models
+
+The AI/ML service requires ML models to function. We use GitHub Releases to host model packages instead of committing large files to the repository.
+
+#### 6.1 Package Models
+
+Run the packaging script to create a model package:
+
+```bash
+cd ai-ml
+python scripts/package_models.py
+```
+
+This creates a zip file in `ai-ml/model_packages/` containing all model directories.
+
+#### 6.2 Create GitHub Release
+
+1. Go to your GitHub repository
+2. Click "Releases" → "Create a new release"
+3. Tag version: `v1.0.0`
+4. Upload the zip file from `ai-ml/model_packages/`
+5. Add release notes
+6. Click "Publish release"
+
+**Alternatively**, use the GitHub Actions workflow:
+1. Go to Actions tab
+2. Select "Package ML Models for Release"
+3. Click "Run workflow"
+4. Enter version (e.g., `v1.0.0`)
+5. Click "Run workflow"
+
+#### 6.3 Configure AI/ML Environment Variables
+
+In the Render dashboard for the **cscm-aiml** service, add these environment variables:
+
+``
+GITHUB_REPO_OWNER=your-github-username
+GITHUB_REPO_NAME=cscm
+GITHUB_RELEASE_TAG=v1.0.0
+```
+
+**Important:**
+- Replace `your-github-username` with your actual GitHub username
+- Replace `cscm` with your repository name if different
+- Set `GITHUB_RELEASE_TAG` to the version you created
+
+#### 6.4 Redeploy AI/ML Service
+
+After adding the environment variables:
+1. Go to the **cscm-aiml** service in Render
+2. Click "Manual Deploy" → "Deploy latest commit"
+3. The Docker container will download models from GitHub Releases during build
+
+For detailed instructions, see: `ai-ml/MODEL_DEPLOYMENT.md`
+
 ### Step 7: Verify Deployment
 
 Once deployment is complete, test the health endpoints:
