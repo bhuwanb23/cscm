@@ -1,11 +1,12 @@
-const sqliteDatabase = require('../storage/sqliteDatabase');
+const database = require('../storage/database');
 
 class UserModel {
   static async create(userData) {
     if (!userData.username || !userData.email || !userData.password) {
       throw new Error('Username, email, and password are required');
     }
-    const id = await sqliteDatabase.createUser({
+    const db = database.getDatabase();
+    const id = await db.createUser({
       username: userData.username,
       email: userData.email,
       password: userData.password,
@@ -16,12 +17,14 @@ class UserModel {
 
   static async findByUsername(username) {
     if (!username) throw new Error('Username is required');
-    return sqliteDatabase.findUserByUsername(username);
+    const db = database.getDatabase();
+    return db.findUserByUsername(username);
   }
 
   static async findById(id) {
     if (!id) throw new Error('User ID is required');
-    return sqliteDatabase.findUserById(id);
+    const db = database.getDatabase();
+    return db.findUserById(id);
   }
 }
 
