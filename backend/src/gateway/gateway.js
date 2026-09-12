@@ -2,6 +2,7 @@ const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const config = require('../config');
 const logger = require('../utils/logger');
+const helmet = require('helmet');
 const { bypassHealthCheck, optionalAuth } = require('./middleware/auth');
 const { authorize } = require('./middleware/authorization');
 const { requestLogger, errorLogger, proxyLogger, proxyResponseLogger, proxyErrorLogger } = require('./middleware/requestLogger');
@@ -22,6 +23,35 @@ const apiTarget = getServiceUrl('backend') || process.env.BACKEND_URL || `http:/
 
 // NOTE: Do NOT use express.json() here — it consumes the request body
 // before http-proxy-middleware can forward it, causing POST requests to hang.
+
+// Security headers using helmet
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'https:'],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"]
+    }
+  },
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true
+  },
+  frameguard: {
+    action: 'deny'
+  },
+  referrerPolicy: {
+    policy: 'strict-origin-when-cross-origin'
+  },
+  noSniff: true
+}));
 
 app.use((req, res, next) => {
   logger.info(`${req.method} ${req.path} - ${req.ip}`);

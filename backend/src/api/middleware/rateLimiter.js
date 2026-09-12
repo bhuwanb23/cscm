@@ -56,6 +56,14 @@ const securityHeaders = (req, res, next) => {
   // Remove server information
   res.removeHeader('X-Powered-By');
 
+  // HSTS in production
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  }
+
+  // Referrer policy
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
   next();
 };
 

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import time
@@ -7,6 +7,9 @@ import os
 import logging
 from datetime import datetime
 import random
+
+# Import authentication middleware
+from .middleware.auth import get_current_api_key, check_rate_limit
 
 # Configure logging
 logging.basicConfig(
@@ -122,23 +125,23 @@ from .routers import (
 from .debug import router as debug_router
 
 # Register routers
-app.include_router(demand_forecasting.router, prefix="/api/v1/demand", tags=["Demand Forecasting"])
-app.include_router(demand_planning.router, prefix="/api/v1", tags=["Demand Planning"])
-app.include_router(inventory_optimization.router, prefix="/api/v1/inventory", tags=["Inventory Optimization"])
-app.include_router(routing_logistics.router, prefix="/api/v1/routing", tags=["Routing & Logistics"])
-app.include_router(supplier_risk.router, prefix="/api/v1/supplier", tags=["Supplier Risk"])
-app.include_router(customer_demand.router, prefix="/api/v1/customer", tags=["Customer Demand"])
-app.include_router(anomaly_detection.router, prefix="/api/v1/anomaly", tags=["Anomaly Detection"])
-app.include_router(multi_agent_coordination.router, prefix="/api/v1/coordination", tags=["Multi-Agent Coordination"])
-app.include_router(digital_twin.router, prefix="/api/v1/simulation", tags=["Digital Twin"])
-app.include_router(explainability.router, prefix="/api/v1/explain", tags=["Explainability"])
-app.include_router(nlp.router, prefix="/api/v1/nlp", tags=["NLP & LLM"])
-app.include_router(knowledge_graph.router, prefix="/api/v1/kg", tags=["Knowledge Graph"])
-app.include_router(causal_inference.router, prefix="/api/v1/causal", tags=["Causal Inference"])
-app.include_router(computer_vision.router, prefix="/api/v1/vision", tags=["Computer Vision"])
-app.include_router(continual_learning.router, prefix="/api/v1/learning", tags=["Continual Learning"])
-app.include_router(uncertainty_quantification.router, prefix="/api/v1/uncertainty", tags=["Uncertainty Quantification"])
-app.include_router(model_monitoring.router, prefix="/api/v1/monitoring", tags=["Model Monitoring"])
+app.include_router(demand_forecasting.router, prefix="/api/v1/demand", tags=["Demand Forecasting"], dependencies=[Depends(get_current_api_key)])
+app.include_router(demand_planning.router, prefix="/api/v1", tags=["Demand Planning"], dependencies=[Depends(get_current_api_key)])
+app.include_router(inventory_optimization.router, prefix="/api/v1/inventory", tags=["Inventory Optimization"], dependencies=[Depends(get_current_api_key)])
+app.include_router(routing_logistics.router, prefix="/api/v1/routing", tags=["Routing & Logistics"], dependencies=[Depends(get_current_api_key)])
+app.include_router(supplier_risk.router, prefix="/api/v1/supplier", tags=["Supplier Risk"], dependencies=[Depends(get_current_api_key)])
+app.include_router(customer_demand.router, prefix="/api/v1/customer", tags=["Customer Demand"], dependencies=[Depends(get_current_api_key)])
+app.include_router(anomaly_detection.router, prefix="/api/v1/anomaly", tags=["Anomaly Detection"], dependencies=[Depends(get_current_api_key)])
+app.include_router(multi_agent_coordination.router, prefix="/api/v1/coordination", tags=["Multi-Agent Coordination"], dependencies=[Depends(get_current_api_key)])
+app.include_router(digital_twin.router, prefix="/api/v1/simulation", tags=["Digital Twin"], dependencies=[Depends(get_current_api_key)])
+app.include_router(explainability.router, prefix="/api/v1/explain", tags=["Explainability"], dependencies=[Depends(get_current_api_key)])
+app.include_router(nlp.router, prefix="/api/v1/nlp", tags=["NLP & LLM"], dependencies=[Depends(get_current_api_key)])
+app.include_router(knowledge_graph.router, prefix="/api/v1/kg", tags=["Knowledge Graph"], dependencies=[Depends(get_current_api_key)])
+app.include_router(causal_inference.router, prefix="/api/v1/causal", tags=["Causal Inference"], dependencies=[Depends(get_current_api_key)])
+app.include_router(computer_vision.router, prefix="/api/v1/vision", tags=["Computer Vision"], dependencies=[Depends(get_current_api_key)])
+app.include_router(continual_learning.router, prefix="/api/v1/learning", tags=["Continual Learning"], dependencies=[Depends(get_current_api_key)])
+app.include_router(uncertainty_quantification.router, prefix="/api/v1/uncertainty", tags=["Uncertainty Quantification"], dependencies=[Depends(get_current_api_key)])
+app.include_router(model_monitoring.router, prefix="/api/v1/monitoring", tags=["Model Monitoring"], dependencies=[Depends(get_current_api_key)])
 
 # Register debug router (development only)
 if os.getenv("DEBUG", "false").lower() == "true":
