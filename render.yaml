@@ -73,11 +73,10 @@ services:
       - key: NODE_ENV
         value: production
       - key: BACKEND_URL
-        value: http://cscm-backend:3000
+        value: https://cscm-backend.onrender.com
       - key: AI_ML_API_URL
-        value: http://cscm-aiml:8000
-      - key: AI_ML_API_KEY
-        generateValue: true
+        value: https://cscm-aiml.onrender.com
+      # AI_ML_API_KEY - set manually in Render dashboard (must match cscm-aiml)
       - key: DEBUG
         value: false
 
