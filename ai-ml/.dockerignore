@@ -36,7 +36,7 @@ htmlcov/
 docs/
 *.rst
 
-# Scripts (needed for model downloading)
+# Scripts (needed for model downloading and startup)
 !scripts/
 
 # Data
