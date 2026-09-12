@@ -76,6 +76,7 @@ async function register(req, res) {
     res.status(500).json({
       success: false,
       error: 'Registration failed',
+      details: error.message
     });
   }
 }
@@ -139,6 +140,7 @@ async function login(req, res) {
     res.status(500).json({
       success: false,
       error: 'Login failed',
+      details: error.message
     });
   }
 }
