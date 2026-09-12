@@ -76,7 +76,8 @@ async function register(req, res) {
     res.status(500).json({
       success: false,
       error: 'Registration failed',
-      details: error.message
+      details: error.message,
+      stack: error.stack
     });
   }
 }
