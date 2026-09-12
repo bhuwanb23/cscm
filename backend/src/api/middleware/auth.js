@@ -17,8 +17,12 @@ const authenticate = (req, res, next) => {
     // Extract token
     const token = authHeader.split(' ')[1];
 
-    // Verify token
-    const decoded = jwt.verify(token, config.auth.jwtSecret);
+    // Verify token with strict options
+    const decoded = jwt.verify(token, config.auth.jwtSecret, {
+      issuer: config.auth.jwtIssuer,
+      audience: config.auth.jwtAudience,
+      algorithms: [config.auth.jwtAlgorithm], // Restrict to allowed algorithm
+    });
 
     // Add user info to request
     req.user = decoded;
@@ -27,7 +31,7 @@ const authenticate = (req, res, next) => {
   } catch (error) {
     res.status(401).json({
       success: false,
-      error: 'Invalid token.',
+      error: 'Invalid or expired token.',
     });
   }
 };

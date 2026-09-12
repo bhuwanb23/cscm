@@ -38,7 +38,7 @@ function generateToken(user) {
  */
 async function register(req, res) {
   try {
-    const { username, email, password, role } = req.body;
+    const { username, email, password } = req.body;
 
     if (!username || !email || !password) {
       return res.status(400).json({
@@ -55,18 +55,20 @@ async function register(req, res) {
       });
     }
 
+    // Default all new users to 'user' role - role assignment is not allowed during registration
+    const defaultRole = 'user';
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-    const saved = await UserModel.create({ username, email, password: hashedPassword, role });
+    const saved = await UserModel.create({ username, email, password: hashedPassword, role: defaultRole });
 
-    const token = generateToken({ id: saved.id, username, role: role || 'user' });
+    const token = generateToken({ id: saved.id, username, role: defaultRole });
 
-    logger.info(`User registered: ${username}`);
+    logger.info(`User registered: ${username} with role: ${defaultRole}`);
 
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
       data: {
-        user: { id: saved.id, username, email, role: role || 'user' },
+        user: { id: saved.id, username, email, role: defaultRole },
         token,
       },
     });
@@ -76,8 +78,7 @@ async function register(req, res) {
     res.status(500).json({
       success: false,
       error: 'Registration failed',
-      details: error.message,
-      stack: error.stack
+      details: error.message
     });
   }
 }

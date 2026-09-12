@@ -186,6 +186,28 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true') {
     };
     res.json(safeConfig);
   });
+} else {
+  // In production, return 404 for debug endpoints
+  app.get('/debug/info', (req, res) => {
+    res.status(404).json({
+      success: false,
+      error: 'Debug endpoints are not available in production'
+    });
+  });
+
+  app.get('/debug/memory', (req, res) => {
+    res.status(404).json({
+      success: false,
+      error: 'Debug endpoints are not available in production'
+    });
+  });
+
+  app.get('/debug/config', (req, res) => {
+    res.status(404).json({
+      success: false,
+      error: 'Debug endpoints are not available in production'
+    });
+  });
 }
 
 // API Documentation endpoint

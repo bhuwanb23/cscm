@@ -32,7 +32,10 @@ const config = {
   // Authentication
   auth: {
     jwtSecret: process.env.JWT_SECRET || 'cscm-secret-key',
-    jwtExpiration: process.env.JWT_EXPIRATION || '24h',
+    jwtExpiration: process.env.JWT_EXPIRATION || '1h', // Reduced from 24h to 1h for better security
+    jwtIssuer: process.env.JWT_ISSUER || 'cscm-backend',
+    jwtAudience: process.env.JWT_AUDIENCE || 'cscm-api',
+    jwtAlgorithm: process.env.JWT_ALGORITHM || 'HS256', // Using HS256 for now, upgrade to RS256 in production
   },
 
   // AI/ML

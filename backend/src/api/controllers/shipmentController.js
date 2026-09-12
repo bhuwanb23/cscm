@@ -2,6 +2,34 @@ const ShipmentModel = require('../../models/shipmentModel');
 const logger = require('../../utils/logger');
 
 /**
+ * Authorization middleware to check if user can access shipment resources
+ * Admin users can access all shipments
+ * Transporters can access shipments they are assigned to
+ * Shopkeepers/Wholesalers can access their own shipments
+ * TODO: Implement proper user-to-shipment association in database
+ */
+function checkShipmentAccess(req, res, next) {
+  const user = req.user;
+
+  // Admin users can access all shipments
+  if (user.role === 'admin') {
+    return next();
+  }
+
+  // For now, allow basic role-based access
+  // TODO: Implement proper user-to-shipment association check
+  const allowedRoles = ['transporter', 'shopkeeper', 'wholesaler', 'admin'];
+  if (allowedRoles.includes(user.role)) {
+    return next();
+  }
+
+  return res.status(403).json({
+    success: false,
+    error: 'You do not have permission to access this resource'
+  });
+}
+
+/**
  * Create a new shipment
  * @route POST /api/v1/shipments
  * @group Shipments
@@ -178,4 +206,4 @@ async function getByLocation(req, res) {
   }
 }
 
-module.exports = { create, getById, updateStatus, getByStatus, getByLocation };
+module.exports = { create, getById, updateStatus, getByStatus, getByLocation, checkShipmentAccess };

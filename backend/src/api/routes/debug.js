@@ -4,10 +4,24 @@ const { getDatabase } = require('../../storage/database');
 const logger = require('../../utils/logger');
 
 /**
+ * Middleware to check if debug mode is enabled
+ * Debug routes are only accessible in development or if DEBUG=true
+ */
+const requireDebugMode = (req, res, next) => {
+  if (process.env.NODE_ENV === 'production' && process.env.DEBUG !== 'true') {
+    return res.status(404).json({
+      success: false,
+      error: 'Debug endpoints are not available in production'
+    });
+  }
+  next();
+};
+
+/**
  * Debug endpoint to test database connection and operations
  * This should be removed in production
  */
-router.get('/database/test', async (req, res) => {
+router.get('/database/test', requireDebugMode, async (req, res) => {
   try {
     const db = getDatabase();
     
@@ -79,7 +93,7 @@ router.get('/database/test', async (req, res) => {
 /**
  * Debug endpoint to test user creation directly
  */
-router.post('/database/create-user', async (req, res) => {
+router.post('/database/create-user', requireDebugMode, async (req, res) => {
   try {
     const { username, email, password, role } = req.body;
     

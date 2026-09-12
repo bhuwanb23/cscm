@@ -2,6 +2,33 @@ const OrderModel = require('../../models/orderModel');
 const logger = require('../../utils/logger');
 
 /**
+ * Authorization middleware to check if user can access store resources
+ * For now, allows access if user is admin or if the user belongs to the store
+ * TODO: Implement proper user-to-store association in database
+ */
+function checkStoreAccess(req, res, next) {
+  const { storeId } = req.params;
+  const user = req.user;
+
+  // Admin users can access all stores
+  if (user.role === 'admin') {
+    return next();
+  }
+
+  // For now, allow basic role-based access (shopkeeper, wholesaler, transporter)
+  // TODO: Implement proper user-to-store association check
+  const allowedRoles = ['shopkeeper', 'wholesaler', 'transporter', 'admin'];
+  if (allowedRoles.includes(user.role)) {
+    return next();
+  }
+
+  return res.status(403).json({
+    success: false,
+    error: 'You do not have permission to access this resource'
+  });
+}
+
+/**
  * Create a new order
  * @route POST /api/v1/orders
  * @group Orders
@@ -131,4 +158,4 @@ async function getByStore(req, res) {
   }
 }
 
-module.exports = { create, getById, updateStatus, getByStore };
+module.exports = { create, getById, updateStatus, getByStore, checkStoreAccess };
