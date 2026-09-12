@@ -159,7 +159,8 @@ def download_models_from_github():
     repo_owner = os.getenv('GITHUB_REPO_OWNER')
     repo_name = os.getenv('GITHUB_REPO_NAME')
     release_tag = os.getenv('GITHUB_RELEASE_TAG')
-    models_dir = os.getenv('MODELS_DIR', '/app/models')
+    # Use /tmp/models for writable directory on Render
+    models_dir = os.getenv('MODELS_DIR', '/tmp/models')
     
     # Check if GitHub credentials are provided
     if not all([repo_owner, repo_name, release_tag]):

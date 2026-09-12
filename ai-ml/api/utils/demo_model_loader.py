@@ -13,7 +13,8 @@ class DemoModelLoader:
     """Loader for demo/placeholder models"""
     
     def __init__(self):
-        self.models_dir = Path("/app/models")
+        # Use /tmp/models for writable directory on Render
+        self.models_dir = Path(os.getenv('MODELS_DIR', '/tmp/models'))
         self.loaded_models: Dict[str, Any] = {}
     
     def load_demo_model(self, model_type: str) -> Optional[Dict[str, Any]]:
