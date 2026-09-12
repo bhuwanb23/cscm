@@ -174,41 +174,27 @@ def download_models_from_github():
     logger.info("=" * 60)
     
     try:
-        # Get release info
-        url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/tags/{release_tag}"
-        logger.info(f"Fetching release info from: {url}")
-        response = requests.get(url)
-        response.raise_for_status()
-        release_data = response.json()
+        # Use direct download URL without API to avoid rate limits
+        # Public release assets can be downloaded directly without authentication
+        asset_name = f"cscm-ml-models-{release_tag}-20260912.zip"
+        asset_url = f"https://github.com/{repo_owner}/{repo_name}/releases/download/{release_tag}/{asset_name}"
         
-        # Find the model package asset
-        asset_url = None
-        asset_name = None
-        for asset in release_data.get('assets', []):
-            if asset['name'].startswith('cscm-ml-models-') and asset['name'].endswith('.zip'):
-                asset_url = asset['browser_download_url']
-                asset_name = asset['name']
-                break
-        
-        if not asset_url:
-            logger.warning("❌ No model package found in release assets")
-            logger.warning("Available assets:")
-            for asset in release_data.get('assets', []):
-                logger.warning(f"  - {asset['name']}")
-            return False
-        
-        logger.info(f"Downloading: {asset_name}")
+        logger.info(f"Downloading from: {asset_url}")
         
         # Download the file
         download_response = requests.get(asset_url, stream=True)
-        download_response.raise_for_status()
+        
+        if download_response.status_code != 200:
+            logger.error(f"❌ Failed to download: HTTP {download_response.status_code}")
+            logger.warning("Falling back to local models or demo models")
+            return False
         
         temp_zip = Path("/tmp") / asset_name
         with open(temp_zip, 'wb') as f:
             for chunk in download_response.iter_content(chunk_size=8192):
                 f.write(chunk)
         
-        logger.info(f"Downloaded to: {temp_zip}")
+        logger.info(f"Downloaded to: {temp_zip} ({temp_zip.stat().st_size / 1024 / 1024:.2f} MB)")
         
         # Extract models
         models_path = Path(models_dir)
