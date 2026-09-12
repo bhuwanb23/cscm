@@ -7,6 +7,9 @@ import os
 import logging
 from datetime import datetime
 import random
+import zipfile
+import requests
+from pathlib import Path
 
 # Import authentication middleware
 from .middleware.auth import get_current_api_key, check_rate_limit
@@ -147,6 +150,93 @@ app.include_router(model_monitoring.router, prefix="/api/v1/monitoring", tags=["
 if os.getenv("DEBUG", "false").lower() == "true":
     app.include_router(debug_router, prefix="/debug", tags=["Debug"])
 
+# Model download function for GitHub Releases
+def download_models_from_github():
+    """
+    Download ML models from GitHub Releases at runtime
+    This is called during startup if GitHub credentials are provided
+    """
+    repo_owner = os.getenv('GITHUB_REPO_OWNER')
+    repo_name = os.getenv('GITHUB_REPO_NAME')
+    release_tag = os.getenv('GITHUB_RELEASE_TAG')
+    models_dir = os.getenv('MODELS_DIR', '/app/models')
+    
+    # Check if GitHub credentials are provided
+    if not all([repo_owner, repo_name, release_tag]):
+        logger.info("GitHub credentials not provided - skipping model download")
+        logger.info("Set GITHUB_REPO_OWNER, GITHUB_REPO_NAME, and GITHUB_RELEASE_TAG in environment to enable")
+        return False
+    
+    logger.info("=" * 60)
+    logger.info("GitHub credentials provided, attempting to download models from releases...")
+    logger.info(f"Repository: {repo_owner}/{repo_name}")
+    logger.info(f"Release Tag: {release_tag}")
+    logger.info("=" * 60)
+    
+    try:
+        # Get release info
+        url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/tags/{release_tag}"
+        logger.info(f"Fetching release info from: {url}")
+        response = requests.get(url)
+        response.raise_for_status()
+        release_data = response.json()
+        
+        # Find the model package asset
+        asset_url = None
+        asset_name = None
+        for asset in release_data.get('assets', []):
+            if asset['name'].startswith('cscm-ml-models-') and asset['name'].endswith('.zip'):
+                asset_url = asset['browser_download_url']
+                asset_name = asset['name']
+                break
+        
+        if not asset_url:
+            logger.warning("❌ No model package found in release assets")
+            logger.warning("Available assets:")
+            for asset in release_data.get('assets', []):
+                logger.warning(f"  - {asset['name']}")
+            return False
+        
+        logger.info(f"Downloading: {asset_name}")
+        
+        # Download the file
+        download_response = requests.get(asset_url, stream=True)
+        download_response.raise_for_status()
+        
+        temp_zip = Path("/tmp") / asset_name
+        with open(temp_zip, 'wb') as f:
+            for chunk in download_response.iter_content(chunk_size=8192):
+                f.write(chunk)
+        
+        logger.info(f"Downloaded to: {temp_zip}")
+        
+        # Extract models
+        models_path = Path(models_dir)
+        models_path.mkdir(parents=True, exist_ok=True)
+        
+        logger.info(f"Extracting to: {models_path}")
+        with zipfile.ZipFile(temp_zip, 'r') as zip_ref:
+            zip_ref.extractall(models_path)
+        
+        # Clean up
+        temp_zip.unlink()
+        
+        logger.info(f"✅ Models downloaded from GitHub Releases")
+        logger.info(f"✅ Models extracted to {models_path}")
+        
+        # List extracted contents
+        logger.info("Extracted directories:")
+        for item in models_path.iterdir():
+            if item.is_dir():
+                logger.info(f"  - {item.name}")
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to download models from GitHub: {e}")
+        logger.warning("Falling back to local models or demo models")
+        return False
+
 # Startup event to initialize job queue
 @app.on_event("startup")
 async def startup_event():
@@ -154,6 +244,9 @@ async def startup_event():
     logger.info("=" * 60)
     logger.info("CSCM AI/ML API Starting Up...")
     logger.info("=" * 60)
+    
+    # Download models from GitHub if credentials are provided
+    download_models_from_github()
     
     await job_queue.start()
     logger.info("Job queue started successfully")
