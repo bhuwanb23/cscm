@@ -1,0 +1,84 @@
+name: Package ML Models for Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Model version (e.g., v1.0.0)'
+        required: true
+        type: string
+  push:
+    tags:
+      - 'models-v*'
+
+jobs:
+  package-models:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        cd ai-ml
+        pip install requests
+    
+    - name: Package models
+      run: |
+        cd ai-ml
+        python scripts/package_models.py
+    
+    - name: Get version
+      id: get_version
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          VERSION="${{ github.event.inputs.version }}"
+        else
+          VERSION="${GITHUB_REF#refs/tags/}"
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+      shell: bash
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ steps.get_version.outputs.version }}
+        name: CSCM ML Models ${{ steps.get_version.outputs.version }}
+        body: |
+          ## CSCM ML Models Package
+          
+          This release contains the ML models for the Cognitive Supply Chain Mesh AI/ML service.
+          
+          ### Version
+          ${{ steps.get_version.outputs.version }}
+          
+          ### Contents
+          - Demand forecasting models
+          - Inventory optimization models
+          - Routing logistics models
+          - Customer demand models
+          - Supplier risk models
+          - Anomaly detection models
+          - Knowledge graph models
+          
+          ### Usage
+          The Docker container will automatically download these models during the build process.
+          
+          Set these environment variables in your Render deployment:
+          - `GITHUB_REPO_OWNER`: Your GitHub username
+          - `GITHUB_REPO_NAME`: Your repository name
+          - `GITHUB_RELEASE_TAG`: The release tag (e.g., ${{ steps.get_version.outputs.version }})
+          
+        files: |
+          ai-ml/model_packages/cscm-ml-models-*.zip
+          ai-ml/model_packages/model-info-*.txt
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
