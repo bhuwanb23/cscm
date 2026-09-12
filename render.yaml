@@ -30,6 +30,9 @@ services:
         value: info
       - key: DEBUG
         value: false
+      # CORS origin - set manually in Render dashboard:
+      # - key: ALLOWED_ORIGINS
+      #   value: https://cscm-frontend.onrender.com
 
   # AI/ML Service
   - type: web
