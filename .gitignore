@@ -44,4 +44,4 @@ cscm-video/renders/
 *.joblib
 *.mp4
 .serena/
-.mimocode/
+.mimocode/ai-ml/model_packages/
