@@ -1,11 +1,11 @@
-const database = require('../storage/database');
+const { getDatabase } = require('../storage/database');
 
 class UserModel {
   static async create(userData) {
     if (!userData.username || !userData.email || !userData.password) {
       throw new Error('Username, email, and password are required');
     }
-    const db = database.getDatabase();
+    const db = getDatabase();
     const id = await db.createUser({
       username: userData.username,
       email: userData.email,
@@ -17,13 +17,13 @@ class UserModel {
 
   static async findByUsername(username) {
     if (!username) throw new Error('Username is required');
-    const db = database.getDatabase();
+    const db = getDatabase();
     return db.findUserByUsername(username);
   }
 
   static async findById(id) {
     if (!id) throw new Error('User ID is required');
-    const db = database.getDatabase();
+    const db = getDatabase();
     return db.findUserById(id);
   }
 }

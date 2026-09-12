@@ -21,7 +21,7 @@ const {
   debugMiddleware
 } = require('./middleware/debug');
 const messagingLayer = require('../messaging');
-const createDatabase = require('../storage/database');
+const { createDatabase, getDatabase } = require('../storage/database');
 const { requestTracker, getMetrics, getContentType } = require('../utils/metrics');
 const cacheService = require('../services/cacheService');
 
@@ -69,7 +69,7 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true') {
 }
 
 // Initialize database
-const database = createDatabase();
+const database = getDatabase();
 (async () => {
   try {
     await database.initialize();

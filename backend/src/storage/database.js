@@ -12,6 +12,8 @@ const logger = require('../utils/logger');
  * - PostgreSQL: Used for production deployment on Render
  */
 
+let databaseInstance = null;
+
 function createDatabase() {
   const databaseType = process.env.DATABASE_TYPE || 'sqlite';
 
@@ -30,4 +32,11 @@ function createDatabase() {
   }
 }
 
-module.exports = createDatabase;
+function getDatabase() {
+  if (!databaseInstance) {
+    databaseInstance = createDatabase();
+  }
+  return databaseInstance;
+}
+
+module.exports = { createDatabase, getDatabase };
