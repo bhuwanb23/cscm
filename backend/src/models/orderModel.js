@@ -5,7 +5,7 @@
  * interacting with order data.
  */
 
-const sqliteDatabase = require('../storage/sqliteDatabase');
+const { getDatabase } = require('../storage/database');
 
 class OrderModel {
   /**
@@ -29,7 +29,8 @@ class OrderModel {
       };
 
       // Insert order in database
-      const id = await sqliteDatabase.createOrder(data);
+      const db = getDatabase();
+      const id = await db.createOrder(data);
 
       // If order items are provided, add them
       if (orderData.items && Array.isArray(orderData.items)) {
@@ -69,7 +70,8 @@ class OrderModel {
       };
 
       // Insert order item in database
-      const id = await sqliteDatabase.addOrderItem(data);
+      const db = getDatabase();
+      const id = await db.addOrderItem(data);
       return { id, ...data };
     } catch (error) {
       throw new Error(`Failed to add order item: ${error.message}`);
@@ -83,7 +85,8 @@ class OrderModel {
   static async getById(orderId) {
     try {
       if (!orderId) throw new Error('Order ID is required');
-      const order = await sqliteDatabase.getOrderById(orderId);
+      const db = getDatabase();
+      const order = await db.getOrderById(orderId);
       return order || null;
     } catch (error) {
       throw new Error(`Failed to get order: ${error.message}`);
@@ -100,7 +103,8 @@ class OrderModel {
       if (!orderId) throw new Error('Order ID is required');
       if (!status) throw new Error('Status is required');
 
-      const changes = await sqliteDatabase.updateOrderStatus(orderId, status);
+      const db = getDatabase();
+      const changes = await db.updateOrderStatus(orderId, status);
       return { order_id: orderId, status, changes };
     } catch (error) {
       throw new Error(`Failed to update order status: ${error.message}`);
@@ -115,7 +119,8 @@ class OrderModel {
   static async getByStore(storeId, status = null) {
     try {
       if (!storeId) throw new Error('Store ID is required');
-      const orders = await sqliteDatabase.getOrdersByStore(storeId, status);
+      const db = getDatabase();
+      const orders = await db.getOrdersByStore(storeId, status);
       return orders;
     } catch (error) {
       throw new Error(`Failed to get orders by store: ${error.message}`);

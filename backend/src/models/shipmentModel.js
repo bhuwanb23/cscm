@@ -5,7 +5,7 @@
  * interacting with shipment data.
  */
 
-const sqliteDatabase = require('../storage/sqliteDatabase');
+const { getDatabase } = require('../storage/database');
 
 class ShipmentModel {
   /**
@@ -32,7 +32,8 @@ class ShipmentModel {
       };
 
       // Insert shipment in database
-      const id = await sqliteDatabase.createShipment(data);
+      const db = getDatabase();
+      const id = await db.createShipment(data);
 
       // If shipment items are provided, add them
       if (shipmentData.items && Array.isArray(shipmentData.items)) {
@@ -69,7 +70,8 @@ class ShipmentModel {
       };
 
       // Insert shipment item in database
-      const id = await sqliteDatabase.addShipmentItem(data);
+      const db = getDatabase();
+      const id = await db.addShipmentItem(data);
       return { id, ...data };
     } catch (error) {
       throw new Error(`Failed to add shipment item: ${error.message}`);
@@ -83,7 +85,8 @@ class ShipmentModel {
   static async getById(shipmentId) {
     try {
       if (!shipmentId) throw new Error('Shipment ID is required');
-      const shipment = await sqliteDatabase.getShipmentById(shipmentId);
+      const db = getDatabase();
+      const shipment = await db.getShipmentById(shipmentId);
       return shipment || null;
     } catch (error) {
       throw new Error(`Failed to get shipment: ${error.message}`);
@@ -107,7 +110,8 @@ class ShipmentModel {
       }
 
       // Update shipment status in database
-      const changes = await sqliteDatabase.updateShipmentStatus(
+      const db = getDatabase();
+      const changes = await db.updateShipmentStatus(
         shipmentId,
         status,
         additionalFields
@@ -128,7 +132,8 @@ class ShipmentModel {
         throw new Error('Status is required');
       }
 
-      const shipments = await sqliteDatabase.getShipmentsByStatus(status);
+      const db = getDatabase();
+      const shipments = await db.getShipmentsByStatus(status);
       return shipments;
     } catch (error) {
       throw new Error(`Failed to get shipments by status: ${error.message}`);
@@ -142,7 +147,8 @@ class ShipmentModel {
   static async getByLocation(location) {
     try {
       if (!location) throw new Error('Location is required');
-      const shipments = await sqliteDatabase.getShipmentsByLocation(location);
+      const db = getDatabase();
+      const shipments = await db.getShipmentsByLocation(location);
       return shipments;
     } catch (error) {
       throw new Error(`Failed to get shipments by location: ${error.message}`);

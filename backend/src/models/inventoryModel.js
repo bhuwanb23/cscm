@@ -5,7 +5,7 @@
  * interacting with inventory data.
  */
 
-const sqliteDatabase = require('../storage/sqliteDatabase');
+const { getDatabase } = require('../storage/database');
 
 class InventoryModel {
   /**
@@ -32,7 +32,8 @@ class InventoryModel {
       };
 
       // Insert or update in database
-      const id = await sqliteDatabase.upsertInventory(data);
+      const db = getDatabase();
+      const id = await db.upsertInventory(data);
       return { id, ...data };
     } catch (error) {
       throw new Error(`Failed to upsert inventory item: ${error.message}`);
@@ -49,7 +50,8 @@ class InventoryModel {
         throw new Error('Store ID is required');
       }
 
-      const items = await sqliteDatabase.getInventoryByStore(storeId);
+      const db = getDatabase();
+      const items = await db.getInventoryByStore(storeId);
       return items;
     } catch (error) {
       throw new Error(`Failed to get inventory by store: ${error.message}`);
