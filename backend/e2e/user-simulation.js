@@ -241,7 +241,7 @@ class TransporterUser extends UserSimulation {
 
   async updateShipmentStatus(shipmentId, status) {
     try {
-      const response = await makeRequest(`${BACKEND_URL}/api/v1/shipments/${shipmentId}`, 'PUT', {
+      const response = await makeRequest(`${BACKEND_URL}/api/v1/shipments/${shipmentId}/status`, 'PATCH', {
         status: status
       }, this.getAuthHeaders());
       this.logAction(`Update Shipment ${shipmentId} to ${status}`, { status: response.status });
