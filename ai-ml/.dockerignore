@@ -36,14 +36,20 @@ htmlcov/
 docs/
 *.rst
 
+# Scripts (needed for model downloading)
+!scripts/
+
 # Data
 data/
 *.csv
 *.json
-*.pkl
-*.pt
-*.onnx
-*.h5
+
+# Models - allow specific directories, exclude raw data
+# Exclude model files from data directory but allow from models/
+data/*.pkl
+data/*.pt
+data/*.onnx
+data/*.h5
 
 # Logs
 logs/
