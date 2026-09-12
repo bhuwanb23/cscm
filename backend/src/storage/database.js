@@ -1,4 +1,4 @@
-const SQLiteDatabase = require('./sqliteDatabase');
+const { SQLiteDatabase } = require('./sqliteDatabase');
 const PostgreSQLDatabase = require('./postgresqlDatabase');
 const logger = require('../utils/logger');
 

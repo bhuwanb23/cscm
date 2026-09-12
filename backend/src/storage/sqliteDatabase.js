@@ -694,5 +694,7 @@ class SQLiteDatabase {
   }
 }
 
-// Export singleton instance
-module.exports = new SQLiteDatabase();
+// Export both class and singleton instance for backward compatibility
+const instance = new SQLiteDatabase();
+module.exports = instance;
+module.exports.SQLiteDatabase = SQLiteDatabase;
