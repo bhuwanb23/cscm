@@ -9,13 +9,14 @@ const {
   checkShipmentAccess,
 } = require('../controllers/shipmentController');
 const { authenticate } = require('../middleware/auth');
+const { validateSchema } = require('../middleware/schemaValidator');
 
 router.use(authenticate);
 
-router.post('/', create);
+router.post('/', validateSchema('createShipment'), create);
 router.get('/status/:status', getByStatus);
 router.get('/location/:location', getByLocation);
 router.get('/:shipmentId', checkShipmentAccess, getById);
-router.patch('/:shipmentId/status', checkShipmentAccess, updateStatus);
+router.patch('/:shipmentId/status', checkShipmentAccess, validateSchema('updateShipment'), updateStatus);
 
 module.exports = router;

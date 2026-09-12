@@ -62,15 +62,26 @@ const securityHeaders = (req, res, next) => {
 // CORS configuration
 const corsOptions = {
   origin: function (origin, callback) {
-    // In production, you would check against a whitelist of allowed origins
-    // For now, we'll allow all origins in development
-    if (!origin || process.env.NODE_ENV === 'development') {
+    // Parse allowed origins from environment variable (comma-separated)
+    const allowedOrigins = process.env.ALLOWED_ORIGINS 
+      ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+      : ['http://localhost:3000', 'http://localhost:3001']; // Default to localhost in development
+    
+    // In production, only allow configured origins
+    if (process.env.NODE_ENV === 'production') {
+      if (!origin || !allowedOrigins.includes(origin)) {
+        callback(new Error('Not allowed by CORS'));
+        return;
+      }
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // In development, allow all origins for easier testing
+      callback(null, true);
     }
   },
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
 module.exports = {

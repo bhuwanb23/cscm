@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const config = require('../../config');
 const logger = require('../../utils/logger');
 const UserModel = require('../../models/userModel');
+const { validatePassword } = require('../../utils/passwordValidator');
+const { recordFailedAttempt, clearFailedAttempts } = require('../middleware/authRateLimiter');
 
 const SALT_ROUNDS = 10;
 
@@ -44,6 +46,16 @@ async function register(req, res) {
       return res.status(400).json({
         success: false,
         error: 'Username, email, and password are required',
+      });
+    }
+
+    // Validate password strength
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password does not meet security requirements',
+        details: passwordValidation.errors
       });
     }
 
@@ -111,6 +123,8 @@ async function login(req, res) {
 
     const user = await UserModel.findByUsername(username);
     if (!user) {
+      // Record failed attempt even if user doesn't exist (prevents username enumeration)
+      recordFailedAttempt(username);
       return res.status(401).json({
         success: false,
         error: 'Invalid username or password',
@@ -119,11 +133,25 @@ async function login(req, res) {
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
+      // Record failed attempt
+      const lockoutInfo = recordFailedAttempt(username);
+      
+      if (lockoutInfo.isLocked) {
+        return res.status(429).json({
+          success: false,
+          error: 'Account temporarily locked due to too many failed login attempts',
+          retryAfter: Math.ceil(lockoutInfo.lockoutDuration / 1000)
+        });
+      }
+      
       return res.status(401).json({
         success: false,
         error: 'Invalid username or password',
       });
     }
+
+    // Clear failed attempts on successful login
+    clearFailedAttempts(username);
 
     const token = generateToken({ id: user.id, username: user.username, role: user.role });
 
