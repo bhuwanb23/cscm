@@ -92,9 +92,15 @@ Render will automatically:
 
 The database migration will run automatically on the first backend startup (using the PostgreSQL schema).
 
-Monitor the deployment logs in the Render dashboard.
+Monitor the deployment logs in the dashboard.
 
-### Step 6: Deploy ML Models
+**AI/ML Model Download Logs:**
+Look for these messages in AI/ML service logs:
+- `✅ Models downloaded from GitHub Releases`
+- `⚠️ Failed to download from GitHub: ...` (fallback to local models)
+- `✅ Models initialization complete`
+
+### Step 7: Deploy ML Models
 
 The AI/ML service requires ML models to function. We use GitHub Releases to host model packages instead of committing large files to the repository.
 
@@ -149,7 +155,7 @@ After adding the environment variables:
 
 For detailed instructions, see: `ai-ml/MODEL_DEPLOYMENT.md`
 
-### Step 7: Verify Deployment
+### Step 8: Verify Deployment
 
 Once deployment is complete, test the health endpoints:
 
@@ -166,7 +172,7 @@ curl https://cscm-gateway.onrender.com/health
 
 All should return `{"status": "healthy", ...}`
 
-### Step 8: Enable Keep-Alive
+### Step 9: Enable Keep-Alive
 
 The GitHub Actions workflow will automatically start pinging services every 14 minutes during working hours (8 AM - 6 PM UTC).
 
@@ -187,7 +193,7 @@ schedule:
   - cron: '*/20 8-17 * * *'  # Every 20 minutes
 ```
 
-### Step 9: Update Mobile App Configuration
+### Step 10: Update Mobile App Configuration
 
 Update your mobile app's API client to point to the Render Gateway:
 
@@ -215,6 +221,9 @@ const GATEWAY_URL = 'https://cscm-gateway.onrender.com';
 - `PORT=8000`
 - `PYTHONUNBUFFERED=1`
 - `DEBUG=false`
+- `GITHUB_REPO_OWNER`: Your GitHub username (set manually in dashboard)
+- `GITHUB_REPO_NAME`: Your repository name (set manually in dashboard)
+- `GITHUB_RELEASE_TAG`: Model release version (set manually in dashboard)
 
 ### Gateway
 - `BACKEND_URL`: Internal network URL to backend
