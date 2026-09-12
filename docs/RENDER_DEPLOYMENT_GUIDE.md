@@ -136,10 +136,12 @@ This creates a zip file in `ai-ml/model_packages/` containing all model director
 In the Render dashboard for the **cscm-aiml** service, add these environment variables:
 
 ``
-GITHUB_REPO_OWNER=your-github-username
+GITHUB_REPO_OWNER=bhuwanb23
 GITHUB_REPO_NAME=cscm
 GITHUB_RELEASE_TAG=v1.0.0
 ```
+
+**Note:** The release has already been created at: https://github.com/bhuwanb23/cscm/releases/tag/v1.0.0
 
 **Important:**
 - Replace `your-github-username` with your actual GitHub username
@@ -221,9 +223,9 @@ const GATEWAY_URL = 'https://cscm-gateway.onrender.com';
 - `PORT=8000`
 - `PYTHONUNBUFFERED=1`
 - `DEBUG=false`
-- `GITHUB_REPO_OWNER`: Your GitHub username (set manually in dashboard)
-- `GITHUB_REPO_NAME`: Your repository name (set manually in dashboard)
-- `GITHUB_RELEASE_TAG`: Model release version (set manually in dashboard)
+- `GITHUB_REPO_OWNER=bhuwanb23` (set manually in dashboard)
+- `GITHUB_REPO_NAME=cscm` (set manually in dashboard)
+- `GITHUB_RELEASE_TAG=v1.0.0` (set manually in dashboard)
 
 ### Gateway
 - `BACKEND_URL`: Internal network URL to backend

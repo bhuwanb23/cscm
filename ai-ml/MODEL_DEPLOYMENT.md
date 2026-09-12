@@ -68,12 +68,12 @@ The GitHub Actions workflow automatically creates a release with the packaged mo
 In your Render AI/ML service, set these environment variables:
 
 ```
-GITHUB_REPO_OWNER=your-github-username
+GITHUB_REPO_OWNER=bhuwanb23
 GITHUB_REPO_NAME=cscm
 GITHUB_RELEASE_TAG=v1.0.0
 ```
 
-**Note:** Replace `your-github-username` with your actual GitHub username and `cscm` with your repository name.
+**Note:** The release has already been created at: https://github.com/bhuwanb23/cscm/releases/tag/v1.0.0
 
 ### 4. Deploy
 
@@ -136,7 +136,7 @@ If GitHub credentials are not provided or download fails, the Docker container w
 **Check environment variables:**
 ```bash
 # In Render dashboard, verify:
-GITHUB_REPO_OWNER=yourusername
+GITHUB_REPO_OWNER=bhuwanb23
 GITHUB_REPO_NAME=cscm
 GITHUB_RELEASE_TAG=v1.0.0
 ```
@@ -170,7 +170,7 @@ Test model downloading locally:
 
 ```bash
 cd ai-ml
-export GITHUB_REPO_OWNER=yourusername
+export GITHUB_REPO_OWNER=bhuwanb23
 export GITHUB_REPO_NAME=cscm
 export GITHUB_RELEASE_TAG=v1.0.0
 python scripts/download_models.py
