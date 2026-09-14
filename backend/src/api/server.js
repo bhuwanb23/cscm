@@ -48,7 +48,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Trust proxy for Render and other reverse proxies
-app.set('trust proxy', true);
+// Trust only the first hop (Render's load balancer) to avoid rate limiting bypass
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet());
