@@ -108,12 +108,12 @@ function optionalAuth(req, res, next) {
 
 /**
  * Health check bypass middleware
- * Allows health check endpoints to bypass authentication
+ * Allows health check and auth endpoints to bypass authentication
  */
 function bypassHealthCheck(req, res, next) {
-  const healthPaths = ['/health', '/health/python', '/metrics'];
+  const publicPaths = ['/health', '/health/python', '/metrics', '/api/v1/auth/login', '/api/v1/auth/register'];
   
-  if (healthPaths.includes(req.path)) {
+  if (publicPaths.includes(req.path)) {
     return next();
   }
   

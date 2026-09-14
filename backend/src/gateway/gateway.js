@@ -233,9 +233,11 @@ let lastGatewayStatus = 'healthy';
 
 function probePythonHealth(timeoutMs) {
   const http = require('http');
+  const https = require('https');
   const pythonUrl = new URL(aiMlTarget);
+  const protocol = pythonUrl.protocol === 'https:' ? https : http;
   return new Promise((resolve) => {
-    const clientReq = http.get(`${pythonUrl.protocol}//${pythonUrl.host}/health`, (pythonRes) => {
+    const clientReq = protocol.get(`${pythonUrl.protocol}//${pythonUrl.host}/health`, (pythonRes) => {
       let data = '';
       pythonRes.on('data', (chunk) => {
         data += chunk;
@@ -276,9 +278,11 @@ app.get('/health', async (req, res) => {
 
 app.get('/health/python', async (req, res) => {
   const http = require('http');
+  const https = require('https');
   const pythonUrl = new URL(aiMlTarget);
+  const protocol = pythonUrl.protocol === 'https:' ? https : http;
   return new Promise((resolve) => {
-    const clientReq = http.get(`${pythonUrl.protocol}//${pythonUrl.host}/health`, (pythonRes) => {
+    const clientReq = protocol.get(`${pythonUrl.protocol}//${pythonUrl.host}/health`, (pythonRes) => {
       let data = '';
       pythonRes.on('data', (chunk) => (data += chunk));
       pythonRes.on('end', () => {
