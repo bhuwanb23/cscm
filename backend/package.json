@@ -38,7 +38,10 @@
     "backup:validate": "node scripts/backup.js validate",
     "backup:stats": "node scripts/backup.js stats",
     "restore": "node scripts/restore.js",
-    "test:e2e": "node e2e/e2e-runner.js"
+    "test:e2e": "node e2e/e2e-runner.js",
+    "simulation:init": "node src/simulation/seedUsers.js",
+    "simulation:run": "node src/simulation/index.js",
+    "simulation:continuous": "node src/simulation/index.js --continuous"
   },
   "keywords": [
     "supply-chain",
