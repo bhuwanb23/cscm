@@ -78,6 +78,7 @@ class UserSimulator {
     const url = `${this.config.api.backendUrl}${endpoint}`;
     const requestHeaders = {
       'Content-Type': 'application/json',
+      'Origin': this.config.api.origin,
       ...headers
     };
 

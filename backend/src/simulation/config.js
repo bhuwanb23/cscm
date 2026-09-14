@@ -9,6 +9,7 @@ module.exports = {
     backendUrl: process.env.BACKEND_URL || 'https://cscm-backend.onrender.com',
     aiMlUrl: process.env.AI_ML_API_URL || 'https://cscm-aiml.onrender.com',
     aiMlApiKey: process.env.AI_ML_API_KEY || '',
+    origin: process.env.ALLOWED_ORIGINS || 'https://cscm-frontend.onrender.com',
   },
 
   // Simulation Schedule

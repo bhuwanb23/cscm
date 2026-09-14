@@ -27,7 +27,8 @@ async function wholesalerBehavior(user, simulator) {
       },
       null,
       {
-        'X-API-Key': config.api.aiMlApiKey
+        'X-API-Key': config.api.aiMlApiKey,
+        'Origin': config.api.origin
       }
     );
 
