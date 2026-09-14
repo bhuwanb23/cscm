@@ -17,7 +17,12 @@ function generateToken(user) {
   return jwt.sign(
     { id: user.id, username: user.username, role: user.role },
     config.auth.jwtSecret,
-    { expiresIn: config.auth.jwtExpiration }
+    { 
+      expiresIn: config.auth.jwtExpiration,
+      issuer: config.auth.jwtIssuer,
+      audience: config.auth.jwtAudience,
+      algorithm: config.auth.jwtAlgorithm
+    }
   );
 }
 
