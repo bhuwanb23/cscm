@@ -47,6 +47,9 @@ try {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy for Render and other reverse proxies
+app.set('trust proxy', true);
+
 // Security middleware
 app.use(helmet());
 app.use(compression());
