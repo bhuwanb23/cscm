@@ -99,7 +99,7 @@ The Cognitive Supply Chain Mesh (CSCM) is a multi-tier supply chain intelligence
 - JWT-based authentication
 - Token generation and validation
 - Role-based access control (admin, user, guest)
-- Default JWT secret: cscm-secret-key (should be changed in production)
+- JWT secret: must be provided via the JWT_SECRET environment variable; the backend fails fast at startup if it is missing in production
 
 **Resilience Patterns** (NEW):
 - **Circuit Breakers**: Protects against AI/ML, Redis, and Database failures

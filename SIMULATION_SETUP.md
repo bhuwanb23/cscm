@@ -31,7 +31,7 @@ Add the following secrets:
 |-------------|-------|-------------|
 | `BACKEND_URL` | `https://cscm-backend.onrender.com` | Backend API URL |
 | `AI_ML_API_URL` | `https://cscm-aiml.onrender.com` | AI/ML API URL |
-| `AI_ML_API_KEY` | `REDACTED-ROTATED-KEY` | AI/ML API key (same as Render) |
+| `AI_ML_API_KEY` | *(secret — set via GitHub Secrets; rotate the previously leaked key!)* | AI/ML API key (same as Render) |
 
 ## Step 3: Initialize Simulated Users
 

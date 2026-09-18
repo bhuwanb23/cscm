@@ -3,7 +3,7 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const config = require('../config');
 const logger = require('../utils/logger');
 const helmet = require('helmet');
-const { bypassHealthCheck, optionalAuth } = require('./middleware/auth');
+const { bypassHealthCheck, optionalAuth, authenticateJWT } = require('./middleware/auth');
 const { authorize } = require('./middleware/authorization');
 const { requestLogger, errorLogger, proxyLogger, proxyResponseLogger, proxyErrorLogger } = require('./middleware/requestLogger');
 const { defaultRateLimiter, perUserRateLimiter, rateLimitInfo } = require('./middleware/rateLimiter');
@@ -28,15 +28,15 @@ const apiTarget = getServiceUrl('backend') || process.env.BACKEND_URL || `http:/
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", 'data:', 'https:'],
-      connectSrc: ["'self'"],
-      fontSrc: ["'self'"],
-      objectSrc: ["'none'"],
-      mediaSrc: ["'self'"],
-      frameSrc: ["'none'"]
+      defaultSrc: ['\'self\''],
+      scriptSrc: ['\'self\'', '\'unsafe-inline\'', '\'unsafe-eval\''],
+      styleSrc: ['\'self\'', '\'unsafe-inline\''],
+      imgSrc: ['\'self\'', 'data:', 'https:'],
+      connectSrc: ['\'self\''],
+      fontSrc: ['\'self\''],
+      objectSrc: ['\'none\''],
+      mediaSrc: ['\'self\''],
+      frameSrc: ['\'none\'']
     }
   },
   hsts: {
@@ -90,6 +90,21 @@ app.use((req, res, next) => {
 // Authentication and authorization middleware
 app.use(bypassHealthCheck);
 app.use(optionalAuth);
+
+// SECURITY: admin-only gateway control endpoints. authenticateJWT is
+// applied here (not via bypassHealthCheck) so these routes always require
+// a valid admin identity regardless of path-based bypass logic.
+const adminControlPaths = [
+  '/circuit-breaker/state',
+  '/circuit-breaker/reset',
+  '/services/registry',
+];
+app.use((req, res, next) => {
+  if (adminControlPaths.some((p) => req.path === p || req.path.startsWith(p + '/'))) {
+    return authenticateJWT(req, res, next);
+  }
+  next();
+});
 
 // Rate limiting middleware
 app.use(defaultRateLimiter);
@@ -188,16 +203,16 @@ app.use('/api/v1', (req, res, next) => {
 
 app.use('/api/v1', apiProxy);
 
-// Circuit breaker state endpoint
-app.get('/circuit-breaker/state', (req, res) => {
+// Circuit breaker state endpoint (admin only)
+app.get('/circuit-breaker/state', authorize('admin'), (req, res) => {
   res.json({
     circuitBreakers: getAllCircuitBreakerStates(),
     timestamp: new Date().toISOString()
   });
 });
 
-// Reset circuit breaker endpoint
-app.post('/circuit-breaker/reset/:service', (req, res) => {
+// Reset circuit breaker endpoint (admin only)
+app.post('/circuit-breaker/reset/:service', authorize('admin'), (req, res) => {
   const { service } = req.params;
   resetCircuitBreaker(service);
   res.json({
@@ -206,15 +221,15 @@ app.post('/circuit-breaker/reset/:service', (req, res) => {
   });
 });
 
-// Service discovery endpoints
-app.get('/services/registry', (req, res) => {
+// Service discovery endpoints (admin only)
+app.get('/services/registry', authorize('admin'), (req, res) => {
   res.json({
     services: getServiceMetrics(),
     timestamp: new Date().toISOString()
   });
 });
 
-app.get('/services/:serviceName/url', (req, res) => {
+app.get('/services/:serviceName/url', authorize('admin'), (req, res) => {
   const { serviceName } = req.params;
   const url = getServiceUrl(serviceName);
   if (url) {

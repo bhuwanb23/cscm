@@ -58,70 +58,104 @@ const schemas = {
   },
 
   // Order creation schema
+  // NOTE: fields mirror orderController.create which reads
+  // { order_id, store_id, customer_id, total_amount, status, items }.
   createOrder: {
     type: 'object',
-    required: ['storeId', 'productId', 'quantity'],
+    required: ['order_id', 'store_id'],
     properties: {
-      storeId: {
-        type: 'string'
-      },
-      productId: {
-        type: 'string'
-      },
-      quantity: {
-        type: 'number',
-        minimum: 1,
-        maximum: 10000
-      },
-      notes: {
+      order_id: {
         type: 'string',
-        maxLength: 500
+        minLength: 1,
+        maxLength: 100
+      },
+      store_id: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 100
+      },
+      customer_id: {
+        type: 'string',
+        maxLength: 100
+      },
+      total_amount: {
+        type: 'number',
+        minimum: 0
+      },
+      status: {
+        type: 'string',
+        enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']
+      },
+      items: {
+        type: 'array',
+        maxItems: 500,
+        items: {
+          type: 'object',
+          properties: {
+            product_id: { type: 'string' },
+            quantity: { type: 'number', minimum: 1 },
+            unit_price: { type: 'number', minimum: 0 }
+          }
+        }
       }
     },
     additionalProperties: false
   },
 
   // Shipment creation schema
+  // NOTE: fields mirror shipmentController.create which reads
+  // { shipment_id, order_id, from_location, to_location, status, carrier,
+  //   tracking_number, estimated_delivery, items }.
   createShipment: {
     type: 'object',
-    required: ['orderId', 'origin', 'destination'],
+    required: ['shipment_id', 'from_location', 'to_location'],
     properties: {
-      orderId: {
-        type: 'string'
+      shipment_id: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 100
       },
-      origin: {
-        type: 'object',
-        required: ['address', 'city', 'state', 'zipCode'],
-        properties: {
-          address: { type: 'string' },
-          city: { type: 'string' },
-          state: { type: 'string' },
-          zipCode: { type: 'string' }
-        },
-        additionalProperties: false
+      order_id: {
+        type: 'string',
+        maxLength: 100
       },
-      destination: {
-        type: 'object',
-        required: ['address', 'city', 'state', 'zipCode'],
-        properties: {
-          address: { type: 'string' },
-          city: { type: 'string' },
-          state: { type: 'string' },
-          zipCode: { type: 'string' }
-        },
-        additionalProperties: false
+      from_location: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 200
+      },
+      to_location: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 200
+      },
+      status: {
+        type: 'string',
+        enum: ['pending', 'in_transit', 'delivered', 'cancelled']
       },
       carrier: {
+        type: 'string',
+        maxLength: 100
+      },
+      tracking_number: {
+        type: 'string',
+        maxLength: 100
+      },
+      estimated_delivery: {
         type: 'string'
       },
-      trackingNumber: {
-        type: 'string'
+      items: {
+        type: 'array',
+        maxItems: 500,
+        items: {
+          type: 'object'
+        }
       }
     },
     additionalProperties: false
   },
 
-  // Shipment update schema
+  // Shipment update schema (mirrors shipmentController.updateStatus fields)
   updateShipment: {
     type: 'object',
     properties: {
@@ -130,14 +164,15 @@ const schemas = {
         enum: ['pending', 'in_transit', 'delivered', 'cancelled']
       },
       carrier: {
-        type: 'string'
-      },
-      trackingNumber: {
-        type: 'string'
-      },
-      estimatedDelivery: {
         type: 'string',
-        format: 'date-time'
+        maxLength: 100
+      },
+      tracking_number: {
+        type: 'string',
+        maxLength: 100
+      },
+      estimated_delivery: {
+        type: 'string'
       }
     },
     additionalProperties: false

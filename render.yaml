@@ -22,6 +22,10 @@ services:
           property: connectionString
       - key: AI_ML_API_URL
         value: https://cscm-aiml.onrender.com
+      # AI_ML_API_KEY - REQUIRED: set manually in Render dashboard (must match cscm-aiml).
+      # The old key was leaked in the repo and must be rotated.
+      # - key: AI_ML_API_KEY
+      #   sync: false
       - key: GATEWAY_PORT
         value: 8080
       - key: JWT_SECRET
@@ -30,9 +34,10 @@ services:
         value: info
       - key: DEBUG
         value: false
-      # CORS origin - set manually in Render dashboard:
+      # CORS: browsers can only call the API when allowed origins are configured.
+      # Set this in the Render dashboard to your app/web origin(s), comma-separated.
       # - key: ALLOWED_ORIGINS
-      #   value: https://cscm-frontend.onrender.com
+      #   sync: false
 
   # AI/ML Service
   - type: web
@@ -76,7 +81,14 @@ services:
         value: https://cscm-backend.onrender.com
       - key: AI_ML_API_URL
         value: https://cscm-aiml.onrender.com
-      # AI_ML_API_KEY - set manually in Render dashboard (must match cscm-aiml)
+      # AI_ML_API_KEY - REQUIRED: set manually in Render dashboard (must match cscm-aiml).
+      # The old key was leaked in the repo and must be rotated.
+      # - key: AI_ML_API_KEY
+      #   sync: false
+      # SECURITY: REQUIRED - must be the SAME value as the cscm-backend JWT_SECRET,
+      # otherwise the gateway cannot validate tokens issued by the backend.
+      # - key: JWT_SECRET
+      #   sync: false
       - key: DEBUG
         value: false
 

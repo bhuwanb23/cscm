@@ -2,10 +2,13 @@ const express = require('express');
 const router = express.Router();
 const { getDatabase } = require('../../storage/database');
 const logger = require('../../utils/logger');
+const { authenticate, authorize } = require('../middleware/auth');
 
 /**
  * Middleware to check if debug mode is enabled
- * Debug routes are only accessible in development or if DEBUG=true
+ * Debug routes are only accessible in development or if DEBUG=true.
+ * SECURITY: they also always require an authenticated admin — DEBUG=true
+ * alone must never expose database internals to unauthenticated callers.
  */
 const requireDebugMode = (req, res, next) => {
   if (process.env.NODE_ENV === 'production' && process.env.DEBUG !== 'true') {
@@ -16,6 +19,8 @@ const requireDebugMode = (req, res, next) => {
   }
   next();
 };
+
+router.use(authenticate, authorize('admin'), requireDebugMode);
 
 /**
  * Debug endpoint to test database connection and operations

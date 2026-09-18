@@ -4,6 +4,7 @@
  */
 
 const axios = require('axios');
+const crypto = require('crypto');
 const config = require('./config');
 const AuditLog = require('./auditLog');
 const SimulationAnalytics = require('./analytics');
@@ -42,13 +43,13 @@ class UserSimulator {
   }
 
   /**
-   * Generate a random password
+   * Generate a random password (cryptographically secure)
    */
   generatePassword() {
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*';
     let password = '';
     for (let i = 0; i < 16; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
+      password += chars.charAt(crypto.randomInt(chars.length));
     }
     return password;
   }

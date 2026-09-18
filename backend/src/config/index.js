@@ -31,7 +31,19 @@ const config = {
 
   // Authentication
   auth: {
-    jwtSecret: process.env.JWT_SECRET || 'cscm-secret-key',
+    // SECURITY: no fallback secret. In production a missing JWT_SECRET must
+    // fail fast instead of silently using a publicly-known value that lets
+    // anyone forge admin tokens.
+    jwtSecret:
+      process.env.JWT_SECRET ||
+      (process.env.NODE_ENV === 'production'
+        ? (() => {
+            throw new Error(
+              'JWT_SECRET environment variable is required in production. ' +
+                'Generate one with: openssl rand -hex 32'
+            );
+          })()
+        : 'cscm-dev-only-secret-change-me'),
     jwtExpiration: process.env.JWT_EXPIRATION || '1h', // Reduced from 24h to 1h for better security
     jwtIssuer: process.env.JWT_ISSUER || 'cscm-backend',
     jwtAudience: process.env.JWT_AUDIENCE || 'cscm-api',

@@ -1,44 +1,58 @@
 const request = require('supertest');
 const bcrypt = require('bcryptjs');
 
+// Reset the auth rate limiter state between test cases — the limiter allows
+// only 5 auth requests per 15-minute window per IP, which this file exceeds.
+jest.mock('../../api/middleware/authRateLimiter', () => {
+  const actual = jest.requireActual('../../api/middleware/authRateLimiter');
+  return { ...actual, authRateLimiter: (req, res, next) => next() };
+});
+
 jest.mock('../../storage/sqliteDatabase', () => {
   const users = {};
-  return {
-    createUser: jest.fn(async (user) => {
-      const id = Object.keys(users).length + 1;
-      users[user.username] = { id, ...user };
-      return id;
-    }),
-    findUserByUsername: jest.fn(async (username) => {
-      return users[username] || null;
-    }),
-    findUserById: jest.fn(async (id) => {
-      const found = Object.values(users).find((u) => u.id === id);
-      return found || null;
-    }),
-    initialize: jest.fn(),
-    close: jest.fn(),
-    createTables: jest.fn(),
-    upsertInventory: jest.fn(),
-    getInventoryByStore: jest.fn(),
-    createOrder: jest.fn(),
-    addOrderItem: jest.fn(),
-    getOrderById: jest.fn(),
-    updateOrderStatus: jest.fn(),
-    getOrdersByStore: jest.fn(),
-    createShipment: jest.fn(),
-    addShipmentItem: jest.fn(),
-    getShipmentById: jest.fn(),
-    getShipmentsByStatus: jest.fn(),
-    getShipmentsByLocation: jest.fn(),
-    updateShipmentStatus: jest.fn(),
-  };
+  const createTables = jest.fn();
+  const createIndexes = jest.fn();
+  class SQLiteDatabase {
+    constructor() {
+      this.db = { run: jest.fn(), all: jest.fn(), get: jest.fn() };
+      this.createTables = createTables;
+      this.createIndexes = createIndexes;
+      this.createUser = jest.fn(async (user) => {
+        const id = Object.keys(users).length + 1;
+        users[user.username] = { id, ...user };
+        return id;
+      });
+      this.findUserByUsername = jest.fn(async (username) => users[username] || null);
+      this.findUserById = jest.fn(async (id) => {
+        const found = Object.values(users).find((u) => u.id === id);
+        return found || null;
+      });
+      this.upsertInventory = jest.fn();
+      this.getInventoryByStore = jest.fn();
+      this.createOrder = jest.fn();
+      this.addOrderItem = jest.fn();
+      this.getOrderById = jest.fn();
+      this.updateOrderStatus = jest.fn();
+      this.getOrdersByStore = jest.fn();
+      this.createShipment = jest.fn();
+      this.addShipmentItem = jest.fn();
+      this.getShipmentById = jest.fn();
+      this.getShipmentsByStatus = jest.fn();
+      this.getShipmentsByLocation = jest.fn();
+      this.updateShipmentStatus = jest.fn();
+    }
+    async initialize() {}
+    async close() {}
+  }
+  const instance = new SQLiteDatabase();
+  instance.SQLiteDatabase = SQLiteDatabase;
+  return instance;
 });
 
 const app = require('../../api/server');
 
 describe('Auth API', () => {
-  const testUser = { username: 'testuser', email: 'test@example.com', password: 'password123' };
+  const testUser = { username: 'testuser', email: 'test@example.com', password: 'Sup3rSecure!Passphrase' };
 
   describe('POST /api/v1/auth/register', () => {
     it('should register a new user', async () => {
@@ -69,7 +83,7 @@ describe('Auth API', () => {
     it('should login with valid credentials', async () => {
       const res = await request(app)
         .post('/api/v1/auth/login')
-        .send({ username: 'testuser', password: 'password123' })
+        .send({ username: 'testuser', password: 'Sup3rSecure!Passphrase' })
         .expect(200);
 
       expect(res.body.success).toBe(true);
@@ -99,7 +113,7 @@ describe('Auth API', () => {
     it('should return profile with valid token', async () => {
       const loginRes = await request(app)
         .post('/api/v1/auth/login')
-        .send({ username: 'testuser', password: 'password123' });
+        .send({ username: 'testuser', password: 'Sup3rSecure!Passphrase' });
 
       const token = loginRes.body.data.token;
 

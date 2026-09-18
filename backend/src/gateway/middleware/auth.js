@@ -6,15 +6,33 @@
 const jwt = require('jsonwebtoken');
 const logger = require('../../utils/logger');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+// SECURITY: the gateway must share the backend's JWT secret. No default is
+// allowed: a known fallback would let anyone forge admin tokens. In
+// production a missing JWT_SECRET is fatal; in development we use a
+// clearly-labeled dev-only value.
+const JWT_SECRET =
+  process.env.JWT_SECRET ||
+  (process.env.NODE_ENV === 'production'
+    ? (() => {
+        throw new Error(
+          'JWT_SECRET environment variable is required for the gateway in production. ' +
+            'It must match the backend secret. Generate one with: openssl rand -hex 32'
+        );
+      })()
+    : 'cscm-dev-only-secret-change-me');
 const API_KEYS = process.env.API_KEYS ? process.env.API_KEYS.split(',') : [];
 
 /**
- * Verify JWT token
+ * Verify JWT token with strict options.
+ * Algorithm, issuer and audience must match what the backend signs.
  */
 function verifyJWT(token) {
   try {
-    return jwt.verify(token, JWT_SECRET);
+    return jwt.verify(token, JWT_SECRET, {
+      algorithms: ['HS256'], // matches backend config.auth.jwtAlgorithm default
+      issuer: 'cscm-backend', // matches backend config.auth.jwtIssuer default
+      audience: 'cscm-api', // matches backend config.auth.jwtAudience default
+    });
   } catch (error) {
     logger.warn('JWT verification failed:', error.message);
     return null;
@@ -38,10 +56,8 @@ function extractToken(req) {
     return authHeader.substring(7);
   }
 
-  // Check query parameter
-  if (req.query.token) {
-    return req.query.token;
-  }
+  // SECURITY: tokens in query strings leak into proxy/access logs and
+  // browser history — only headers are accepted.
 
   // Check API key header
   if (req.headers['x-api-key']) {

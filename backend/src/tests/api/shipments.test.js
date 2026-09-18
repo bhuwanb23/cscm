@@ -2,7 +2,7 @@ const request = require('supertest');
 
 jest.mock('../../storage/sqliteDatabase', () => {
   const shipments = {};
-  return {
+  const mockObj = {
     createShipment: jest.fn(async (shipment) => {
       shipments[shipment.shipment_id] = { id: 1, ...shipment };
       return 1;
@@ -37,6 +37,15 @@ jest.mock('../../storage/sqliteDatabase', () => {
     findUserByUsername: jest.fn(),
     findUserById: jest.fn(),
   };
+  // database.js destructures { SQLiteDatabase } and instantiates it.
+  class SQLiteDatabase {
+    constructor() {
+      Object.assign(this, mockObj);
+    }
+  }
+  const instance = new SQLiteDatabase();
+  instance.SQLiteDatabase = SQLiteDatabase;
+  return instance;
 });
 
 const jwt = require('jsonwebtoken');
@@ -45,7 +54,11 @@ const config = require('../../config');
 const app = require('../../api/server');
 
 function authToken() {
-  return jwt.sign({ id: 1, username: 'test', role: 'user' }, config.auth.jwtSecret);
+  return jwt.sign(
+    { id: 1, username: 'test', role: 'shopkeeper' },
+    config.auth.jwtSecret,
+    { expiresIn: '1h', issuer: config.auth.jwtIssuer, audience: config.auth.jwtAudience, algorithm: config.auth.jwtAlgorithm }
+  );
 }
 
 describe('Shipments API', () => {

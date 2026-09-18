@@ -1,13 +1,24 @@
 /**
  * Unit tests for auth controller.
  */
-jest.mock('../../../storage/sqliteDatabase', () => ({
+jest.mock('../../../storage/sqliteDatabase', () => {
+  const mockObj = {
   createUser: jest.fn(),
   findUserByUsername: jest.fn(),
   findUserById: jest.fn(),
   initialize: jest.fn(),
   close: jest.fn(),
-}));
+};
+  // database.js destructures { SQLiteDatabase } and instantiates it.
+  class SQLiteDatabase {
+    constructor() {
+      Object.assign(this, mockObj);
+    }
+  }
+  const instance = new SQLiteDatabase();
+  instance.SQLiteDatabase = SQLiteDatabase;
+  return instance;
+});;
 jest.mock('../../../utils/logger', () => ({
   info: jest.fn(),
   error: jest.fn(),
@@ -41,7 +52,7 @@ describe('Auth Controller', () => {
     it('should register a new user', async () => {
       sqliteDatabase.findUserByUsername.mockResolvedValue(null);
       sqliteDatabase.createUser.mockResolvedValue(1);
-      const req = { body: { username: 'newuser', email: 'new@example.com', password: 'pass123' } };
+      const req = { body: { username: 'newuser', email: 'new@example.com', password: 'Sup3rSecure!Passphrase' } };
       const res = mockRes();
 
       await register(req, res);
@@ -61,7 +72,7 @@ describe('Auth Controller', () => {
 
     it('should reject duplicate username', async () => {
       sqliteDatabase.findUserByUsername.mockResolvedValue({ id: 1, username: 'existing' });
-      const req = { body: { username: 'existing', email: 'e@e.com', password: 'p' } };
+      const req = { body: { username: 'existing', email: 'e@e.com', password: 'Sup3rSecure!Passphrase' } };
       const res = mockRes();
       await register(req, res);
       expect(res.statusCode).toBe(409);
@@ -69,7 +80,7 @@ describe('Auth Controller', () => {
 
     it('should handle DB errors', async () => {
       sqliteDatabase.findUserByUsername.mockRejectedValue(new Error('DB error'));
-      const req = { body: { username: 'u', email: 'e@e.com', password: 'p' } };
+      const req = { body: { username: 'u', email: 'e@e.com', password: 'Sup3rSecure!Passphrase' } };
       const res = mockRes();
       await register(req, res);
       expect(res.statusCode).toBe(500);
@@ -79,7 +90,7 @@ describe('Auth Controller', () => {
   describe('login', () => {
     it('should login with valid credentials', async () => {
       const bcrypt = require('bcryptjs');
-      const hashedPassword = await bcrypt.hash('pass123', 10);
+      const hashedPassword = await bcrypt.hash('Sup3rSecure!Passphrase', 10);
       sqliteDatabase.findUserByUsername.mockResolvedValue({
         id: 1,
         username: 'user',
@@ -87,7 +98,7 @@ describe('Auth Controller', () => {
         password: hashedPassword,
         role: 'user',
       });
-      const req = { body: { username: 'user', password: 'pass123' } };
+      const req = { body: { username: 'user', password: 'Sup3rSecure!Passphrase' } };
       const res = mockRes();
       await login(req, res);
       expect(res.statusCode).toBe(200);

@@ -1,10 +1,21 @@
 /**
  * Unit tests for inventory model.
  */
-jest.mock('../../../storage/sqliteDatabase', () => ({
+jest.mock('../../../storage/sqliteDatabase', () => {
+  const mockObj = {
   upsertInventory: jest.fn(),
   getInventoryByStore: jest.fn(),
-}));
+};
+  // database.js destructures { SQLiteDatabase } and instantiates it.
+  class SQLiteDatabase {
+    constructor() {
+      Object.assign(this, mockObj);
+    }
+  }
+  const instance = new SQLiteDatabase();
+  instance.SQLiteDatabase = SQLiteDatabase;
+  return instance;
+});;
 
 const InventoryModel = require('../../../models/inventoryModel');
 const sqliteDatabase = require('../../../storage/sqliteDatabase');

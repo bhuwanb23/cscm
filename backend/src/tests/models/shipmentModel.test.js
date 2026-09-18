@@ -1,12 +1,23 @@
 const ShipmentModel = require('../../models/shipmentModel');
 
 // Mock the sqliteDatabase to avoid actual database connections
-jest.mock('../../storage/sqliteDatabase', () => ({
+jest.mock('../../storage/sqliteDatabase', () => {
+  const mockObj = {
   createShipment: jest.fn(),
   addShipmentItem: jest.fn(),
   updateShipmentStatus: jest.fn(),
   getShipmentsByStatus: jest.fn(),
-}));
+};
+  // database.js destructures { SQLiteDatabase } and instantiates it.
+  class SQLiteDatabase {
+    constructor() {
+      Object.assign(this, mockObj);
+    }
+  }
+  const instance = new SQLiteDatabase();
+  instance.SQLiteDatabase = SQLiteDatabase;
+  return instance;
+});;
 
 const sqliteDatabase = require('../../storage/sqliteDatabase');
 

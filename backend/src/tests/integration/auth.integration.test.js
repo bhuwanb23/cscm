@@ -5,7 +5,7 @@ const request = require('supertest');
 
 jest.mock('../../storage/sqliteDatabase', () => {
   const users = {};
-  return {
+  const mockObj = {
     createUser: jest.fn(async (user) => {
       const id = Object.keys(users).length + 1;
       users[user.username] = { id, ...user };
@@ -29,12 +29,21 @@ jest.mock('../../storage/sqliteDatabase', () => {
     getShipmentsByLocation: jest.fn(),
     updateShipmentStatus: jest.fn(),
   };
+  // database.js destructures { SQLiteDatabase } and instantiates it.
+  class SQLiteDatabase {
+    constructor() {
+      Object.assign(this, mockObj);
+    }
+  }
+  const instance = new SQLiteDatabase();
+  instance.SQLiteDatabase = SQLiteDatabase;
+  return instance;
 });
 
 const app = require('../../api/server');
 
 describe('Auth Integration', () => {
-  const testUser = { username: 'inttest', email: 'int@test.com', password: 'pass123' };
+  const testUser = { username: 'inttest', email: 'int@test.com', password: 'Sup3rSecure!Passphrase' };
   let token;
 
   it('should register, login, and get profile', async () => {

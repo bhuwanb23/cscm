@@ -37,13 +37,17 @@ from job_queue import job_queue
 from model_registry import init_registry
 
 # Create app with enhanced OpenAPI configuration
+# SECURITY: interactive docs (/docs, /redoc) and the OpenAPI schema are
+# disabled in production unless ENABLE_API_DOCS=true — they disclose the
+# full API surface to attackers.
+_docs_enabled = os.getenv("NODE_ENV") != "production" or os.getenv("ENABLE_API_DOCS", "").lower() == "true"
 app = FastAPI(
     title="Cognitive Supply Chain Mesh - AI/ML API",
     description="AI/ML services for supply chain optimization, demand forecasting, inventory management, and logistics coordination",
     version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
-    openapi_url="/openapi.json",
+    docs_url="/docs" if _docs_enabled else None,
+    redoc_url="/redoc" if _docs_enabled else None,
+    openapi_url="/openapi.json" if _docs_enabled else None,
     contact={
         "name": "CSCM Team",
         "email": "support@cscm.example.com"

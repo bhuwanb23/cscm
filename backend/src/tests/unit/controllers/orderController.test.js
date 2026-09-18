@@ -1,13 +1,24 @@
 /**
  * Unit tests for order controller.
  */
-jest.mock('../../../storage/sqliteDatabase', () => ({
+jest.mock('../../../storage/sqliteDatabase', () => {
+  const mockObj = {
   createOrder: jest.fn(),
   addOrderItem: jest.fn(),
   getOrderById: jest.fn(),
   updateOrderStatus: jest.fn(),
   getOrdersByStore: jest.fn(),
-}));
+};
+  // database.js destructures { SQLiteDatabase } and instantiates it.
+  class SQLiteDatabase {
+    constructor() {
+      Object.assign(this, mockObj);
+    }
+  }
+  const instance = new SQLiteDatabase();
+  instance.SQLiteDatabase = SQLiteDatabase;
+  return instance;
+});;
 jest.mock('../../../utils/logger', () => ({
   info: jest.fn(),
   error: jest.fn(),

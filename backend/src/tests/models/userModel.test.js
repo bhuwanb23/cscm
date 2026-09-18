@@ -1,10 +1,23 @@
 const UserModel = require('../../models/userModel');
 
-jest.mock('../../storage/sqliteDatabase', () => ({
+jest.mock('../../storage/sqliteDatabase', () => {
+  const mockObj = {
+  initialize: jest.fn(async () => {}),
+  db: {},
   createUser: jest.fn(),
   findUserByUsername: jest.fn(),
   findUserById: jest.fn(),
-}));
+};
+  // database.js destructures { SQLiteDatabase } and instantiates it.
+  class SQLiteDatabase {
+    constructor() {
+      Object.assign(this, mockObj);
+    }
+  }
+  const instance = new SQLiteDatabase();
+  instance.SQLiteDatabase = SQLiteDatabase;
+  return instance;
+});;
 
 const sqliteDatabase = require('../../storage/sqliteDatabase');
 

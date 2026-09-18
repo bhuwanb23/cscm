@@ -5,17 +5,28 @@ const jwt = require('jsonwebtoken');
 const config = require('../../config');
 
 /**
- * Generate a valid JWT auth token.
+ * Generate a valid JWT auth token (signed with the same claims the
+ * authenticate middleware verifies: expiry, issuer, audience, algorithm).
  */
 function generateToken(payload = { id: 1, username: 'testuser', role: 'user' }) {
-  return jwt.sign(payload, config.auth.jwtSecret, { expiresIn: '1h' });
+  return jwt.sign(payload, config.auth.jwtSecret, {
+    expiresIn: '1h',
+    issuer: config.auth.jwtIssuer,
+    audience: config.auth.jwtAudience,
+    algorithm: config.auth.jwtAlgorithm,
+  });
 }
 
 /**
  * Generate an expired JWT token.
  */
 function generateExpiredToken(payload = { id: 1, username: 'testuser', role: 'user' }) {
-  return jwt.sign(payload, config.auth.jwtSecret, { expiresIn: '0s' });
+  return jwt.sign(payload, config.auth.jwtSecret, {
+    expiresIn: '0s',
+    issuer: config.auth.jwtIssuer,
+    audience: config.auth.jwtAudience,
+    algorithm: config.auth.jwtAlgorithm,
+  });
 }
 
 /**

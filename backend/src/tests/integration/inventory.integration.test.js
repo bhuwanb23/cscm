@@ -7,7 +7,7 @@ const config = require('../../config');
 
 jest.mock('../../storage/sqliteDatabase', () => {
   const store = {};
-  return {
+  const mockObj = {
     upsertInventory: jest.fn(async (item) => {
       const key = `${item.store_id}:${item.product_id}`;
       store[key] = { id: Object.keys(store).length + 1, ...item };
@@ -33,12 +33,21 @@ jest.mock('../../storage/sqliteDatabase', () => {
     getShipmentsByLocation: jest.fn(),
     updateShipmentStatus: jest.fn(),
   };
+  // database.js destructures { SQLiteDatabase } and instantiates it.
+  class SQLiteDatabase {
+    constructor() {
+      Object.assign(this, mockObj);
+    }
+  }
+  const instance = new SQLiteDatabase();
+  instance.SQLiteDatabase = SQLiteDatabase;
+  return instance;
 });
 
 const app = require('../../api/server');
 
 function authToken() {
-  return jwt.sign({ id: 1, username: 'test', role: 'user' }, config.auth.jwtSecret);
+  return jwt.sign({ id: 1, username: 'test', role: 'shopkeeper' }, config.auth.jwtSecret, { expiresIn: '1h', issuer: config.auth.jwtIssuer, audience: config.auth.jwtAudience, algorithm: config.auth.jwtAlgorithm });
 }
 
 describe('Inventory Integration', () => {

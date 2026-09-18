@@ -67,7 +67,7 @@ describe('_buildClient', () => {
     s._buildClient();
     expect(axios.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        headers: expect.objectContaining({ Authorization: 'Bearer tok' }),
+        headers: expect.objectContaining({ 'X-API-Key': 'tok' }),
       })
     );
   });

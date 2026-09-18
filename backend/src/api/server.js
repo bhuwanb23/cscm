@@ -215,15 +215,23 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true') {
 }
 
 // API Documentation endpoint
-app.use(
-  '/api-docs',
-  swaggerUi.serve,
-  swaggerUi.setup(swaggerSpecs, {
-    explorer: true,
-    customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'CSCM API Documentation',
-  })
-);
+// SECURITY: Swagger UI is disabled in production unless explicitly enabled
+// with ENABLE_API_DOCS=true — it discloses the full API surface to attackers.
+if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_API_DOCS === 'true') {
+  app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpecs, {
+      explorer: true,
+      customCss: '.swagger-ui .topbar { display: none }',
+      customSiteTitle: 'CSCM API Documentation',
+    })
+  );
+} else {
+  app.get('/api-docs', (req, res) => {
+    res.status(404).json({ success: false, error: 'Not found' });
+  });
+}
 
 // API Routes
 const authRoutes = require('./routes/auth');

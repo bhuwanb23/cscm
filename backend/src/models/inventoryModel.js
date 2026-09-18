@@ -69,8 +69,11 @@ class InventoryModel {
         throw new Error('Product ID and Store ID are required');
       }
 
-      const items = await sqliteDatabase.getInventoryByStore(storeId);
-      const item = items.find((i) => i.product_id === productId);
+      // BUGFIX: previously referenced an undefined `sqliteDatabase` variable,
+      // which threw a ReferenceError (HTTP 500) for every lookup.
+      const db = getDatabase();
+      const items = await db.getInventoryByStore(storeId);
+      const item = (items || []).find((i) => i.product_id === productId);
       return item || null;
     } catch (error) {
       throw new Error(`Failed to get inventory item: ${error.message}`);

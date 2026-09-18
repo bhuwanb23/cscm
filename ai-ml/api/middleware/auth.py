@@ -46,17 +46,38 @@ def verify_api_key(request: Request):
 
 def verify_bearer_token(request: Request):
     """
-    Verify JWT bearer token (optional for future integration)
+    Verify Bearer token.
+
+    SECURITY: A bearer token is only accepted when it matches the configured
+    AI/ML API key (service-to-service auth). Arbitrary bearer tokens are
+    rejected — previously ANY Authorization header granted full access.
     """
     authorization = request.headers.get("Authorization")
-    
+
     if not authorization:
         return None
-    
-    # For now, just log that bearer auth was attempted
-    # Future: Implement JWT verification
-    logger.info("Bearer token authentication attempted")
-    return True
+
+    scheme, _, token = authorization.partition(" ")
+    if scheme.lower() != "bearer" or not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Authorization header format"
+        )
+
+    # Only the shared service key may be presented as a Bearer token.
+    # Future: implement real JWT verification with signature + claims checks.
+    if token == AI_ML_API_KEY:
+        logger.info("Service API key accepted via Bearer scheme")
+        return True
+
+    logger.warning(
+        "Rejected invalid bearer token from %s",
+        request.client.host if request.client else "unknown"
+    )
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid or unsupported bearer token"
+    )
 
 async def authenticate_request(request: Request):
     """

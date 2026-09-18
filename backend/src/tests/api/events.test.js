@@ -6,27 +6,38 @@ jest.mock('../../messaging', () => ({
   initialize: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock('../../storage/sqliteDatabase', () => ({
-  initialize: jest.fn(),
-  close: jest.fn(),
-  createTables: jest.fn(),
-  upsertInventory: jest.fn(),
-  getInventoryByStore: jest.fn(),
-  createUser: jest.fn(),
-  findUserByUsername: jest.fn(),
-  findUserById: jest.fn(),
-  createOrder: jest.fn(),
-  addOrderItem: jest.fn(),
-  getOrderById: jest.fn(),
-  updateOrderStatus: jest.fn(),
-  getOrdersByStore: jest.fn(),
-  createShipment: jest.fn(),
-  addShipmentItem: jest.fn(),
-  getShipmentById: jest.fn(),
-  getShipmentsByStatus: jest.fn(),
-  getShipmentsByLocation: jest.fn(),
-  updateShipmentStatus: jest.fn(),
-}));
+jest.mock('../../storage/sqliteDatabase', () => {
+  const mockObj = {
+    initialize: jest.fn(),
+    close: jest.fn(),
+    createTables: jest.fn(),
+    upsertInventory: jest.fn(),
+    getInventoryByStore: jest.fn(),
+    createUser: jest.fn(),
+    findUserByUsername: jest.fn(),
+    findUserById: jest.fn(),
+    createOrder: jest.fn(),
+    addOrderItem: jest.fn(),
+    getOrderById: jest.fn(),
+    updateOrderStatus: jest.fn(),
+    getOrdersByStore: jest.fn(),
+    createShipment: jest.fn(),
+    addShipmentItem: jest.fn(),
+    getShipmentById: jest.fn(),
+    getShipmentsByStatus: jest.fn(),
+    getShipmentsByLocation: jest.fn(),
+    updateShipmentStatus: jest.fn(),
+  };
+  // database.js destructures { SQLiteDatabase } and instantiates it.
+  class SQLiteDatabase {
+    constructor() {
+      Object.assign(this, mockObj);
+    }
+  }
+  const instance = new SQLiteDatabase();
+  instance.SQLiteDatabase = SQLiteDatabase;
+  return instance;
+});
 
 const jwt = require('jsonwebtoken');
 const config = require('../../config');
@@ -34,7 +45,11 @@ const app = require('../../api/server');
 const messagingLayer = require('../../messaging');
 
 function authToken() {
-  return jwt.sign({ id: 1, username: 'test', role: 'user' }, config.auth.jwtSecret);
+  return jwt.sign(
+    { id: 1, username: 'test', role: 'user' },
+    config.auth.jwtSecret,
+    { expiresIn: '1h', issuer: config.auth.jwtIssuer, audience: config.auth.jwtAudience, algorithm: config.auth.jwtAlgorithm }
+  );
 }
 
 describe('Events API', () => {

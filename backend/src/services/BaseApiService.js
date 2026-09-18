@@ -26,7 +26,9 @@ class BaseApiService {
   _buildClient(timeout) {
     const headers = { 'Content-Type': 'application/json', Accept: 'application/json' };
     if (this.authToken) {
-      headers['Authorization'] = `Bearer ${this.authToken}`;
+      // AI/ML API authenticates service calls via the X-API-Key header.
+      // Sending the key as a Bearer token is no longer accepted by the API.
+      headers['X-API-Key'] = this.authToken;
     }
     return axios.create({
       baseURL: this.baseUrl,

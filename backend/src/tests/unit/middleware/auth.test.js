@@ -51,7 +51,7 @@ describe('Auth Middleware', () => {
 
       expect(next).not.toHaveBeenCalled();
       expect(res.statusCode).toBe(401);
-      expect(res.body.error).toContain('Invalid token');
+      expect(res.body.error).toContain('Invalid or expired token');
     });
 
     it('should reject with expired token', () => {

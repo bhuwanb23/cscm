@@ -77,12 +77,30 @@ describe('Gateway HTTP', () => {
   });
 
   test('proxied Node.js route returns error when Express is down', async () => {
-    const res = await request(app).get('/api/v1/auth/profile');
+    // Send a valid gateway-signed token so the request reaches the proxy
+    // (unauthenticated requests are rejected 401 before proxying).
+    const jwt = require('jsonwebtoken');
+    const token = jwt.sign(
+      { id: 1, username: 'test', role: 'admin' },
+      process.env.JWT_SECRET || 'cscm-dev-only-secret-change-me',
+      { expiresIn: '1h', issuer: 'cscm-backend', audience: 'cscm-api', algorithm: 'HS256' }
+    );
+    const res = await request(app)
+      .get('/api/v1/auth/profile')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBeGreaterThanOrEqual(502);
   });
 
   test('proxied AI/ML route returns error when Python is down', async () => {
-    const res = await request(app).get('/api/v1/demand/forecast');
+    const jwt = require('jsonwebtoken');
+    const token = jwt.sign(
+      { id: 1, username: 'test', role: 'admin' },
+      process.env.JWT_SECRET || 'cscm-dev-only-secret-change-me',
+      { expiresIn: '1h', issuer: 'cscm-backend', audience: 'cscm-api', algorithm: 'HS256' }
+    );
+    const res = await request(app)
+      .get('/api/v1/demand/forecast')
+      .set('Authorization', `Bearer ${token}`);
     expect(res.status).toBeGreaterThanOrEqual(502);
   });
 });
