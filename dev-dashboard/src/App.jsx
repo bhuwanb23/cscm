@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './state/AuthContext.jsx';
 import { useLive } from './state/LiveContext.jsx';
@@ -114,43 +114,91 @@ const NAV = [
   },
 ];
 
+function ServiceHealth({ status }) {
+  const services = [
+    ['Backend', status.backend?.status],
+    ['Gateway', status.gateway?.status],
+    ['AI/ML', status.aiMl?.status],
+  ];
+  return (
+    <div className="side-footer" aria-label="Service health">
+      {services.map(([name, s]) => (
+        <div className="svc" key={name}>
+          <span>{name}</span>
+          <StatusPill status={s || 'unknown'} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function Shell({ children }) {
   const { user, logout } = useAuth();
   const { status } = useLive();
   const location = useLocation();
+  const [navOpen, setNavOpen] = useState(false);
+
+  // Close the mobile drawer on navigation.
+  useEffect(() => {
+    setNavOpen(false);
+  }, [location.pathname]);
+
+  // Close on Escape when the drawer is open.
+  useEffect(() => {
+    if (!navOpen) return undefined;
+    const onKey = (e) => e.key === 'Escape' && setNavOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [navOpen]);
+
+  const currentGroup = NAV.find((g) => g.items.some(([to]) => to === location.pathname))?.group;
 
   return (
     <div className="app-shell">
-      <aside className="sidebar">
-        <div className="brand">⚡ CSCM Control</div>
-        {NAV.map((section) => (
-          <div key={section.group}>
-            <div className="group">{section.group}</div>
-            {section.items.map(([to, label]) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={to === '/'}
-                className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-              >
-                {label}
-              </NavLink>
-            ))}
-          </div>
-        ))}
+      {navOpen && <div className="scrim" onClick={() => setNavOpen(false)} aria-hidden="true" />}
+      <aside className={`sidebar${navOpen ? ' open' : ''}`}>
+        <div className="brand">
+          <span className="logo" aria-hidden="true">⚡</span>
+          CSCM Control
+        </div>
+        <nav aria-label="Main navigation" style={{ display: 'contents' }}>
+          {NAV.map((section) => (
+            <div key={section.group}>
+              <div className="group">{section.group}</div>
+              {section.items.map(([to, label]) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={to === '/'}
+                  className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+                >
+                  {label}
+                </NavLink>
+              ))}
+            </div>
+          ))}
+        </nav>
+        <ServiceHealth status={status} />
       </aside>
+
       <main className="main">
-        <div className="page-header">
-          <div className="row" style={{ gap: 18 }}>
-            <span><StatusPill status={status.backend?.status || 'unknown'} /> backend</span>
-            <span><StatusPill status={status.gateway?.status || 'unknown'} /> gateway</span>
-            <span><StatusPill status={status.aiMl?.status || 'unknown'} /> ai/ml</span>
+        <div className="topbar">
+          <div className="crumbs">
+            <button
+              className="secondary sm menu-btn"
+              onClick={() => setNavOpen(true)}
+              aria-label="Open navigation menu"
+              aria-expanded={navOpen}
+            >
+              ☰
+            </button>
+            {currentGroup && <span>{currentGroup}</span>}
+            {currentGroup && <span aria-hidden="true">·</span>}
+            <span className="path">{location.pathname}</span>
           </div>
-          <div className="row">
-            <span className="muted" style={{ fontSize: 12 }}>
-              {location.pathname} · {user?.username}
-            </span>
-            <button className="secondary" onClick={logout}>Log out</button>
+          <div className="side">
+            <span className="muted" style={{ fontSize: 12 }}>signed in as {user?.username}</span>
+            <button className="secondary sm" onClick={logout}>Log out</button>
           </div>
         </div>
         {children}
