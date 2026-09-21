@@ -1,12 +1,16 @@
 import React from 'react';
 import { useLive } from '../state/LiveContext.jsx';
-import { StatusPill, JsonView } from '../components/ui.jsx';
+import { StatusPill, JsonView, PageHeader } from '../components/ui.jsx';
 
 export default function Services() {
   const { status } = useLive();
 
   return (
     <div>
+      <PageHeader
+        title="Services"
+        subtitle="Per-service health, response times, and topology for the Node backend, API gateway, and AI/ML platform."
+      />
       <div className="grid-3">
         {['backend', 'gateway', 'aiMl'].map((s) => (
           <div className="card" key={s}>

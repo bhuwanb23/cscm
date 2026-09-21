@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLive } from '../state/LiveContext.jsx';
-import { Kpi, StatusPill, Loading, useAsyncData } from '../components/ui.jsx';
+import { Kpi, StatusPill, Loading, useAsyncData, PageHeader } from '../components/ui.jsx';
 import { api } from '../api/client.jsx';
 
 function EventFeed({ events }) {
@@ -32,6 +32,10 @@ export default function Overview() {
 
   return (
     <div>
+      <PageHeader
+        title="Overview"
+        subtitle="Live health, activity, and platform vitals across backend, gateway, and AI/ML services."
+      />
       <div className="grid-4">
         <Kpi label="Services healthy" value={`${healthy}/3`} sub="backend · gateway · ai/ml" />
         <Kpi
