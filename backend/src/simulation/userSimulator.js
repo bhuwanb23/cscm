@@ -203,6 +203,7 @@ class UserSimulator {
     }
 
     this.isRunning = true;
+    this.stopRequested = false;
     console.log('Starting user simulation...');
 
     try {
@@ -210,6 +211,10 @@ class UserSimulator {
       
       for (const role of roles) {
         for (const user of this.users[role]) {
+          if (this.stopRequested) {
+            console.log('Simulation stop requested — aborting remaining users');
+            return;
+          }
           if (behaviorScripts[role]) {
             await this.simulateUser(user, behaviorScripts[role]);
             await this.randomCycleDelay();
@@ -223,6 +228,14 @@ class UserSimulator {
     } finally {
       this.isRunning = false;
     }
+  }
+
+  /**
+   * Request the running simulation to stop after the current user
+   */
+  stopSimulation() {
+    this.stopRequested = true;
+    console.log('Simulation stop requested');
   }
 
   /**
