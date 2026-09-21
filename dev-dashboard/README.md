@@ -67,3 +67,43 @@ All under `/api/v1/debug/*`, admin JWT required, `DEBUG=true` in production:
 - `GET /logs` · `GET /agents` · `POST /agents/:name/:action`
 - `GET /cache/stats` · `POST /cache/clear` · `GET|POST /backups`
 - `GET /simulation/status` · `POST /simulation/start|stop`
+
+## Deployment (Render)
+
+The dashboard deploys as `cscm-dashboard` (see `render.yaml`) alongside the
+existing services. It serves the built React app and proxies API traffic
+server-to-server, so only the dashboard's origin needs public browser access.
+
+### How it connects
+
+| Env var | Value on Render | Purpose |
+|---|---|---|
+| `BACKEND_URL` | `https://cscm-backend.onrender.com` | admin API proxy (`/api/v1/*` passthrough) |
+| `GATEWAY_URL` | `https://cscm-gateway.onrender.com` | circuit-breaker state + reset |
+| `AI_ML_URL` | `https://cscm-aiml.onrender.com` | AI/ML playground + domain pages |
+| `BACKEND_JWT_SECRET` | **same value as cscm-backend's `JWT_SECRET`** | signs 5-min admin tokens |
+| `AI_ML_API_KEY` | **same value as cscm-aiml's `AI_ML_API_KEY`** | `X-API-Key` for AI/ML calls |
+| `DASHBOARD_JWT_SECRET` | auto-generated (`generateValue: true`) | dashboard session cookies |
+| `DASHBOARD_USER` / `DASHBOARD_PASSWORD` | set manually | dashboard login |
+
+### One-time setup checklist
+
+1. **Push this repo** — the backend CORS fix (allow server-to-server traffic
+   with no `Origin` header) must deploy to `cscm-backend` before anything can
+   call it server-side. Until then the gateway and dashboard see backend 500s.
+2. In the Render dashboard set on **cscm-backend** →
+   `ALLOWED_ORIGINS=https://cscm-dashboard.onrender.com` (comma-separated if more).
+3. On **cscm-gateway**: ensure `JWT_SECRET` equals cscm-backend's, set
+   `AI_ML_API_KEY` to match cscm-aiml.
+4. On **cscm-dashboard** (after first deploy): set `BACKEND_JWT_SECRET` (=
+   backend `JWT_SECRET`), `AI_ML_API_KEY` (= cscm-aiml's key),
+   `DASHBOARD_USER` / `DASHBOARD_PASSWORD` (do not keep defaults).
+5. Redeploy all services. Verify at `/api/health` → then log in and check
+   Overview shows all three services healthy.
+
+### Notes
+
+- Free-tier instances sleep; the first request after idle may take 50s+ (the
+  dashboard's health poller will show services as `unknown` briefly).
+- The dashboard never proxies browser CORS concerns: all upstream calls are
+  server-to-server (no `Origin` header), which the backend now allows.
