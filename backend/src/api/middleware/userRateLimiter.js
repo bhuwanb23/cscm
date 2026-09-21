@@ -5,9 +5,32 @@
 
 const rateLimit = require('express-rate-limit');
 const logger = require('../../utils/logger');
+const jwt = require('jsonwebtoken');
+const config = require('../../config');
 
 // Rate limit store for tracking usage (simple in-memory implementation)
 const rateLimitStore = new Map();
+
+/**
+ * Best-effort early decode of the Bearer JWT so role-tiered limiting works
+ * even though this middleware runs before route-level auth fills req.user.
+ * Signature/issuer/audience are verified; on any failure the request falls
+ * back to IP-based limiting.
+ */
+function resolveRateLimitUser(req) {
+  if (req.user) return req.user;
+  const header = req.headers.authorization || '';
+  if (!header.startsWith('Bearer ')) return null;
+  try {
+    return jwt.verify(header.slice(7), config.auth.jwtSecret, {
+      issuer: config.auth.jwtIssuer,
+      audience: config.auth.jwtAudience,
+      algorithms: [config.auth.jwtAlgorithm],
+    });
+  } catch {
+    return null;
+  }
+}
 
 // Role-based rate limit configurations
 const ROLE_RATE_LIMITS = {
@@ -53,6 +76,12 @@ function getRateLimitConfig(user) {
 
   const role = user.role || 'default';
   return ROLE_RATE_LIMITS[role] || ROLE_RATE_LIMITS.default;
+}
+
+// Verified admins are control-plane clients (dev dashboard, ops scripts) that
+// legitimately burst far beyond user-tier budgets; skip tier limiting for them.
+function isAdminPrincipal(user) {
+  return !!user && user.role === 'admin';
 }
 
 /**
@@ -101,13 +130,14 @@ function createUserRateLimiter(config) {
  * Middleware to apply user-based rate limiting
  */
 function userRateLimiter(req, res, next) {
-  const config = getRateLimitConfig(req.user);
-  // Create a simple rate limiter that doesn't require instance creation
+  const user = resolveRateLimitUser(req);
+  if (isAdminPrincipal(user)) return next();
+  const config = getRateLimitConfig(user);
   const windowMs = config.windowMs;
   const max = config.max;
   
   // Simple in-memory rate limiting using a Map
-  const key = req.user?.id || req.ip;
+  const key = user?.id || req.ip;
   const now = Date.now();
   
   if (!rateLimitStore.has(key)) {

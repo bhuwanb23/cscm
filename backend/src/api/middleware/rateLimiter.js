@@ -1,12 +1,61 @@
 const config = require('../../config');
 const logger = require('../../utils/logger');
+const jwt = require('jsonwebtoken');
 
 // Simple in-memory rate limiter
 const rateLimitStore = new Map();
 
+// Authenticated admins get a much larger per-admin budget (see below).
+const ADMIN_RATE_LIMIT_MAX = parseInt(process.env.ADMIN_RATE_LIMIT_MAX_REQUESTS || 10000, 10);
+
 const rateLimiter = (req, res, next) => {
-  const clientId = req.ip;
   const windowMs = parseInt(config.security.rateLimitWindowMs);
+
+  // Health/metrics probes are infrastructure traffic (e.g. the dev dashboard
+  // polls /health every 10s); they must not consume the client budget.
+  if (req.path === '/health' || req.path === '/metrics' || req.path === '/api/health') {
+    return next();
+  }
+
+  // Authenticated admins get a per-admin high-budget bucket instead of the
+  // shared per-IP one. The dev dashboard proxies the whole control plane
+  // through a single IP; one shared bucket would exhaust after a few pages.
+  const authHeader = (req.headers && req.headers.authorization) || '';
+  if (authHeader.startsWith('Bearer ')) {
+    try {
+      const decoded = jwt.verify(authHeader.slice(7), config.auth.jwtSecret, {
+        issuer: config.auth.jwtIssuer,
+        audience: config.auth.jwtAudience,
+        algorithms: [config.auth.jwtAlgorithm],
+      });
+      if (decoded && decoded.role === 'admin') {
+        const key = `admin:${decoded.id ?? decoded.username ?? 'unknown'}`;
+        const currentTime = Date.now();
+        const bucket = rateLimitStore.get(key) || { count: 0, startTime: currentTime };
+        if (currentTime - bucket.startTime > windowMs) {
+          bucket.count = 0;
+          bucket.startTime = currentTime;
+        }
+        bucket.count += 1;
+        rateLimitStore.set(key, bucket);
+        res.setHeader('X-RateLimit-Limit', ADMIN_RATE_LIMIT_MAX);
+        res.setHeader('X-RateLimit-Remaining', Math.max(0, ADMIN_RATE_LIMIT_MAX - bucket.count));
+        res.setHeader('X-RateLimit-Reset', new Date(bucket.startTime + windowMs).toUTCString());
+        if (bucket.count > ADMIN_RATE_LIMIT_MAX) {
+          logger.warn(`Admin rate limit exceeded for ${key}`);
+          return res.status(429).json({
+            success: false,
+            error: 'Too many requests, please try again later.',
+          });
+        }
+        return next();
+      }
+    } catch {
+      // Invalid/expired token: fall through to the standard per-IP bucket.
+    }
+  }
+
+  const clientId = req.ip;
   const maxRequests = parseInt(config.security.rateLimitMaxRequests);
 
   const currentTime = Date.now();
