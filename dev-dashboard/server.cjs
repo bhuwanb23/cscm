@@ -267,6 +267,9 @@ api.post('/cache/clear', (req, res) => proxyPost(req, res, `${BACKEND_URL}/api/v
 api.get('/backups', (req, res) => proxyGet(req, res, `${BACKEND_URL}/api/v1/debug/backups`));
 api.post('/backups', (req, res) => proxyPost(req, res, `${BACKEND_URL}/api/v1/debug/backups`));
 
+// -- AI/ML public health (the AI/ML /health endpoint sits outside /api/v1)
+api.get('/aiml/health', (req, res) => proxyRequest(req, res, 'GET', `${AI_ML_URL}/health`));
+
 // -- AI/ML direct proxy (playground)
 async function proxyAiMl(req, res, subPath) {
   try {
@@ -289,6 +292,9 @@ api.all('/aiml/*', (req, res) => {
   return proxyAiMl(req, res, subPath);
 });
 
+// -- Recent events snapshot (websocket replays live events; this is the poll fallback)
+api.get('/events', (req, res) => res.json({ events: recentEvents.slice(-100) }));
+
 // -- Simulation control (backend lifecycle endpoints)
 api.get('/simulation/status', (req, res) =>
   proxyGet(req, res, `${BACKEND_URL}/api/v1/debug/simulation/status`)
@@ -297,29 +303,44 @@ api.post('/simulation/:action', (req, res) =>
   proxyPost(req, res, `${BACKEND_URL}/api/v1/debug/simulation/${req.params.action}`)
 );
 
+// -- Generic backend passthrough: full backend paths (e.g. /api/v1/debug/...)
+//    forward with signed admin auth. Registered last so curated routes win.
+api.all('/v1/*', (req, res) => {
+  const subPath = req.path.replace(/^\/v1/, '/api/v1');
+  return proxyRequest(req, res, req.method, `${BACKEND_URL}${subPath}`);
+});
+
+// -- Gateway passthrough (authed: admin JWT required for circuit-breaker ops).
+//    Lives on the authed /api router so /gateway/* page deep-links still hit
+//    the SPA fallback instead of this handler.
+api.all('/gateway/*', (req, res) => {
+  const subPath = req.path.replace(/^\/gateway/, '');
+  const browserToken = req.headers['x-backend-token'] || '';
+  axios.request({
+    method: req.method,
+    url: `${GATEWAY_URL}${subPath}`,
+    data: req.body,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: browserToken || `Bearer ${jwt.sign(
+        { id: 0, username: 'dev-dashboard', role: 'admin' },
+        process.env.BACKEND_JWT_SECRET || DASHBOARD_JWT_SECRET,
+        { expiresIn: '5m', issuer: 'cscm-backend', audience: 'cscm-api', algorithm: 'HS256' }
+      )}`,
+    },
+    timeout: 30000
+  }).then((response) => res.status(response.status).json(response.data))
+    .catch((error) => {
+      const status = error.response ? error.response.status : 502;
+      const detail = error.response ? error.response.data : error.message;
+      res.status(status).json({ success: false, error: detail });
+    });
+});
+
 app.use('/api', api);
 
-// CRUD passthrough to the backend via the gateway (uses browser's backend token)
-app.all('/gateway/*', requireDashboardAuth, async (req, res) => {
-  try {
-    const subPath = req.path.replace(/^\/gateway\//, '/');
-    const response = await axios.request({
-      method: req.method,
-      url: `${GATEWAY_URL}${subPath}`,
-      data: req.body,
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: req.headers['x-backend-token'] || ''
-      },
-      timeout: 30000
-    });
-    res.status(response.status).json(response.data);
-  } catch (error) {
-    const status = error.response ? error.response.status : 502;
-    const detail = error.response ? error.response.data : error.message;
-    res.status(status).json({ success: false, error: detail });
-  }
-});
+// CRUD passthrough to the gateway has moved onto the authed /api router
+// (see api.all('/gateway/*') above) so SPA deep-links to /gateway/* pages work.
 
 /* ------------------------------------------------------------------ */
 /* WebSocket                                                           */
@@ -342,7 +363,7 @@ wss.on('connection', (ws) => {
 
 // SPA fallback: any non-API GET serves the React app (client-side routing).
 app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api/') || req.path.startsWith('/gateway/')) return next();
+  if (req.path.startsWith('/api/')) return next();
   const indexHtml = path.join(DIST_DIR, 'index.html');
   if (fs.existsSync(indexHtml)) return res.sendFile(indexHtml);
   res.status(200).send(
