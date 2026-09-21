@@ -120,20 +120,23 @@ const securityHeaders = (req, res, next) => {
 const corsOptions = {
   origin: function (origin, callback) {
     // Parse allowed origins from environment variable (comma-separated)
-    const allowedOrigins = process.env.ALLOWED_ORIGINS 
+    const allowedOrigins = process.env.ALLOWED_ORIGINS
       ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-      : ['http://localhost:3000', 'http://localhost:3001']; // Default to localhost in development
-    
-    // In production, only allow configured origins
-    if (process.env.NODE_ENV === 'production') {
-      if (!origin || !allowedOrigins.includes(origin)) {
-        callback(new Error('Not allowed by CORS'));
-        return;
-      }
+      : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173', 'http://localhost:3002']; // Local dev defaults
+
+    // Server-to-server traffic (gateway→backend, dashboard→backend, health
+    // probes, agents) sends no Origin header. It is not CORS-governed and
+    // must NOT be rejected — rejecting it breaks the deployed topology.
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+
+    // Browser traffic must come from an explicitly allowed origin.
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      // In development, allow all origins for easier testing
-      callback(null, true);
+      callback(null, false);
     }
   },
   credentials: true,

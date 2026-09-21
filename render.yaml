@@ -35,7 +35,8 @@ services:
       - key: DEBUG
         value: false
       # CORS: browsers can only call the API when allowed origins are configured.
-      # Set this in the Render dashboard to your app/web origin(s), comma-separated.
+      # Set this in the Render dashboard to your app/web origin(s), comma-separated,
+      # e.g. https://cscm-dashboard.onrender.com
       # - key: ALLOWED_ORIGINS
       #   sync: false
 
@@ -99,3 +100,39 @@ services:
     region: oregon
     maxmemoryPolicy: allkeys-lru
     ipAllowList: []
+
+  # Dev Dashboard (React control plane + Node proxy server)
+  - type: web
+    name: cscm-dashboard
+    runtime: node
+    rootDir: dev-dashboard
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    plan: free
+    region: oregon
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BACKEND_URL
+        value: https://cscm-backend.onrender.com
+      - key: GATEWAY_URL
+        value: https://cscm-gateway.onrender.com
+      - key: AI_ML_URL
+        value: https://cscm-aiml.onrender.com
+      # Dashboard session secret (auto-generated, dashboard-only).
+      - key: DASHBOARD_JWT_SECRET
+        generateValue: true
+      # Dashboard login credentials - set manually in the Render dashboard.
+      # - key: DASHBOARD_USER
+      #   sync: false
+      # - key: DASHBOARD_PASSWORD
+      #   sync: false
+      # REQUIRED: must be the SAME value as the cscm-backend JWT_SECRET so the
+      # dashboard can sign admin tokens for the backend debug API.
+      # - key: BACKEND_JWT_SECRET
+      #   sync: false
+      # REQUIRED: must be the SAME value as the cscm-aiml AI_ML_API_KEY so the
+      # AI/ML playground proxy authenticates.
+      # - key: AI_ML_API_KEY
+      #   sync: false
