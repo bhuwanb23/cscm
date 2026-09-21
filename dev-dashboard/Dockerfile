@@ -1,12 +1,18 @@
-FROM node:18-alpine
-
+# Build the React SPA, then serve it with the control server.
+FROM node:18-alpine AS build
 WORKDIR /app
-
 COPY package*.json ./
-RUN npm install --production
-
+RUN npm ci --include=dev --no-audit --no-fund
 COPY . .
+RUN npm run build
 
-EXPOSE 3000
+FROM node:18-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package*.json ./
+RUN npm ci --omit=dev --no-audit --no-fund
+COPY server.cjs ./
+COPY --from=build /app/dist ./dist
 
-CMD ["npm", "start"]
+EXPOSE 3002
+CMD ["node", "server.cjs"]
