@@ -1,11 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader, Loading, ErrorBanner, useAsyncData } from '../components/ui.jsx';
-import { callAiMl } from '../api/client.jsx';
+import { api } from '../api/client.jsx';
 import { AI_DOMAINS } from '../lib/registry.js';
 
 export default function AiOverview() {
-  const health = useAsyncData(() => callAiMl('GET', '/monitoring/health'), []);
+  // /aiml/health hits the AI/ML service's public /health endpoint.
+  const health = useAsyncData(() => api.get('/api/aiml/health'), []);
 
   return (
     <div>

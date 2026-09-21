@@ -7,7 +7,7 @@ const STATUSES = ['pending', 'assigned', 'in_transit', 'delivered', 'failed'];
 export default function Shipments() {
   const [status, setStatus] = useState('pending');
   const shipments = useAsyncData(
-    () => api.get(`/api/data/shipments/status/${encodeURIComponent(status)}`),
+    () => api.get(`/api/data/shipments/${encodeURIComponent(status)}`),
     [status]
   );
   const [busy, setBusy] = useState(false);
