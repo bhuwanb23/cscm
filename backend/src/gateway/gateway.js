@@ -271,7 +271,7 @@ function probePythonHealth(timeoutMs) {
 
 app.get('/health', async (req, res) => {
   const now = new Date().toISOString();
-  const aiMlStatus = await probePythonHealth(1000);
+  const aiMlStatus = await probePythonHealth(3000);
   lastAiMlStatus = aiMlStatus;
   lastAiMlCheckedAt = now;
   const gatewayStatus = 'healthy';

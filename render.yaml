@@ -24,16 +24,18 @@ services:
         value: https://cscm-aiml.onrender.com
       # AI_ML_API_KEY - REQUIRED: set manually in Render dashboard (must match cscm-aiml).
       # The old key was leaked in the repo and must be rotated.
-      # - key: AI_ML_API_KEY
-      #   sync: false
+      - key: AI_ML_API_KEY
+        sync: false
       - key: GATEWAY_PORT
         value: 8080
       - key: JWT_SECRET
         generateValue: true
       - key: LOG_LEVEL
         value: info
+      # Enables the admin-JWT-gated, read-only debug API that cscm-dashboard uses.
+      # Without it, every dashboard backend panel returns 404 in production.
       - key: DEBUG
-        value: false
+        value: true
       # CORS: browsers can only call the API when allowed origins are configured.
       # Set this in the Render dashboard to your app/web origin(s), comma-separated,
       # e.g. https://cscm-dashboard.onrender.com
@@ -90,6 +92,8 @@ services:
       # otherwise the gateway cannot validate tokens issued by the backend.
       # - key: JWT_SECRET
       #   sync: false
+      - key: AI_ML_API_KEY
+        sync: false # same value as cscm-aiml's AI_ML_API_KEY (gateway proxies /ai routes)
       - key: DEBUG
         value: false
 
