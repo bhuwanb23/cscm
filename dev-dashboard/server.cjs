@@ -6,6 +6,21 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 const fs = require('fs');
 
+// Load local .env (dev convenience only — Render injects env vars natively).
+// Does not override variables already set in the environment.
+try {
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    for (const line of fs.readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+      const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
+      if (!m || line.trim().startsWith('#')) continue;
+      if (!(m[1] in process.env)) {
+        process.env[m[1]] = m[2].replace(/^['"](.*)['"]$/, '$1');
+      }
+    }
+  }
+} catch { /* env file is optional */ }
+
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
