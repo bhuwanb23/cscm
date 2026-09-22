@@ -106,7 +106,7 @@ services:
     name: cscm-dashboard
     runtime: node
     rootDir: dev-dashboard
-    buildCommand: npm ci && npm run build
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     plan: free
     region: oregon
@@ -114,6 +114,8 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NODE_VERSION
+        value: 20
       - key: BACKEND_URL
         value: https://cscm-backend.onrender.com
       - key: GATEWAY_URL
