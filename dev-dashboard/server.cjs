@@ -24,6 +24,7 @@ try {
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
+const crypto = require('crypto');
 
 const PORT = process.env.PORT || 3002;
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
@@ -31,19 +32,23 @@ const GATEWAY_URL = process.env.GATEWAY_URL || 'http://localhost:8080';
 const AI_ML_URL = process.env.AI_ML_URL || 'http://localhost:8000';
 
 // Auth for the dashboard itself. In dev, default admin/admin123.
-// SECURITY: set DASHBOARD_JWT_SECRET in any shared environment; when unset
-// the dashboard refuses to start unless NODE_ENV is development.
-const DASHBOARD_JWT_SECRET =
-  process.env.DASHBOARD_JWT_SECRET ||
-  (process.env.NODE_ENV === 'production'
-    ? null
-    : 'dashboard-dev-only-secret');
-if (!DASHBOARD_JWT_SECRET) {
-  console.error('DASHBOARD_JWT_SECRET is required in production. Aborting.');
-  process.exit(1);
-}
+// SECURITY: the dashboard is internet-exposed — refuse to boot with default
+// credentials or a weak/absent secret in production.
 const DASHBOARD_USER = process.env.DASHBOARD_USER || 'admin';
 const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || 'admin123';
+if (process.env.NODE_ENV === 'production') {
+  if (DASHBOARD_PASSWORD === 'admin123') {
+    console.error('DASHBOARD_PASSWORD must be set to a strong value in production. Aborting.');
+    process.exit(1);
+  }
+  if (!process.env.DASHBOARD_JWT_SECRET || process.env.DASHBOARD_JWT_SECRET.length < 32) {
+    console.error('DASHBOARD_JWT_SECRET must be set (>= 32 chars) in production. Aborting.');
+    process.exit(1);
+  }
+}
+// Dev fallback: random per-boot secret (old sessions invalidate — correct).
+const DASHBOARD_JWT_SECRET =
+  process.env.DASHBOARD_JWT_SECRET || crypto.randomBytes(32).toString('hex');
 
 // Optional admin JWT used to call backend admin APIs on the user's behalf.
 // The dashboard never stores credentials; the browser keeps its own backend
@@ -51,6 +56,25 @@ const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || 'admin123';
 const AI_ML_API_KEY = process.env.AI_ML_API_KEY || '';
 
 app.use(express.json());
+
+// Security headers (helmet-equivalent for this server). The SPA is fully
+// bundled by Vite — no inline scripts — so script-src can stay 'self'.
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('X-DNS-Prefetch-Control', 'off');
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data:; font-src 'self'; connect-src 'self' wss:; " +
+    "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+  );
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+  next();
+});
 
 // Static assets: in development the React app runs via Vite (npm run dev on
 // :5173, proxying /api and /gateway here). In production, serve the built SPA.
@@ -131,9 +155,51 @@ checkService('aiMl', AI_ML_URL);
 /* Dashboard auth                                                      */
 /* ------------------------------------------------------------------ */
 
-app.post('/api/login', (req, res) => {
+// Timing-safe string compare (avoids leaking match length via latency).
+function timingSafeEqualStr(a, b) {
+  const ab = Buffer.from(String(a), 'utf8');
+  const bb = Buffer.from(String(b), 'utf8');
+  if (ab.length !== bb.length) {
+    crypto.timingSafeEqual(ab, ab); // keep timing uniform, then fail
+    return false;
+  }
+  return crypto.timingSafeEqual(ab, bb);
+}
+
+// Strict per-IP rate limit on login (brute-force protection).
+const loginAttempts = new Map();
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_MAX_ATTEMPTS = 10;
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, rec] of loginAttempts) {
+    if (now - rec.start > LOGIN_WINDOW_MS) loginAttempts.delete(ip);
+  }
+}, 60 * 1000).unref();
+
+function loginRateLimit(req, res, next) {
+  const ip = (req.socket && req.socket.remoteAddress) || 'unknown';
+  const now = Date.now();
+  const rec = loginAttempts.get(ip);
+  if (rec && now - rec.start <= LOGIN_WINDOW_MS) {
+    if (rec.count >= LOGIN_MAX_ATTEMPTS) {
+      return res.status(429).json({ success: false, error: 'Too many login attempts. Try again later.' });
+    }
+  } else {
+    loginAttempts.set(ip, { start: now, count: 0 });
+  }
+  next();
+}
+
+app.post('/api/login', loginRateLimit, (req, res) => {
   const { username, password } = req.body || {};
-  if (username !== DASHBOARD_USER || password !== DASHBOARD_PASSWORD) {
+  const ip = (req.socket && req.socket.remoteAddress) || 'unknown';
+  // Timing-safe compare so response latency cannot reveal how much matched.
+  const userOk = typeof username === 'string' && timingSafeEqualStr(username, DASHBOARD_USER);
+  const passOk = typeof password === 'string' && timingSafeEqualStr(password, DASHBOARD_PASSWORD);
+  if (!userOk || !passOk) {
+    const rec = loginAttempts.get(ip);
+    if (rec) rec.count += 1;
     return res.status(401).json({ success: false, error: 'Invalid credentials' });
   }
   const token = jwt.sign({ sub: username, role: 'dashboard-admin' }, DASHBOARD_JWT_SECRET, {
@@ -391,5 +457,5 @@ server.listen(PORT, () => {
   console.log(`Backend URL: ${BACKEND_URL}`);
   console.log(`Gateway URL: ${GATEWAY_URL}`);
   console.log(`AI/ML URL: ${AI_ML_URL}`);
-  console.log(`Dashboard login: ${DASHBOARD_USER} ${process.env.DASHBOARD_PASSWORD ? '(from env)' : '(default admin123 - change me!)'}`);
+  console.log(`Dashboard login: ${DASHBOARD_USER} ${process.env.DASHBOARD_PASSWORD ? '(from env)' : '(default admin123 - DEV ONLY)'}`);
 });
