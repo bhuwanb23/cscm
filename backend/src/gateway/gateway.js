@@ -15,11 +15,12 @@ const app = express();
 const PORT = process.env.PORT || process.env.GATEWAY_PORT || 8080;
 
 // Use service discovery for dynamic service URLs
-// For Render deployment, use internal network URLs
-const aiMlTarget = getServiceUrl('aiMl') || process.env.AI_ML_API_URL || (config.aiMl
+// Env vars are authoritative; the discovery registry is seeded from them and
+// only consulted when env is unset (local dev defaults below).
+const aiMlTarget = process.env.AI_ML_API_URL || getServiceUrl('aiMl') || (config.aiMl
   ? config.aiMl.apiUrl
   : 'http://localhost:8000');
-const apiTarget = getServiceUrl('backend') || process.env.BACKEND_URL || `http://localhost:${config.server.port}`;
+const apiTarget = process.env.BACKEND_URL || getServiceUrl('backend') || `http://localhost:${config.server.port}`;
 
 // NOTE: Do NOT use express.json() here — it consumes the request body
 // before http-proxy-middleware can forward it, causing POST requests to hang.

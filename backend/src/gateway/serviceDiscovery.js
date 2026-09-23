@@ -5,14 +5,15 @@
 
 const logger = require('../utils/logger');
 
-// Service registry
+// Service registry — URLs are environment-driven so the same image works
+// locally and on Render (AI_ML_API_URL / BACKEND_URL point at real services).
 const serviceRegistry = {
   backend: {
     name: 'Backend API',
     instances: [
       {
         id: 'backend-1',
-        url: 'http://localhost:3000',
+        url: process.env.BACKEND_URL || 'http://localhost:3000',
         health: 'unknown',
         lastCheck: null,
         weight: 100
@@ -24,7 +25,7 @@ const serviceRegistry = {
     instances: [
       {
         id: 'ai-ml-1',
-        url: 'http://localhost:8000',
+        url: process.env.AI_ML_API_URL || 'http://localhost:8000',
         health: 'unknown',
         lastCheck: null,
         weight: 100
@@ -128,11 +129,15 @@ async function healthCheckInstance(serviceName, instanceId) {
   }
 
   try {
+    // Use the module matching the target scheme — http.get cannot speak TLS,
+    // so HTTPS services (e.g. Render) would always be reported unreachable.
     const http = require('http');
+    const https = require('https');
     const url = new URL(instance.url);
-    
+    const transport = url.protocol === 'https:' ? https : http;
+
     const result = await new Promise((resolve) => {
-      const clientReq = http.get(`${url.protocol}//${url.host}/health`, (res) => {
+      const clientReq = transport.get(`${url.protocol}//${url.host}/health`, (res) => {
         let data = '';
         res.on('data', (chunk) => data += chunk);
         res.on('end', () => {
