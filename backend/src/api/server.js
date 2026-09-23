@@ -154,7 +154,12 @@ app.get('/cache/stats', (req, res) => {
 
 // Debug endpoints (development only)
 if (process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true') {
-  app.get('/debug/info', (req, res) => {
+  // Auth-gate: even with DEBUG=true these expose server internals and must
+  // never be reachable unauthenticated (they are public on Render otherwise).
+  const { authenticate, authorize } = require('./middleware/auth');
+  const requireAdmin = [authenticate, authorize('admin')];
+
+  app.get('/debug/info', ...requireAdmin, (req, res) => {
     res.json({
       service: 'CSCM Backend API',
       version: '1.0.0',
@@ -165,7 +170,7 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true') {
     });
   });
 
-  app.get('/debug/memory', (req, res) => {
+  app.get('/debug/memory', ...requireAdmin, (req, res) => {
     const memory = process.memoryUsage();
     res.json({
       heap: {
@@ -181,7 +186,7 @@ if (process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true') {
     });
   });
 
-  app.get('/debug/config', (req, res) => {
+  app.get('/debug/config', ...requireAdmin, (req, res) => {
     // Return safe configuration values
     const safeConfig = {
       node_env: process.env.NODE_ENV,
