@@ -37,3 +37,8 @@ logs/
 catboost_info
 data/
 model_packages/
+# Secrets
+.env
+.env.*
+*.pem
+*.key
