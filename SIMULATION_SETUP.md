@@ -29,8 +29,8 @@ Add the following secrets:
 
 | Secret Name | Value | Description |
 |-------------|-------|-------------|
-| `BACKEND_URL` | `https://cscm-backend.onrender.com` | Backend API URL |
-| `AI_ML_API_URL` | `https://cscm-aiml.onrender.com` | AI/ML API URL |
+| `BACKEND_URL` | `<BACKEND_URL>` | Backend API URL |
+| `AI_ML_API_URL` | `<AI_ML_URL>` | AI/ML API URL |
 | `AI_ML_API_KEY` | *(secret — set via GitHub Secrets; rotate the previously leaked key!)* | AI/ML API key (same as Render) |
 
 ## Step 3: Initialize Simulated Users
@@ -58,7 +58,7 @@ The registration currently defaults all users to 'user' role. Use the admin endp
 3. Call the role assignment endpoint:
 
 ```bash
-curl -X POST https://cscm-backend.onrender.com/api/v1/auth/assign-role \
+curl -X POST <BACKEND_URL>/api/v1/auth/assign-role \
   -H "Authorization: Bearer <ADMIN_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{

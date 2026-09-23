@@ -33,7 +33,7 @@ Live security testing was performed against the deployed CSCM services on Render
 **Test:** Attempt to access debug endpoints in production
 
 ```bash
-curl https://cscm-backend.onrender.com/api/v1/debug/database
+curl <BACKEND_URL>/api/v1/debug/database
 ```
 
 **Result:** `404 Not Found`
@@ -52,7 +52,7 @@ curl https://cscm-backend.onrender.com/api/v1/debug/database
 **Test:** Attempt to register with admin role
 
 ```bash
-curl -X POST https://cscm-backend.onrender.com/api/v1/auth/register \
+curl -X POST <BACKEND_URL>/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"testadmin","password":"TestPassword123!","email":"testadmin@example.com","role":"admin"}'
 ```
@@ -85,7 +85,7 @@ curl -X POST https://cscm-backend.onrender.com/api/v1/auth/register \
 **Test 1:** Password shorter than 12 characters
 
 ```bash
-curl -X POST https://cscm-backend.onrender.com/api/v1/auth/register \
+curl -X POST <BACKEND_URL>/api/v1/auth/register \
   -d '{"username":"regularuser","password":"weak","email":"regular@example.com"}'
 ```
 
@@ -106,7 +106,7 @@ curl -X POST https://cscm-backend.onrender.com/api/v1/auth/register \
 **Test 2:** Weak password (complexity check)
 
 ```bash
-curl -X POST https://cscm-backend.onrender.com/api/v1/auth/register \
+curl -X POST <BACKEND_URL>/api/v1/auth/register \
   -d '{"username":"regularuser","password":"StrongPassword123!","email":"regular@example.com"}'
 ```
 
@@ -122,7 +122,7 @@ curl -X POST https://cscm-backend.onrender.com/api/v1/auth/register \
 **Test 3:** Strong password (accepted)
 
 ```bash
-curl -X POST https://cscm-backend.onrender.com/api/v1/auth/register \
+curl -X POST <BACKEND_URL>/api/v1/auth/register \
   -d '{"username":"regularuser","password":"Xk9#mP2$vL5@qR8!","email":"regular@example.com"}'
 ```
 
@@ -159,7 +159,7 @@ curl -X POST https://cscm-backend.onrender.com/api/v1/auth/register \
 
 ```bash
 for i in {1..6}; do
-  curl -X POST https://cscm-backend.onrender.com/api/v1/auth/login \
+  curl -X POST <BACKEND_URL>/api/v1/auth/login \
     -d '{"username":"wronguser","password":"wrongpassword"}'
 done
 ```
@@ -186,7 +186,7 @@ done
 **Test 1:** Request without Origin header
 
 ```bash
-curl https://cscm-backend.onrender.com/api/v1/health
+curl <BACKEND_URL>/api/v1/health
 ```
 
 **Result:**
@@ -202,7 +202,7 @@ curl https://cscm-backend.onrender.com/api/v1/health
 **Test 2:** OPTIONS preflight with localhost origin
 
 ```bash
-curl -X OPTIONS https://cscm-backend.onrender.com/api/v1/auth/login \
+curl -X OPTIONS <BACKEND_URL>/api/v1/auth/login \
   -H "Origin: http://localhost:3000" \
   -H "Access-Control-Request-Method: POST" \
   -v
@@ -263,7 +263,7 @@ x-xss-protection: 1; mode=block
 **Test 1:** Access protected endpoint without authentication
 
 ```bash
-curl -X POST https://cscm-aiml.onrender.com/api/v1/demand/forecast \
+curl -X POST <AI_ML_URL>/api/v1/demand/forecast \
   -H "Content-Type: application/json" \
   -d '{"sku_id":"test","store_id":"test","forecast_horizon":7}'
 ```
@@ -278,7 +278,7 @@ curl -X POST https://cscm-aiml.onrender.com/api/v1/demand/forecast \
 **Test 2:** Access with invalid API key
 
 ```bash
-curl -X POST https://cscm-aiml.onrender.com/api/v1/demand/forecast \
+curl -X POST <AI_ML_URL>/api/v1/demand/forecast \
   -H "Content-Type: application/json" \
   -H "X-API-Key: test-key-123" \
   -d '{"sku_id":"test","store_id":"test","forecast_horizon":7}'
@@ -308,7 +308,7 @@ curl -X POST https://cscm-aiml.onrender.com/api/v1/demand/forecast \
 **Test:** Invalid JSON structure
 
 ```bash
-curl -X POST https://cscm-backend.onrender.com/api/v1/auth/register \
+curl -X POST <BACKEND_URL>/api/v1/auth/register \
   -d 'invalid json'
 ```
 
@@ -328,7 +328,7 @@ curl -X POST https://cscm-backend.onrender.com/api/v1/auth/register \
 **Test:** Gateway health endpoint
 
 ```bash
-curl https://cscm-gateway.onrender.com/health
+curl <GATEWAY_URL>/health
 ```
 
 **Result:**

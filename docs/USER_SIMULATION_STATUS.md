@@ -12,9 +12,9 @@ The CSCM system has been successfully deployed to Render's free tier with all th
 
 | Service | URL | Health | Status |
 |---------|-----|--------|--------|
-| Backend API | https://cscm-backend.onrender.com | ✅ Healthy | Operational |
-| AI/ML Service | https://cscm-aiml.onrender.com | ✅ Healthy | Operational |
-| API Gateway | https://cscm-gateway.onrender.com | ✅ Healthy | Operational |
+| Backend API | <BACKEND_URL> | ✅ Healthy | Operational |
+| AI/ML Service | <AI_ML_URL> | ✅ Healthy | Operational |
+| API Gateway | <GATEWAY_URL> | ✅ Healthy | Operational |
 | PostgreSQL Database | External (Render env var) | ✅ Connected | Operational |
 | Redis Key Value | Render instance | ✅ Connected | Operational |
 

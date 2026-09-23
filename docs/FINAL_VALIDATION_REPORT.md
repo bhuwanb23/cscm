@@ -94,9 +94,9 @@ The CSCM system has been successfully deployed and validated. All critical funct
 
 | Service | URL | Health | Response Time |
 |---------|-----|--------|---------------|
-| Backend API | https://cscm-backend.onrender.com | ✅ 200 | ~300ms |
-| AI/ML Service | https://cscm-aiml.onrender.com | ✅ 200 | ~300ms |
-| API Gateway | https://cscm-gateway.onrender.com | ✅ 200 | ~300ms |
+| Backend API | <BACKEND_URL> | ✅ 200 | ~300ms |
+| AI/ML Service | <AI_ML_URL> | ✅ 200 | ~300ms |
+| API Gateway | <GATEWAY_URL> | ✅ 200 | ~300ms |
 
 ### 4. Public Endpoints ✅
 
@@ -196,9 +196,9 @@ The CSCM system has been successfully deployed and validated. All critical funct
 
 ## Service URLs
 
-- **Backend API:** https://cscm-backend.onrender.com
-- **AI/ML Service:** https://cscm-aiml.onrender.com
-- **API Gateway:** https://cscm-gateway.onrender.com
+- **Backend API:** <BACKEND_URL>
+- **AI/ML Service:** <AI_ML_URL>
+- **API Gateway:** <GATEWAY_URL>
 
 ## Test Credentials
 

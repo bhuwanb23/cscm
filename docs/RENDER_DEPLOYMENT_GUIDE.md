@@ -163,13 +163,13 @@ Once deployment is complete, test the health endpoints:
 
 ```bash
 # Test Backend
-curl https://cscm-backend.onrender.com/health
+curl <BACKEND_URL>/health
 
 # Test AI/ML
-curl https://cscm-aiml.onrender.com/health
+curl <AI_ML_URL>/health
 
 # Test Gateway
-curl https://cscm-gateway.onrender.com/health
+curl <GATEWAY_URL>/health
 ```
 
 All should return `{"status": "healthy", ...}`
@@ -183,8 +183,8 @@ The GitHub Actions workflow will automatically start pinging services every 14 m
 **Option 1: Switch to External Cron Service (Recommended)**
 1. Sign up at [cron-job.org](https://cron-job.org) (free)
 2. Create cron jobs for:
-   - Backend: `https://cscm-backend.onrender.com/health`
-   - Gateway: `https://cscm-gateway.onrender.com/health`
+   - Backend: `<BACKEND_URL>/health`
+   - Gateway: `<GATEWAY_URL>/health`
 3. Schedule: Every 14 minutes, 8 AM - 6 PM
 4. Disable the GitHub Actions workflow
 
@@ -201,7 +201,7 @@ Update your mobile app's API client to point to the Render Gateway:
 
 ```javascript
 // App/src/api/endpoints.js
-const GATEWAY_URL = 'https://cscm-gateway.onrender.com';
+const GATEWAY_URL = '<GATEWAY_URL>';
 ```
 
 ## Environment Variables
@@ -235,9 +235,9 @@ const GATEWAY_URL = 'https://cscm-gateway.onrender.com';
 ## Service URLs
 
 ### Public URLs (for mobile app)
-- Gateway: `https://cscm-gateway.onrender.com`
-- Backend: `https://cscm-backend.onrender.com`
-- AI/ML: `https://cscm-aiml.onrender.com`
+- Gateway: `<GATEWAY_URL>`
+- Backend: `<BACKEND_URL>`
+- AI/ML: `<AI_ML_URL>`
 
 ### Internal URLs (for service-to-service communication)
 - Backend: `http://cscm-backend:3000`

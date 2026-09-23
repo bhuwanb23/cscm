@@ -136,7 +136,7 @@ NODE_ENV=production
 DEBUG=false
 DATABASE_URL=<your-postgresql-connection-string>
 JWT_SECRET=<strong-random-secret-32+chars>
-ALLOWED_ORIGINS=https://cscm-gateway.onrender.com,https://your-frontend.com
+ALLOWED_ORIGINS=<GATEWAY_URL>,https://your-frontend.com
 REDIS_URL=<render-redis-connection-string>
 ```
 
@@ -148,8 +148,8 @@ PYTHON_ENV=production
 
 **Gateway Service:**
 ```
-BACKEND_URL=https://cscm-backend.onrender.com
-AI_ML_URL=https://cscm-aiml.onrender.com
+BACKEND_URL=<BACKEND_URL>
+AI_ML_URL=<AI_ML_URL>
 ALLOWED_ORIGINS=https://your-frontend.com
 NODE_ENV=production
 ```

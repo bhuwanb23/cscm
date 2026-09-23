@@ -26,9 +26,9 @@ The user simulation was conducted to validate the deployed CSCM system's core fu
 
 | Service | URL | Health Status | Response Time |
 |---------|-----|---------------|---------------|
-| Backend API | https://cscm-backend.onrender.com | ✅ Healthy (200) | ~300ms |
-| AI/ML Service | https://cscm-aiml.onrender.com | ✅ Healthy (200) | ~300ms |
-| API Gateway | https://cscm-gateway.onrender.com | ✅ Healthy (200) | ~300ms |
+| Backend API | <BACKEND_URL> | ✅ Healthy (200) | ~300ms |
+| AI/ML Service | <AI_ML_URL> | ✅ Healthy (200) | ~300ms |
+| API Gateway | <GATEWAY_URL> | ✅ Healthy (200) | ~300ms |
 
 ## Detailed Test Results
 

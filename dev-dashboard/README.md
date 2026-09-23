@@ -78,9 +78,9 @@ server-to-server, so only the dashboard's origin needs public browser access.
 
 | Env var | Value on Render | Purpose |
 |---|---|---|
-| `BACKEND_URL` | `https://cscm-backend.onrender.com` | admin API proxy (`/api/v1/*` passthrough) |
-| `GATEWAY_URL` | `https://cscm-gateway.onrender.com` | circuit-breaker state + reset |
-| `AI_ML_URL` | `https://cscm-aiml.onrender.com` | AI/ML playground + domain pages |
+| `BACKEND_URL` | `<BACKEND_URL>` | admin API proxy (`/api/v1/*` passthrough) |
+| `GATEWAY_URL` | `<GATEWAY_URL>` | circuit-breaker state + reset |
+| `AI_ML_URL` | `<AI_ML_URL>` | AI/ML playground + domain pages |
 | `BACKEND_JWT_SECRET` | **same value as cscm-backend's `JWT_SECRET`** | signs 5-min admin tokens |
 | `AI_ML_API_KEY` | **same value as cscm-aiml's `AI_ML_API_KEY`** | `X-API-Key` for AI/ML calls |
 | `DASHBOARD_JWT_SECRET` | auto-generated (`generateValue: true`) | dashboard session cookies |
@@ -92,7 +92,7 @@ server-to-server, so only the dashboard's origin needs public browser access.
    with no `Origin` header) must deploy to `cscm-backend` before anything can
    call it server-side. Until then the gateway and dashboard see backend 500s.
 2. In the Render dashboard set on **cscm-backend** →
-   `ALLOWED_ORIGINS=https://cscm-dashboard.onrender.com` (comma-separated if more).
+   `ALLOWED_ORIGINS=<DASHBOARD_URL>` (comma-separated if more).
 3. On **cscm-gateway**: ensure `JWT_SECRET` equals cscm-backend's, set
    `AI_ML_API_KEY` to match cscm-aiml.
 4. On **cscm-dashboard** (after first deploy): set `BACKEND_JWT_SECRET` (=

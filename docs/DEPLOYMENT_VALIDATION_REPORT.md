@@ -25,7 +25,7 @@ The Cognitive Supply Chain Mesh (CSCM) system has been successfully deployed to 
 
 ### Backend API Service
 - **Status**: ✅ Healthy
-- **URL**: https://cscm-backend.onrender.com
+- **URL**: <BACKEND_URL>
 - **Health Check**: 200 OK
 - **Response Time**: < 1 second
 - **Features Confirmed**:
@@ -38,7 +38,7 @@ The Cognitive Supply Chain Mesh (CSCM) system has been successfully deployed to 
 
 ### AI/ML Service
 - **Status**: ✅ Healthy
-- **URL**: https://cscm-aiml.onrender.com
+- **URL**: <AI_ML_URL>
 - **Health Check**: 200 OK
 - **Response Time**: < 1 second
 - **Features Confirmed**:
@@ -56,7 +56,7 @@ The Cognitive Supply Chain Mesh (CSCM) system has been successfully deployed to 
 
 ### API Gateway Service
 - **Status**: ✅ Healthy
-- **URL**: https://cscm-gateway.onrender.com
+- **URL**: <GATEWAY_URL>
 - **Health Check**: 200 OK
 - **Response Time**: < 1 second
 - **Features Confirmed**:
@@ -239,7 +239,7 @@ To connect the mobile app to the deployed services:
 
 ```javascript
 // App/src/api/endpoints.js
-const GATEWAY_URL = 'https://cscm-gateway.onrender.com';
+const GATEWAY_URL = '<GATEWAY_URL>';
 ```
 
 ### Recommended Authentication
