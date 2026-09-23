@@ -7,9 +7,9 @@ const https = require('https');
 const http = require('http');
 
 const SERVICES = {
-  backend: 'https://cscm-backend.onrender.com',
-  aiml: 'https://cscm-aiml.onrender.com',
-  gateway: 'https://cscm-gateway.onrender.com'
+  backend: process.env.BACKEND_URL || 'http://localhost:3000',
+  aiml: process.env.AI_ML_API_URL || 'http://localhost:8000',
+  gateway: process.env.GATEWAY_URL || 'http://localhost:8080'
 };
 
 function makeRequest(url, method = 'GET', body = null, headers = {}) {

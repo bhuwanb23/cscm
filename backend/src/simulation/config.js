@@ -6,10 +6,10 @@
 module.exports = {
   // API Configuration
   api: {
-    backendUrl: process.env.BACKEND_URL || 'https://cscm-backend.onrender.com',
-    aiMlUrl: process.env.AI_ML_API_URL || 'https://cscm-aiml.onrender.com',
+    backendUrl: process.env.BACKEND_URL || 'http://localhost:3000',
+    aiMlUrl: process.env.AI_ML_API_URL || 'http://localhost:8000',
     aiMlApiKey: process.env.AI_ML_API_KEY || '',
-    origin: process.env.ALLOWED_ORIGINS || 'https://cscm-frontend.onrender.com',
+    origin: process.env.ALLOWED_ORIGINS || 'http://localhost:5173',
   },
 
   // Simulation Schedule

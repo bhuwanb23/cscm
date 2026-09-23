@@ -6,9 +6,9 @@
 
 const https = require('https');
 
-const GATEWAY_URL = 'https://cscm-gateway.onrender.com';
-const BACKEND_URL = 'https://cscm-backend.onrender.com';
-const AIML_URL = 'https://cscm-aiml.onrender.com';
+const GATEWAY_URL = process.env.GATEWAY_URL || 'http://localhost:8080';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
+const AIML_URL = process.env.AI_ML_API_URL || 'http://localhost:8000';
 
 function makeRequest(url, method = 'GET', body = null, headers = {}) {
   return new Promise((resolve, reject) => {

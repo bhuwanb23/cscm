@@ -5,7 +5,7 @@
 
 const https = require('https');
 
-const BACKEND_URL = 'https://cscm-backend.onrender.com';
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
 
 function makeRequest(url, method = 'GET', body = null, headers = {}) {
   return new Promise((resolve, reject) => {
