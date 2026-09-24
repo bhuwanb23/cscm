@@ -1,22 +1,29 @@
 import React, { useState } from 'react';
 import { PageHeader, Loading, ErrorBanner, JsonView, useAsyncData } from '../components/ui.jsx';
 import { api } from '../api/client.jsx';
+import { useConfirm } from '../state/ConfirmContext.jsx';
+import { useToast } from '../state/ToastContext.jsx';
 
 export default function Cache() {
   const stats = useAsyncData(() => api.get('/api/cache/stats'), []);
   const [busy, setBusy] = useState(false);
-  const [note, setNote] = useState(null);
+  const toast = useToast();
+  const confirm = useConfirm();
 
   async function clear() {
-    if (!window.confirm('Clear the entire BaseApiService TTL cache?')) return;
+    const ok = await confirm({
+      title: 'Clear the entire cache?',
+      message: 'All BaseApiService TTL entries are dropped; sub-agents will refetch from AI/ML.',
+      confirmLabel: 'Clear cache',
+    });
+    if (!ok) return;
     setBusy(true);
-    setNote(null);
     try {
       await api.post('/api/cache/clear', {});
-      setNote('Cache cleared.');
+      toast.success('Cache cleared', 'All TTL entries were dropped.');
       stats.refresh();
     } catch (e) {
-      setNote(`Failed: ${e.message}`);
+      toast.error('Clear failed', e.message);
     } finally {
       setBusy(false);
     }
@@ -34,11 +41,10 @@ export default function Cache() {
           </>
         }
       />
-      {note && <div className="card muted">{note}</div>}
       <ErrorBanner error={stats.error} />
       <div className="card">
-        {stats.loading && <Loading />}
-        {stats.data && <JsonView data={stats.data.data ?? stats.data} />}
+        {stats.loading && <Loading rows={3} />}
+        {stats.data && <JsonView data={stats.data.data ?? stats.data} copy />}
       </div>
     </div>
   );

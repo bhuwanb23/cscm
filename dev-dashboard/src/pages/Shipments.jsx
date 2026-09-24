@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { PageHeader, Loading, ErrorBanner, DataTable, useAsyncData } from '../components/ui.jsx';
 import { api, callBackend } from '../api/client.jsx';
+import { useConfirm } from '../state/ConfirmContext.jsx';
+import { useToast } from '../state/ToastContext.jsx';
 
 const STATUSES = ['pending', 'assigned', 'in_transit', 'delivered', 'failed'];
 
@@ -11,31 +13,36 @@ export default function Shipments() {
     [status]
   );
   const [busy, setBusy] = useState(false);
-  const [note, setNote] = useState(null);
+  const toast = useToast();
+  const confirm = useConfirm();
 
   async function setStatusOf(s, next) {
     setBusy(true);
-    setNote(null);
     try {
       await callBackend('PATCH', `/api/v1/shipments/${s.shipment_id}/status`, { status: next });
-      setNote(`Shipment ${s.shipment_id} → ${next}`);
+      toast.success('Shipment updated', `${s.shipment_id} → ${next}`);
       shipments.refresh();
     } catch (e) {
-      setNote(`Failed: ${e.message}`);
+      toast.error('Status update failed', e.message);
     } finally {
       setBusy(false);
     }
   }
 
   async function removeShipment(s) {
-    if (!window.confirm(`Delete shipment ${s.shipment_id}?`)) return;
+    const ok = await confirm({
+      title: `Delete shipment ${s.shipment_id}?`,
+      message: 'This removes the shipment record permanently.',
+      confirmLabel: 'Delete shipment',
+    });
+    if (!ok) return;
     setBusy(true);
     try {
       await callBackend('POST', '/api/v1/debug/data/delete-shipment', { params: [s.shipment_id] });
-      setNote(`Deleted ${s.shipment_id}`);
+      toast.success('Shipment deleted', s.shipment_id);
       shipments.refresh();
     } catch (e) {
-      setNote(`Failed: ${e.message}`);
+      toast.error('Delete failed', e.message);
     } finally {
       setBusy(false);
     }
@@ -55,10 +62,9 @@ export default function Shipments() {
           </>
         }
       />
-      {note && <div className="card muted">{note}</div>}
       <ErrorBanner error={shipments.error} />
       <div className="card">
-        {shipments.loading && <Loading />}
+        {shipments.loading && <Loading rows={6} />}
         {shipments.data && (
           <DataTable
             columns={[

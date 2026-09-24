@@ -26,7 +26,7 @@ export default function Services() {
               <span style={{ marginLeft: 'auto' }}>{status[s]?.responseTime != null ? `${status[s].responseTime} ms` : '—'}</span>
             </div>
             {status[s]?.error && <div className="error-text">{status[s].error}</div>}
-            {status[s]?.detail && <JsonView data={status[s].detail} />}
+            {status[s]?.detail && <JsonView data={status[s].detail} copy />}
           </div>
         ))}
       </div>

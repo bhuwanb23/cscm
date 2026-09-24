@@ -66,7 +66,7 @@ export default function AiDomainPage({ domain }) {
         )}
       </div>
       <ErrorBanner error={error} />
-      {busy && <Loading label="Waiting for AI/ML…" />}
+      {busy && <Loading rows={3} label="Waiting for AI/ML…" />}
       {result && (
         <div className="card">
           <h3>Response</h3>

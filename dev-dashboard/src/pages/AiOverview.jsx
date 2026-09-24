@@ -17,7 +17,7 @@ export default function AiOverview() {
       <div className="card">
         <h3>Model monitoring health</h3>
         <ErrorBanner error={health.error} />
-        {health.loading && <Loading />}
+        {health.loading && <Loading rows={3} />}
         {health.data && (
           <pre className="json-view" style={{ maxHeight: 220 }}>{JSON.stringify(health.data, null, 2)}</pre>
         )}

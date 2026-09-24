@@ -62,7 +62,7 @@ export default function DbQuery() {
         </div>
       </div>
       <ErrorBanner error={error} />
-      {busy && <Loading />}
+      {busy && <Loading rows={6} label="Running query…" />}
       {result && (
         <div className="card">
           <h3>{result.rowCount} row(s)</h3>

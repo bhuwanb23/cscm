@@ -56,7 +56,7 @@ export default function Logs() {
       />
       <ErrorBanner error={logs.error} />
       <div className="card">
-        {logs.loading && <Loading />}
+        {logs.loading && <Loading rows={8} />}
         {!logs.loading && rows.length === 0 && (
           <div className="muted">No log lines match. If the backend runs elsewhere, its logs/ dir is on that host.</div>
         )}

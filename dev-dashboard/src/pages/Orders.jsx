@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { PageHeader, Loading, ErrorBanner, DataTable, useAsyncData } from '../components/ui.jsx';
 import { api, callBackend } from '../api/client.jsx';
+import { useConfirm } from '../state/ConfirmContext.jsx';
+import { useToast } from '../state/ToastContext.jsx';
 
 const STATUSES = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -11,31 +13,36 @@ export default function Orders() {
     [storeId]
   );
   const [busy, setBusy] = useState(false);
-  const [note, setNote] = useState(null);
+  const toast = useToast();
+  const confirm = useConfirm();
 
   async function setStatus(o, status) {
     setBusy(true);
-    setNote(null);
     try {
       await callBackend('PATCH', `/api/v1/orders/${o.order_id}/status`, { status });
-      setNote(`Order ${o.order_id} → ${status}`);
+      toast.success('Order updated', `${o.order_id} → ${status}`);
       orders.refresh();
     } catch (e) {
-      setNote(`Failed: ${e.message}`);
+      toast.error('Status update failed', e.message);
     } finally {
       setBusy(false);
     }
   }
 
   async function removeOrder(o) {
-    if (!window.confirm(`Delete order ${o.order_id}?`)) return;
+    const ok = await confirm({
+      title: `Delete order ${o.order_id}?`,
+      message: 'This removes the order record permanently.',
+      confirmLabel: 'Delete order',
+    });
+    if (!ok) return;
     setBusy(true);
     try {
       await callBackend('POST', '/api/v1/debug/data/delete-order', { params: [o.order_id] });
-      setNote(`Deleted ${o.order_id}`);
+      toast.success('Order deleted', o.order_id);
       orders.refresh();
     } catch (e) {
-      setNote(`Failed: ${e.message}`);
+      toast.error('Delete failed', e.message);
     } finally {
       setBusy(false);
     }
@@ -53,10 +60,9 @@ export default function Orders() {
           </>
         }
       />
-      {note && <div className="card muted">{note}</div>}
       <ErrorBanner error={orders.error} />
       <div className="card">
-        {orders.loading && <Loading />}
+        {orders.loading && <Loading rows={6} />}
         {orders.data && (
           <DataTable
             columns={[

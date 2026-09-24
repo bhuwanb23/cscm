@@ -65,7 +65,7 @@ export default function AiPlayground() {
         </div>
       </div>
       <ErrorBanner error={error} />
-      {busy && <Loading />}
+      {busy && <Loading rows={3} label="Waiting for response…" />}
       {result && (
         <div className="card">
           <h3>Response</h3>

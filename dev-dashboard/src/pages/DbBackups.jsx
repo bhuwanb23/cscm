@@ -32,7 +32,7 @@ export default function DbBackups() {
       />
       <ErrorBanner error={backups.error} />
       <div className="card">
-        {backups.loading && <Loading />}
+        {backups.loading && <Loading rows={4} />}
         {!backups.loading && list.length === 0 && <div className="muted">No backups yet.</div>}
         {Array.isArray(list) && list.map((b, i) => (
           <div key={i} className="event-row">

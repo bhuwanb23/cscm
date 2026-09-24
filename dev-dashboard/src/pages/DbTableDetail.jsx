@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { PageHeader, Loading, ErrorBanner, DataTable, JsonView, useAsyncData } from '../components/ui.jsx';
 import { api, callBackend } from '../api/client.jsx';
+import { useConfirm } from '../state/ConfirmContext.jsx';
+import { useToast } from '../state/ToastContext.jsx';
 
 // Primary-key columns + guarded delete action per table (backend WRITE_ACTIONS).
 const PK_BY_TABLE = {
@@ -22,24 +24,30 @@ export default function DbTableDetail() {
     [table, offset]
   );
   const [busy, setBusy] = useState(null);
-  const [note, setNote] = useState(null);
+  const toast = useToast();
+  const confirm = useConfirm();
 
   async function deleteRow(row) {
     const spec = PK_BY_TABLE[table];
     if (!spec) {
-      setNote(`No guarded delete registered for "${table}". Use the SQL console with care.`);
+      toast.warn('No guarded delete', `No delete action registered for "${table}". Use the SQL console with care.`);
       return;
     }
-    if (!window.confirm(`Delete this row from ${table}? This cannot be undone.`)) return;
+    const ok = await confirm({
+      title: `Delete this row from ${table}?`,
+      message: `Matched on ${spec.pk.join(' + ')} — this cannot be undone.`,
+      confirmLabel: 'Delete row',
+    });
+    if (!ok) return;
     setBusy(true);
     try {
       await callBackend('POST', `/api/v1/debug/data/${spec.action}`, {
         params: spec.pk.map((k) => row[k]),
       });
-      setNote('Row deleted.');
+      toast.success('Row deleted', `${table} row removed.`);
       rows.refresh();
     } catch (e) {
-      setNote(`Delete failed: ${e.message}`);
+      toast.error('Delete failed', e.message);
     } finally {
       setBusy(false);
     }
@@ -63,11 +71,10 @@ export default function DbTableDetail() {
         }
       />
       <ErrorBanner error={schema.error || rows.error} />
-      {note && <div className="card muted">{note}</div>}
 
       <div className="card">
         <h3>Schema</h3>
-        {schema.loading && <Loading />}
+        {schema.loading && <Loading rows={4} />}
         {schema.data && (
           <table className="data-table">
             <thead><tr><th>Column</th><th>Type</th><th>Nullable</th><th>Default</th></tr></thead>
@@ -87,7 +94,7 @@ export default function DbTableDetail() {
 
       <div className="card">
         <h3>Rows</h3>
-        {rows.loading && <Loading />}
+        {rows.loading && <Loading rows={6} />}
         {rows.data && (
           <>
             <DataTable

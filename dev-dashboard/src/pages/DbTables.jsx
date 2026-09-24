@@ -17,7 +17,7 @@ export default function DbTables() {
         actions={<button className="secondary" onClick={tables.refresh}>Refresh</button>}
       />
       <ErrorBanner error={tables.error} />
-      {tables.loading && <Loading />}
+      {tables.loading && <Loading rows={7} />}
       {rows.length > 0 && (
         <div className="card">
           <table className="data-table">

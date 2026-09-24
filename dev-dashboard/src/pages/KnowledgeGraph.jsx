@@ -53,7 +53,7 @@ Queried by:
             <button disabled={busy}>{busy ? 'Querying…' : 'Query'}</button>
           </form>
           <ErrorBanner error={error} />
-          {busy && <Loading />}
+          {busy && <Loading rows={3} label="Querying the graph…" />}
           {result && <JsonView data={result} />}
         </div>
       </div>

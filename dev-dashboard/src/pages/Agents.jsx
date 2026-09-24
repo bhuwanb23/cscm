@@ -1,21 +1,21 @@
 import React, { useState } from 'react';
 import { PageHeader, Loading, ErrorBanner, JsonView, useAsyncData } from '../components/ui.jsx';
 import { api } from '../api/client.jsx';
+import { useToast } from '../state/ToastContext.jsx';
 
 export default function Agents() {
   const agents = useAsyncData(() => api.get('/api/agents'), []);
   const [busy, setBusy] = useState(null);
-  const [note, setNote] = useState(null);
+  const toast = useToast();
 
   async function act(name, action) {
     setBusy(name + action);
-    setNote(null);
     try {
       await api.post(`/api/agents/${name}/${action}`, {});
-      setNote(`${action} sent to ${name}`);
+      toast.success(`${action} sent`, `${name} acknowledged the ${action} command.`);
       agents.refresh();
     } catch (e) {
-      setNote(`Failed: ${e.message}`);
+      toast.error(`${action} failed`, e.message);
     } finally {
       setBusy(null);
     }
@@ -31,10 +31,9 @@ export default function Agents() {
         subtitle="Process manager status and start/stop/restart — requires the agent runtime in the backend process (npm run agent-runtime)"
         actions={<button className="secondary" onClick={agents.refresh}>Refresh</button>}
       />
-      {note && <div className="card muted">{note}</div>}
       <ErrorBanner error={agents.error} />
       <div className="card">
-        {agents.loading && <Loading />}
+        {agents.loading && <Loading rows={4} />}
         {!agents.loading && !isMap && (
           <>
             <div className="muted" style={{ marginBottom: 10 }}>

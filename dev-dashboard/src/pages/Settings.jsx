@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PageHeader } from '../components/ui.jsx';
+import { PageHeader, CopyButton } from '../components/ui.jsx';
 import { useToast } from '../state/ToastContext.jsx';
 
 export default function Settings() {
@@ -39,11 +39,18 @@ export default function Settings() {
         <div className="row" style={{ marginTop: 10 }}>
           <button onClick={save}>Save token</button>
           <button className="secondary" onClick={() => setToken('')}>Clear</button>
+          {token && <CopyButton text={token} label="Copy token" />}
         </div>
       </div>
 
       <div className="card">
         <h3>Server-side env vars (dashboard server)</h3>
+        <div className="json-head">
+          <CopyButton
+            text={`PORT=3002\nBACKEND_URL=http://localhost:3000\nGATEWAY_URL=http://localhost:8080\nAI_ML_URL=http://localhost:8000`}
+            label="Copy env template"
+          />
+        </div>
         <pre className="json-view">{`PORT=3002                    # dashboard port
 BACKEND_URL=http://localhost:3000
 GATEWAY_URL=http://localhost:8080

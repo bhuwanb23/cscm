@@ -19,7 +19,7 @@ export default function StoreDetail() {
         <div className="card">
           <h3>Inventory ({inv.data?.data?.length ?? '…'})</h3>
           <ErrorBanner error={inv.error} />
-          {inv.loading && <Loading />}
+          {inv.loading && <Loading rows={5} />}
           {inv.data && (
             <DataTable
               columns={[
@@ -34,7 +34,7 @@ export default function StoreDetail() {
         <div className="card">
           <h3>Recent orders ({orders.data?.data?.length ?? '…'})</h3>
           <ErrorBanner error={orders.error} />
-          {orders.loading && <Loading />}
+          {orders.loading && <Loading rows={5} />}
           {orders.data && (
             <DataTable
               columns={[

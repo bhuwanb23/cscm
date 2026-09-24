@@ -1,21 +1,26 @@
 import React from 'react';
 import { PageHeader, Loading, ErrorBanner, JsonView, useAsyncData } from '../components/ui.jsx';
 import { callBackend } from '../api/client.jsx';
+import { useToast } from '../state/ToastContext.jsx';
 
 export default function Simulation() {
   const status = useAsyncData(() => callBackend('GET', '/api/v1/debug/simulation/status'), []);
   const [busy, setBusy] = React.useState(null);
-  const [note, setNote] = React.useState(null);
+  const toast = useToast();
 
   async function act(action) {
     setBusy(action);
-    setNote(null);
     try {
       await callBackend('POST', `/api/v1/debug/simulation/${action}`, {});
-      setNote(action === 'start' ? 'Simulation started (runs until users complete a cycle or you stop it).' : 'Stop requested — finishes the current simulated user first.');
+      toast.success(
+        action === 'start' ? 'Simulation started' : 'Stop requested',
+        action === 'start'
+          ? 'Runs until users complete a cycle or you stop it.'
+          : 'Finishes the current simulated user first.'
+      );
       status.refresh();
     } catch (e) {
-      setNote(`Failed: ${e.message}`);
+      toast.error(`${action} failed`, e.message);
     } finally {
       setBusy(null);
     }
@@ -36,12 +41,11 @@ export default function Simulation() {
           </>
         }
       />
-      {note && <div className="card muted">{note}</div>}
       <ErrorBanner error={status.error} />
       <div className="grid-2">
         <div className="card">
           <h3>Status</h3>
-          {status.loading && <Loading />}
+          {status.loading && <Loading rows={3} />}
           {status.data && (
             <>
               <div className="event-row">
@@ -60,7 +64,7 @@ export default function Simulation() {
         <div className="card">
           <h3>Last report</h3>
           {status.data?.data?.report
-            ? <JsonView data={status.data.data.report} />
+            ? <JsonView data={status.data.data.report} copy />
             : <div className="muted">No report yet — run a full cycle, or see the audit CSV from the GitHub Action runs.</div>}
         </div>
       </div>

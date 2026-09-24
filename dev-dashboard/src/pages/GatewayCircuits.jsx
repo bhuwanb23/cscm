@@ -1,22 +1,29 @@
 import React, { useState } from 'react';
 import { PageHeader, Loading, ErrorBanner, JsonView, useAsyncData } from '../components/ui.jsx';
 import { callGateway } from '../api/client.jsx';
+import { useConfirm } from '../state/ConfirmContext.jsx';
+import { useToast } from '../state/ToastContext.jsx';
 
 export default function GatewayCircuits() {
   const circuits = useAsyncData(() => callGateway('GET', '/circuit-breaker/state'), []);
   const [busy, setBusy] = useState(false);
-  const [note, setNote] = useState(null);
+  const toast = useToast();
+  const confirm = useConfirm();
 
   async function resetAll() {
-    if (!window.confirm('Reset all gateway circuit breakers?')) return;
+    const ok = await confirm({
+      title: 'Reset all circuit breakers?',
+      message: 'Open and half-open breakers on the gateway return to closed; failing downstreams will be retried immediately.',
+      confirmLabel: 'Reset all',
+    });
+    if (!ok) return;
     setBusy(true);
-    setNote(null);
     try {
       await callGateway('POST', '/circuit-breaker/reset/all', {});
-      setNote('Circuit breakers reset.');
+      toast.success('Breakers reset', 'All gateway circuit breakers are closed.');
       circuits.refresh();
     } catch (e) {
-      setNote(`Failed: ${e.message} — gateway admin endpoints require an admin JWT (Settings).`);
+      toast.error('Reset failed', `${e.message} — gateway admin endpoints require an admin JWT (Settings).`);
     } finally {
       setBusy(false);
     }
@@ -34,11 +41,10 @@ export default function GatewayCircuits() {
           </>
         }
       />
-      {note && <div className="card muted">{note}</div>}
       <ErrorBanner error={circuits.error} />
       <div className="card">
-        {circuits.loading && <Loading />}
-        {circuits.data && <JsonView data={circuits.data} />}
+        {circuits.loading && <Loading rows={3} />}
+        {circuits.data && <JsonView data={circuits.data} copy />}
         {!circuits.loading && !circuits.data && (
           <div className="muted">
             No data. These endpoints live on the gateway: /circuit-breaker/state (GET) and

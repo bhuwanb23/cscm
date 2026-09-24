@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { PageHeader, Loading, ErrorBanner, DataTable, useAsyncData } from '../components/ui.jsx';
 import { api, callBackend } from '../api/client.jsx';
+import { useConfirm } from '../state/ConfirmContext.jsx';
+import { useToast } from '../state/ToastContext.jsx';
 
 export default function Inventory() {
   const [storeId, setStoreId] = useState('store-1');
@@ -9,33 +11,38 @@ export default function Inventory() {
     [storeId]
   );
   const [busy, setBusy] = useState(false);
-  const [note, setNote] = useState(null);
+  const toast = useToast();
+  const confirm = useConfirm();
 
   async function saveQuantity(item, value) {
     setBusy(true);
-    setNote(null);
     try {
       await callBackend('PUT', `/api/v1/inventory/${item.store_id}/${item.product_id}/quantity`, { quantity: Number(value) });
-      setNote(`Updated ${item.product_id} → ${value}`);
+      toast.success('Stock updated', `${item.product_id} → ${value}`);
       inv.refresh();
     } catch (e) {
-      setNote(`Failed: ${e.message}`);
+      toast.error('Update failed', e.message);
     } finally {
       setBusy(false);
     }
   }
 
   async function removeItem(item) {
-    if (!window.confirm(`Delete inventory for ${item.product_id}?`)) return;
+    const ok = await confirm({
+      title: `Delete inventory for ${item.product_id}?`,
+      message: `This removes the stock record for ${item.store_id} / ${item.product_id}.`,
+      confirmLabel: 'Delete record',
+    });
+    if (!ok) return;
     setBusy(true);
     try {
       await callBackend('POST', '/api/v1/debug/data/delete-inventory', {
         params: [item.store_id, item.product_id],
       });
-      setNote(`Deleted ${item.product_id}`);
+      toast.success('Inventory deleted', item.product_id);
       inv.refresh();
     } catch (e) {
-      setNote(`Failed: ${e.message}`);
+      toast.error('Delete failed', e.message);
     } finally {
       setBusy(false);
     }
@@ -53,10 +60,9 @@ export default function Inventory() {
           </>
         }
       />
-      {note && <div className="card muted">{note}</div>}
       <ErrorBanner error={inv.error} />
       <div className="card">
-        {inv.loading && <Loading />}
+        {inv.loading && <Loading rows={6} />}
         {inv.data && (
           <DataTable
             columns={[

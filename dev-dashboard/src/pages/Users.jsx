@@ -1,39 +1,46 @@
 import React, { useState } from 'react';
 import { PageHeader, Loading, ErrorBanner, DataTable, useAsyncData } from '../components/ui.jsx';
 import { api, callBackend } from '../api/client.jsx';
+import { useConfirm } from '../state/ConfirmContext.jsx';
+import { useToast } from '../state/ToastContext.jsx';
 
 const ROLES = ['user', 'admin', 'shopkeeper', 'transporter', 'wholesaler', 'guest'];
 
 export default function Users() {
   const users = useAsyncData(() => api.get('/api/data/users?limit=200'), []);
   const [busy, setBusy] = useState(false);
-  const [note, setNote] = useState(null);
+  const toast = useToast();
+  const confirm = useConfirm();
   const [form, setForm] = useState({ username: '', email: '', password: '', role: 'user' });
   const [showCreate, setShowCreate] = useState(false);
 
   async function changeRole(u, role) {
     setBusy(true);
-    setNote(null);
     try {
       await callBackend('PATCH', `/api/v1/debug/data/users/${u.id}/role`, { role });
-      setNote(`User ${u.username} → ${role}`);
+      toast.success('Role updated', `${u.username} → ${role}`);
       users.refresh();
     } catch (e) {
-      setNote(`Failed: ${e.message}`);
+      toast.error('Role change failed', e.message);
     } finally {
       setBusy(false);
     }
   }
 
   async function removeUser(u) {
-    if (!window.confirm(`Delete user ${u.username}? This cannot be undone.`)) return;
+    const ok = await confirm({
+      title: `Delete ${u.username}?`,
+      message: 'This permanently removes the user account and cannot be undone.',
+      confirmLabel: 'Delete user',
+    });
+    if (!ok) return;
     setBusy(true);
     try {
       await callBackend('POST', '/api/v1/debug/data/delete-user', { params: [u.id] });
-      setNote(`Deleted ${u.username}`);
+      toast.success('User deleted', `${u.username} was removed.`);
       users.refresh();
     } catch (e) {
-      setNote(`Failed: ${e.message}`);
+      toast.error('Delete failed', e.message);
     } finally {
       setBusy(false);
     }
@@ -42,15 +49,14 @@ export default function Users() {
   async function createUser(e) {
     e.preventDefault();
     setBusy(true);
-    setNote(null);
     try {
       await callBackend('POST', '/api/v1/debug/database/create-user', form);
-      setNote(`Created ${form.username}`);
+      toast.success('User created', `${form.username} can sign in now.`);
       setForm({ username: '', email: '', password: '', role: 'user' });
       setShowCreate(false);
       users.refresh();
     } catch (err) {
-      setNote(`Failed: ${err.message}`);
+      toast.error('Create failed', err.message);
     } finally {
       setBusy(false);
     }
@@ -63,8 +69,6 @@ export default function Users() {
         subtitle="Accounts in the users table — role changes take effect on next token refresh"
         actions={<button onClick={() => setShowCreate(!showCreate)}>{showCreate ? 'Cancel' : '+ Create user'}</button>}
       />
-      {note && <div className="card muted">{note}</div>}
-
       {showCreate && (
         <form className="card row" onSubmit={createUser} style={{ gap: 10, flexWrap: 'wrap' }}>
           <input placeholder="username" required value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
@@ -79,7 +83,7 @@ export default function Users() {
 
       <ErrorBanner error={users.error} />
       <div className="card">
-        {users.loading && <Loading />}
+        {users.loading && <Loading rows={8} />}
         {users.data && (
           <DataTable
             columns={[
