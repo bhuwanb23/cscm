@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './state/AuthContext.jsx';
 import { useLive } from './state/LiveContext.jsx';
+import { useToast } from './state/ToastContext.jsx';
 import { StatusPill } from './components/ui.jsx';
 import { LiveClock } from './components/motion.jsx';
 
@@ -133,11 +134,40 @@ function ServiceHealth({ status }) {
   );
 }
 
+/** Fires a toast whenever a service health status flips (skips the first snapshot). */
+function useHealthAlerts(status) {
+  const toast = useToast();
+  const prev = useRef(null);
+
+  useEffect(() => {
+    if (!status || typeof status !== 'object') return;
+    const snapshot = {
+      Backend: status.backend?.status,
+      Gateway: status.gateway?.status,
+      'AI/ML': status.aiMl?.status,
+    };
+    if (prev.current) {
+      for (const [name, s] of Object.entries(snapshot)) {
+        const before = prev.current[name];
+        if (before && before !== s) {
+          if (s === 'healthy') toast.success(`${name} recovered`, `Status changed ${before} → ${s}.`);
+          else if (s === 'unknown') toast.warn(`${name} status unknown`, `Status changed ${before} → ${s}.`);
+          else toast.error(`${name} degraded`, `Status changed ${before} → ${s}.`);
+        }
+      }
+    }
+    prev.current = snapshot;
+    // toast identity is stable (memoized in the provider)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status]);
+}
+
 function Shell({ children }) {
   const { user, logout } = useAuth();
   const { status } = useLive();
   const location = useLocation();
   const [navOpen, setNavOpen] = useState(false);
+  useHealthAlerts(status);
 
   // Close the mobile drawer on navigation.
   useEffect(() => {

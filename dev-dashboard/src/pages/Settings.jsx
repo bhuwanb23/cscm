@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import { PageHeader } from '../components/ui.jsx';
+import { useToast } from '../state/ToastContext.jsx';
 
 export default function Settings() {
   const [token, setToken] = useState(sessionStorage.getItem('cp_backend_token') || '');
-  const [saved, setSaved] = useState(false);
+  const toast = useToast();
 
   function save() {
-    if (token) sessionStorage.setItem('cp_backend_token', token);
-    else sessionStorage.removeItem('cp_backend_token');
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
+    if (token) {
+      sessionStorage.setItem('cp_backend_token', token);
+      toast.success('Token saved', 'Stored in sessionStorage for this session.');
+    } else {
+      sessionStorage.removeItem('cp_backend_token');
+      toast.info('Token cleared', 'Backend admin token removed.');
+    }
   }
 
   return (
@@ -35,7 +39,6 @@ export default function Settings() {
         <div className="row" style={{ marginTop: 10 }}>
           <button onClick={save}>Save token</button>
           <button className="secondary" onClick={() => setToken('')}>Clear</button>
-          {saved && <span className="badge ok">saved</span>}
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PageHeader, Loading, ErrorBanner, DataTable } from '../components/ui.jsx';
 import { api } from '../api/client.jsx';
+import { useToast } from '../state/ToastContext.jsx';
 
 const EXAMPLES = [
   'SELECT id, username, role, created_at FROM users ORDER BY id DESC LIMIT 20',
@@ -14,6 +15,7 @@ export default function DbQuery() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const toast = useToast();
 
   async function run(e) {
     e?.preventDefault();
@@ -23,8 +25,10 @@ export default function DbQuery() {
     try {
       const data = await api.post('/api/db/query', { sql });
       setResult(data.data);
+      toast.success('Query complete', `${data.data?.rowCount ?? 0} row(s) returned`);
     } catch (err) {
       setError(err);
+      toast.error('Query failed', err.message);
     } finally {
       setBusy(false);
     }

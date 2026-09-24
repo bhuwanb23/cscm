@@ -1,21 +1,21 @@
 import React from 'react';
 import { PageHeader, Loading, ErrorBanner, useAsyncData } from '../components/ui.jsx';
 import { api } from '../api/client.jsx';
+import { useToast } from '../state/ToastContext.jsx';
 
 export default function DbBackups() {
   const backups = useAsyncData(() => api.get('/api/backups'), []);
   const [busy, setBusy] = React.useState(false);
-  const [note, setNote] = React.useState(null);
+  const toast = useToast();
 
   async function create() {
     setBusy(true);
-    setNote(null);
     try {
       const res = await api.post('/api/backups', {});
-      setNote(`Created: ${JSON.stringify(res.data || res)}`);
+      toast.success('Backup created', JSON.stringify(res.data || res).slice(0, 120));
       backups.refresh();
     } catch (e) {
-      setNote(`Failed: ${e.message}`);
+      toast.error('Backup failed', e.message);
     } finally {
       setBusy(false);
     }
@@ -31,7 +31,6 @@ export default function DbBackups() {
         actions={<button onClick={create} disabled={busy}>{busy ? 'Creating…' : 'Create backup'}</button>}
       />
       <ErrorBanner error={backups.error} />
-      {note && <div className="card muted">{note}</div>}
       <div className="card">
         {backups.loading && <Loading />}
         {!backups.loading && list.length === 0 && <div className="muted">No backups yet.</div>}
