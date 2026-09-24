@@ -3,6 +3,7 @@ import { Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './state/AuthContext.jsx';
 import { useLive } from './state/LiveContext.jsx';
 import { StatusPill } from './components/ui.jsx';
+import { LiveClock } from './components/motion.jsx';
 
 import Login from './pages/Login.jsx';
 import Overview from './pages/Overview.jsx';
@@ -155,6 +156,7 @@ function Shell({ children }) {
 
   return (
     <div className="app-shell">
+      <div className="ambient" aria-hidden="true" />
       {navOpen && <div className="scrim" onClick={() => setNavOpen(false)} aria-hidden="true" />}
       <aside className={`sidebar${navOpen ? ' open' : ''}`}>
         <div className="brand">
@@ -197,11 +199,14 @@ function Shell({ children }) {
             <span className="path">{location.pathname}</span>
           </div>
           <div className="side">
+            <LiveClock />
             <span className="muted" style={{ fontSize: 12 }}>signed in as {user?.username}</span>
             <button className="secondary sm" onClick={logout}>Log out</button>
           </div>
         </div>
-        {children}
+        <div key={location.pathname} className="page-enter">
+          {children}
+        </div>
       </main>
     </div>
   );

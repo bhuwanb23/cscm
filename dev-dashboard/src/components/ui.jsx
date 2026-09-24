@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { CountUp, Sparkline } from './motion.jsx';
 
 /* ------------------------------------------------------------- helpers -- */
 
@@ -21,13 +22,19 @@ const TONE_COLORS = {
   accent: 'var(--accent)',
 };
 
-export function Kpi({ label, value, sub, tone }) {
+export function Kpi({ label, value, sub, tone, spark }) {
   const toneColor = tone && TONE_COLORS[tone] ? { color: TONE_COLORS[tone] } : undefined;
+  const animated = typeof value === 'number' && Number.isFinite(value);
   return (
     <div className="card">
       <h3>{label}</h3>
-      <div className="value" style={toneColor}>
-        {value === undefined || value === null || value === '' ? '—' : value}
+      <div className="spark-row">
+        <div className="value" style={toneColor}>
+          {animated ? <CountUp value={value} /> : value === undefined || value === null || value === '' ? '—' : value}
+        </div>
+        {spark && spark.length > 1 && (
+          <Sparkline data={spark} tone={tone} ariaLabel={`${label} trend`} />
+        )}
       </div>
       {sub && <div className="sub">{sub}</div>}
     </div>
