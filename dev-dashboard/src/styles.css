@@ -518,6 +518,123 @@ table.data-table td .mono, table.data-table td code { color: var(--muted); }
 ::-webkit-scrollbar-thumb:hover { background: #2d3d63; }
 ::-webkit-scrollbar-track { background: transparent; }
 
+/* ============================================================ motion ===== */
+
+/* Route transition: content fades/slides in on every navigation. */
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.page-enter { animation: pageIn 240ms cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+
+/* Staggered card entrance within a freshly mounted page. */
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.995); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.page-enter .card { animation: cardIn 320ms ease both; }
+.page-enter .card:nth-child(1) { animation-delay: 0ms; }
+.page-enter .card:nth-child(2) { animation-delay: 40ms; }
+.page-enter .card:nth-child(3) { animation-delay: 80ms; }
+.page-enter .card:nth-child(4) { animation-delay: 120ms; }
+.page-enter .card:nth-child(5) { animation-delay: 160ms; }
+.page-enter .card:nth-child(6) { animation-delay: 200ms; }
+
+/* Card hover: subtle lift + border glow (transform-only, GPU friendly). */
+.card { transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease; }
+.card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(79, 140, 255, 0.45);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+}
+
+/* KPI numbers: tabular figures so count-ups don't jitter horizontally. */
+.card .value { font-variant-numeric: tabular-nums; }
+
+/* Ambient brand glow that slowly drifts behind the app. */
+@keyframes ambientDrift {
+  0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.55; }
+  50% { transform: translate3d(-3%, 2%, 0) scale(1.06); opacity: 0.8; }
+  100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.55; }
+}
+.ambient {
+  position: fixed;
+  inset: -20%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(600px 380px at 78% 12%, rgba(79, 140, 255, 0.075), transparent 65%),
+    radial-gradient(520px 340px at 12% 84%, rgba(124, 92, 255, 0.055), transparent 65%);
+  animation: ambientDrift 26s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Healthy service dots breathe; error dots alert-pulse. */
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 0 3px var(--ok-soft); }
+  50% { box-shadow: 0 0 0 6px var(--ok-soft); }
+}
+.status-dot.healthy { animation: breathe 2.6s ease-in-out infinite; }
+@keyframes alertPulse {
+  0%, 100% { box-shadow: 0 0 0 3px var(--err-soft); }
+  50% { box-shadow: 0 0 0 7px var(--err-soft); }
+}
+.status-dot.unhealthy { animation: alertPulse 1.2s ease-in-out infinite; }
+
+/* Primary button: light sweep on hover. */
+@keyframes shine {
+  from { transform: translateX(-120%) skewX(-18deg); }
+  to { transform: translateX(240%) skewX(-18deg); }
+}
+button:not(.secondary):not(.danger):not(.ghost) { position: relative; overflow: hidden; }
+button:not(.secondary):not(.danger):not(.ghost)::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 40%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+  transform: translateX(-120%) skewX(-18deg);
+  pointer-events: none;
+}
+button:not(.secondary):not(.danger):not(.ghost):hover::after {
+  animation: shine 600ms ease;
+}
+
+/* Brand logo: gentle glow pulse; spins once on hover. */
+@keyframes logoGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(79, 140, 255, 0.0); }
+  50% { box-shadow: 0 0 14px 2px rgba(79, 140, 255, 0.35); }
+}
+.sidebar .brand .logo { animation: logoGlow 4.5s ease-in-out infinite; transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.sidebar .brand:hover .logo { transform: rotate(14deg) scale(1.08); }
+
+/* Nav items: tiny slide on hover to invite the click. */
+.sidebar a.nav-item { transition: background 100ms ease, color 100ms ease, padding-left 120ms ease; }
+.sidebar a.nav-item:hover { padding-left: 11px; }
+
+/* Topbar clock. */
+.topbar .clock {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  padding: 3px 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  background: var(--panel);
+  white-space: nowrap;
+}
+
+/* Activity feed: new items glide in. */
+@keyframes feedIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.feed .item { animation: feedIn 220ms ease both; }
+
+/* Sparkline alignment inside cards. */
+.card .spark-row { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s-2); }
+
 /* ----------------------------------------------------------- responsive -- */
 @media (max-width: 900px) {
   .sidebar {
