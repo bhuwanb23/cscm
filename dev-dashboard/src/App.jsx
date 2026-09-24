@@ -5,6 +5,9 @@ import { useLive } from './state/LiveContext.jsx';
 import { useToast } from './state/ToastContext.jsx';
 import { StatusPill, ScrollTopButton } from './components/ui.jsx';
 import { LiveClock } from './components/motion.jsx';
+import { Icon, BrandMark } from './components/icons.jsx';
+import CommandPalette from './components/CommandPalette.jsx';
+import { NAV } from './lib/nav.js';
 
 import Login from './pages/Login.jsx';
 import Overview from './pages/Overview.jsx';
@@ -41,93 +44,33 @@ import GatewayCircuits from './pages/GatewayCircuits.jsx';
 import MobileScreens from './pages/MobileScreens.jsx';
 import Docs from './pages/Docs.jsx';
 
-const NAV = [
-  {
-    group: 'Monitor',
-    items: [
-      ['/', 'Overview'],
-      ['/services', 'Services'],
-      ['/logs', 'Logs'],
-      ['/events', 'Event stream'],
-    ],
-  },
-  {
-    group: 'Database',
-    items: [
-      ['/db/tables', 'Tables'],
-      ['/db/query', 'SQL console'],
-      ['/db/backups', 'Backups'],
-      ['/db/migrations', 'Migrations'],
-    ],
-  },
-  {
-    group: 'Business data',
-    items: [
-      ['/users', 'Users & roles'],
-      ['/inventory', 'Inventory'],
-      ['/orders', 'Orders'],
-      ['/shipments', 'Shipments'],
-    ],
-  },
-  {
-    group: 'Agents (Node)',
-    items: [
-      ['/agents', 'Runtime control'],
-      ['/agents/families', 'Families & sub-agents'],
-      ['/knowledge-graph', 'Knowledge graph'],
-      ['/cache', 'Cache'],
-      ['/feature-store', 'Feature store'],
-    ],
-  },
-  {
-    group: 'AI/ML (Python)',
-    items: [
-      ['/ai', 'Model overview'],
-      ['/ai/playground', 'API playground'],
-      ['/ai/demand-forecast', 'Demand forecast'],
-      ['/ai/demand-planning', 'Demand planning'],
-      ['/ai/inventory-opt', 'Inventory optimization'],
-      ['/ai/routing', 'Routing & logistics'],
-      ['/ai/supplier-risk', 'Supplier risk'],
-      ['/ai/customer', 'Customer demand'],
-      ['/ai/anomaly', 'Anomaly detection'],
-      ['/ai/nlp', 'NLP & LLM'],
-      ['/ai/kg', 'Knowledge graph'],
-      ['/ai/causal', 'Causal inference'],
-      ['/ai/vision', 'Computer vision'],
-      ['/ai/learning', 'Continual learning'],
-      ['/ai/uncertainty', 'Uncertainty'],
-      ['/ai/monitoring', 'Model monitoring'],
-      ['/ai/digital-twin', 'Digital twin'],
-      ['/ai/coordination', 'Multi-agent coordination'],
-      ['/ai/explain', 'Explainability'],
-    ],
-  },
-  {
-    group: 'Platform',
-    items: [
-      ['/simulation', 'User simulation'],
-      ['/gateway/routing', 'Gateway routing'],
-      ['/gateway/circuits', 'Circuit breakers'],
-      ['/mobile', 'Mobile app screens'],
-      ['/settings', 'Settings'],
-      ['/docs', 'Docs & links'],
-    ],
-  },
-];
-
-function ServiceHealth({ status }) {
+function ServiceHealth({ status, mini }) {
   const services = [
     ['Backend', status.backend?.status],
     ['Gateway', status.gateway?.status],
     ['AI/ML', status.aiMl?.status],
   ];
+
+  if (mini) {
+    return (
+      <div className="side-footer" aria-label="Service health">
+        {services.map(([name, s]) => (
+          <span key={name} className="svc-mini" title={`${name}: ${s || 'unknown'}`}>
+            <StatusPill status={s || 'unknown'} mini />
+          </span>
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <div className="side-footer" aria-label="Service health">
+    <div aria-label="Service health">
       {services.map(([name, s]) => (
-        <div className="svc" key={name}>
-          <span>{name}</span>
-          <StatusPill status={s || 'unknown'} />
+        <div className="event-row" key={name} style={{ paddingLeft: 6 }}>
+          <span className="muted" style={{ fontSize: 12.5 }}>{name}</span>
+          <span style={{ marginLeft: 'auto' }}>
+            <StatusPill status={s || 'unknown'} mini />
+          </span>
         </div>
       ))}
     </div>
@@ -166,79 +109,142 @@ function Shell({ children }) {
   const { user, logout } = useAuth();
   const { status } = useLive();
   const location = useLocation();
-  const [navOpen, setNavOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   useHealthAlerts(status);
+
+  // Ctrl/Cmd+K toggles the command palette.
+  useEffect(() => {
+    const onKey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   // Close the mobile drawer on navigation.
   useEffect(() => {
-    setNavOpen(false);
+    setMobileOpen(false);
   }, [location.pathname]);
-
-  // Close on Escape when the drawer is open.
-  useEffect(() => {
-    if (!navOpen) return undefined;
-    const onKey = (e) => e.key === 'Escape' && setNavOpen(false);
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [navOpen]);
 
   const currentGroup = NAV.find((g) => g.items.some(([to]) => to === location.pathname))?.group;
 
   return (
     <div className="app-shell">
       <div className="ambient" aria-hidden="true" />
-      {navOpen && <div className="scrim" onClick={() => setNavOpen(false)} aria-hidden="true" />}
-      <aside className={`sidebar${navOpen ? ' open' : ''}`}>
-        <div className="brand">
-          <span className="logo" aria-hidden="true">⚡</span>
-          CSCM Control
-        </div>
-        <nav aria-label="Main navigation" style={{ display: 'contents' }}>
+      {mobileOpen && <div className="scrim" onClick={() => setMobileOpen(false)} aria-hidden="true" />}
+
+      <aside className={`sidebar${mobileOpen ? ' open' : ''}`}>
+        <NavLink to="/" className="brand" aria-label="CSCM Control home">
+          <BrandMark size={30} />
+        </NavLink>
+        <div className="rail-sep" aria-hidden="true" />
+
+        <nav aria-label="Primary" style={{ display: 'contents' }}>
+          {NAV.map((section) => {
+            const [topPath, topLabel, topIcon] = section.items[0];
+            const active = section.items.some(([to]) => to === location.pathname);
+            return (
+              <NavLink
+                key={section.group}
+                to={topPath}
+                end={topPath === '/'}
+                className={`rail-item${active ? ' active' : ''}`}
+                data-tip={section.group}
+                aria-label={section.group}
+              >
+                <Icon name={topIcon} size={19} />
+              </NavLink>
+            );
+          })}
+        </nav>
+
+        <ServiceHealth status={status} mini />
+
+        {/* Expanded flyout with the full nav tree (hover / focus / mobile drawer) */}
+        <div className="side-full">
+          <div className="brand-row">
+            <BrandMark size={26} />
+            <div>
+              CSCM Control
+              <span className="muted">Supply-chain operations</span>
+            </div>
+          </div>
+          <button
+            className="palette-trigger"
+            style={{ width: '100%', marginBottom: 10 }}
+            onClick={() => setPaletteOpen(true)}
+          >
+            <Icon name="search" size={14} />
+            Search…
+            <span className="kbd">Ctrl K</span>
+          </button>
           {NAV.map((section) => (
             <div key={section.group}>
               <div className="group">{section.group}</div>
-              {section.items.map(([to, label]) => (
+              {section.items.map(([to, label, icon]) => (
                 <NavLink
                   key={to}
                   to={to}
                   end={to === '/'}
                   className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
                 >
+                  <Icon name={icon} size={15} />
                   {label}
                 </NavLink>
               ))}
             </div>
           ))}
-        </nav>
-        <ServiceHealth status={status} />
+          <div className="group">Services</div>
+          <ServiceHealth status={status} />
+        </div>
       </aside>
 
       <main className="main">
         <div className="topbar">
+          <button
+            className="secondary sm menu-btn"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open navigation menu"
+            aria-expanded={mobileOpen}
+          >
+            <Icon name="menu" size={15} />
+          </button>
           <div className="crumbs">
-            <button
-              className="secondary sm menu-btn"
-              onClick={() => setNavOpen(true)}
-              aria-label="Open navigation menu"
-              aria-expanded={navOpen}
-            >
-              ☰
-            </button>
             {currentGroup && <span>{currentGroup}</span>}
             {currentGroup && <span aria-hidden="true">·</span>}
             <span className="path">{location.pathname}</span>
           </div>
+          <button
+            className="palette-trigger"
+            onClick={() => setPaletteOpen(true)}
+            aria-label="Open command palette (Ctrl+K)"
+          >
+            <Icon name="search" size={14} />
+            <span className="palette-hint">Search or jump to…</span>
+            <span className="kbd">Ctrl K</span>
+          </button>
           <div className="side">
             <LiveClock />
-            <span className="muted" style={{ fontSize: 12 }}>signed in as {user?.username}</span>
-            <button className="secondary sm" onClick={logout}>Log out</button>
+            <span className="who">signed in as {user?.username}</span>
+            <button className="ghost sm" onClick={logout} aria-label="Log out">
+              <Icon name="logOut" size={15} />
+            </button>
           </div>
         </div>
-        <div key={location.pathname} className="page-enter">
-          {children}
+
+        <div className="main-body">
+          <div key={location.pathname} className="page-enter">
+            {children}
+          </div>
         </div>
         <ScrollTopButton />
       </main>
+
+      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../state/AuthContext.jsx';
+import { BrandMark, Icon } from '../components/icons.jsx';
 
 export default function Login() {
   const { login } = useAuth();
@@ -25,14 +26,10 @@ export default function Login() {
     <div className="login-screen">
       <div className="login-box">
         <form className="card" onSubmit={submit} aria-label="Sign in to CSCM Control">
-          <div className="row" style={{ gap: 10, marginBottom: 18 }}>
-            <span className="logo" aria-hidden="true" style={{
-              width: 30, height: 30, display: 'grid', placeItems: 'center',
-              background: 'linear-gradient(135deg, var(--accent), #7c5cff)',
-              borderRadius: 8, fontSize: 14,
-            }}>⚡</span>
+          <div className="row" style={{ gap: 12, marginBottom: 20 }}>
+            <BrandMark size={38} />
             <div>
-              <h1 style={{ fontSize: 18 }}>CSCM Control Plane</h1>
+              <h1>CSCM Control Plane</h1>
               <div className="muted" style={{ fontSize: 12.5 }}>Supply-chain operations console</div>
             </div>
           </div>
@@ -48,7 +45,7 @@ export default function Login() {
             required
           />
 
-          <label htmlFor="login-password">Password</label>
+          <label htmlFor="login-password" style={{ marginTop: 12 }}>Password</label>
           <input
             id="login-password"
             name="password"
@@ -61,16 +58,26 @@ export default function Login() {
 
           {error && (
             <div className="login-error" role="alert">
-              <span aria-hidden="true">⚠</span>
+              <Icon name="alert" size={14} />
               {error}
             </div>
           )}
 
-          <button type="submit" disabled={busy || !username || !password} style={{ width: '100%', marginTop: 16 }}>
-            {busy ? 'Signing in…' : 'Sign in'}
+          <button type="submit" disabled={busy || !username || !password} style={{ width: '100%', marginTop: 18 }}>
+            {busy ? (
+              <>
+                <span className="spinner" style={{ width: 14, height: 14, borderTopColor: 'currentColor' }} aria-hidden="true" />
+                Signing in…
+              </>
+            ) : (
+              <>
+                <Icon name="key" size={15} />
+                Sign in
+              </>
+            )}
           </button>
 
-          <p className="muted" style={{ fontSize: 12, marginTop: 14, lineHeight: 1.5 }}>
+          <p className="muted" style={{ fontSize: 12, marginTop: 16, lineHeight: 1.55 }}>
             Credentials come from <code>DASHBOARD_USER</code> / <code>DASHBOARD_PASSWORD</code> on
             the dashboard server. Sessions expire automatically.
           </p>

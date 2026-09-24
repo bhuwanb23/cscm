@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CountUp, Sparkline, prefersReducedMotion } from './motion.jsx';
 import { useToast } from '../state/ToastContext.jsx';
+import { renderArt } from './illustrations.jsx';
 
 /* ------------------------------------------------------------- helpers -- */
 
@@ -42,12 +43,19 @@ export function Kpi({ label, value, sub, tone, spark }) {
   );
 }
 
-export function StatusPill({ status }) {
+export function StatusPill({ status, mini }) {
   const s = String(status || 'unknown').toLowerCase();
   const cls = s === 'healthy' || s === 'ok' || s === 'closed' ? 'ok' : s === 'unknown' ? 'warn' : 'err';
   const dotCls = cls === 'ok' ? 'healthy' : cls === 'warn' ? 'unknown' : 'unhealthy';
+  if (mini) {
+    return (
+      <span className="row" style={{ gap: 0 }} title={status || 'unknown'}>
+        <span className={`status-dot ${dotCls}`} aria-hidden="true" />
+      </span>
+    );
+  }
   return (
-    <span className="row" style={{ gap: 0 }}>
+    <span className="row" style={{ gap: 6 }}>
       <span className={`status-dot ${dotCls}`} aria-hidden="true" />
       <span className={`badge ${cls}`}>{status}</span>
     </span>
@@ -109,10 +117,14 @@ export function Loading({ label, skeleton = true, rows = 5 }) {
   );
 }
 
-export function EmptyState({ icon = '◇', title = 'Nothing here yet', hint, action }) {
+/**
+ * Empty state with a themed SVG illustration.
+ * `art`: 'data' | 'search' | 'offline' | 'inbox' | 'check' — or a custom component/element.
+ */
+export function EmptyState({ art = 'data', icon, title = 'Nothing here yet', hint, action }) {
   return (
     <div className="empty-state" role="status">
-      <div className="icon" aria-hidden="true">{icon}</div>
+      <div className="art" aria-hidden="true">{icon ? icon : renderArt(art)}</div>
       <h3>{title}</h3>
       {hint && <p>{hint}</p>}
       {action}
