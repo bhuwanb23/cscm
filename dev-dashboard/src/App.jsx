@@ -3,7 +3,7 @@ import { Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './state/AuthContext.jsx';
 import { useLive } from './state/LiveContext.jsx';
 import { useToast } from './state/ToastContext.jsx';
-import { StatusPill } from './components/ui.jsx';
+import { StatusPill, ScrollTopButton } from './components/ui.jsx';
 import { LiveClock } from './components/motion.jsx';
 
 import Login from './pages/Login.jsx';
@@ -237,6 +237,7 @@ function Shell({ children }) {
         <div key={location.pathname} className="page-enter">
           {children}
         </div>
+        <ScrollTopButton />
       </main>
     </div>
   );
