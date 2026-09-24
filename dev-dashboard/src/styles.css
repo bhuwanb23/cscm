@@ -635,6 +635,79 @@ button:not(.secondary):not(.danger):not(.ghost):hover::after {
 /* Sparkline alignment inside cards. */
 .card .spark-row { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s-2); }
 
+/* ==========================================================================
+   Toast notifications — slide in from the right, slide back out on dismiss.
+   Two-phase removal (leaving class → unmount) lives in ToastContext.jsx.
+   ======================================================================== */
+
+.toast-viewport {
+  position: fixed;
+  right: var(--s-4);
+  bottom: var(--s-4);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  width: min(340px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-2);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  box-shadow: var(--shadow-2);
+  animation: toastIn 260ms cubic-bezier(0.21, 1.02, 0.73, 1) both;
+}
+
+.toast.ok { border-left-color: var(--ok); }
+.toast.warn { border-left-color: var(--warn); }
+.toast.err { border-left-color: var(--err); }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(48px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Leaving state swaps the animation so the exit replays from the resting pose. */
+.toast.leaving { animation: toastOut 260ms ease both; pointer-events: none; }
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(24px); }
+}
+
+.toast .t-icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}
+.toast.ok .t-icon { background: var(--ok-soft); color: var(--ok); }
+.toast.warn .t-icon { background: var(--warn-soft); color: var(--warn); }
+.toast.err .t-icon { background: var(--err-soft); color: var(--err); }
+
+.toast .t-body { min-width: 0; flex: 1; }
+.toast .t-title { font-size: 13px; font-weight: 600; }
+.toast .t-msg { font-size: 12px; color: var(--muted); margin-top: 1px; overflow-wrap: anywhere; }
+
+.toast .t-close {
+  flex: none;
+  padding: 2px 5px;
+  font-size: 11px;
+}
+
 /* ----------------------------------------------------------- responsive -- */
 @media (max-width: 900px) {
   .sidebar {
