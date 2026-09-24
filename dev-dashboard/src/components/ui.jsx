@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { CountUp, Sparkline } from './motion.jsx';
+import React, { useEffect, useRef, useState } from 'react';
+import { CountUp, Sparkline, prefersReducedMotion } from './motion.jsx';
+import { useToast } from '../state/ToastContext.jsx';
 
 /* ------------------------------------------------------------- helpers -- */
 
@@ -55,6 +56,10 @@ export function StatusPill({ status }) {
 
 /* -------------------------------------------------------------- states -- */
 
+export function Spinner({ size = 18 }) {
+  return <span className="spinner" style={{ width: size, height: size }} role="status" aria-label="Loading" />;
+}
+
 export function Skeleton({ variant = 'text', style }) {
   return <div className={`skeleton ${variant}`} style={style} aria-hidden="true" />;
 }
@@ -79,11 +84,27 @@ export function SkeletonKpis({ count = 4 }) {
   );
 }
 
-export function Loading({ label = 'Loading…', skeleton }) {
-  if (skeleton) return <SkeletonTable />;
+/**
+ * Loading placeholder. Defaults to a shimmering skeleton table so pages keep
+ * their layout height while data loads. Pass `label` to show a status line
+ * under the skeleton (useful for slow calls like AI/ML requests).
+ */
+export function Loading({ label, skeleton = true, rows = 5 }) {
+  if (skeleton) {
+    return (
+      <div>
+        <SkeletonTable rows={rows} />
+        {label && (
+          <div className="muted" style={{ padding: '8px 2px 0', fontSize: 12 }} role="status" aria-live="polite">
+            {label}
+          </div>
+        )}
+      </div>
+    );
+  }
   return (
     <div className="muted" style={{ padding: 14, fontSize: 13 }} role="status" aria-live="polite">
-      {label}
+      {label || 'Loading…'}
     </div>
   );
 }
@@ -112,6 +133,60 @@ export function ErrorBanner({ error, onRetry }) {
         </button>
       )}
     </div>
+  );
+}
+
+/* ------------------------------------------------------------ clipboard -- */
+
+/**
+ * Copy-to-clipboard button with success feedback. Falls back to a hidden
+ * textarea + execCommand when the async Clipboard API is unavailable.
+ */
+export function CopyButton({ text, label = 'Copy', className = 'ghost sm' }) {
+  const toast = useToast();
+  const [copied, setCopied] = useState(false);
+  const timer = useRef(null);
+
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  async function copy() {
+    const value = typeof text === 'string' ? text : String(text ?? '');
+    let ok = false;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(value);
+        ok = true;
+      }
+    } catch {
+      /* fall through to legacy path */
+    }
+    if (!ok) {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = value;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        ok = document.execCommand('copy');
+        ta.remove();
+      } catch {
+        ok = false;
+      }
+    }
+    if (ok) {
+      setCopied(true);
+      clearTimeout(timer.current);
+      timer.current = setTimeout(() => setCopied(false), 1400);
+    } else {
+      toast.error('Copy failed', 'Clipboard access was blocked by the browser.');
+    }
+  }
+
+  return (
+    <button type="button" className={className} onClick={copy} aria-label={`Copy to clipboard: ${label}`}>
+      {copied ? '✓ Copied' : label}
+    </button>
   );
 }
 
@@ -154,8 +229,43 @@ export function DataTable({ columns, rows, empty = 'No data', keyField = 'id', a
   );
 }
 
-export function JsonView({ data }) {
-  return <pre className="json-view">{JSON.stringify(data, null, 2)}</pre>;
+export function JsonView({ data, copy }) {
+  const json = JSON.stringify(data, null, 2);
+  return (
+    <div>
+      {copy && (
+        <div className="json-head">
+          <CopyButton text={json} label="Copy JSON" />
+        </div>
+      )}
+      <pre className="json-view">{json}</pre>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------- scroll-top -- */
+
+/** Floating button that appears after scrolling down a long page. */
+export function ScrollTopButton() {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShow(window.scrollY > 400);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  if (!show) return null;
+  return (
+    <button
+      className="scroll-top"
+      aria-label="Scroll back to top"
+      onClick={() => window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })}
+    >
+      ↑
+    </button>
+  );
 }
 
 export function useAsyncData(fn, deps = []) {
