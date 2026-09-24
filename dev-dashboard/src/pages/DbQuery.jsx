@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { PageHeader, Loading, ErrorBanner, DataTable } from '../components/ui.jsx';
 import { api } from '../api/client.jsx';
 import { useToast } from '../state/ToastContext.jsx';
@@ -16,14 +17,27 @@ export default function DbQuery() {
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const toast = useToast();
+  const [params, setParams] = useSearchParams();
 
-  async function run(e) {
-    e?.preventDefault();
+  // Deep link from the command palette: /db/query?q=SELECT…
+  const q = params.get('q') || '';
+  useEffect(() => {
+    if (q) {
+      setSql(q);
+      run(q);
+      setParams({}, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
+
+  async function run(override) {
+    if (override && typeof override.preventDefault === 'function') override.preventDefault();
+    const queryText = typeof override === 'string' ? override : sql;
     setBusy(true);
     setError(null);
     setResult(null);
     try {
-      const data = await api.post('/api/db/query', { sql });
+      const data = await api.post('/api/db/query', { sql: queryText });
       setResult(data.data);
       toast.success('Query complete', `${data.data?.rowCount ?? 0} row(s) returned`);
     } catch (err) {

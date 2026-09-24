@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PageHeader, Loading, ErrorBanner, DataTable, useAsyncData } from '../components/ui.jsx';
+import { PageHeader, Loading, ErrorBanner, DataTable, EmptyState, useAsyncData } from '../components/ui.jsx';
 import { api, callBackend } from '../api/client.jsx';
 import { useConfirm } from '../state/ConfirmContext.jsx';
 import { useToast } from '../state/ToastContext.jsx';
@@ -63,6 +63,9 @@ export default function Orders() {
       <ErrorBanner error={orders.error} />
       <div className="card">
         {orders.loading && <Loading rows={6} />}
+        {orders.data && !orders.loading && (orders.data.data || []).length === 0 && (
+          <EmptyState art="briefcase" title={`No orders for ${storeId}`} hint="Orders appear once the simulation or mobile app creates them for this store." />
+        )}
         {orders.data && (
           <DataTable
             columns={[

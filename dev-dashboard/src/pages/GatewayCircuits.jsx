@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PageHeader, Loading, ErrorBanner, JsonView, useAsyncData } from '../components/ui.jsx';
+import { PageHeader, Loading, ErrorBanner, JsonView, EmptyState, useAsyncData } from '../components/ui.jsx';
 import { callGateway } from '../api/client.jsx';
 import { useConfirm } from '../state/ConfirmContext.jsx';
 import { useToast } from '../state/ToastContext.jsx';
@@ -46,10 +46,11 @@ export default function GatewayCircuits() {
         {circuits.loading && <Loading rows={3} />}
         {circuits.data && <JsonView data={circuits.data} copy />}
         {!circuits.loading && !circuits.data && (
-          <div className="muted">
-            No data. These endpoints live on the gateway: /circuit-breaker/state (GET) and
-            /circuit-breaker/reset/:service (POST) — admin JWT required.
-          </div>
+          <EmptyState
+            art="shield"
+            title="No breaker data"
+            hint="These endpoints live on the gateway: /circuit-breaker/state (GET) and /circuit-breaker/reset/:service (POST) — admin JWT required."
+          />
         )}
       </div>
     </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLive } from '../state/LiveContext.jsx';
-import { PageHeader, useAsyncData } from '../components/ui.jsx';
+import { PageHeader, useAsyncData, EmptyState } from '../components/ui.jsx';
 import { api } from '../api/client.jsx';
 
 export default function Events() {
@@ -18,7 +18,9 @@ export default function Events() {
         actions={<button className="secondary" onClick={snapshot.refresh}>Reload snapshot</button>}
       />
       <div className="card">
-        {live.length === 0 && <div className="muted">No events yet.</div>}
+        {live.length === 0 && (
+          <EmptyState art="inbox" title="No events yet" hint="Service transitions and control-plane actions will stream in here live." />
+        )}
         {live.map((e) => (
           <div key={e.id} className="event-row">
             <span className={`badge ${e.level === 'error' ? 'err' : e.level === 'ok' ? 'ok' : ''}`}>{e.kind}</span>

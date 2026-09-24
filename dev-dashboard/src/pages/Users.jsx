@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PageHeader, Loading, ErrorBanner, DataTable, useAsyncData } from '../components/ui.jsx';
+import { PageHeader, Loading, ErrorBanner, DataTable, EmptyState, useAsyncData } from '../components/ui.jsx';
 import { api, callBackend } from '../api/client.jsx';
 import { useConfirm } from '../state/ConfirmContext.jsx';
 import { useToast } from '../state/ToastContext.jsx';
@@ -84,6 +84,9 @@ export default function Users() {
       <ErrorBanner error={users.error} />
       <div className="card">
         {users.loading && <Loading rows={8} />}
+        {users.data && !users.loading && (users.data.data || []).length === 0 && (
+          <EmptyState art="users" title="No users found" hint="Create the first account with the + Create user action above." />
+        )}
         {users.data && (
           <DataTable
             columns={[

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PageHeader, Loading, ErrorBanner, DataTable, useAsyncData } from '../components/ui.jsx';
+import { PageHeader, Loading, ErrorBanner, DataTable, EmptyState, useAsyncData } from '../components/ui.jsx';
 import { api, callBackend } from '../api/client.jsx';
 import { useConfirm } from '../state/ConfirmContext.jsx';
 import { useToast } from '../state/ToastContext.jsx';
@@ -63,6 +63,9 @@ export default function Inventory() {
       <ErrorBanner error={inv.error} />
       <div className="card">
         {inv.loading && <Loading rows={6} />}
+        {inv.data && !inv.loading && (inv.data.data || []).length === 0 && (
+          <EmptyState art="package" title={`No inventory for ${storeId}`} hint="Stock records appear once created via the mobile app, simulation or SQL console." />
+        )}
         {inv.data && (
           <DataTable
             columns={[

@@ -1,11 +1,23 @@
-import React, { useState } from 'react';
-import { PageHeader, Loading, ErrorBanner, useAsyncData } from '../components/ui.jsx';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { PageHeader, Loading, ErrorBanner, EmptyState, useAsyncData } from '../components/ui.jsx';
 import { api } from '../api/client.jsx';
 
 export default function Logs() {
   const [file, setFile] = useState('combined');
   const [lines, setLines] = useState(200);
   const [filter, setFilter] = useState('');
+  const [params, setParams] = useSearchParams();
+
+  // Deep link from the command palette: /logs?q=error
+  useEffect(() => {
+    const q = params.get('q');
+    if (q) {
+      setFilter(q);
+      setParams({}, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const logs = useAsyncData(
     () => api.get(`/api/logs?file=${file}&lines=${lines}`),
@@ -58,7 +70,11 @@ export default function Logs() {
       <div className="card">
         {logs.loading && <Loading rows={8} />}
         {!logs.loading && rows.length === 0 && (
-          <div className="muted">No log lines match. If the backend runs elsewhere, its logs/ dir is on that host.</div>
+          <EmptyState
+            art="search"
+            title="No log lines match"
+            hint="Adjust the filter, or note that a remotely deployed backend keeps its logs/ dir on that host."
+          />
         )}
         {rows.map(renderLine)}
       </div>

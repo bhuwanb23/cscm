@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PageHeader, Loading, ErrorBanner, DataTable, useAsyncData } from '../components/ui.jsx';
+import { PageHeader, Loading, ErrorBanner, DataTable, EmptyState, useAsyncData } from '../components/ui.jsx';
 import { api, callBackend } from '../api/client.jsx';
 import { useConfirm } from '../state/ConfirmContext.jsx';
 import { useToast } from '../state/ToastContext.jsx';
@@ -65,6 +65,9 @@ export default function Shipments() {
       <ErrorBanner error={shipments.error} />
       <div className="card">
         {shipments.loading && <Loading rows={6} />}
+        {shipments.data && !shipments.loading && (shipments.data.data || []).length === 0 && (
+          <EmptyState art="truck" title={`No ${status} shipments`} hint="Try a different status filter, or let the simulator drive shipments through the gateway." />
+        )}
         {shipments.data && (
           <DataTable
             columns={[

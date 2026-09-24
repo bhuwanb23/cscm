@@ -1,5 +1,5 @@
 import React from 'react';
-import { PageHeader, Loading, ErrorBanner, useAsyncData } from '../components/ui.jsx';
+import { PageHeader, Loading, ErrorBanner, EmptyState, useAsyncData } from '../components/ui.jsx';
 import { api } from '../api/client.jsx';
 import { useToast } from '../state/ToastContext.jsx';
 
@@ -33,7 +33,9 @@ export default function DbBackups() {
       <ErrorBanner error={backups.error} />
       <div className="card">
         {backups.loading && <Loading rows={4} />}
-        {!backups.loading && list.length === 0 && <div className="muted">No backups yet.</div>}
+        {!backups.loading && list.length === 0 && (
+          <EmptyState art="archive" title="No backups yet" hint="Create a snapshot of the SQLite database file — backups land in the backups/ dir on the backend host." />
+        )}
         {Array.isArray(list) && list.map((b, i) => (
           <div key={i} className="event-row">
             <span>{b.name || b.file || JSON.stringify(b).slice(0, 60)}</span>
