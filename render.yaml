@@ -97,6 +97,40 @@ services:
       - key: DEBUG
         value: false
 
+  # OPTIONAL observability stack. Uncomment to run Prometheus + Grafana as
+  # Render web services (docker runtime). NOTE: free plan containers sleep,
+  # so these are only useful on paid plans — on free tier use docker-compose
+  # locally or Grafana Cloud (free tier) with a remote scrape of /metrics.
+  #
+  # - type: web
+  #   name: cscm-prometheus
+  #   runtime: image
+  #   plan: starter
+  #   image:
+  #     url: docker.io/prom/prometheus:latest
+  #   envVars:
+  #     - key: ARGS
+  #       value: "--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.retention.time=15d"
+  #   dockerCommand: prometheus $ARGS
+  #   # Mount a config pointing at https://cscm-backend.onrender.com etc. via
+  #   # a repo file or Render disks — see docs/OBSERVABILITY.md.
+  #
+  # - type: web
+  #   name: cscm-grafana
+  #   runtime: image
+  #   plan: starter
+  #   image:
+  #     url: docker.io/grafana/grafana:latest
+  #   envVars:
+  #     - key: GF_SECURITY_ADMIN_PASSWORD
+  #       sync: false # set manually in the Render dashboard
+  #     - key: GF_USERS_ALLOW_SIGN_UP
+  #       value: "false"
+  #     - key: GF_AUTH_ANONYMOUS_ENABLED
+  #       value: "false"
+  #     - key: PROMETHEUS_URL
+  #       value: http://cscm-prometheus:9090
+
   # Redis Key Value Instance
   - type: keyvalue
     name: cscm-redis
