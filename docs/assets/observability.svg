@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="560" viewBox="0 0 1180 560" font-family="Segoe UI, ui-sans-serif, system-ui, sans-serif">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22d3ee"/><stop offset="55%" stop-color="#818cf8"/><stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5b6486"/>
+    </marker>
+  </defs>
+  <rect width="1180" height="560" fill="#0b0f1d"/>
+
+  <text x="40" y="58" font-size="30" font-weight="700" fill="#e6eaf7">Observability Pipeline</text>
+  <line x1="40" y1="76" x2="1140" y2="76" stroke="url(#grad)" stroke-width="3"/>
+
+  <!-- Sources -->
+  <rect x="40" y="120" width="300" height="360" rx="12" fill="#121a36" stroke="#232d55"/>
+  <text x="60" y="150" font-size="15" font-weight="600" fill="#8b94b8" letter-spacing="2">SOURCES · /metrics</text>
+  <rect x="60" y="170" width="260" height="84" rx="8" fill="#1a2344" stroke="#2c3763"/>
+  <text x="80" y="198" font-size="15" font-weight="600" fill="#e6eaf7">Backend :3000</text>
+  <text x="80" y="220" font-size="12.5" fill="#aab2d0">http_requests_total · duration</text>
+  <text x="80" y="238" font-size="12.5" fill="#aab2d0">cscm_orders_* · cscm_inventory_*…</text>
+  <rect x="60" y="270" width="260" height="84" rx="8" fill="#1a2344" stroke="#2c3763"/>
+  <text x="80" y="298" font-size="15" font-weight="600" fill="#e6eaf7">Gateway :8080</text>
+  <text x="80" y="320" font-size="12.5" fill="#aab2d0">gateway_http_* · circuit_breaker</text>
+  <text x="80" y="338" font-size="12.5" fill="#aab2d0">rate_limit · authentication</text>
+  <rect x="60" y="370" width="260" height="84" rx="8" fill="#1a2344" stroke="#2c3763"/>
+  <text x="80" y="398" font-size="15" font-weight="600" fill="#e6eaf7">AI/ML :8000</text>
+  <text x="80" y="420" font-size="12.5" fill="#aab2d0">cscm_ai_requests_total · latency</text>
+  <text x="80" y="438" font-size="12.5" fill="#aab2d0">errors · inflight</text>
+
+  <!-- Prometheus -->
+  <rect x="420" y="200" width="300" height="200" rx="12" fill="#0f2b3d" stroke="#22d3ee" stroke-width="1.5"/>
+  <text x="440" y="236" font-size="18" font-weight="600" fill="#22d3ee">Prometheus :9090</text>
+  <text x="440" y="264" font-size="13" fill="#c8d2ea">10s scrape interval</text>
+  <text x="440" y="288" font-size="13" fill="#c8d2ea">3 compose jobs + localhost jobs</text>
+  <text x="440" y="312" font-size="13" fill="#c8d2ea">self-scrape · 15d retention</text>
+  <text x="440" y="356" font-size="13" fill="#8b94b8">pull model — no agent needed</text>
+
+  <!-- Grafana -->
+  <rect x="800" y="200" width="340" height="200" rx="12" fill="#1a1030" stroke="#c084fc" stroke-width="1.5"/>
+  <text x="820" y="236" font-size="18" font-weight="600" fill="#c084fc">Grafana :3001</text>
+  <text x="820" y="264" font-size="13" fill="#e3d5f5">CSCM System Overview · 14 panels</text>
+  <text x="820" y="288" font-size="13" fill="#e3d5f5">traffic · errors · p95 latency</text>
+  <text x="820" y="312" font-size="13" fill="#e3d5f5">memory · CPU · event-loop lag</text>
+  <text x="820" y="336" font-size="13" fill="#e3d5f5">circuit breakers · scrape health</text>
+  <text x="820" y="372" font-size="13" fill="#8b94b8">datasource + dashboard auto-provisioned</text>
+
+  <!-- Arrows -->
+  <line x1="340" y1="212" x2="418" y2="260" stroke="#5b6486" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="340" y1="312" x2="418" y2="300" stroke="#5b6486" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="340" y1="412" x2="418" y2="340" stroke="#5b6486" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="720" y1="300" x2="798" y2="300" stroke="#5b6486" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <text x="40" y="516" font-size="13" fill="#8b94b8">Security: /metrics bypass auth by design (counters only) · Grafana anonymous auth disabled · admin password via GRAFANA_ADMIN_PASSWORD</text>
+</svg>

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="720" viewBox="0 0 1180 720" font-family="Segoe UI, ui-sans-serif, system-ui, sans-serif">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22d3ee"/><stop offset="55%" stop-color="#818cf8"/><stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5b6486"/>
+    </marker>
+  </defs>
+  <rect width="1180" height="720" fill="#0b0f1d"/>
+
+  <text x="40" y="58" font-size="30" font-weight="700" fill="#e6eaf7">CSCM Platform Architecture</text>
+  <line x1="40" y1="76" x2="1140" y2="76" stroke="url(#grad)" stroke-width="3"/>
+
+  <!-- Client layer -->
+  <rect x="40" y="104" width="1100" height="104" rx="12" fill="#121a36" stroke="#232d55"/>
+  <text x="60" y="134" font-size="15" font-weight="600" fill="#8b94b8" letter-spacing="2">CLIENTS</text>
+  <rect x="60" y="148" width="250" height="44" rx="8" fill="#1a2344" stroke="#2c3763"/>
+  <text x="80" y="176" font-size="16" fill="#e6eaf7">Mobile App (Expo) · 3 roles</text>
+  <rect x="330" y="148" width="250" height="44" rx="8" fill="#1a2344" stroke="#2c3763"/>
+  <text x="350" y="176" font-size="16" fill="#e6eaf7">Aurora Console (:3002)</text>
+  <rect x="600" y="148" width="250" height="44" rx="8" fill="#1a2344" stroke="#2c3763"/>
+  <text x="620" y="176" font-size="16" fill="#e6eaf7">Landing site / marketing</text>
+
+  <!-- Gateway -->
+  <rect x="40" y="232" width="1100" height="96" rx="12" fill="#121a36" stroke="#232d55"/>
+  <text x="60" y="262" font-size="15" font-weight="600" fill="#8b94b8" letter-spacing="2">EDGE</text>
+  <rect x="60" y="274" width="1060" height="40" rx="8" fill="#1a2344" stroke="url(#grad)" stroke-width="1.5"/>
+  <text x="80" y="300" font-size="16" fill="#e6eaf7">API Gateway · Express :8080 — JWT validation · rate limiting · circuit breakers · /api/* → backend · /ai/* → AI/ML</text>
+
+  <!-- Services -->
+  <rect x="40" y="352" width="530" height="196" rx="12" fill="#121a36" stroke="#232d55"/>
+  <text x="60" y="382" font-size="15" font-weight="600" fill="#8b94b8" letter-spacing="2">CORE · NODE.JS</text>
+  <text x="80" y="414" font-size="18" font-weight="600" fill="#e6eaf7">Backend API · Express :3000</text>
+  <text x="80" y="442" font-size="14" fill="#aab2d0">REST (auth, orders, inventory, shipments, analytics)</text>
+  <text x="80" y="466" font-size="14" fill="#aab2d0">Multi-agent runtime · store / warehouse / transport / supplier</text>
+  <text x="80" y="490" font-size="14" fill="#aab2d0">SQLite (dev) · PostgreSQL (Render) · Redis pub/sub · /metrics</text>
+  <rect x="60" y="506" width="180" height="26" rx="13" fill="#0f2b3d" stroke="#22d3ee" stroke-width="1"/>
+  <text x="76" y="524" font-size="13" fill="#22d3ee">prom-client · /metrics</text>
+
+  <rect x="610" y="352" width="530" height="196" rx="12" fill="#121a36" stroke="#232d55"/>
+  <text x="630" y="382" font-size="15" font-weight="600" fill="#8b94b8" letter-spacing="2">INTELLIGENCE · PYTHON</text>
+  <text x="650" y="414" font-size="18" font-weight="600" fill="#e6eaf7">AI/ML Service · FastAPI :8000</text>
+  <text x="650" y="442" font-size="14" fill="#aab2d0">17 domain routers · demand, NLP, vision, routing, risk…</text>
+  <text x="650" y="466" font-size="14" fill="#aab2d0">31 sub-agents · scikit-learn / XGBoost / LightGBM</text>
+  <text x="650" y="490" font-size="14" fill="#aab2d0">Prometheus client · /metrics · X-API-Key guarded</text>
+  <rect x="630" y="506" width="180" height="26" rx="13" fill="#0f2b3d" stroke="#22d3ee" stroke-width="1"/>
+  <text x="646" y="524" font-size="13" fill="#22d3ee">prometheus-client · /metrics</text>
+
+  <!-- Data layer -->
+  <rect x="40" y="572" width="1100" height="112" rx="12" fill="#121a36" stroke="#232d55"/>
+  <text x="60" y="602" font-size="15" font-weight="600" fill="#8b94b8" letter-spacing="2">DATA &amp; MESSAGING</text>
+  <rect x="60" y="616" width="250" height="48" rx="8" fill="#1a2344" stroke="#2c3763"/>
+  <text x="80" y="645" font-size="15" fill="#e6eaf7">PostgreSQL / SQLite</text>
+  <rect x="330" y="616" width="250" height="48" rx="8" fill="#1a2344" stroke="#2c3763"/>
+  <text x="350" y="645" font-size="15" fill="#e6eaf7">Redis pub/sub (LRU)</text>
+  <rect x="600" y="616" width="250" height="48" rx="8" fill="#1a2344" stroke="#2c3763"/>
+  <text x="620" y="645" font-size="15" fill="#e6eaf7">Kafka / MQTT (optional)</text>
+
+  <!-- Arrows -->
+  <line x1="590" y1="156" x2="590" y2="230" stroke="#5b6486" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="300" y1="328" x2="300" y2="350" stroke="#5b6486" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="875" y1="328" x2="875" y2="350" stroke="#5b6486" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="300" y1="548" x2="300" y2="570" stroke="#5b6486" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="735" y1="548" x2="455" y2="570" stroke="#5b6486" stroke-width="2" marker-end="url(#arrow)"/>
+</svg>

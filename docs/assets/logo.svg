@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="200" viewBox="0 0 560 200">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="55%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(30,20)">
+    <path d="M 70 130 A 62 62 0 1 1 132 68" fill="none" stroke="url(#g)" stroke-width="10" stroke-linecap="round"/>
+    <path d="M 100 34 L 106 54 L 126 60 L 106 66 L 100 86 L 94 66 L 74 60 L 94 54 Z" fill="url(#g)"/>
+    <circle cx="70" cy="130" r="9" fill="url(#g)"/>
+  </g>
+  <text x="200" y="95" font-family="Segoe UI, ui-sans-serif, system-ui, sans-serif" font-size="52" font-weight="700" fill="#e6eaf7">CSCM</text>
+  <text x="200" y="135" font-family="Segoe UI, ui-sans-serif, system-ui, sans-serif" font-size="20" fill="#8b94b8">Cognitive Supply Chain Mesh</text>
+</svg>
