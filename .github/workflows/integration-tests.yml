@@ -1,0 +1,102 @@
+name: Python AI/ML Integration Tests
+
+# Runs the JS -> HTTP -> Python -> Pydantic contract suite from
+# src/tests/integration/. The Python uvicorn server is auto-spawned by
+# scripts/start_python_server.js inside the test file's beforeAll hook.
+#
+# Triggered:
+#   - manually from the Actions tab
+#   - on push to main when files under src/agents/**, src/services/**,
+#     or src/tests/integration/** change
+#
+# Not triggered on plain PRs to keep the feedback loop fast (those get
+# unit tests in ci.yml). Integration tests are slower (~10s startup
+# for the FastAPI lifespan, plus 10s for the 20-test suite) and need
+# the Python service to be available.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/src/agents/**'
+      - 'backend/src/services/**'
+      - 'backend/src/tests/integration/**'
+      - 'backend/scripts/**'
+      - 'ai-ml/api/**'
+      - 'ai-ml/requirements.txt'
+      - 'backend/.github/workflows/integration-tests.yml'
+  pull_request:
+    paths:
+      - 'backend/src/agents/**'
+      - 'backend/src/services/**'
+      - 'backend/src/tests/integration/**'
+      - 'ai-ml/api/**'
+  workflow_dispatch:
+
+# Cancel any in-flight run for the same ref when a new commit arrives.
+concurrency:
+  group: integration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python-integration:
+    name: Python AI/ML integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      AI_ML_DIR: ${{ github.workspace }}/ai-ml
+      AI_ML_PYTHON: ${{ github.workspace }}/ai-ml/venv/bin/python
+      INTEGRATION_TEST: '1'
+
+    steps:
+      - name: Checkout cscm monorepo
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Create ai-ml venv and install requirements
+        working-directory: ai-ml
+        run: |
+          python -m venv venv
+          ./venv/bin/pip install --upgrade pip wheel setuptools
+          ./venv/bin/pip install -r requirements.txt
+          ./venv/bin/pip install -r requirements-dev.txt
+
+      - name: Smoke-import the ai-ml app
+        working-directory: ai-ml
+        run: |
+          # Make sure the app is importable and the lifespan can run
+          # without torch (it pre-trains scikit-learn models only).
+          ./venv/bin/python -c "from api.main import app; print('app import OK, type=', type(app).__name__)" \
+            2>&1 | tail -20
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Run integration tests
+        working-directory: backend
+        run: npm run test:integration
+        # Default Jest timeout is 5s; the test file uses 180s in beforeAll
+        # for the server startup, and a 30s afterAll for cleanup. Per-test
+        # timeouts are short since the server is already up.
+
+      - name: Dump uvicorn log on failure
+        if: failure()
+        working-directory: backend
+        run: |
+          echo "::group::Integration test failure"
+          echo "See workflow log above for uvicorn output (streamed to stderr)."
+          echo "Re-run locally with: INTEGRATION_TEST=1 npm run test:integration"
+          echo "::endgroup::"
