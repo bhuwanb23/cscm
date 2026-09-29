@@ -3,10 +3,11 @@ apiVersion: 1
 providers:
   - name: 'CSCM Dashboards'
     orgId: 1
-    folder: ''
+    folder: 'CSCM'
     type: file
     disableDeletion: false
-    updateIntervalSeconds: 10
+    updateIntervalSeconds: 30
     allowUiUpdates: true
     options:
       path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false
