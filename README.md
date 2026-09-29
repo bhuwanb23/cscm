@@ -1,136 +1,142 @@
-# CSCM — Cognitive Supply Chain Mesh
+<div align="center">
 
-A multi-tier supply chain intelligence platform with a React Native mobile app (3 roles + mesh console), a Node.js API gateway, and a Python AI/ML backend with 31 sub-agents.
+<img src="docs/assets/logo.png" alt="CSCM — Cognitive Supply Chain Mesh" width="440"/>
+
+**A multi-tier supply chain intelligence platform**
+Node.js backend · Python AI/ML (31 sub-agents) · API gateway · Aurora operations console · React Native mobile app
+
+![CI](https://img.shields.io/badge/CI-tests%20%26%20build-818cf8) ![License](https://img.shields.io/badge/license-MIT-22d3ee) ![Node](https://img.shields.io/badge/node-18%20%7C%2020-339933) ![Python](https://img.shields.io/badge/python-3.11-3776AB) ![Prometheus](https://img.shields.io/badge/metrics-Prometheus-E6522C)
+
+</div>
+
+---
+
+## What is CSCM?
+
+CSCM models a full supply chain as a **mesh of cooperating agents** — shopkeepers, transporters, wholesalers, warehouses and planners — coordinated through a REST core and a Python AI/ML service covering 17 intelligence domains (demand forecasting, NLP, computer vision, routing, supplier risk, digital twins, explainability…). Operations are driven day-to-day from the **Aurora Console** (web ops dashboard) and a 3-role mobile app, with end-to-end observability via Prometheus + Grafana.
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────┐
-│                   Mobile App (Expo)                  │
-│   Shopkeeper · Transporter · Wholesaler · Mesh UI    │
-│  ┌───────────────────────────────────────────────┐   │
-│  │               src/api/ (fetch wrapper)         │   │
-│  └──────────────┬────────────────────────────────┘   │
-└─────────────────┼────────────────────────────────────┘
-                  │ :8080
-┌─────────────────▼────────────────────────────────────┐
-│               API Gateway (Express)                   │
-│  ┌─────────────┴──────────────┐                       │
-│  │  /api/*  proxy to backend │  /ai-ml/*  proxy to   │
-│  │  (port 3000)              │  Python FastAPI (8000) │
-│  └─────────────┬──────────────┘                       │
-└────────────────┼─────────────────────────────────────┘
-                 │
-    ┌────────────┴────────────┐
-┌───▼──────────┐      ┌──────▼───────────┐
-│  Backend      │      │  Python AI/ML    │
-│  (Express)    │      │  (FastAPI)       │
-│  :3000        │      │  :8000           │
-│  • REST API   │      │  • 17 routers    │
-│  • SQLite     │      │  • 31 sub-agents │
-│  • Seed data  │      │  • Legacy models │
-└───────────────┘      └──────────────────┘
+![Architecture](docs/assets/architecture.png)
+
+## Deployment (Render free tier)
+
+![Deployment](docs/assets/deployment.png)
+
+## Observability
+
+![Observability](docs/assets/observability.png)
+
+## Services
+
+| Service | Stack | Port | Entry point |
+|---|---|---|---|
+| **Backend API** | Express.js, SQLite/PostgreSQL, Redis pub/sub | 3000 | `backend/src/api/server.js` |
+| **API Gateway** | Express.js, JWT, circuit breakers, rate limiting | 8080 | `backend/src/gateway/gateway.js` |
+| **AI/ML Service** | FastAPI, 17 routers, scikit-learn / XGBoost / LightGBM | 8000 | `ai-ml/api/main.py` |
+| **Aurora Console** | React 18 + Vite, command palette (Ctrl+K), live WebSocket status | 3002 | `dev-dashboard/server.cjs` |
+| **Mobile App** | React Native / Expo SDK 54, 3 role portals + mesh console | — | `App/` |
+| **Prometheus** | Metrics scraping (10s) | 9090 | `docker compose up -d prometheus` |
+| **Grafana** | Auto-provisioned dashboards | 3001 | `docker compose up -d grafana` |
+
+## Quick Start
+
+### One-command dev environment
+
+```bash
+# Windows
+./scripts/setup-dev.ps1 && ./scripts/start-dev.ps1
+
+# Linux / macOS
+./scripts/setup-dev.sh && ./scripts/start-dev.sh
 ```
 
-## Directory Structure
+### Manual setup
+
+```bash
+# Backend + gateway
+cd backend && npm install
+npm start                        # API on :3000
+GATEWAY_PORT=8080 node src/gateway/gateway.js   # gateway on :8080
+
+# AI/ML
+cd ai-ml && pip install -r requirements.txt
+uvicorn api.main:app --port 8000
+
+# Ops console
+cd dev-dashboard && npm install && npm run build
+npm start                        # console on :3002
+
+# Mobile
+cd App && npm install && npx expo start
+```
+
+### Observability stack (Docker)
+
+```bash
+docker compose up -d prometheus grafana
+# Grafana  http://localhost:3001  (dashboard auto-provisioned)
+# Prometheus http://localhost:9090
+```
+
+Full deployment runbook (env vars, secret pairing, verification, rollback): **[DEPLOYMENT.md](DEPLOYMENT.md)**
+
+## Project Structure
 
 ```
 cscm/
 ├── App/              # React Native mobile app (Expo SDK 54)
-│   ├── login/        # 3-role picker (shopkeeper/transporter/wholesaler)
-│   ├── users/        # Role-specific screens + hooks
-│   │   ├── shopkeepers/   # 7 screens (dashboard, inventory, stock, shipments, analysis, communication, profile)
-│   │   ├── transporters/  # 4 screens (dashboard, tasks, navigation, profile)
-│   │   ├── wholesalers/   # 5 screens (dashboard, inventory, orders, shipments, profile)
-│   │   └── mesh/          # 4 sub-views (alerts, knowledge graph, drift, network)
-│   └── src/          # Shared: api client, hooks, demo data, theme, utils
-├── backend/          # Express.js API server (:3000) + gateway (:8080)
-│   └── src/          # Routes, agents, middleware, seed scripts
-├── ai-ml/            # Python FastAPI backend (:8000)
-│   ├── api/          # FastAPI app: models, routers, scripts, validation
-│   └── legacy_models/ # Model implementations (demand forecasting, NLP, CV, etc.)
-├── plans/            # Build plans, smoke test records
-├── prototype/        # Early HTML prototypes (stale; kept for reference)
-├── cscm-video/       # Promotional video assets
-├── website/          # Landing/marketing site
-└── issues.md         # Issue tracker (all P0/P1/P2 closed)
+│   └── users/        # Role portals: shopkeeper / transporter / wholesaler / mesh
+├── backend/          # Express API (:3000) + gateway (:8080)
+│   └── src/          # Routes, 31 sub-agents, middleware, storage, analytics
+├── ai-ml/            # FastAPI service (:8000)
+│   ├── api/          # 17 domain routers + middleware
+│   └── legacy_models/ # Model implementations (demand, NLP, CV, …)
+├── dev-dashboard/    # Aurora Console (React + Vite + Node proxy server)
+├── grafana/          # Provisioned dashboards + datasource
+├── prometheus/       # Scrape configuration
+├── config/           # Logstash pipeline config
+├── docs/             # Architecture docs, OpenAPI spec, diagram assets
+├── scripts/          # Dev setup, deployment helpers, diagram renderer
+└── website/          # Landing/marketing site
 ```
 
-## Quick Start
+## Metrics & Dashboards
 
-### Simplified Development Setup (Recommended)
+Each service exposes Prometheus-format `/metrics`:
 
-The easiest way to start the development environment is using the automated setup scripts:
+| Source | Metrics |
+|---|---|
+| Backend | `http_requests_total`, `http_request_duration_seconds_*`, `cscm_users_*`, `cscm_orders_*`, `cscm_inventory_*`, `cscm_shipments_*`, `errors_total` |
+| Gateway | `gateway_http_requests_total`, `gateway_circuit_breaker_state`, `gateway_rate_limit_hits_total`, `gateway_authentication_*` |
+| AI/ML | `cscm_ai_requests_total`, `cscm_ai_request_duration_seconds_*`, `cscm_ai_errors_total`, `cscm_ai_inflight_requests` |
 
-**Windows (PowerShell):**
-```bash
-.\scripts\setup-dev.ps1
-.\scripts\start-dev.ps1
-```
+The provisioned Grafana dashboard (**CSCM System Overview**) ships with traffic, error-rate, p95 latency, resource and circuit-breaker panels. See **[docs/OBSERVABILITY.md](docs/OBSERVABILITY.md)**.
 
-**Linux/Mac (Bash):**
-```bash
-./scripts/setup-dev.sh
-./scripts/start-dev.sh
-```
-
-This will:
-- Install all dependencies
-- Set up the development environment
-- Start all services (Backend, Gateway, AI/ML, Redis, Development Dashboard)
-- Initialize the database with seed data
-
-Once started, access services at:
-- **Backend API**: http://localhost:3000
-- **API Gateway**: http://localhost:8080
-- **AI/ML Service**: http://localhost:8000
-- **Development Dashboard**: http://localhost:3002
-- **Grafana**: http://localhost:3001
-- **Prometheus**: http://localhost:9090
-
-### Manual Setup
-
-If you prefer to set up services individually:
-
-#### Mobile App
+## Testing & CI
 
 ```bash
-cd App
-npm install
-npx expo start
+cd backend && npm test             # 775 unit tests
+cd backend && npm run test:integration   # JS↔Python contract suite
+cd ai-ml && pytest
+cd dev-dashboard && npm run build  # console build check
 ```
 
-#### Backend (Express API + Gateway)
+CI (GitHub Actions): backend lint + test matrix (Node 18/20), AI/ML pytest, dashboard build, integration contract tests, and a scheduled secret scan.
 
-```bash
-cd backend
-npm install
-npm start              # API on :3000
-node src/gateway/gateway.js   # Gateway on :8080
-```
+## Environment Variables
 
-#### Python AI/ML
+Copy each `.env.example` to `.env` and fill in values — never commit real secrets:
 
-```bash
-cd ai-ml
-ai-ml\venv\Scripts\Activate.ps1    # Windows PowerShell
-pip install -r requirements.txt
-uvicorn api.main:app --reload       # FastAPI on :8000
-```
+- [`backend/.env.example`](backend/.env.example) — DB, Redis, JWT, AI/ML URL+key
+- [`dev-dashboard/.env.example`](dev-dashboard/.env.example) — service URLs, dashboard login, shared secrets
 
-## Tech Stack
+> **Key pairing rule:** `JWT_SECRET` (backend) = gateway's `JWT_SECRET` = dashboard's `BACKEND_JWT_SECRET`, and `AI_ML_API_KEY` must match across backend, gateway, dashboard and ai-ml. Full matrix in [DEPLOYMENT.md](DEPLOYMENT.md).
 
-| Layer | Technology |
-|-------|-----------|
-| Mobile | React Native 0.81 / Expo SDK 54 / React Native Paper 5.14 |
-| API Gateway | Express.js (:8080) |
-| Backend | Express.js (:3000) / SQLite |
-| AI/ML | Python 3.11+ / FastAPI / PyTorch / Scikit-learn / XGBoost |
-| Auth | Demo-only (3-role picker, no real auth) |
+## Contributing
 
-## Development Notes
+Contributions welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow and code standards. For security issues, please follow the disclosure process in [SECURITY.md](SECURITY.md) rather than opening a public issue.
 
-- **Python venv**: Always use `ai-ml/venv/` — global Python has a broken torch DLL.
-- **PowerShell**: No `&&` operator; use `if ($?) { cmd }` for chaining.
-- **Commit messages**: Use Git Bash or double-quote strings to avoid `/` path interpretation.
-- **Model weights**: Weight files (`*.pkl`, `*.pt`, `*.onnx`, etc.) are gitignored via `gitignore`.
+## License
+
+[MIT](LICENSE)
