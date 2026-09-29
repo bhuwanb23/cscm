@@ -78,6 +78,24 @@ app.add_middleware(
     allow_headers=["Content-Type", "Authorization"],
 )
 
+# Prometheus metrics (text/plain exposition format at /metrics so the
+# Prometheus server in docker-compose can scrape this service).
+from prometheus_client import Counter as PromCounter, Histogram as PromHistogram, Gauge as PromGauge, generate_latest, CONTENT_TYPE_LATEST
+
+AI_REQUESTS = PromCounter(
+    "cscm_ai_requests_total", "Total AI/ML API requests", ["method", "path", "status_code"]
+)
+AI_LATENCY = PromHistogram(
+    "cscm_ai_request_duration_seconds", "AI/ML request latency in seconds",
+    ["method", "path"], buckets=(0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0)
+)
+AI_ERRORS = PromCounter(
+    "cscm_ai_errors_total", "Total AI/ML API errors (4xx/5xx)", ["method", "path"]
+)
+AI_INFLIGHT = PromGauge(
+    "cscm_ai_inflight_requests", "Requests currently being processed"
+)
+
 # Global instances
 api_monitor = APIMonitor()
 
@@ -85,27 +103,38 @@ api_monitor = APIMonitor()
 @app.middleware("http")
 async def add_process_time_header(request, call_next):
     start_time = time.time()
-    
-    # Log incoming request
-    logger.info(f"Incoming request: {request.method} {request.url.path}")
-    logger.debug(f"Request headers: {dict(request.headers)}")
-    
-    response = await call_next(request)
-    process_time = time.time() - start_time
-    response.headers["X-Process-Time"] = str(process_time)
-    
-    # Log the request
-    api_monitor.log_request(
-        request.method,
-        request.url.path,
-        response.status_code,
-        process_time
-    )
-    
-    # Log response
-    logger.info(f"Response: {request.method} {request.url.path} - Status: {response.status_code} - Time: {process_time:.4f}s")
-    
-    return response
+    AI_INFLIGHT.inc()
+    status_code = 500
+    try:
+        # Log incoming request
+        logger.info(f"Incoming request: {request.method} {request.url.path}")
+        logger.debug(f"Request headers: {dict(request.headers)}")
+
+        response = await call_next(request)
+        process_time = time.time() - start_time
+        status_code = response.status_code
+        response.headers["X-Process-Time"] = str(process_time)
+
+        # Log the request
+        api_monitor.log_request(
+            request.method,
+            request.url.path,
+            response.status_code,
+            process_time
+        )
+
+        # Log response
+        logger.info(f"Response: {request.method} {request.url.path} - Status: {response.status_code} - Time: {process_time:.4f}s")
+
+        return response
+    finally:
+        path = request.url.path
+        if path != "/metrics":  # do not count scrapes themselves
+            AI_REQUESTS.labels(request.method, path, str(status_code)).inc()
+            AI_LATENCY.labels(request.method, path).observe(time.time() - start_time)
+            if status_code >= 400:
+                AI_ERRORS.labels(request.method, path).inc()
+        AI_INFLIGHT.dec()
 
 # Import routers
 from .routers import (
@@ -322,8 +351,14 @@ async def health_check():
     return health_status
 
 @app.get("/metrics")
+async def prometheus_metrics():
+    """Prometheus exposition format metrics (scraped by the Prometheus server)."""
+    from fastapi import Response
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+@app.get("/api/metrics")
 async def metrics():
-    """Performance metrics endpoint"""
+    """JSON performance metrics (human/dashboard friendly)."""
     logger.debug("Metrics requested")
     performance_metrics = api_monitor.get_performance_metrics()
     logger.info(f"Metrics retrieved: {len(performance_metrics)} data points")

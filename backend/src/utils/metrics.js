@@ -40,6 +40,83 @@ const errorCount = new client.Counter({
   labelNames: ['type', 'service'],
 });
 
+// --- Business metrics (fed from analytics/metricsCollector) ---
+const businessGauges = {
+  users_total: new client.Gauge({
+    name: 'cscm_users_total',
+    help: 'Total registered users',
+  }),
+  users_active: new client.Gauge({
+    name: 'cscm_users_active',
+    help: 'Currently active users',
+  }),
+  orders_total: new client.Gauge({
+    name: 'cscm_orders_total',
+    help: 'Total orders',
+  }),
+  orders_pending: new client.Gauge({
+    name: 'cscm_orders_pending',
+    help: 'Orders pending completion',
+  }),
+  orders_revenue: new client.Gauge({
+    name: 'cscm_orders_revenue',
+    help: 'Accumulated order revenue',
+  }),
+  inventory_total_items: new client.Gauge({
+    name: 'cscm_inventory_total_items',
+    help: 'Total inventory items tracked',
+  }),
+  inventory_low_stock: new client.Gauge({
+    name: 'cscm_inventory_low_stock',
+    help: 'Inventory items below minimum stock level',
+  }),
+  inventory_out_of_stock: new client.Gauge({
+    name: 'cscm_inventory_out_of_stock',
+    help: 'Inventory items out of stock',
+  }),
+  shipments_total: new client.Gauge({
+    name: 'cscm_shipments_total',
+    help: 'Total shipments',
+  }),
+  shipments_in_transit: new client.Gauge({
+    name: 'cscm_shipments_in_transit',
+    help: 'Shipments currently in transit',
+  }),
+  shipments_delivered: new client.Gauge({
+    name: 'cscm_shipments_delivered',
+    help: 'Shipments delivered',
+  }),
+  shipments_delayed: new client.Gauge({
+    name: 'cscm_shipments_delayed',
+    help: 'Shipments running late',
+  }),
+};
+
+// Periodically publish the in-memory business metrics snapshot to Prometheus
+// gauges so /metrics exposes orders, inventory, shipment and user KPIs.
+const metricsCollector = require('../analytics/metricsCollector');
+function syncBusinessMetrics() {
+  try {
+    const m = metricsCollector.getMetrics();
+    businessGauges.users_total.set(m.users.total);
+    businessGauges.users_active.set(m.users.active);
+    businessGauges.orders_total.set(m.orders.total);
+    businessGauges.orders_pending.set(m.orders.pending);
+    businessGauges.orders_revenue.set(m.orders.revenue);
+    businessGauges.inventory_total_items.set(m.inventory.totalItems);
+    businessGauges.inventory_low_stock.set(m.inventory.lowStock);
+    businessGauges.inventory_out_of_stock.set(m.inventory.outOfStock);
+    businessGauges.shipments_total.set(m.shipments.total);
+    businessGauges.shipments_in_transit.set(m.shipments.inTransit);
+    businessGauges.shipments_delivered.set(m.shipments.delivered);
+    businessGauges.shipments_delayed.set(m.shipments.delayed);
+  } catch (error) {
+    // Metrics must never break the app; snapshot may be mid-update.
+  }
+}
+setInterval(syncBusinessMetrics, 15000).unref();
+syncBusinessMetrics();
+
 // Middleware to track HTTP requests
 const requestTracker = (req, res, next) => {
   const startTime = Date.now();

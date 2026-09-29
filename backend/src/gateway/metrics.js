@@ -191,10 +191,17 @@ function recordAuthenticationFailure(authType, reason) {
 
 /**
  * Get metrics endpoint
+ * prom-client >=14 returns a Promise from register.metrics() — it must be
+ * awaited before handing it to res.end (a Promise argument throws).
  */
-function getMetricsEndpoint(req, res) {
-  res.set('Content-Type', register.contentType);
-  res.end(register.metrics());
+async function getMetricsEndpoint(req, res) {
+  try {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+  } catch (error) {
+    logger.error('Failed to collect gateway metrics:', error.message);
+    res.status(500).end('Error collecting metrics');
+  }
 }
 
 /**
