@@ -5,8 +5,10 @@ Phase 2 agent-based tests.
 import os
 import sys
 import json
+import pytest
 import pandas as pd
 
+pytest.importorskip("torch", reason="torch-backed model tests require PyTorch")
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 DATA = os.path.join(ROOT, 'data', 'test')
 sys.path.insert(0, os.path.join(ROOT, 'models'))

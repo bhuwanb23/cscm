@@ -9,7 +9,7 @@ import tempfile
 from datetime import datetime
 
 # Add the utils directory to the path
-parent_dir = os.path.join(os.path.dirname(__file__), '..', '..')
+parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
 from utils.helpers import setup_logging, create_output_directory, get_current_timestamp, validate_data_schema

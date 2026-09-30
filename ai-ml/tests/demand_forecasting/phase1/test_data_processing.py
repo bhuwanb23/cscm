@@ -11,7 +11,7 @@ import tempfile
 import yaml
 
 # Add the parent directory to the path to import scripts
-parent_dir = os.path.join(os.path.dirname(__file__), '..', '..')
+parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
 # Import the data processing module

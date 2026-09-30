@@ -9,7 +9,7 @@ import os
 import sys
 
 # Add the scripts directory to the path
-parent_dir = os.path.join(os.path.dirname(__file__), '..', '..')
+parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
 from scripts.data_processing import process_inventory_data, integrate_all_data

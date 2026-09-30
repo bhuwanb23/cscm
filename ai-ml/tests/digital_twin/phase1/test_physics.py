@@ -7,6 +7,7 @@ import os
 import sys
 import json
 
+pytest.importorskip("torch", reason="torch-backed model tests require PyTorch")
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 DATA_DIR = os.path.join(ROOT, 'data', 'test')
 sys.path.insert(0, os.path.join(ROOT, 'models'))

@@ -12,6 +12,8 @@ from unittest.mock import patch, MagicMock
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
+pytest.importorskip("torch", reason="Object detection tests are torch-backed")
+
 def test_imports():
     """Test that all modules can be imported without errors."""
     try:
@@ -22,7 +24,7 @@ def test_imports():
     except ImportError as e:
         pytest.fail(f"Import failed: {e}")
 
-@patch('models.computer_vision.object_detection.yolov8.YOLO')
+@patch('legacy_models.computer_vision.object_detection.yolov8.YOLO')
 def test_yolov8_detector_initialization(mock_yolo):
     """Test YOLOv8 detector initialization."""
     from legacy_models.computer_vision.object_detection.yolov8 import YOLOv8Detector
@@ -44,7 +46,7 @@ def test_yolov8_preprocess_image():
     from legacy_models.computer_vision.object_detection.yolov8 import YOLOv8Detector
     
     # Create a mock detector (we won't actually run inference)
-    with patch('models.computer_vision.object_detection.yolov8.YOLO'):
+    with patch('legacy_models.computer_vision.object_detection.yolov8.YOLO'):
         detector = YOLOv8Detector()
         
         # Create a sample image
@@ -56,7 +58,7 @@ def test_yolov8_preprocess_image():
         # Should be RGB (not BGR)
         assert np.allclose(processed, sample_image[:, :, ::-1])
 
-@patch('models.computer_vision.object_detection.faster_rcnn.fasterrcnn_resnet50_fpn')
+@patch('legacy_models.computer_vision.object_detection.faster_rcnn.fasterrcnn_resnet50_fpn')
 def test_faster_rcnn_detector_initialization(mock_faster_rcnn):
     """Test Faster R-CNN detector initialization."""
     from legacy_models.computer_vision.object_detection.faster_rcnn import FasterRCNNDetector
@@ -78,7 +80,7 @@ def test_faster_rcnn_preprocess_image():
     from legacy_models.computer_vision.object_detection.faster_rcnn import FasterRCNNDetector
     
     # Create a mock detector
-    with patch('models.computer_vision.object_detection.faster_rcnn.fasterrcnn_resnet50_fpn'):
+    with patch('legacy_models.computer_vision.object_detection.faster_rcnn.fasterrcnn_resnet50_fpn'):
         detector = FasterRCNNDetector()
         
         # Create a sample image

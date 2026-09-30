@@ -6,11 +6,12 @@ import pytest
 import sys
 import os
 import numpy as np
+
+pytest.importorskip("torch", reason="torch-backed model tests require PyTorch")
+
 import torch
 import torch.nn as nn
 from unittest.mock import patch, MagicMock
-
-# Add the models directory to the path
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 

@@ -13,6 +13,7 @@ class TestMADDPG:
     """Tests for multi_agent_coordination.multi_agent_framework.maddpg."""
 
     def test_init(self):
+        pytest.importorskip("torch", reason="MADDPG is torch-backed")
         from multi_agent_coordination.multi_agent_framework.maddpg import MADDPGAgent
         a = MADDPGAgent(agent_id=0, num_agents=3, state_dim=10, action_dim=5)
         assert a.agent_id == 0
@@ -22,6 +23,7 @@ class TestMAPPO:
     """Tests for multi_agent_coordination.multi_agent_framework.mappo."""
 
     def test_init(self):
+        pytest.importorskip("torch", reason="MAPPO is torch-backed")
         from multi_agent_coordination.multi_agent_framework.mappo import MAPPOAgent
         a = MAPPOAgent(agent_id=0, num_agents=3, state_dim=10, action_dim=5)
         assert a.agent_id == 0
@@ -31,6 +33,7 @@ class TestQMIX:
     """Tests for multi_agent_coordination.multi_agent_framework.qmix."""
 
     def test_init(self):
+        pytest.importorskip("torch", reason="QMIX is torch-backed")
         from multi_agent_coordination.multi_agent_framework.qmix import QMIXCoordinator
         c = QMIXCoordinator(num_agents=3, state_dim=10, action_dim=5, global_state_dim=30)
         assert c.num_agents == 3

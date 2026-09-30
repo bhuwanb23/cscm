@@ -12,7 +12,8 @@ import tempfile
 import shutil
 
 # Add the models directory to the path
-parent_dir = os.path.join(os.path.dirname(__file__), '..', '..')
+pytest.importorskip("torch", reason="torch-backed model tests require PyTorch")
+parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
 from legacy_models.demand_forecasting.retraining.models import RetrainingPipeline

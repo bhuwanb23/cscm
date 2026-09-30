@@ -13,6 +13,7 @@ import numpy as np
 import sys
 import os
 
+pytest.importorskip("torch", reason="torch-backed model tests require PyTorch")
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from legacy_models.uncertainty_quantification import (

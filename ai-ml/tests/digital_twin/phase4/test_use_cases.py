@@ -5,7 +5,9 @@ Phase 4 use-case tests.
 import numpy as np
 import sys
 import os
+import pytest
 
+pytest.importorskip("torch", reason="torch-backed model tests require PyTorch")
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 sys.path.insert(0, os.path.join(ROOT, 'models'))
 

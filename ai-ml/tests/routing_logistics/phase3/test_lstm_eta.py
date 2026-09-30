@@ -9,6 +9,7 @@ import sys
 import os
 
 # Add the models directory to the path
+pytest.importorskip("torch", reason="torch-backed model tests require PyTorch")
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
