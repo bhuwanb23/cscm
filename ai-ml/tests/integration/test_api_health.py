@@ -10,14 +10,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'legacy_m
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'api'))
 
 
-@pytest.fixture(scope="module")
-def client():
-    from fastapi.testclient import TestClient
-    from api.main import app
-    with TestClient(app) as c:
-        yield c
-
-
 class TestHealthEndpoints:
     """Tests for basic API health endpoints."""
 

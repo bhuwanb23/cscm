@@ -1,0 +1,14 @@
+[
+  {
+    "title": "Weekly Operations Report",
+    "body": "Operations ran smoothly this week. Warehouse throughput increased by 8 percent. Two delayed shipments were recorded on the northern corridor. Inventory levels remain within target range across all distribution centers."
+  },
+  {
+    "title": "Cold Chain Anomaly Alert",
+    "body": "Temperature in refrigerated container R-42 exceeded the threshold of 8 degrees Celsius for 35 minutes during transit. Product quality inspection was initiated on arrival and the affected batch was quarantined."
+  },
+  {
+    "title": "Supplier Performance Summary",
+    "body": "Supplier A maintained a 98 percent on-time delivery rate. Supplier B slipped to 91 percent due to a port delay. No quality defects were reported across received lots this period."
+  }
+]

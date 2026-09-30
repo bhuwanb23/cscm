@@ -10,14 +10,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'legacy_m
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'api'))
 
 
-@pytest.fixture(scope="module")
-def client():
-    from fastapi.testclient import TestClient
-    from api.main import app
-    with TestClient(app) as c:
-        yield c
-
-
 class TestInventoryAPI:
     """Tests for inventory optimization endpoints."""
 
@@ -36,11 +28,10 @@ class TestInventoryAPI:
         assert response.status_code == 200
 
     def test_recommend_valid(self, client):
-        response = client.post("/api/v1/inventory/recommend", json={
-            "sku_id": "SKU123",
-            "store_id": "STORE456",
-            "current_stock": 50,
-            "reorder_point": 20,
-            "max_stock": 200
-        })
+        response = client.get(
+            "/api/v1/inventory/recommendation/SKU123/STORE456",
+            params={"current_stock": 50, "days_to_review": 7},
+        )
         assert response.status_code == 200
+        data = response.json()
+        assert "recommended_action" in data

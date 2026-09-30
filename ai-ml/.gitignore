@@ -37,6 +37,7 @@ logs/
 catboost_info
 data/*
 # Keep test fixtures (needed by the pytest suite); ignore everything else
+!data/test/
 data/test/*
 !data/test/README.md
 !data/test/*.json

@@ -1,0 +1,25 @@
+{
+  "entities": [
+    {"id": "SupplierA", "type": "supplier", "name": "Supplier A", "region": "north", "lead_time": 5},
+    {"id": "SupplierB", "type": "supplier", "name": "Supplier B", "region": "south", "lead_time": 9},
+    {"id": "SupplierC", "type": "supplier", "name": "Supplier C", "region": "east", "lead_time": 7},
+    {"id": "DC1", "type": "distribution_center", "name": "Distribution Center 1", "region": "north", "capacity": 1000},
+    {"id": "DC2", "type": "distribution_center", "name": "Distribution Center 2", "region": "south", "capacity": 800},
+    {"id": "Store1", "type": "store", "name": "Store 1", "region": "north", "demand": 120},
+    {"id": "Store2", "type": "store", "name": "Store 2", "region": "south", "demand": 90},
+    {"id": "SKU1", "type": "sku", "name": "SKU 1", "category": "electronics"},
+    {"id": "SKU2", "type": "sku", "name": "SKU 2", "category": "apparel"}
+  ],
+  "relationships": [
+    {"source": "SupplierA", "target": "DC1", "type": "supplies", "lead_time": 4},
+    {"source": "SupplierB", "target": "DC2", "type": "supplies", "lead_time": 8},
+    {"source": "SupplierC", "target": "DC1", "type": "supplies", "lead_time": 6},
+    {"source": "DC1", "target": "Store1", "type": "ships_to", "transit_days": 2},
+    {"source": "DC1", "target": "Store2", "type": "ships_to", "transit_days": 3},
+    {"source": "DC2", "target": "Store2", "type": "ships_to", "transit_days": 2},
+    {"source": "SKU1", "target": "SupplierA", "type": "sourced_from"},
+    {"source": "SKU2", "target": "SupplierB", "type": "sourced_from"},
+    {"source": "SKU1", "target": "Store1", "type": "sold_at"},
+    {"source": "SKU2", "target": "Store2", "type": "sold_at"}
+  ]
+}

@@ -14,10 +14,13 @@ sys.path.insert(0, os.path.join(AI_ML_ROOT, 'api'))
 
 @pytest.fixture(scope="session")
 def client():
-    """Create a FastAPI TestClient for the API."""
+    """Create a FastAPI TestClient for the API (session-wide, authenticated)."""
     from fastapi.testclient import TestClient
     from api.main import app
-    with TestClient(app) as c:
+    # Routers are protected by Depends(get_current_api_key); present the
+    # configured service key on every request so tests exercise the handlers.
+    api_key = os.getenv("AI_ML_API_KEY", "default-dev-key-change-in-production")
+    with TestClient(app, headers={"X-API-Key": api_key}) as c:
         yield c
 
 
