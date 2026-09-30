@@ -130,27 +130,25 @@ class MIPInventoryOptimizer:
         objective = solver.Objective()
         objective.SetMinimization()
         
-        total_cost = 0
-        
+        # Objective coefficients are set per variable directly on the
+        # objective (SetCoefficient expects a variable, not an expression).
         for sku_id in problem.sku_ids:
             for store_id in problem.store_ids:
                 key = (sku_id, store_id)
-                
+
                 # Ordering cost (fixed + variable)
                 ordering_cost = problem.ordering_cost.get(key, 10.0)
                 unit_cost = problem.unit_cost.get(key, 1.0)
-                total_cost += ordering_cost * order_binary[key]
-                total_cost += unit_cost * order_vars[key]
-                
+                objective.SetCoefficient(order_binary[key], ordering_cost)
+                objective.SetCoefficient(order_vars[key], unit_cost)
+
                 # Holding cost
                 holding_cost = problem.holding_cost.get(key, 0.1)
-                total_cost += holding_cost * inventory_vars[key]
-                
+                objective.SetCoefficient(inventory_vars[key], holding_cost)
+
                 # Shortage cost
                 shortage_cost = problem.shortage_cost.get(key, 5.0)
-                total_cost += shortage_cost * shortage_vars[key]
-        
-        objective.SetCoefficient(total_cost, 1.0)
+                objective.SetCoefficient(shortage_vars[key], shortage_cost)
         
         # Constraints
         for sku_id in problem.sku_ids:

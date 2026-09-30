@@ -190,10 +190,17 @@ class CVRPTWSolver:
             
             # Add time dimension
             time_dimension_name = 'Time'
+            max_start = max(v.start_time for v in problem.vehicles)
+            max_route_time = max(v.max_route_time for v in problem.vehicles)
+            if max_route_time == float('inf'):
+                # Vehicles default to an unbounded route time; cap the horizon
+                # at the latest vehicle start plus a day of operating slack so
+                # the dimension gets a finite bound.
+                max_route_time = max(max_start + 24.0, 24.0)
             routing.AddDimension(
                 time_callback_index,
-                int(max(v.start_time for v in problem.vehicles) * 100),  # slack max
-                int(max(v.max_route_time for v in problem.vehicles) * 100),  # maximum time per vehicle
+                int(max_start * 100),  # slack max
+                int(max_route_time * 100),  # maximum time per vehicle
                 False,  # don't force start cumul to zero
                 time_dimension_name
             )

@@ -12,17 +12,30 @@ import numpy as np
 from typing import Optional, Dict, Any, Tuple
 import logging
 
-# Import gradient boosting libraries
+# Import gradient boosting libraries (independently, so one missing
+# optional library does not disable the others)
 try:
     import xgboost as xgb
-    import lightgbm as lgb
-    import catboost as cb
-    HAS_GBT_LIBRARIES = True
+    HAS_XGB = True
 except ImportError:
-    HAS_GBT_LIBRARIES = False
     xgb = None
+    HAS_XGB = False
+
+try:
+    import lightgbm as lgb
+    HAS_LGB = True
+except ImportError:
     lgb = None
+    HAS_LGB = False
+
+try:
+    import catboost as cb
+    HAS_CB = True
+except ImportError:
     cb = None
+    HAS_CB = False
+
+HAS_GBT_LIBRARIES = HAS_XGB and HAS_LGB and HAS_CB
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)

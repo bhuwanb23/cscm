@@ -13,9 +13,8 @@ from typing import Optional, Dict, Any, Tuple, List
 import logging
 
 # Import required libraries
+# NOTE: sklearn + statsmodels only — torch is not used by these models.
 try:
-    import torch
-    import torch.nn as nn
     from sklearn.ensemble import RandomForestRegressor
     from sklearn.linear_model import LinearRegression
     from statsmodels.tsa.arima.model import ARIMA
