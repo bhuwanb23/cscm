@@ -41,11 +41,10 @@ networkx>=2.6.0
 pytest>=7.0.0
 pytest-cov>=4.0.0
 
+# --- Optimizers (used by routing/CVRPTW solvers; pip-installable, pure wheel) ---
+ortools>=9.0.0
+
 # Optional: Heavy dependencies (install separately if needed)
 # torch>=1.9.0
-# tensorflow>=2.6.0
-# pytorch-forecasting>=0.9.0
-# gluonts>=0.10.0
-# ortools>=9.0.0
 # transformers>=4.10.0
 # opencv-python>=4.5.0

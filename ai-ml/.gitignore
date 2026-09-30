@@ -35,7 +35,11 @@ __pycache__/
 *.db2
 logs/
 catboost_info
-data/
+data/*
+# Keep test fixtures (needed by the pytest suite); ignore everything else
+data/test/*
+!data/test/README.md
+!data/test/*.json
 model_packages/
 # Secrets
 .env
