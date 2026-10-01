@@ -25,6 +25,11 @@ class UserSimulator {
     const { counts, namePattern } = this.config.users;
     const roles = ['shopkeeper', 'transporter', 'wholesaler', 'admin'];
 
+    // Stable password: seeded demo users (see scripts/seed-history.js) share one
+    // documented password. Without it, each run generates random passwords and
+    // every login against previously-registered users fails silently.
+    const stablePassword = process.env.SIM_USER_PASSWORD || null;
+
     roles.forEach(role => {
       this.users[role] = [];
       for (let i = 1; i <= counts[role]; i++) {
@@ -32,7 +37,7 @@ class UserSimulator {
         this.users[role].push({
           id: userId,
           username: userId,
-          password: this.generatePassword(),
+          password: stablePassword || this.generatePassword(),
           role: role,
           token: null
         });

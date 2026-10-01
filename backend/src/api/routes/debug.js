@@ -663,4 +663,79 @@ router.post('/database/create-user', async (req, res) => {
   }
 });
 
+/* ------------------------------------------------------------------ */
+/* History seed (temporary backfill control - remove after verification) */
+/* ------------------------------------------------------------------ */
+// Runs scripts/seed-history.js in-process through the LIVE database pool.
+// Needed because direct psql/pg access to Render Postgres can be blocked
+// from local machines (Render IP allowlist / network middlebox), while the
+// backend inside Render connects fine. Same security model as the rest of
+// this file: admin JWT + DEBUG required, and the caller sends NO SQL -
+// only a fixed phase name, so this cannot be abused as a query runner.
+const SEED_PHASES = ['roster', 'history', 'verify', 'all'];
+let seedState = { running: false, runs: [] };
+
+router.get('/seed/history', (req, res) => {
+  res.json({ success: true, data: seedState });
+});
+
+router.post('/seed/history', async (req, res) => {
+  try {
+    const phase = (req.body && req.body.phase) || 'all';
+    const reset = !!(req.body && req.body.reset);
+    if (!SEED_PHASES.includes(phase)) {
+      return res
+        .status(400)
+        .json({ success: false, error: `phase must be one of: ${SEED_PHASES.join(', ')}` });
+    }
+    if (seedState.running) {
+      return res
+        .status(409)
+        .json({ success: false, error: 'Seed already running', data: seedState });
+    }
+
+    const db = getDatabase();
+    const usePool = !!(db && db.pool);
+    if (!usePool && !process.env.DATABASE_URL) {
+      return res.status(503).json({ success: false, error: 'No database connection available' });
+    }
+
+    const run = {
+      phase,
+      reset,
+      startedAt: new Date().toISOString(),
+      finishedAt: null,
+      summary: null,
+      error: null,
+    };
+    seedState = { running: true, runs: [...seedState.runs, run].slice(-5) };
+
+    // Fire-and-forget so request timeouts never kill a long backfill;
+    // poll GET /seed/history for progress and results.
+    (async () => {
+      let client = null;
+      try {
+        const { runSeed } = require('../../../scripts/seed-history');
+        if (usePool) client = await db.pool.connect();
+        run.summary = await runSeed(client ? { phase, reset, client } : { phase, reset });
+        logger.info(`[control-plane] seed history finished: phase=${phase}`);
+      } catch (error) {
+        run.error = error.message;
+        logger.error(`[control-plane] seed history failed: ${error.message}`);
+      } finally {
+        if (client) client.release();
+        run.finishedAt = new Date().toISOString();
+        seedState.running = false;
+      }
+    })();
+
+    logger.warn(
+      `[control-plane] seed history started: phase=${phase} reset=${reset} by ${req.user.username}`
+    );
+    return res.status(202).json({ success: true, data: seedState });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 module.exports = router;

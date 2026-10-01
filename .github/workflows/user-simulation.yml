@@ -2,8 +2,9 @@ name: User Simulation
 
 on:
   schedule:
-    # Run every 2 hours during business hours (9am-6pm UTC)
-    - cron: '0 9,11,13,15,17 * * *'
+    # 3x daily during business hours. Deliberately offset from :00/:30 —
+    # GitHub coalesces/drops runs queued on the hour.
+    - cron: '20 9,14,19 * * *'
   workflow_dispatch:
 
 jobs:
@@ -40,7 +41,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./backend
-        run: npm ci --only=production
+        run: npm ci --omit=dev
 
       - name: Run user simulation
         working-directory: ./backend
@@ -48,6 +49,9 @@ jobs:
           BACKEND_URL: ${{ secrets.BACKEND_URL }}
           AI_ML_API_URL: ${{ secrets.AI_ML_API_URL }}
           AI_ML_API_KEY: ${{ secrets.AI_ML_API_KEY }}
+          # Seeded demo users share one documented password (scripts/seed-history.js).
+          # Without it every login fails and the run produces no real traffic.
+          SIM_USER_PASSWORD: ${{ secrets.SIM_USER_PASSWORD || 'Cscm!Demo2026' }}
         run: node src/simulation/index.js --continuous
 
       - name: Generate simulation report

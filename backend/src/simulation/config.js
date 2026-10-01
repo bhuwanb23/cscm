@@ -24,11 +24,13 @@ module.exports = {
 
   // User Configuration
   users: {
+    // Matches the seeded hackathon roster (scripts/seed-history.js):
+    // 8 Downtown shops, 8 transporters, 5 wholesalers, 2 admins.
     counts: {
-      shopkeeper: 10,
-      transporter: 10,
-      wholesaler: 10,
-      admin: 10,
+      shopkeeper: 8,
+      transporter: 8,
+      wholesaler: 5,
+      admin: 2,
     },
     // Naming pattern for simulated users
     namePattern: {
@@ -77,7 +79,10 @@ module.exports = {
 
   // Test Data
   testData: {
-    stores: ['STORE001', 'STORE002', 'STORE003', 'STORE004', 'STORE005'],
+    stores: [
+      'STORE001', 'STORE002', 'STORE003', 'STORE004',
+      'STORE005', 'STORE006', 'STORE007', 'STORE008',
+    ],
     skus: ['SKU001', 'SKU002', 'SKU003', 'SKU004', 'SKU005'],
     locations: ['DELHI', 'MUMBAI', 'BANGALORE', 'CHENNAI', 'KOLKATA'],
   },
