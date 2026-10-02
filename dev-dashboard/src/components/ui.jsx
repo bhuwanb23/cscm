@@ -282,7 +282,32 @@ export function CopyButton({ text, label = 'Copy', className = 'ghost sm' }) {
 
 /* --------------------------------------------------------------- table -- */
 
-export function DataTable({ columns, rows, empty = 'No data', keyField = 'id', actions, loading, loadingRows = 5 }) {
+/**
+ * Dense data table.
+ *
+ * Two deliberate choices keep wide/long tables from turning clumsy:
+ *
+ * 1. Long result sets scroll inside a capped viewport instead of growing the
+ *    page without bound (a 452-row shipments table was rendering a 25,000px
+ *    document). The header stays pinned so the columns remain identifiable.
+ *    Short tables lay out normally — the cap only applies once a table is tall
+ *    enough to need it.
+ *
+ * 2. Cells are single-line and ellipsised, with the full value on `title`, so
+ *    one long identifier cannot stretch a column and push everything else into
+ *    a ragged edge. Opt a column out with `wrap: true`.
+ */
+export function DataTable({
+  columns,
+  rows,
+  empty = 'No data',
+  keyField = 'id',
+  actions,
+  loading,
+  loadingRows = 5,
+  maxHeight = 560,
+  scrollAfter = 18,
+}) {
   if (loading) return <SkeletonTable rows={loadingRows} />;
 
   if (!rows || rows.length === 0) {
@@ -293,30 +318,81 @@ export function DataTable({ columns, rows, empty = 'No data', keyField = 'id', a
     );
   }
 
+  const scrollable = rows.length > scrollAfter;
+  const colCount = columns.length + (actions ? 1 : 0);
+
   return (
-    <div className="table-scroll">
-      <table className="data-table">
-        <thead>
-          <tr>
-            {columns.map((c) => (
-              <th key={c.key} scope="col" className={c.align === 'num' ? 'num' : undefined}>{c.label}</th>
-            ))}
-            {actions && <th style={{ width: 130 }}>Actions</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={row[keyField] !== undefined ? row[keyField] : i}>
+    <div className="table-wrap">
+      <div
+        className="table-scroll"
+        data-scrollable={scrollable ? 'true' : undefined}
+        style={scrollable ? { maxHeight } : undefined}
+      >
+        <table className="data-table">
+          <thead>
+            <tr>
               {columns.map((c) => (
-                <td key={c.key} className={c.align === 'num' ? 'num' : undefined}>
-                  {c.render ? c.render(row) : String(row[c.key] ?? '—')}
-                </td>
+                <th
+                  key={c.key}
+                  scope="col"
+                  className={[
+                    c.align === 'num' ? 'num' : '',
+                    c.wrap ? 'wrap' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ') || undefined}
+                  style={c.width ? { width: c.width } : undefined}
+                >
+                  {c.label}
+                </th>
               ))}
-              {actions && <td>{actions(row)}</td>}
+              {actions && (
+                <th className="actions-col" scope="col">
+                  Actions
+                </th>
+              )}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr key={row[keyField] !== undefined ? row[keyField] : i}>
+                {columns.map((c) => {
+                  const raw = row[c.key];
+                  const content = c.render ? (
+                    c.render(row)
+                  ) : (
+                    <span title={raw === undefined || raw === null ? undefined : String(raw)}>
+                      {raw === undefined || raw === null || raw === '' ? '—' : String(raw)}
+                    </span>
+                  );
+                  return (
+                    <td
+                      key={c.key}
+                      className={[
+                        c.align === 'num' ? 'num' : '',
+                        c.wrap ? 'wrap' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ') || undefined}
+                      style={c.width ? { maxWidth: c.width } : undefined}
+                    >
+                      {content}
+                    </td>
+                  );
+                })}
+                {actions && <td className="actions-col">{actions(row)}</td>}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="table-foot">
+        <span>
+          {rows.length} {rows.length === 1 ? 'row' : 'rows'}
+        </span>
+        {scrollable && <span className="muted">Scroll for more</span>}
+      </div>
     </div>
   );
 }

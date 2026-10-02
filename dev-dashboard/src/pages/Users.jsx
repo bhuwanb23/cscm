@@ -3,6 +3,7 @@ import { PageHeader, Loading, ErrorBanner, DataTable, EmptyState, useAsyncData }
 import { api, callBackend } from '../api/client.jsx';
 import { useConfirm } from '../state/ConfirmContext.jsx';
 import { useToast } from '../state/ToastContext.jsx';
+import { dateTime } from '../lib/format.js';
 
 const ROLES = ['user', 'admin', 'shopkeeper', 'transporter', 'wholesaler', 'guest'];
 
@@ -90,19 +91,25 @@ export default function Users() {
         {users.data && (
           <DataTable
             columns={[
-              { key: 'id', label: 'ID' },
-              { key: 'username', label: 'Username' },
-              { key: 'email', label: 'Email' },
+              { key: 'id', label: 'ID', width: 80, render: (u) => <span className="mono">{u.id}</span> },
+              { key: 'username', label: 'Username', width: 160 },
+              { key: 'email', label: 'Email', width: 220 },
               {
                 key: 'role',
                 label: 'Role',
+                width: 150,
                 render: (u) => (
                   <select value={u.role} disabled={busy} onChange={(e) => changeRole(u, e.target.value)}>
                     {ROLES.map((r) => <option key={r}>{r}</option>)}
                   </select>
                 ),
               },
-              { key: 'created_at', label: 'Created' },
+              {
+                key: 'created_at',
+                label: 'Created',
+                width: 120,
+                render: (u) => dateTime(u.created_at),
+              },
             ]}
             rows={users.data.data || []}
             actions={(u) => (

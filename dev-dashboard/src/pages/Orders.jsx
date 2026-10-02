@@ -3,6 +3,7 @@ import { PageHeader, Loading, ErrorBanner, DataTable, EmptyState, useAsyncData }
 import { api, callBackend } from '../api/client.jsx';
 import { useConfirm } from '../state/ConfirmContext.jsx';
 import { useToast } from '../state/ToastContext.jsx';
+import { inr, dateTime } from '../lib/format.js';
 
 const STATUSES = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -69,20 +70,43 @@ export default function Orders() {
         {orders.data && (
           <DataTable
             columns={[
-              { key: 'order_id', label: 'Order' },
-              { key: 'store_id', label: 'Store' },
-              { key: 'items', label: 'Items', render: (o) => <code style={{ fontSize: 11 }}>{typeof o.items === 'string' ? o.items.slice(0, 60) : JSON.stringify(o.items || []).slice(0, 60)}</code> },
-              { key: 'total_amount', label: 'Total' },
+              { key: 'order_id', label: 'Order', width: 180, render: (o) => <span className="mono">{o.order_id}</span> },
+              { key: 'store_id', label: 'Store', width: 110 },
+              {
+                key: 'items',
+                label: 'Items',
+                width: 90,
+                align: 'num',
+                // A raw JSON blob was unreadable and dominated the row width.
+                // The count is the fact an operator actually scans for.
+                render: (o) => {
+                  const n = Array.isArray(o.items) ? o.items.length : 0;
+                  return n ? `${n} item${n === 1 ? '' : 's'}` : '—';
+                },
+              },
+              {
+                key: 'total_amount',
+                label: 'Total',
+                align: 'num',
+                width: 110,
+                render: (o) => inr(o.total_amount, true),
+              },
               {
                 key: 'status',
                 label: 'Status',
+                width: 140,
                 render: (o) => (
                   <select value={o.status} disabled={busy} onChange={(e) => setStatus(o, e.target.value)}>
                     {STATUSES.map((s) => <option key={s}>{s}</option>)}
                   </select>
                 ),
               },
-              { key: 'created_at', label: 'Created' },
+              {
+                key: 'created_at',
+                label: 'Created',
+                width: 120,
+                render: (o) => dateTime(o.created_at),
+              },
             ]}
             rows={orders.data.data || []}
             actions={(o) => <button className="danger" disabled={busy} onClick={() => removeOrder(o)}>Delete</button>}

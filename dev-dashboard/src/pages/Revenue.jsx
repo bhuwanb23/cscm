@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useMemo, useState } from 'react';
 import { PageHeader, Kpi, Loading, ErrorBanner, DataTable, EmptyState, useAsyncData } from '../components/ui.jsx';
 import { Reveal } from '../components/motion.jsx';
 import { api } from '../api/client.jsx';
+import { inr as inrExact, dateTime } from '../lib/format.js';
 
 /**
  * recharts is ~420KB raw. Only the revenue surface needs it, so it is loaded
@@ -26,6 +27,7 @@ function ChartFallback({ height }) {
 }
 
 /** Compact INR formatting. Indian digit grouping (lakh/crore) reads naturally here. */
+/** Axis/KPI magnitude label: 33.3L rather than 3,329,215. */
 function inr(n) {
   const v = Number(n);
   if (!Number.isFinite(v)) return '—';
@@ -34,11 +36,7 @@ function inr(n) {
   return `₹${v.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
 }
 
-function inrExact(n) {
-  const v = Number(n);
-  if (!Number.isFinite(v)) return '—';
-  return `₹${v.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
-}
+/** Full precision for money that must reconcile exactly. */
 
 const iso = (d) => d.toISOString().slice(0, 10);
 const shortDay = (v) => String(v).slice(5); // 09-01
@@ -300,14 +298,14 @@ export default function Revenue() {
         {work.data && work.data.data && work.data.data.entries.length > 0 && (
           <DataTable
             columns={[
-              { key: 'occurred_at', label: 'When' },
-              { key: 'kind', label: 'Kind' },
-              { key: 'actor', label: 'Actor' },
-              { key: 'action', label: 'Action' },
-              { key: 'subject_id', label: 'Subject', render: (w) => w.subject_id || w.subject_type || '—' },
-              { key: 'store_id', label: 'House' },
-              { key: 'outcome', label: 'Outcome' },
-              { key: 'detail', label: 'Detail' },
+              { key: 'occurred_at', label: 'When', width: 118, render: (w) => dateTime(w.occurred_at) },
+              { key: 'kind', label: 'Kind', width: 110 },
+              { key: 'actor', label: 'Actor', width: 140 },
+              { key: 'action', label: 'Action', width: 170 },
+              { key: 'subject_id', label: 'Subject', width: 150, render: (w) => w.subject_id || w.subject_type || '—' },
+              { key: 'store_id', label: 'House', width: 100 },
+              { key: 'outcome', label: 'Outcome', width: 110 },
+              { key: 'detail', label: 'Detail', width: 240 },
             ]}
             rows={work.data.data.entries}
             keyField="id"

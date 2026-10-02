@@ -3,6 +3,7 @@ import { PageHeader, Loading, ErrorBanner, DataTable, EmptyState, useAsyncData }
 import { api, callBackend } from '../api/client.jsx';
 import { useConfirm } from '../state/ConfirmContext.jsx';
 import { useToast } from '../state/ToastContext.jsx';
+import { dateTime } from '../lib/format.js';
 
 const STATUSES = ['pending', 'in_transit', 'delivered', 'cancelled'];
 
@@ -71,16 +72,18 @@ export default function Shipments() {
         {shipments.data && (
           <DataTable
             columns={[
-              { key: 'shipment_id', label: 'Shipment' },
-              { key: 'order_id', label: 'Order' },
+              { key: 'shipment_id', label: 'Shipment', width: 180, render: (s) => <span className="mono">{s.shipment_id}</span> },
+              { key: 'order_id', label: 'Order', width: 170, render: (s) => <span className="mono">{s.order_id}</span> },
               {
                 key: 'carrier',
                 label: 'Transporter',
+                width: 130,
                 render: (s) => s.carrier ?? s.transporter_id ?? '—',
               },
               {
                 key: 'route',
                 label: 'Route',
+                width: 190,
                 render: (s) => (
                   s.from_location || s.to_location
                     ? `${s.from_location || '—'} → ${s.to_location || '—'}`
@@ -90,14 +93,21 @@ export default function Shipments() {
               {
                 key: 'status',
                 label: 'Status',
+                width: 140,
                 render: (s) => (
                   <select value={s.status} disabled={busy} onChange={(e) => setStatusOf(s, e.target.value)}>
                     {STATUSES.map((x) => <option key={x}>{x}</option>)}
                   </select>
                 ),
               },
-              { key: 'updated_at', label: 'Updated' },
+              {
+                key: 'updated_at',
+                label: 'Updated',
+                width: 120,
+                render: (s) => dateTime(s.updated_at),
+              },
             ]}
+            maxHeight={620}
             rows={shipments.data.data || []}
             actions={(s) => <button className="danger" disabled={busy} onClick={() => removeShipment(s)}>Delete</button>}
           />

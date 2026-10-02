@@ -578,10 +578,26 @@ button, input, select, textarea { font: inherit; color: inherit; }
    7. TABLES
    ================================================================== */
 
+.table-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
 .table-scroll {
   overflow-x: auto;
+  /* A capped viewport keeps a 400-row result from becoming a 25,000px page.
+     Overscroll containment stops the scroll chaining to the document. */
+  overscroll-behavior: contain;
   margin: 0 calc(var(--space-md) * -1);
   padding: 0 var(--space-md);
+}
+
+/* Subtle fade at the right edge so a horizontally scrollable table reads as
+   scrollable rather than as content that has been cut off. */
+.table-scroll[data-scrollable] {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 table.data-table {
@@ -590,6 +606,7 @@ table.data-table {
   border-spacing: 0;
   font-size: var(--text-sm);
   font-variant-numeric: tabular-nums;
+  table-layout: auto;
 }
 
 .data-table thead th {
@@ -613,6 +630,60 @@ table.data-table {
   border-bottom: 1px solid var(--line);
   color: var(--ink-2);
   vertical-align: middle;
+  /* One line per cell. Without this a single long identifier widens its
+     column and leaves every other column on a ragged edge. */
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Opt-in for cells that genuinely need to wrap (addresses, JSON, messages). */
+.data-table td.wrap,
+.data-table th.wrap {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  max-width: 380px;
+}
+
+/* Row actions must not inflate row height — they were pushing rows to 56px
+   against 36px elsewhere. */
+.data-table td.actions-col,
+.data-table th.actions-col {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.data-table td.actions-col .btn,
+.data-table td.actions-col button {
+  padding: 3px 8px;
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
+/* Compact controls inside a cell so the row keeps a single consistent height. */
+.data-table td select {
+  height: 26px;
+  padding: 0 22px 0 7px;
+  font-size: var(--text-xs);
+}
+
+.data-table td code {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding-top: var(--space-2xs);
+  font-size: var(--text-xs);
+  color: var(--ink-4);
+  font-variant-numeric: tabular-nums;
 }
 
 .data-table tbody tr { transition: background var(--dur-fast) var(--ease-out); }
