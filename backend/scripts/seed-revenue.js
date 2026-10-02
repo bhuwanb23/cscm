@@ -143,10 +143,19 @@ function buildRevenuePlan({ orders = [], from, to }) {
     const isUnpaid = UNPAID.has(store.storeId);
     const isOverdue = OVERDUE.has(store.storeId);
 
-    const paidDayIdx = isOverdue ? int(rng, 6, 12) : int(rng, 1, 5);
+    // Each house bills on its own anniversary, spread across the month. Real
+    // SaaS does exactly this - customers have different billing dates - and it
+    // keeps the daily revenue series from collapsing into six spikes, which
+    // reads as a broken chart rather than as monthly billing. The overdue
+    // house is offset to a slot no one else uses so every day stays distinct.
+    const billingDayIdx = Math.min(
+      days.length - 1,
+      Math.max(0, idx * 4 + (isOverdue ? -1 : 1))
+    );
     const paidAt = isUnpaid
       ? null
-      : `${days[Math.min(paidDayIdx, days.length - 1)]} ${pad(int(rng, 10, 17))}:${pad(int(rng, 0, 59))}:00`;
+      : `${days[billingDayIdx]} ${pad(int(rng, 10, 17))}:${pad(int(rng, 0, 59))}:00`;
+    const dueDayIdx = Math.min(days.length - 1, billingDayIdx + (isOverdue ? -1 : 6));
 
     invoices.push({
       invoice_no: invoiceNo,
@@ -157,7 +166,7 @@ function buildRevenuePlan({ orders = [], from, to }) {
       commission_amount: commissionAmount,
       total_amount: totalAmount,
       status: isUnpaid ? (commissionAmount > 0 ? 'open' : 'paid') : 'paid',
-      due_date: `${days[Math.min(7, days.length - 1)]}`,
+      due_date: days[dueDayIdx],
       paid_at: paidAt,
     });
 
