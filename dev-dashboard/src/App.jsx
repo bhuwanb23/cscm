@@ -26,6 +26,7 @@ import Users from './pages/Users.jsx';
 import Inventory from './pages/Inventory.jsx';
 import Orders from './pages/Orders.jsx';
 import Shipments from './pages/Shipments.jsx';
+import Revenue from './pages/Revenue.jsx';
 import StoreDetail from './pages/StoreDetail.jsx';
 
 import Agents from './pages/Agents.jsx';
@@ -270,6 +271,7 @@ export default function App() {
 
         <Route path="/users" element={<Users />} />
         <Route path="/inventory" element={<Inventory />} />
+        <Route path="/revenue" element={<Revenue />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/shipments" element={<Shipments />} />
         <Route path="/stores/:storeId" element={<StoreDetail />} />

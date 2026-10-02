@@ -24,6 +24,7 @@ export const NAV = [
   {
     group: 'Business data',
     items: [
+      ['/revenue', 'Revenue', 'trending'],
       ['/users', 'Users & roles', 'users'],
       ['/inventory', 'Inventory', 'package'],
       ['/orders', 'Orders', 'briefcase'],

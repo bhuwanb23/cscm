@@ -246,6 +246,8 @@ const orderRoutes = require('./routes/orders');
 const shipmentRoutes = require('./routes/shipments');
 const analyticsRouter = require('../analytics/analyticsRouter');
 const debugRoutes = require('./routes/debug');
+const debugSeedRoutes = require('./routes/debugSeed');
+const revenueRoutes = require('./routes/revenue');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/events', eventRoutes);
@@ -253,8 +255,12 @@ app.use('/api/v1/inventory', inventoryRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/shipments', shipmentRoutes);
 app.use('/api/v1/analytics', analyticsRouter);
+app.use('/api/v1/revenue', revenueRoutes);
 
 // Debug routes for troubleshooting
+// Operational seeders. Admin + DEBUG gated, never routed through the gateway.
+// Registered before the main debug router so /debug/seed/* is unambiguous.
+app.use('/api/v1/debug/seed', debugSeedRoutes);
 app.use('/api/v1/debug', debugRoutes);
 
 // Error handling middleware

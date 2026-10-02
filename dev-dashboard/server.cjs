@@ -348,6 +348,13 @@ api.post('/cache/clear', (req, res) => proxyPost(req, res, `${BACKEND_URL}/api/v
 api.get('/backups', (req, res) => proxyGet(req, res, `${BACKEND_URL}/api/v1/debug/backups`));
 api.post('/backups', (req, res) => proxyPost(req, res, `${BACKEND_URL}/api/v1/debug/backups`));
 
+// -- Revenue analytics (SaaS subscriptions + GMV commission)
+// proxyGet forwards req.query as query params, so from/to/kind/limit pass through.
+api.get('/revenue/summary', (req, res) => proxyGet(req, res, `${BACKEND_URL}/api/v1/revenue/summary`));
+api.get('/revenue/stores', (req, res) => proxyGet(req, res, `${BACKEND_URL}/api/v1/revenue/stores`));
+api.get('/revenue/plans', (req, res) => proxyGet(req, res, `${BACKEND_URL}/api/v1/revenue/plans`));
+api.get('/revenue/work', (req, res) => proxyGet(req, res, `${BACKEND_URL}/api/v1/revenue/work`));
+
 // -- AI/ML public health (the AI/ML /health endpoint sits outside /api/v1)
 api.get('/aiml/health', (req, res) => proxyRequest(req, res, 'GET', `${AI_ML_URL}/health`));
 

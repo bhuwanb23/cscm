@@ -430,8 +430,7 @@ async function seedHistory(client, plan, reset = false) {
 // ---------------------------------------------------------------------------
 // Phase: verify
 // ---------------------------------------------------------------------------
-async function verify(client) {
-  console.log('\n=== Users by role ===');
+async function verify(client) {  console.log('\n=== Users by role ===');
   const roles = await client.query(
     `SELECT role, count(*)::int AS n, min(created_at)::text AS first_signup, max(created_at)::text AS last_signup
        FROM users GROUP BY role ORDER BY role`
@@ -525,6 +524,34 @@ function dryRun(roster, plan) {
   }
 }
 
+/**
+ * Phase: revenue. Reads the orders that already exist and derives the
+ * monetization rows from them, so commission always reconciles with GMV.
+ */
+async function seedRevenuePhase(client, reset = false) {
+  const { buildRevenuePlan, seedRevenue } = require('./seed-revenue');
+  const { rows } = await client.query(
+    `SELECT order_id, store_id, total_amount, status, created_at
+       FROM orders WHERE created_at::date BETWEEN $1 AND $2`,
+    [FROM, TO]
+  );
+  if (!rows.length) {
+    console.log('  no orders in window - run the history phase first');
+    return { skipped: true };
+  }
+  const plan = buildRevenuePlan({ orders: rows, from: FROM, to: TO });
+  const summary = await seedRevenue(client, plan, { reset });
+  const collected = plan.payments.reduce((s, p) => s + p.amount, 0);
+  const commission = plan.commission.reduce((s, c) => s + c.amount, 0);
+  console.log(
+    `  plans ${summary.plans}  subs ${summary.subscriptions}  invoices ${summary.invoices}\n` +
+      `  payments ${summary.payments} (INR ${collected.toFixed(2)})  ` +
+      `commission rows ${summary.commission} (INR ${commission.toFixed(2)})\n` +
+      `  work_log ${summary.work}`
+  );
+  return { ...summary, collected: +collected.toFixed(2), commission: +commission.toFixed(2) };
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -574,6 +601,10 @@ async function runSeed(options = {}) {
       console.log('\n=== PHASE: history (Sep 1 - Sep 30) ===');
       summary.history = await seedHistory(client, plan, reset);
     }
+    if (phase === 'revenue' || phase === 'all') {
+      console.log('\n=== PHASE: revenue + work log ===');
+      summary.revenue = await seedRevenuePhase(client, reset);
+    }
     if (phase === 'verify' || phase === 'all') {
       summary.verify = await verify(client);
     }
@@ -591,4 +622,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { runSeed, buildRoster, buildHistoryPlan };
+module.exports = { runSeed, buildRoster, buildHistoryPlan, buildRevenuePlan };

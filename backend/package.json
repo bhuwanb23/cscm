@@ -32,6 +32,7 @@
     "migrate:create": "node scripts/migrate.js create",
     "seed:history": "node scripts/seed-history.js --phase=all",
     "seed:roster": "node scripts/seed-history.js --phase=roster",
+    "seed:revenue": "node scripts/seed-history.js --phase=revenue",
     "seed:verify": "node scripts/seed-history.js --phase=verify",
     "backup": "node scripts/backup.js",
     "backup:create": "node scripts/backup.js create",

@@ -144,6 +144,137 @@ class PostgreSQLDatabase {
         )
       `);
 
+      // -------------------------------------------------------------------
+      // Monetization tables
+      //
+      // Orders capture goods value (GMV) but not money: there is no record of
+      // what the platform itself earned. These tables make revenue a durable,
+      // queryable fact rather than an in-process counter that resets on deploy.
+      //
+      //   saas_plans         plan catalog (monthly price, GMV take-rate)
+      //   subscriptions      which shop is on which plan, and since when
+      //   invoices           a billing period's amount due
+      //   payments           money actually received against an invoice
+      //   commission_ledger  platform earnings from GMV, per order
+      //   work_log           what agents and staff actually did, over time
+      // -------------------------------------------------------------------
+
+      // Plan catalog. `take_rate_bps` is the commission on GMV in basis
+      // points, so 250 = 2.50% of order value.
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS saas_plans (
+          id SERIAL PRIMARY KEY,
+          code TEXT NOT NULL UNIQUE,
+          name TEXT NOT NULL,
+          monthly_price NUMERIC(12,2) NOT NULL DEFAULT 0,
+          take_rate_bps INTEGER NOT NULL DEFAULT 0,
+          max_stores INTEGER NOT NULL DEFAULT 1,
+          description TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      // One active subscription per store. `store_id` matches orders.store_id,
+      // so revenue can be attributed per tenant.
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS subscriptions (
+          id SERIAL PRIMARY KEY,
+          store_id TEXT NOT NULL UNIQUE,
+          plan_code TEXT NOT NULL,
+          owner_user_id TEXT,
+          status TEXT NOT NULL DEFAULT 'active',
+          started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          ended_at TIMESTAMP,
+          cancelled_at TIMESTAMP,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS invoices (
+          id SERIAL PRIMARY KEY,
+          invoice_no TEXT NOT NULL UNIQUE,
+          store_id TEXT NOT NULL,
+          subscription_id INTEGER,
+          period_start DATE NOT NULL,
+          period_end DATE NOT NULL,
+          subscription_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+          commission_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+          total_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+          currency TEXT NOT NULL DEFAULT 'INR',
+          status TEXT NOT NULL DEFAULT 'open',
+          due_date DATE,
+          paid_at TIMESTAMP,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      // Payment attempts/settlements. Recorded separately from invoices so
+      // partial payment, retries and failures stay auditable.
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS payments (
+          id SERIAL PRIMARY KEY,
+          payment_ref TEXT NOT NULL UNIQUE,
+          invoice_id INTEGER,
+          store_id TEXT NOT NULL,
+          amount NUMERIC(12,2) NOT NULL,
+          currency TEXT NOT NULL DEFAULT 'INR',
+          method TEXT NOT NULL DEFAULT 'upi',
+          status TEXT NOT NULL DEFAULT 'succeeded',
+          gateway TEXT NOT NULL DEFAULT 'sandbox',
+          gateway_ref TEXT,
+          failure_reason TEXT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      // Platform earnings from GMV, one row per order, so revenue can be
+      // reconciled against order volume.
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS commission_ledger (
+          id SERIAL PRIMARY KEY,
+          order_id TEXT NOT NULL UNIQUE,
+          store_id TEXT NOT NULL,
+          gmv NUMERIC(12,2) NOT NULL DEFAULT 0,
+          take_rate_bps INTEGER NOT NULL DEFAULT 0,
+          amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+          recognized_on DATE NOT NULL,
+          currency TEXT NOT NULL DEFAULT 'INR',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      // Durable record of work performed: agent decisions and fulfillment
+      // milestones. `kind` separates the two so the dashboard can filter.
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS work_log (
+          id SERIAL PRIMARY KEY,
+          occurred_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          kind TEXT NOT NULL,
+          actor TEXT NOT NULL,
+          actor_type TEXT NOT NULL DEFAULT 'agent',
+          action TEXT NOT NULL,
+          subject_type TEXT,
+          subject_id TEXT,
+          store_id TEXT,
+          outcome TEXT NOT NULL DEFAULT 'ok',
+          detail TEXT,
+          duration_ms INTEGER,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      // Indexes for the dashboard's 30-day revenue and work queries.
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_invoices_store ON invoices(store_id)`);
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_invoices_period ON invoices(period_start)`);
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_store ON payments(store_id)`);
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_payments_created ON payments(created_at)`);
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_commission_store ON commission_ledger(store_id)`);
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_commission_date ON commission_ledger(recognized_on)`);
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_worklog_occurred ON work_log(occurred_at)`);
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_worklog_kind ON work_log(kind)`);
+
       logger.info('PostgreSQL tables created successfully');
     } finally {
       client.release();
