@@ -45,6 +45,40 @@ const ALLOWED_SQL_PREFIX = /^\s*(select|with|explain)\b/i;
 const MAX_QUERY_ROWS = 500;
 const MAX_QUERY_LENGTH = 4000;
 
+/**
+ * Columns that must never leave the process through the admin control plane.
+ * The raw table browser would otherwise return live bcrypt hashes, which are
+ * offline-crackable and turn a dashboard read-access leak into full credential
+ * compromise. Secrets are replaced with a fixed marker, not omitted, so the
+ * operator can still see that the column exists.
+ */
+const REDACTED = '[redacted]';
+const SENSITIVE_COLUMNS = new Set([
+  'password',
+  'password_hash',
+  'passworddigest',
+  'token',
+  'secret',
+  'api_key',
+  'apikey',
+  'access_token',
+  'refresh_token',
+  'private_key',
+]);
+
+function redactSensitiveColumns(rows) {
+  if (!Array.isArray(rows)) return rows;
+  for (const row of rows) {
+    if (!row || typeof row !== 'object') continue;
+    for (const key of Object.keys(row)) {
+      if (SENSITIVE_COLUMNS.has(key.toLowerCase())) {
+        row[key] = REDACTED;
+      }
+    }
+  }
+  return rows;
+}
+
 function validateReadOnlySql(sql) {
   if (!sql || typeof sql !== 'string') {
     throw new Error('SQL query is required');
@@ -293,16 +327,16 @@ router.get('/database/tables/:table/rows', async (req, res) => {
           `SELECT * FROM "${table}" ORDER BY 1 LIMIT $1 OFFSET $2`,
           [limit, offset]
         );
-        rows = result.rows;
+        rows = redactSensitiveColumns(result.rows);
       } finally {
         client.release();
       }
     } else {
-      rows = await promisifyDbCall(
+      rows = redactSensitiveColumns(await promisifyDbCall(
         db.db.all.bind(db.db),
         `SELECT * FROM "${table}" LIMIT ? OFFSET ?`,
         [limit, offset]
-      );
+      ));
     }
     res.json({ success: true, data: { table, limit, offset, rows } });
   } catch (error) {
@@ -321,12 +355,12 @@ router.post('/database/query', async (req, res) => {
       const client = await db.pool.connect();
       try {
         const result = await client.query(safeSql + ` LIMIT ${MAX_QUERY_ROWS}`, bound);
-        rows = result.rows;
+        rows = redactSensitiveColumns(result.rows);
       } finally {
         client.release();
       }
     } else {
-      rows = await promisifyDbCall(db.db.all.bind(db.db), safeSql, bound);
+      rows = redactSensitiveColumns(await promisifyDbCall(db.db.all.bind(db.db), safeSql, bound));
       if (rows.length > MAX_QUERY_ROWS) rows = rows.slice(0, MAX_QUERY_ROWS);
     }
     res.json({ success: true, data: { sql: safeSql, rowCount: rows.length, rows } });

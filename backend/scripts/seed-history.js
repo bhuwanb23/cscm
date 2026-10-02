@@ -50,7 +50,18 @@ const RESET = flag('reset');
 
 const FROM = process.env.SEED_FROM || '2026-09-01';
 const TO = process.env.SEED_TO || '2026-09-30';
-const PASSWORD = process.env.SEED_PASSWORD || 'Cscm!Demo2026';
+// SECURITY: the demo password is NOT hardcoded. A literal fallback here would
+// be published in this public repo and would become the real password of every
+// seeded account in production. Callers must opt in explicitly.
+const PASSWORD = process.env.SEED_PASSWORD;
+if (!PASSWORD) {
+  console.error(
+    'SEED_PASSWORD is required. Generate one, e.g. ' +
+    'SEED_PASSWORD="$(openssl rand -base64 18)Aa1!" npm run seed:history\n' +
+    'It is deliberately not defaulted in source so it cannot leak via git.'
+  );
+  process.exit(1);
+}
 const DATABASE_URL = process.env.DATABASE_URL;
 
 // ---------------------------------------------------------------------------

@@ -1,32 +1,16 @@
 const OrderModel = require('../../models/orderModel');
 const logger = require('../../utils/logger');
+const { requireStoreAccess } = require('../middleware/storeAccess');
 
 /**
- * Authorization middleware to check if user can access store resources
- * For now, allows access if user is admin or if the user belongs to the store
- * TODO: Implement proper user-to-store association in database
+ * Authorization middleware for store-scoped order resources.
+ *
+ * Delegates to the shared store-ownership guard. The previous implementation
+ * only checked the caller's ROLE, so any shopkeeper could list every other
+ * store's orders by changing the :storeId segment (BOLA). Ownership is now
+ * enforced, and an unresolvable store mapping fails closed.
  */
-function checkStoreAccess(req, res, next) {
-  const { storeId } = req.params;
-  const user = req.user;
-
-  // Admin users can access all stores
-  if (user.role === 'admin') {
-    return next();
-  }
-
-  // For now, allow basic role-based access (shopkeeper, wholesaler, transporter)
-  // TODO: Implement proper user-to-store association check
-  const allowedRoles = ['shopkeeper', 'wholesaler', 'transporter', 'admin'];
-  if (allowedRoles.includes(user.role)) {
-    return next();
-  }
-
-  return res.status(403).json({
-    success: false,
-    error: 'You do not have permission to access this resource'
-  });
-}
+const checkStoreAccess = requireStoreAccess();
 
 /**
  * Create a new order

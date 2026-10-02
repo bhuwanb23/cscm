@@ -49,9 +49,11 @@ jobs:
           BACKEND_URL: ${{ secrets.BACKEND_URL }}
           AI_ML_API_URL: ${{ secrets.AI_ML_API_URL }}
           AI_ML_API_KEY: ${{ secrets.AI_ML_API_KEY }}
-          # Seeded demo users share one documented password (scripts/seed-history.js).
-          # Without it every login fails and the run produces no real traffic.
-          SIM_USER_PASSWORD: ${{ secrets.SIM_USER_PASSWORD || 'Cscm!Demo2026' }}
+          # Seeded demo users share one password, supplied as a repo secret.
+          # There is intentionally NO literal fallback: a default published in
+          # this public file becomes the real password of every demo account.
+          # Without the secret every login fails and the run produces no traffic.
+          SIM_USER_PASSWORD: ${{ secrets.SIM_USER_PASSWORD }}
         run: node src/simulation/index.js --continuous
 
       - name: Generate simulation report

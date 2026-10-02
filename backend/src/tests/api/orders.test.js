@@ -57,18 +57,30 @@ function authToken() {
   );
 }
 
+// Order listing is store-scoped: the token subject must be bound to the store
+// being listed. `shopkeeper_001` maps to STORE001.
+function storeToken(storeNumber) {
+  const n = String(storeNumber).padStart(3, '0');
+  return jwt.sign(
+    { id: Number(n), username: `shopkeeper_${n}`, role: 'shopkeeper', storeId: `STORE${n}` },
+    config.auth.jwtSecret,
+    { expiresIn: '1h', issuer: config.auth.jwtIssuer, audience: config.auth.jwtAudience, algorithm: config.auth.jwtAlgorithm }
+  );
+}
+
 describe('Orders API', () => {
   const token = authToken();
   const authHeader = `Bearer ${token}`;
+  const store1Header = `Bearer ${storeToken(1)}`;
 
   describe('POST /api/v1/orders', () => {
     it('should create an order', async () => {
       const res = await request(app)
         .post('/api/v1/orders')
-        .set('Authorization', authHeader)
+        .set('Authorization', store1Header)
         .send({
           order_id: 'ORD-001',
-          store_id: 'STORE-001',
+          store_id: 'STORE001',
           items: [{ product_id: 'P1', quantity: 2, unit_price: 10 }],
         })
         .expect(201);
@@ -132,12 +144,35 @@ describe('Orders API', () => {
   describe('GET /api/v1/orders/store/:storeId', () => {
     it('should list orders by store', async () => {
       const res = await request(app)
-        .get('/api/v1/orders/store/STORE-001')
-        .set('Authorization', authHeader)
+        .get('/api/v1/orders/store/STORE001')
+        .set('Authorization', store1Header)
         .expect(200);
 
       expect(res.body.success).toBe(true);
       expect(Array.isArray(res.body.data)).toBe(true);
+    });
+
+    // REGRESSION (security): the previous guard only checked the caller's
+    // ROLE, so any shopkeeper could list every other store's orders. This
+    // returned 200 with 63 orders before the ownership check was added.
+    it('should forbid a shopkeeper listing another store orders', async () => {
+      await request(app)
+        .get('/api/v1/orders/store/STORE002')
+        .set('Authorization', store1Header)
+        .expect(403);
+    });
+
+    it('should still let an admin list any store', async () => {
+      const adminHeader = `Bearer ${jwt.sign(
+        { id: 0, username: 'admin', role: 'admin' },
+        config.auth.jwtSecret,
+        { expiresIn: '1h', issuer: config.auth.jwtIssuer, audience: config.auth.jwtAudience, algorithm: config.auth.jwtAlgorithm }
+      )}`;
+
+      await request(app)
+        .get('/api/v1/orders/store/STORE002')
+        .set('Authorization', adminHeader)
+        .expect(200);
     });
   });
 });
