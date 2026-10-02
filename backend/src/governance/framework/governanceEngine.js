@@ -176,18 +176,23 @@ class GovernanceEngine {
             passed: typeof data[rule.field] === rule.expectedType,
             message: typeof data[rule.field] === rule.expectedType ? 'Type matches' : 'Type mismatch'
           };
-        case 'value_range':
+        case 'value_range': {
+          // Braced: a lexical declaration directly in a case block is scoped
+          // to the whole switch, so it leaks across cases and trips
+          // no-case-declarations.
           const value = data[rule.field];
           return {
             passed: value >= rule.min && value <= rule.max,
             message: value >= rule.min && value <= rule.max ? 'Value in range' : 'Value out of range'
           };
-        case 'pattern':
+        }
+        case 'pattern': {
           const regex = new RegExp(rule.pattern);
           return {
             passed: regex.test(String(data[rule.field])),
             message: regex.test(String(data[rule.field])) ? 'Pattern matches' : 'Pattern mismatch'
           };
+        }
         case 'custom':
           if (rule.evaluator && typeof rule.evaluator === 'function') {
             const result = rule.evaluator(data);

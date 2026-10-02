@@ -47,7 +47,11 @@ jest.mock('../../storage/sqliteDatabase', () => {
 const app = require('../../api/server');
 
 function authToken() {
-  return jwt.sign({ id: 1, username: 'test', role: 'shopkeeper' }, config.auth.jwtSecret, { expiresIn: '1h', issuer: config.auth.jwtIssuer, audience: config.auth.jwtAudience, algorithm: config.auth.jwtAlgorithm });
+  // The token carries `storeId` because store-scoped roles are now bound to a
+  // single store: requireStoreAccess fails closed when the caller's store
+  // cannot be resolved, so a shopkeeper token with no store is correctly
+  // rejected with 403 rather than being allowed to touch any store.
+  return jwt.sign({ id: 1, username: 'test', role: 'shopkeeper', storeId: 'INT-S1' }, config.auth.jwtSecret, { expiresIn: '1h', issuer: config.auth.jwtIssuer, audience: config.auth.jwtAudience, algorithm: config.auth.jwtAlgorithm });
 }
 
 describe('Inventory Integration', () => {

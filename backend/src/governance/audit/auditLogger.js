@@ -190,15 +190,19 @@ class AuditLogger {
    * Read audit events with filtering
    */
   readEvents(options = {}) {
-    try {
-      const {
-        eventType,
-        startDate,
-        endDate,
-        limit = 100,
-        offset = 0
-      } = options;
+    // Destructured outside the try: the catch block reports `limit`/`offset`
+    // back to the caller, and block-scoped consts inside `try` are not visible
+    // there. Declaring them here used to throw a ReferenceError on every
+    // failure path, masking the real error with a confusing one.
+    const {
+      eventType,
+      startDate,
+      endDate,
+      limit = 100,
+      offset = 0
+    } = options;
 
+    try {
       let events = [];
       
       // Read all rotated logs

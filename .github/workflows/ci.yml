@@ -54,6 +54,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          # The suite drives the API through starlette's TestClient, which
+          # needs httpx. It lives in requirements-dev.txt, so installing
+          # requirements.txt alone left every TestClient test erroring at
+          # collection with "requires the httpx package to be installed".
+          pip install -r requirements-dev.txt
 
       - name: Run tests
         working-directory: ai-ml

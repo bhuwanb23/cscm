@@ -1,3 +1,18 @@
+/**
+ * The Gateway HTTP cases assert behaviour when its upstreams are DOWN
+ * (503 unreachable, 502/405 on the proxy path). The gateway resolves both
+ * targets from the environment at module load, so without pinning them here
+ * these tests silently inherited AI_ML_API_URL / BACKEND_URL from the ambient
+ * .env — a developer pointing at a real deployment saw a healthy 200 where the
+ * test expects 503, i.e. a failure that had nothing to do with the gateway.
+ *
+ * Port 1 is privileged and never has a listener, so "down" is guaranteed
+ * rather than assumed. Set before requiring the gateway, which captures the
+ * value at import time.
+ */
+process.env.AI_ML_API_URL = 'http://127.0.0.1:1';
+process.env.BACKEND_URL = 'http://127.0.0.1:1';
+
 const request = require('supertest');
 const { app, isAiMlPath } = require('../../gateway/gateway');
 

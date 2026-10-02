@@ -139,9 +139,9 @@ router.get(
   withClient(async (client) => {
     const counts = await rows(
       client,
-      "SELECT plan_code, count(*)::int AS subscribers, " +
-        "sum(CASE WHEN status = 'active' THEN 1 ELSE 0 END)::int AS active " +
-        'FROM subscriptions GROUP BY plan_code'
+      `SELECT plan_code, count(*)::int AS subscribers,
+              sum(CASE WHEN status = 'active' THEN 1 ELSE 0 END)::int AS active
+         FROM subscriptions GROUP BY plan_code`
     );
     const byCode = Object.fromEntries(counts.map((c) => [c.plan_code, c]));
     return PLANS.map((p) => ({

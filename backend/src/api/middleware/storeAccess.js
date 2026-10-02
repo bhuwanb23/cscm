@@ -19,6 +19,11 @@
 
 const ROLE_STORE_SCOPED = new Set(['shopkeeper', 'wholesaler']);
 
+/** storeId -> store_id */
+function toSnakeCase(name) {
+  return name.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`);
+}
+
 /**
  * Derive the store a user is bound to.
  * @param {Object} user - decoded JWT payload
@@ -53,6 +58,24 @@ function requireStoreAccess(options = {}) {
   // guard cannot be bypassed by switching verbs.
   const requireOwnership = options.requireOwnership !== false;
 
+  /**
+   * Pull the requested store out of the request.
+   *
+   * Both spellings are accepted because the codebase uses each of them in a
+   * different place: routes carry `storeId` as a path param, while JSON bodies
+   * (e.g. POST /api/v1/inventory) send `store_id`. Checking only the camelCase
+   * form silently 400'd every legitimate write.
+   */
+  const requestedStore = (req) => {
+    const sources = [req.params, req.body, req.query];
+    for (const source of sources) {
+      if (!source) continue;
+      const value = source[paramName] ?? source[toSnakeCase(paramName)];
+      if (value !== undefined && value !== null && value !== '') return value;
+    }
+    return undefined;
+  };
+
   return function storeAccess(req, res, next) {
     const user = req.user;
     if (!user) {
@@ -74,10 +97,7 @@ function requireStoreAccess(options = {}) {
       });
     }
 
-    const requested =
-      (req.params && req.params[paramName]) ||
-      (req.body && req.body[paramName]) ||
-      (req.query && req.query[paramName]);
+    const requested = requestedStore(req);
 
     if (!requested) {
       return res.status(400).json({

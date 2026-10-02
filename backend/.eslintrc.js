@@ -24,7 +24,12 @@ module.exports = {
   rules: {
     'indent': 'off', // Disabled for existing codebase with mixed indentation
     'linebreak-style': 'off', // Disabled to handle mixed line endings
-    'quotes': ['error', 'single'],
+    // avoidEscape: SQL statements legitimately contain single quotes
+    // (status = 'succeeded'), and forcing them into single-quoted JS strings
+    // would mean escaping every one of them.
+    // allowTemplateLiterals: the schema/index DDL is written as template
+    // literals for readability even with no interpolation.
+    'quotes': ['error', 'single', { avoidEscape: true, allowTemplateLiterals: true }],
     'semi': ['error', 'always'],
     'no-unused-vars': 'warn',
     'no-console': 'off',
@@ -43,6 +48,11 @@ module.exports = {
     // Node.js rules
     'node/no-unpublished-require': 'off',
     'node/no-unsupported-features/es-syntax': 'off',
+    // The plugin defaults to '>=8.0.0' when package.json declares no engines
+    // field, which flagged Object.fromEntries (Node 12+) as unsupported on a
+    // project that runs Node 18/20 in CI and Node 20 on Render. Stated
+    // explicitly so the rule checks against reality.
+    'node/no-unsupported-features/es-builtins': ['error', { version: '>=18.0.0' }],
     'node/no-process-env': 'off', // Disabled for existing codebase
     'node/no-path-concat': 'error',
     'node/shebang': 'off', // Disabled for executable scripts

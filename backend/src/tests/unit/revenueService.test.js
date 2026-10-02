@@ -48,8 +48,11 @@ describe('revenueService.dayKey', () => {
 
 describe('revenueService.money', () => {
   it('rounds to 2dp without float drift', () => {
-    expect(money(1234.5600000000001)).toBe(1234.56);
+    // Arithmetic that genuinely produces binary-float drift, rather than a
+    // decimal literal too long to survive as a double.
     expect(money(0.1 + 0.2)).toBe(0.3);
+    expect(money(1.005 * 100)).toBe(100.5);
+    expect(money(19.99 * 3)).toBe(59.97);
   });
 });
 

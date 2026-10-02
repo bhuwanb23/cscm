@@ -52,7 +52,9 @@ jest.mock('../../storage/sqliteDatabase', () => {
 const app = require('../../api/server');
 
 function authToken() {
-  return jwt.sign({ id: 1, username: 'test', role: 'shopkeeper' }, config.auth.jwtSecret, { expiresIn: '1h', issuer: config.auth.jwtIssuer, audience: config.auth.jwtAudience, algorithm: config.auth.jwtAlgorithm });
+  // Bound to a store because store-scoped roles are authorized per store;
+  // an unbound shopkeeper token is correctly refused with 403.
+  return jwt.sign({ id: 1, username: 'test', role: 'shopkeeper', storeId: 'INT-S1' }, config.auth.jwtSecret, { expiresIn: '1h', issuer: config.auth.jwtIssuer, audience: config.auth.jwtAudience, algorithm: config.auth.jwtAlgorithm });
 }
 
 describe('Orders Integration', () => {
