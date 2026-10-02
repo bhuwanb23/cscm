@@ -43,21 +43,45 @@ export function Kpi({ label, value, sub, tone, spark }) {
   );
 }
 
-export function StatusPill({ status, mini }) {
+/**
+ * Health states are not all binary. An earlier version treated anything that
+ * was not literally "healthy/ok/closed" as a failure, which painted healthy
+ * subscription rows (`active`) red. Keep an explicit positive set instead.
+ */
+const STATUS_OK = new Set([
+  'healthy', 'ok', 'closed', 'active', 'paid', 'succeeded', 'delivered',
+  'running', 'online', 'available', 'success',
+]);
+const STATUS_WARN = new Set([
+  'unknown', 'pending', 'degraded', 'trialing', 'processing', 'open',
+  'shipped', 'in_transit', 'in transit', 'confirmed',
+]);
+
+function statusTone(status) {
   const s = String(status || 'unknown').toLowerCase();
-  const cls = s === 'healthy' || s === 'ok' || s === 'closed' ? 'ok' : s === 'unknown' ? 'warn' : 'err';
+  if (STATUS_OK.has(s)) return 'ok';
+  if (STATUS_WARN.has(s)) return 'warn';
+  return 'err';
+}
+
+export function StatusPill({ status, mini }) {
+  const label = status || 'unknown';
+  const cls = statusTone(label);
   const dotCls = cls === 'ok' ? 'healthy' : cls === 'warn' ? 'unknown' : 'unhealthy';
+
   if (mini) {
     return (
-      <span className="row" style={{ gap: 0 }} title={status || 'unknown'}>
+      <span className="row" style={{ gap: 6 }} title={label}>
         <span className={`status-dot ${dotCls}`} aria-hidden="true" />
+        <span className="status-word">{label}</span>
       </span>
     );
   }
+
   return (
     <span className="row" style={{ gap: 6 }}>
       <span className={`status-dot ${dotCls}`} aria-hidden="true" />
-      <span className={`badge ${cls}`}>{status}</span>
+      <span className={`badge ${cls}`}>{label}</span>
     </span>
   );
 }
