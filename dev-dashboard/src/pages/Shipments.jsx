@@ -4,10 +4,10 @@ import { api, callBackend } from '../api/client.jsx';
 import { useConfirm } from '../state/ConfirmContext.jsx';
 import { useToast } from '../state/ToastContext.jsx';
 
-const STATUSES = ['pending', 'assigned', 'in_transit', 'delivered', 'failed'];
+const STATUSES = ['pending', 'in_transit', 'delivered', 'cancelled'];
 
 export default function Shipments() {
-  const [status, setStatus] = useState('pending');
+  const [status, setStatus] = useState('delivered');
   const shipments = useAsyncData(
     () => api.get(`/api/data/shipments/${encodeURIComponent(status)}`),
     [status]
@@ -73,8 +73,20 @@ export default function Shipments() {
             columns={[
               { key: 'shipment_id', label: 'Shipment' },
               { key: 'order_id', label: 'Order' },
-              { key: 'transporter_id', label: 'Transporter' },
-              { key: 'current_location', label: 'Location' },
+              {
+                key: 'carrier',
+                label: 'Transporter',
+                render: (s) => s.carrier ?? s.transporter_id ?? '—',
+              },
+              {
+                key: 'route',
+                label: 'Route',
+                render: (s) => (
+                  s.from_location || s.to_location
+                    ? `${s.from_location || '—'} → ${s.to_location || '—'}`
+                    : (s.current_location ?? '—')
+                ),
+              },
               {
                 key: 'status',
                 label: 'Status',

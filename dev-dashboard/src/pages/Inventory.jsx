@@ -5,7 +5,7 @@ import { useConfirm } from '../state/ConfirmContext.jsx';
 import { useToast } from '../state/ToastContext.jsx';
 
 export default function Inventory() {
-  const [storeId, setStoreId] = useState('store-1');
+  const [storeId, setStoreId] = useState('STORE001');
   const inv = useAsyncData(
     () => api.get(`/api/data/inventory/${encodeURIComponent(storeId)}`),
     [storeId]
@@ -73,9 +73,16 @@ export default function Inventory() {
               { key: 'product_id', label: 'Product' },
               { key: 'quantity', label: 'Qty' },
               {
-                key: 'reorder_point',
+                key: 'min_stock_level',
                 label: 'Reorder point',
-                render: (it) => <span className={it.quantity <= (it.reorder_point ?? 0) ? 'error-text' : ''}>{it.reorder_point ?? '—'}</span>,
+                render: (it) => {
+                  const rop = it.min_stock_level ?? it.reorder_point ?? null;
+                  return (
+                    <span className={rop !== null && it.quantity <= rop ? 'error-text' : ''}>
+                      {rop ?? '—'}
+                    </span>
+                  );
+                },
               },
               {
                 key: '_edit',

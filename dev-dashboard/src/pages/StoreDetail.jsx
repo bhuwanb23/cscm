@@ -25,7 +25,11 @@ export default function StoreDetail() {
               columns={[
                 { key: 'product_id', label: 'Product' },
                 { key: 'quantity', label: 'Qty' },
-                { key: 'reorder_point', label: 'ROP' },
+                {
+                  key: 'min_stock_level',
+                  label: 'ROP',
+                  render: (it) => it.min_stock_level ?? it.reorder_point ?? '—',
+                },
               ]}
               rows={inv.data.data || []}
             />

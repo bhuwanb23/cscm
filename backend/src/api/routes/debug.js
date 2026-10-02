@@ -353,6 +353,27 @@ router.get('/data/orders/:storeId', async (req, res) => {
   try {
     const OrderModel = require('../../models/orderModel');
     const orders = await OrderModel.getByStore(req.params.storeId);
+    // Attach line items so the dashboard's Items column shows real data
+    // instead of an empty array (orders table alone has no items).
+    const db = getDatabase();
+    if (db && db.pool && Array.isArray(orders) && orders.length) {
+      const client = await db.pool.connect();
+      try {
+        const { rows } = await client.query(
+          'SELECT order_id, product_id, quantity, unit_price FROM order_items WHERE order_id = ANY($1)',
+          [orders.map((o) => o.order_id)]
+        );
+        const byOrder = {};
+        for (const r of rows) {
+          (byOrder[r.order_id] = byOrder[r.order_id] || []).push(r);
+        }
+        orders.forEach((o) => {
+          o.items = byOrder[o.order_id] || [];
+        });
+      } finally {
+        client.release();
+      }
+    }
     res.json({ success: true, data: orders });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });

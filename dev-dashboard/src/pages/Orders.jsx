@@ -7,7 +7,7 @@ import { useToast } from '../state/ToastContext.jsx';
 const STATUSES = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
 export default function Orders() {
-  const [storeId, setStoreId] = useState('store-1');
+  const [storeId, setStoreId] = useState('STORE001');
   const orders = useAsyncData(
     () => api.get(`/api/data/orders/${encodeURIComponent(storeId)}`),
     [storeId]

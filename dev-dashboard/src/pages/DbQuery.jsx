@@ -5,8 +5,9 @@ import { api } from '../api/client.jsx';
 import { useToast } from '../state/ToastContext.jsx';
 
 const EXAMPLES = [
-  'SELECT id, username, role, created_at FROM users ORDER BY id DESC LIMIT 20',
-  'SELECT store_id, product_id, quantity, reorder_point FROM inventory ORDER BY quantity LIMIT 20',
+  // No LIMIT: the query endpoint appends its own row cap.
+  'SELECT id, username, role, created_at FROM users ORDER BY id DESC',
+  'SELECT store_id, product_id, quantity, min_stock_level FROM inventory ORDER BY quantity',
   "SELECT status, COUNT(*) AS n FROM orders GROUP BY status",
   "SELECT status, COUNT(*) AS n FROM shipments GROUP BY status",
 ];
