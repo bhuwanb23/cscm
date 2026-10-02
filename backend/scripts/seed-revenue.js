@@ -30,6 +30,25 @@ const pad = (n, w = 2) => String(n).padStart(w, '0');
 const ts = (d) => d.toISOString().slice(0, 19).replace('T', ' ');
 const money = (n) => Math.round((Number(n) || 0) * 100) / 100;
 
+/**
+ * Normalise a timestamp column to a `YYYY-MM-DD` day key.
+ *
+ * pg returns TIMESTAMP columns as JS Date objects, so the obvious
+ * `String(value).slice(0, 10)` yields "Tue Sep 01" and Postgres then rejects
+ * it as an invalid date. Handle both Date instances and plain strings.
+ */
+function dayKey(value) {
+  if (!value) return null;
+  if (value instanceof Date) {
+    // Build from the UTC parts rather than toISOString() so this stays stable
+    // regardless of the process timezone.
+    return `${value.getUTCFullYear()}-${pad(value.getUTCMonth() + 1)}-${pad(value.getUTCDate())}`;
+  }
+  const s = String(value).trim();
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
+}
+
 /** Deterministic PRNG so re-running produces the same demo dataset. */
 function mulberry32(seed) {
   let a = seed >>> 0;
@@ -177,7 +196,7 @@ function buildRevenuePlan({ orders = [], from, to }) {
       gmv: money(gmv),
       take_rate_bps: plan.take_rate_bps,
       amount,
-      recognized_on: String(o.created_at).slice(0, 10),
+      recognized_on: dayKey(o.created_at),
     });
   }
 
@@ -197,7 +216,7 @@ function buildRevenuePlan({ orders = [], from, to }) {
   for (const day of days) {
     const weekday = new Date(`${day}T00:00:00Z`).getUTCDay();
     const weekend = weekday === 0 || weekday === 6;
-    const dayOrders = orders.filter((o) => String(o.created_at).slice(0, 10) === day);
+    const dayOrders = orders.filter((o) => dayKey(o.created_at) === day);
 
     // Agent decisions scale with the day's actual activity.
     const agentRuns = Math.max(3, Math.round(dayOrders.length * (weekend ? 0.4 : 0.8)));

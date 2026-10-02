@@ -28,6 +28,22 @@ function money(n) {
 }
 
 /**
+ * Normalise a timestamp/date column to a `YYYY-MM-DD` day key.
+ *
+ * pg returns TIMESTAMP columns as JS Date objects, so slicing the raw string
+ * produces "Tue Sep 01" instead of a date and every row lands in a bucket
+ * keyed to nothing. Handles Date instances and plain strings.
+ */
+function dayKey(value) {
+  if (!value) return null;
+  if (value instanceof Date) {
+    return `${value.getUTCFullYear()}-${String(value.getUTCMonth() + 1).padStart(2, '0')}-${String(value.getUTCDate()).padStart(2, '0')}`;
+  }
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value).trim());
+  return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
+}
+
+/**
  * Plan price, tolerant of both the DB row shape (`monthly_price`) and the
  * domain catalogue shape (`monthlyPrice`). Getting this wrong silently
  * reported MRR as 0 while ARR still looked plausible.
@@ -112,7 +128,8 @@ function dailySeries(rows, dateField, from, to, sums) {
   for (const row of rows || []) {
     const raw = row[dateField];
     if (!raw) continue;
-    const day = String(raw).slice(0, 10);
+    const day = dayKey(raw);
+    if (!day) continue;
     if (!buckets.has(day)) {
       const b = { date: day, count: 0 };
       for (const out of Object.keys(sums)) b[out] = 0;
@@ -229,6 +246,7 @@ function revenueByStore({ subscriptions = [], payments = [], commission = [] }) 
 module.exports = {
   bpsToFraction,
   money,
+  dayKey,
   planMonthlyPrice,
   computeMrr,
   computeArr,
