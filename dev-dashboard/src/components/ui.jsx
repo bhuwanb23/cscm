@@ -156,6 +156,60 @@ export function EmptyState({ art = 'data', icon, title = 'Nothing here yet', hin
   );
 }
 
+/**
+ * Route-level crash containment.
+ *
+ * Without this, a page that throws during render unmounts the entire React
+ * tree — the console goes white, including the nav you would need to navigate
+ * away with. Wrapping <Routes> degrades a broken page to an in-shell message.
+ *
+ * `resetKey` (the pathname) clears the error on navigation, so moving to
+ * another page recovers without a reload.
+ */
+export class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+
+  componentDidCatch(error, info) {
+    // Keep the detail in the console for debugging; the UI stays calm.
+    console.error('Page render failed:', error, info?.componentStack);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.state.error && prevProps.resetKey !== this.props.resetKey) {
+      this.setState({ error: null });
+    }
+  }
+
+  render() {
+    if (!this.state.error) return this.props.children;
+
+    const message = String(this.state.error?.message || this.state.error);
+    return (
+      <>
+        <div className="error-banner" role="alert">
+          <span aria-hidden="true">⚠</span>
+          <span style={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+            This page failed to render: {message}
+          </span>
+          <button className="ghost sm" onClick={() => this.setState({ error: null })}>
+            Retry
+          </button>
+        </div>
+        <p className="muted" style={{ marginTop: 12 }}>
+          The rest of the console is unaffected — pick another page from the navigation.
+        </p>
+      </>
+    );
+  }
+}
+
 export function ErrorBanner({ error, onRetry }) {
   if (!error) return null;
   const message = String(error.message || error);
@@ -245,7 +299,7 @@ export function DataTable({ columns, rows, empty = 'No data', keyField = 'id', a
         <thead>
           <tr>
             {columns.map((c) => (
-              <th key={c.key} scope="col">{c.label}</th>
+              <th key={c.key} scope="col" className={c.align === 'num' ? 'num' : undefined}>{c.label}</th>
             ))}
             {actions && <th style={{ width: 130 }}>Actions</th>}
           </tr>
@@ -254,7 +308,9 @@ export function DataTable({ columns, rows, empty = 'No data', keyField = 'id', a
           {rows.map((row, i) => (
             <tr key={row[keyField] !== undefined ? row[keyField] : i}>
               {columns.map((c) => (
-                <td key={c.key}>{c.render ? c.render(row) : String(row[c.key] ?? '—')}</td>
+                <td key={c.key} className={c.align === 'num' ? 'num' : undefined}>
+                  {c.render ? c.render(row) : String(row[c.key] ?? '—')}
+                </td>
               ))}
               {actions && <td>{actions(row)}</td>}
             </tr>

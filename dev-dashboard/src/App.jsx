@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './state/AuthContext.jsx';
 import { useLive } from './state/LiveContext.jsx';
 import { useToast } from './state/ToastContext.jsx';
-import { StatusPill, ScrollTopButton } from './components/ui.jsx';
-import { LiveClock } from './components/motion.jsx';
+import { StatusPill, ScrollTopButton, ErrorBoundary, Loading } from './components/ui.jsx';
+import { LiveClock, useSlidingIndicator } from './components/motion.jsx';
 import { Icon, BrandMark } from './components/icons.jsx';
 import CommandPalette from './components/CommandPalette.jsx';
 import { NAV } from './lib/nav.js';
@@ -133,6 +133,11 @@ function Shell({ children }) {
 
   const currentGroup = NAV.find((g) => g.items.some(([to]) => to === location.pathname))?.group;
 
+  // Sliding active marker — measured from the DOM so it survives rail reflow.
+  const activeTopPath =
+    NAV.find((g) => g.items.some(([to]) => to === location.pathname))?.items[0]?.[0] ?? '/';
+  const { ref: railRef, style: markerStyle } = useSlidingIndicator('[data-path]', activeTopPath);
+
   return (
     <div className="app-shell">
       <div className="ambient" aria-hidden="true" />
@@ -144,7 +149,8 @@ function Shell({ children }) {
         </NavLink>
         <div className="rail-sep" aria-hidden="true" />
 
-        <nav aria-label="Primary" style={{ display: 'contents' }}>
+        <nav className="rail" aria-label="Primary" ref={railRef}>
+          <span className="rail-marker" style={markerStyle} aria-hidden="true" />
           {NAV.map((section) => {
             const [topPath, topLabel, topIcon] = section.items[0];
             const active = section.items.some(([to]) => to === location.pathname);
@@ -154,8 +160,10 @@ function Shell({ children }) {
                 to={topPath}
                 end={topPath === '/'}
                 className={`rail-item${active ? ' active' : ''}`}
+                data-path={topPath}
                 data-tip={section.group}
                 aria-label={section.group}
+                aria-current={active ? 'page' : undefined}
               >
                 <Icon name={topIcon} size={19} />
               </NavLink>
@@ -250,13 +258,17 @@ function Shell({ children }) {
   );
 }
 
-export default function App() {
-  const { token } = useAuth();
-  if (!token) return <Login />;
+function RoutedContent() {
+  // resetKey lets the boundary clear itself on navigation, so one broken page
+  // never requires a reload to escape.
+  const { pathname } = useLocation();
 
   return (
-    <Shell>
-      <Routes>
+    <ErrorBoundary resetKey={pathname}>
+      <Suspense
+        fallback={<Loading label="Loading module" />}
+      >
+        <Routes>
         <Route path="/" element={<Overview />} />
         <Route path="/services" element={<Services />} />
         <Route path="/logs" element={<Logs />} />
@@ -293,7 +305,19 @@ export default function App() {
         <Route path="/docs" element={<Docs />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
+export default function App() {
+  const { token } = useAuth();
+  if (!token) return <Login />;
+
+  return (
+    <Shell>
+      <RoutedContent />
     </Shell>
   );
 }
