@@ -11,6 +11,7 @@ const {
   dayKey,
   money,
   computeMrr,
+  computeChurn,
   revenueSummary,
   revenueByStore,
 } = require('../../services/revenueService');
@@ -116,6 +117,39 @@ describe('revenueService.revenueSummary', () => {
     expect(second.amount).toBe(10000);
     const first = summary.dailyRevenue.find((d) => d.date === '2026-09-01');
     expect(first.amount).toBe(0);
+  });
+});
+
+describe('revenueService.computeChurn', () => {
+  it('counts the base from Date timestamps, not zero', () => {
+    // pg returns Date objects. Comparing a Date to a string is false, which
+    // previously reported "0 of 0 accounts" and understated churn entirely.
+    const out = computeChurn(
+      [
+        { store_id: 'S1', status: 'active', started_at: new Date('2026-09-01T09:00:00Z') },
+        { store_id: 'S2', status: 'active', started_at: new Date('2026-09-10T09:00:00Z') },
+        { store_id: 'S3', status: 'cancelled', started_at: '2026-08-01 09:00:00', ended_at: new Date('2026-09-15T09:00:00Z') },
+      ],
+      '2026-09-01 00:00:00',
+      '2026-09-30 23:59:59'
+    );
+    expect(out.base).toBe(3);
+    expect(out.churned).toBe(1);
+    expect(out.churnRateBps).toBe(3333);
+  });
+
+  it('does not count churn that happened outside the window', () => {
+    const out = computeChurn(
+      [{ store_id: 'S1', status: 'cancelled', started_at: '2026-01-01 00:00:00', ended_at: '2026-05-01 00:00:00' }],
+      '2026-09-01 00:00:00',
+      '2026-09-30 23:59:59'
+    );
+    expect(out.churned).toBe(0);
+    expect(out.churnRateBps).toBe(0);
+  });
+
+  it('guards a zero base', () => {
+    expect(computeChurn([], '2026-09-01 00:00:00', '2026-09-30 23:59:59').churnRateBps).toBe(0);
   });
 });
 

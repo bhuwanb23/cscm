@@ -95,16 +95,31 @@ function computeArpu(mrr, payingAccounts) {
 /**
  * Churn: subscriptions that ended within the window, as a share of the base
  * at the start of the window. Guarded against a zero base.
+ *
+ * Timestamps arrive from pg as Date objects, so they are normalised to
+ * comparable strings first - comparing a Date to a string silently yields
+ * false, which reported a base of zero and understated churn.
  */
 function computeChurn(subscriptions, windowStart, windowEnd) {
-  const base = (subscriptions || []).filter((s) => s.started_at <= windowEnd).length;
-  const churned = (subscriptions || []).filter(
-    (s) =>
-      (s.status === 'cancelled' || s.status === 'churned') &&
-      s.ended_at &&
-      s.ended_at >= windowStart &&
-      s.ended_at <= windowEnd
-  ).length;
+  const startKey = dayKey(windowStart);
+  const endKey = dayKey(windowEnd);
+
+  const startedBy = (v) => {
+    const k = dayKey(v);
+    return k ? `${k}T00:00:00` : null;
+  };
+
+  const base = (subscriptions || []).filter((s) => {
+    const k = startedBy(s.started_at);
+    return k !== null && k <= `${endKey}T23:59:59`;
+  }).length;
+
+  const churned = (subscriptions || []).filter((s) => {
+    if (s.status !== 'cancelled' && s.status !== 'churned') return false;
+    const k = startedBy(s.ended_at);
+    if (!k) return false;
+    return k >= `${startKey}T00:00:00` && k <= `${endKey}T23:59:59`;
+  }).length;
 
   return {
     base,
