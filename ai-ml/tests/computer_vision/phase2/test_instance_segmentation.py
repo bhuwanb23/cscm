@@ -12,6 +12,15 @@ from unittest.mock import patch, MagicMock
 parent_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
 sys.path.insert(0, parent_dir)
 
+# detailed_damage.py imports cv2 at module scope, and OpenCV is an optional
+# dependency (it stays commented out in requirements.txt). Skip the module
+# rather than failing when it is absent, matching the sibling suites.
+cv2 = pytest.importorskip(
+    "cv2",
+    reason="Instance segmentation tests require OpenCV",
+    exc_type=ImportError,
+)
+
 def test_imports():
     """Test that all modules can be imported without errors."""
     try:

@@ -40,6 +40,8 @@ jobs:
   ai-ml:
     name: AI/ML (Python 3.11)
     runs-on: ubuntu-latest
+    # Fail fast instead of burning the default 360 minutes if the suite wedges.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -48,6 +50,11 @@ jobs:
         with:
           python-version: '3.11'
           cache: pip
+          # Be explicit: without this the cache key can miss when the
+          # requirements files live in the ai-ml/ subdirectory.
+          cache-dependency-path: |
+            ai-ml/requirements.txt
+            ai-ml/requirements-dev.txt
 
       - name: Install dependencies
         working-directory: ai-ml
@@ -62,7 +69,7 @@ jobs:
 
       - name: Run tests
         working-directory: ai-ml
-        run: pytest
+        run: pytest -p no:cacheprovider
 
   dashboard:
     name: Dev dashboard build
