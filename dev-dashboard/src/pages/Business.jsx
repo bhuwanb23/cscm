@@ -266,7 +266,12 @@ export default function Business() {
                     align: 'num',
                     // null means "cannot be measured with no stock value",
                     // which is different from a measured zero.
-                    render: (r) => (r.turns == null ? '—' : r.turns),
+                    render: (r) => {
+                      if (r.turns == null) return '—';
+                      // Without a line-level cost the numerator is retail
+                      // price, so this is an upper bound, not true turnover.
+                      return r.turnsAreExact ? r.turns : `${r.turns}~`;
+                    },
                   },
                 ]}
                 rows={[m.inventory]}

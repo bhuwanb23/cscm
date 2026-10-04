@@ -78,9 +78,11 @@ router.get(
     const orderIds = orders.rows.map((o) => o.order_id);
 
     // Line items are fetched in one round trip rather than per order.
+    // order_items has no unit_cost column, so cost basis is unavailable at
+    // line level and the service falls back to unit_price.
     const items = orderIds.length
       ? await client.query(
-          `SELECT order_id, product_id, quantity, unit_price, unit_cost
+          `SELECT order_id, product_id, quantity, unit_price, total_price
              FROM order_items
             WHERE order_id = ANY($1)`,
           [orderIds]

@@ -255,3 +255,34 @@ describe('metricsService.buildDailySeries', () => {
     expect(series).toHaveLength(8);
   });
 });
+
+describe('metricsService inventory turns basis', () => {
+  const base = {
+    orders: [{ order_id: 'O1', store_id: 'S1', total_amount: 1000, status: 'delivered', created_at: '2026-11-03' }],
+    shipments: [],
+    inventory: [{ product_id: 'P1', store_id: 'S1', quantity: 100, min_stock_level: 5, unit_cost: 5 }],
+    from: '2026-11-02',
+    to: '2026-11-03',
+  };
+
+  it('marks turns as inexact when order_items has no cost basis', () => {
+    // order_items has no unit_cost column in the real schema, so the
+    // numerator falls back to retail unit_price and turns are an upper bound.
+    const m = computeMetrics({ ...base, orderItems: [{ order_id: 'O1', product_id: 'P1', quantity: 10, unit_price: 100 }] });
+    expect(m.inventory.turnsAreExact).toBe(false);
+    expect(Number.isFinite(m.inventory.turns)).toBe(true);
+  });
+
+  it('marks turns as exact when a real cost basis is present', () => {
+    const m = computeMetrics({
+      ...base,
+      orderItems: [{ order_id: 'O1', product_id: 'P1', quantity: 10, unit_price: 100, unit_cost: 40 }],
+    });
+    expect(m.inventory.turnsAreExact).toBe(true);
+  });
+
+  it('still returns null turns when there is no stock value to divide by', () => {
+    const m = computeMetrics({ ...base, inventory: [], orderItems: [{ order_id: 'O1', product_id: 'P1', quantity: 10, unit_price: 100 }] });
+    expect(m.inventory.turns).toBeNull();
+  });
+});

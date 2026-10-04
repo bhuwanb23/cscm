@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { PageHeader, Kpi, Loading, ErrorBanner, DataTable, StatusPill, EmptyState, useAsyncData } from '../components/ui.jsx';
 import { api } from '../api/client.jsx';
+import { dayMonthShort } from '../lib/format.js';
 
 const iso = (d) => d.toISOString().slice(0, 10);
 

@@ -92,11 +92,18 @@ function computeMetrics({ orders = [], orderItems = [], shipments = [], inventor
   const stockoutRateBps = bps(stockedOut.length, stockRows.length);
   const belowReorderRateBps = bps(belowReorder.length, stockRows.length);
 
-  // Inventory turns: how many times stock is sold and replaced in the
-  // window. Needs a cost basis; unit_cost is the weaver cooperative price.
+  // Inventory turns: how many times stock is sold and replaced in the window.
+  //
+  // Stock value uses inventory.unit_cost (what the house pays the weaver
+  // cooperative). order_items has NO unit_cost column, so there is no true
+  // cost basis for the numerator and retail unit_price is the only figure
+  // available. Dividing retail value by cost value inflates turns by roughly
+  // the markup, so the result is reported as an upper bound and flagged, not
+  // presented as an exact turnover figure.
   const stockValue = money(stockRows.reduce((s, i) => s + Number(i.quantity || 0) * Number(i.unit_cost || 0), 0));
+  const hasLineCost = orderItems.some((it) => Number(it.unit_cost) > 0);
   const cogs = money(
-    orderItems.reduce((s, it) => s + Number(it.quantity || 0) * Number(it.unit_cost || Number(it.unit_price) || 0), 0)
+    orderItems.reduce((s, it) => s + Number(it.quantity || 0) * (Number(it.unit_cost) || Number(it.unit_price) || 0), 0)
   );
   const inventoryTurns = stockValue > 0 ? Math.round((cogs / stockValue) * 100) / 100 : null;
 
@@ -208,6 +215,9 @@ function computeMetrics({ orders = [], orderItems = [], shipments = [], inventor
       belowReorderRateBps,
       belowReorderRatePct: toPct(belowReorderRateBps),
       turns: inventoryTurns,
+      // False means turns used retail unit_price as the numerator, so the
+      // figure is an upper bound rather than a true cost-based turnover.
+      turnsAreExact: hasLineCost,
     },
     delivery: {
       shipments: (shipments || []).length,
