@@ -12,6 +12,8 @@ const {
   money,
   computeMrr,
   computeChurn,
+  dailySeries,
+  perTradingDay,
   revenueSummary,
   revenueByStore,
 } = require('../../services/revenueService');
@@ -178,5 +180,85 @@ describe('revenueService.revenueByStore', () => {
     const sum = out.stores.reduce((s, r) => s + r.shareBps, 0);
     expect(sum).toBeGreaterThan(9900);
     expect(sum).toBeLessThan(10100);
+  });
+});
+
+/**
+ * Market-calendar awareness.
+ *
+ * These guard the defect that made the dashboard lie: a closed market and a
+ * collapsing business both rendered as a zero on the revenue chart. Closed
+ * days must be distinguishable, and daily rates must be measured against
+ * trading days rather than calendar days.
+ */
+describe('revenueService.dailySeries market awareness', () => {
+  it('flags a closed-market day so it is not read as a zero-revenue day', () => {
+    // Window spans the 1 Nov Sunday, the Deepavali pair (8-9 Nov) and the
+    // Saturday the bazaar still trades (7 Nov).
+    const rows = [
+      { created_at: '2026-11-07', amount: 100 },
+      { created_at: '2026-11-10', amount: 100 },
+    ];
+    const series = dailySeries(rows, 'created_at', '2026-11-01', '2026-11-10', { amount: 'amount' });
+
+    const byDate = Object.fromEntries(series.map((d) => [d.date, d]));
+
+    expect(byDate['2026-11-01'].isTradingDay).toBe(false); // Sunday
+    expect(byDate['2026-11-08'].isTradingDay).toBe(false); // Deepavali
+    expect(byDate['2026-11-09'].isTradingDay).toBe(false); // Deepavali continues
+    expect(byDate['2026-11-07'].isTradingDay).toBe(true); // Saturday trades
+    expect(byDate['2026-11-10'].isTradingDay).toBe(true);
+  });
+
+  it('gives a closed day a market reason the UI can explain', () => {
+    const series = dailySeries([], 'created_at', '2026-11-08', '2026-11-08', { amount: 'amount' });
+    expect(series[0].isTradingDay).toBe(false);
+    expect(series[0].marketLabel).toBe('Deepavali');
+    expect(series[0].marketReason).toMatch(/market closed/i);
+  });
+
+  it('still dense-fills every calendar day so charts have no gaps', () => {
+    const series = dailySeries([], 'created_at', '2026-11-06', '2026-11-10', { amount: 'amount' });
+    expect(series).toHaveLength(5);
+  });
+});
+
+describe('revenueService.perTradingDay', () => {
+  it('divides by trading days, not calendar days', () => {
+    // 2026-11-02..2026-11-07 is Mon-Sat: six calendar days, all trading
+    // (the bazaar runs Saturday; Deepavali is 8 Nov). 600/6 = 100.
+    expect(perTradingDay(600, '2026-11-02', '2026-11-07')).toBe(100);
+  });
+
+  it('excludes the festival days when the window spans Deepavali', () => {
+    // 2026-11-02..2026-11-09 is eight calendar days but only six trading
+    // ones, because 8-9 Nov are shut. 1000/6, not 1000/8.
+    expect(perTradingDay(1000, '2026-11-02', '2026-11-09')).toBe(money(1000 / 6));
+  });
+
+  it('returns 0 rather than Infinity for a window with no trading days', () => {
+    expect(perTradingDay(500, '2026-11-08', '2026-11-09')).toBe(0);
+  });
+});
+
+describe('revenueSummary market context', () => {
+  it('reports closed days and per-trading-day rates', () => {
+    const summary = revenueSummary({
+      subscriptions: [],
+      payments: [{ amount: 200, created_at: '2026-11-07' }],
+      commission: [],
+      orders: [
+        { total_amount: 10000, created_at: '2026-11-07' },
+        { total_amount: 10000, created_at: '2026-11-07' },
+      ],
+      from: '2026-11-02',
+      to: '2026-11-09',
+    });
+
+    expect(summary.market.trading).toBe(6);
+    expect(summary.market.closed).toBe(2);
+    expect(summary.market.closedDays.map((d) => d.date)).toEqual(['2026-11-08', '2026-11-09']);
+    expect(summary.gmvPerTradingDay).toBe(money(20000 / 6));
+    expect(summary.ordersPerTradingDay).toBe(money(2 / 6));
   });
 });

@@ -355,6 +355,13 @@ api.get('/revenue/stores', (req, res) => proxyGet(req, res, `${BACKEND_URL}/api/
 api.get('/revenue/plans', (req, res) => proxyGet(req, res, `${BACKEND_URL}/api/v1/revenue/plans`));
 api.get('/revenue/work', (req, res) => proxyGet(req, res, `${BACKEND_URL}/api/v1/revenue/work`));
 
+// -- Business metrics (operational KPIs + market calendar)
+api.get('/metrics/summary', (req, res) => proxyGet(req, res, `${BACKEND_URL}/api/v1/metrics/summary`));
+api.get('/metrics/calendar', (req, res) => proxyGet(req, res, `${BACKEND_URL}/api/v1/metrics/calendar`));
+api.get('/metrics/calendar/today', (req, res) =>
+  proxyGet(req, res, `${BACKEND_URL}/api/v1/metrics/calendar/today`)
+);
+
 // -- AI/ML public health (the AI/ML /health endpoint sits outside /api/v1)
 api.get('/aiml/health', (req, res) => proxyRequest(req, res, 'GET', `${AI_ML_URL}/health`));
 

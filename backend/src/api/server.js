@@ -248,6 +248,7 @@ const analyticsRouter = require('../analytics/analyticsRouter');
 const debugRoutes = require('./routes/debug');
 const debugSeedRoutes = require('./routes/debugSeed');
 const revenueRoutes = require('./routes/revenue');
+const metricsRoutes = require('./routes/metrics');
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/events', eventRoutes);
@@ -256,6 +257,7 @@ app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/shipments', shipmentRoutes);
 app.use('/api/v1/analytics', analyticsRouter);
 app.use('/api/v1/revenue', revenueRoutes);
+app.use('/api/v1/metrics', metricsRoutes);
 
 // Debug routes for troubleshooting
 // Operational seeders. Admin + DEBUG gated, never routed through the gateway.

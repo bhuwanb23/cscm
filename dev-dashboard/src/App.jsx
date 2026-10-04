@@ -27,6 +27,8 @@ import Inventory from './pages/Inventory.jsx';
 import Orders from './pages/Orders.jsx';
 import Shipments from './pages/Shipments.jsx';
 import Revenue from './pages/Revenue.jsx';
+import Business from './pages/Business.jsx';
+import MarketCalendar from './pages/MarketCalendar.jsx';
 import StoreDetail from './pages/StoreDetail.jsx';
 
 import Agents from './pages/Agents.jsx';
@@ -284,6 +286,8 @@ function RoutedContent() {
         <Route path="/users" element={<Users />} />
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/revenue" element={<Revenue />} />
+        <Route path="/business" element={<Business />} />
+        <Route path="/market-calendar" element={<MarketCalendar />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/shipments" element={<Shipments />} />
         <Route path="/stores/:storeId" element={<StoreDetail />} />

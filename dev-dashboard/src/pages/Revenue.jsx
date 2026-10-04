@@ -41,8 +41,15 @@ function inr(n) {
 const iso = (d) => d.toISOString().slice(0, 10);
 const shortDay = (v) => String(v).slice(5); // 09-01
 
+/**
+ * Default to the last 30 days ending today.
+ *
+ * This was pinned to a hardcoded 2026-09-30, which meant the page kept
+ * showing September long after it was over - a stale window that looks like
+ * plausible data rather than an obvious bug.
+ */
 function defaultWindow() {
-  const to = new Date('2026-09-30T00:00:00Z');
+  const to = new Date();
   const from = new Date(to.getTime() - 29 * 86400000);
   return { from: iso(from), to: iso(to) };
 }

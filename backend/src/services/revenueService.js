@@ -16,6 +16,7 @@
  */
 
 const { PLAN_BY_CODE } = require('../../scripts/kanchipuram-domain');
+const marketCalendar = require('../domain/marketCalendar');
 
 /** Basis points -> fraction. 250 bps = 2.50%. */
 function bpsToFraction(bps) {
@@ -132,6 +133,12 @@ function computeChurn(subscriptions, windowStart, windowEnd) {
  * Group rows by a date field into a dense daily series over the window, so
  * charts have a point for every day even when a day had no transactions.
  *
+ * Every point carries `isTradingDay` / `marketStatus` from the market
+ * calendar. Without this a closed-market day and a business collapse are
+ * indistinguishable - both are a zero - and any average taken over the
+ * window is diluted by days that were never trading days in the first place.
+ * Consumers should plot closed days as a gap, not as zero.
+ *
  * @param {Array} rows
  * @param {string} dateField
  * @param {string} from - YYYY-MM-DD
@@ -157,14 +164,28 @@ function dailySeries(rows, dateField, from, to, sums) {
     }
   }
 
-  // Dense-fill the window.
+  // Dense-fill the window, annotating each day with its market status.
   const series = [];
   const end = new Date(`${to}T00:00:00Z`);
   for (let d = new Date(`${from}T00:00:00Z`); d <= end; d = new Date(d.getTime() + 86400000)) {
     const key = d.toISOString().slice(0, 10);
-    series.push(buckets.get(key) || { date: key, count: 0, ...Object.fromEntries(Object.keys(sums).map((k) => [k, 0])) });
+    const point = buckets.get(key) || { date: key, count: 0, ...Object.fromEntries(Object.keys(sums).map((k) => [k, 0])) };
+    series.push(marketCalendar.annotateSeries([point])[0]);
   }
   return series;
+}
+
+/**
+ * Divide by trading days rather than calendar days.
+ *
+ * A month containing Deepavali has fewer trading days than it has days, so
+ * "revenue per day" measured over 30 days understates the real daily rate.
+ * Falls back to 1 rather than yielding Infinity/NaN when a window has no
+ * trading days at all.
+ */
+function perTradingDay(total, from, to) {
+  const days = marketCalendar.tradingDayCount(from, to);
+  return days ? money((Number(total) || 0) / days) : 0;
 }
 
 /**
@@ -190,8 +211,22 @@ function revenueSummary({ subscriptions = [], payments = [], commission = [], or
 
   const totalRevenue = money(collected + commissionRevenue);
 
+  // Market context: a dip in this window may simply be days the bazaar was
+  // shut, not lost business. Callers surface this so it is not misread.
+  const market = marketCalendar.describeWindow(from, to);
+  const closed = marketCalendar.closedDays(from, to);
+
   return {
     window: { from, to },
+    market: {
+      ...market,
+      closedDays: closed.map((d) => ({
+        date: d.date,
+        status: d.status,
+        label: d.label,
+        reason: d.reason,
+      })),
+    },
     mrr,
     arr: computeArr(mrr),
     // ARPU is recurring revenue per paying account, so it is measured against
@@ -206,6 +241,10 @@ function revenueSummary({ subscriptions = [], payments = [], commission = [], or
     subscriptionRevenue: collected,
     commissionRevenue,
     totalRevenue,
+    // Per-trading-day rates: the honest daily run rate for the window.
+    gmvPerTradingDay: perTradingDay(gmv, from, to),
+    revenuePerTradingDay: perTradingDay(totalRevenue, from, to),
+    ordersPerTradingDay: perTradingDay(orders.length, from, to),
     churn: computeChurn(subscriptions, `${from} 00:00:00`, `${to} 23:59:59`),
     dailyRevenue: dailySeries(payments, 'created_at', from, to, { amount: 'amount' }),
     dailyCommission: dailySeries(commission, 'recognized_on', from, to, { amount: 'amount' }),
@@ -268,6 +307,7 @@ module.exports = {
   computeArpu,
   computeChurn,
   dailySeries,
+  perTradingDay,
   revenueSummary,
   revenueByStore,
 };
