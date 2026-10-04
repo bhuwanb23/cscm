@@ -81,26 +81,6 @@ docker compose up -d prometheus grafana
 
 Full deployment runbook (env vars, secret pairing, verification, rollback): **[DEPLOYMENT.md](DEPLOYMENT.md)**
 
-## Project Structure
-
-```
-cscm/
-├── App/              # React Native mobile app (Expo SDK 54)
-│   └── users/        # Role portals: shopkeeper / transporter / wholesaler / mesh
-├── backend/          # Express API (:3000) + gateway (:8080)
-│   └── src/          # Routes, 31 sub-agents, middleware, storage, analytics
-├── ai-ml/            # FastAPI service (:8000)
-│   ├── api/          # 17 domain routers + middleware
-│   └── legacy_models/ # Model implementations (demand, NLP, CV, …)
-├── dev-dashboard/    # Aurora Console (React + Vite + Node proxy server)
-├── grafana/          # Provisioned dashboards + datasource
-├── prometheus/       # Scrape configuration
-├── config/           # Logstash pipeline config
-├── docs/             # Architecture docs, OpenAPI spec, diagram assets
-├── scripts/          # Dev setup, deployment helpers, diagram renderer
-└── website/          # Landing/marketing site
-```
-
 ## Metrics & Dashboards
 
 Each service exposes Prometheus-format `/metrics`:
@@ -112,26 +92,6 @@ Each service exposes Prometheus-format `/metrics`:
 | AI/ML | `cscm_ai_requests_total`, `cscm_ai_request_duration_seconds_*`, `cscm_ai_errors_total`, `cscm_ai_inflight_requests` |
 
 The provisioned Grafana dashboard (**CSCM System Overview**) ships with traffic, error-rate, p95 latency, resource and circuit-breaker panels. See **[docs/OBSERVABILITY.md](docs/OBSERVABILITY.md)**.
-
-## Testing & CI
-
-```bash
-cd backend && npm test             # 775 unit tests
-cd backend && npm run test:integration   # JS↔Python contract suite
-cd ai-ml && pytest
-cd dev-dashboard && npm run build  # console build check
-```
-
-CI (GitHub Actions): backend lint + test matrix (Node 18/20), AI/ML pytest, dashboard build, integration contract tests, and a scheduled secret scan.
-
-## Environment Variables
-
-Copy each `.env.example` to `.env` and fill in values — never commit real secrets:
-
-- [`backend/.env.example`](backend/.env.example) — DB, Redis, JWT, AI/ML URL+key
-- [`dev-dashboard/.env.example`](dev-dashboard/.env.example) — service URLs, dashboard login, shared secrets
-
-> **Key pairing rule:** `JWT_SECRET` (backend) = gateway's `JWT_SECRET` = dashboard's `BACKEND_JWT_SECRET`, and `AI_ML_API_KEY` must match across backend, gateway, dashboard and ai-ml. Full matrix in [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Contributing
 
