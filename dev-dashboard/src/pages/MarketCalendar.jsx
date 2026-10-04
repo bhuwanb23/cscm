@@ -203,6 +203,19 @@ export default function MarketCalendar() {
             )}
           </div>
 
+          {data.coverage && data.coverage.exact === false && (
+            <div className="card" style={{ marginTop: 16, borderLeft: '3px solid var(--warn)' }}>
+              <h3 style={{ marginTop: 0 }}>Festival dates for {data.coverage.year} are approximate</h3>
+              <p style={{ marginBottom: 0 }}>
+                Tamil-calendar festivals shift every year, and exact dates are confirmed only for{' '}
+                <strong>{(data.coverage.exactYears || []).join(', ') || 'no years yet'}</strong>. Dates
+                outside those years are derived from recurring rules, so a festival closure may fall on
+                the wrong day. Add the year&rsquo;s overrides to the calendar module before relying on
+                them for trading decisions.
+              </p>
+            </div>
+          )}
+
           <p className="muted" style={{ fontSize: 12, marginTop: 12 }}>
             Dates marked <strong>approx</strong> come from recurring rules because Tamil-calendar
             festivals shift each year. Exact dates are listed in the calendar module and can be

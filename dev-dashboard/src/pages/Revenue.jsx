@@ -68,15 +68,38 @@ export default function Revenue() {
   );
 
   const s = summary.data && summary.data.data;
-  const planRows = plans.data && plans.data.data;
+  // Normalised for the same reason as the daily series: a partial payload must
+  // degrade to an empty list, not throw on the first .filter/.map.
+  const planRows = Array.isArray(plans.data && plans.data.data) ? plans.data.data : [];
+
+  // Nested objects need the same treatment; default to a zeroed churn block so
+  // the KPI renders rather than the page dying on a missing field.
+  const churn = (s && s.churn) || { base: 0, churned: 0, churnRateBps: 0 };
+
+  // One normalisation point instead of a dozen inline guards. Each of these
+  // payloads is consumed with .map/.filter/.length further down, and a partial
+  // or error response would otherwise throw and blank the page via the error
+  // boundary. Degrading to an empty list is the correct behaviour: the panel
+  // shows nothing rather than the console showing nothing at all.
+  const storesData = (stores.data && stores.data.data) || { stores: [], total: 0 };
+  const storeRows = Array.isArray(storesData.stores) ? storesData.stores : [];
+  const storeTotal = Number(storesData.total) || 0;
+  const workData = (work.data && work.data.data) || { summary: [], entries: [] };
+  const workSummary = Array.isArray(workData.summary) ? workData.summary : [];
+  const workEntries = Array.isArray(workData.entries) ? workData.entries : [];
 
   // Daily revenue and commission share an axis so their relative size is honest.
   const dailySeries = useMemo(() => {
-    if (!s) return [];
-    const subs = new Map(s.dailyRevenue.map((d) => [d.date, d.amount]));
-    const comm = new Map(s.dailyCommission.map((d) => [d.date, d.amount]));
-    const gmv = new Map(s.dailyGmv.map((d) => [d.date, d.gmv]));
-    return s.dailyRevenue.map((d) => ({
+    // Guard on the arrays themselves, not just on `s`. A partial or error
+    // payload still yields a truthy object, and calling .map on a missing
+    // dailyRevenue threw into the error boundary and blanked the page.
+    const rev = Array.isArray(s?.dailyRevenue) ? s.dailyRevenue : [];
+    const comm_ = Array.isArray(s?.dailyCommission) ? s.dailyCommission : [];
+    const gmv_ = Array.isArray(s?.dailyGmv) ? s.dailyGmv : [];
+    const subs = new Map(rev.map((d) => [d.date, d.amount]));
+    const comm = new Map(comm_.map((d) => [d.date, d.amount]));
+    const gmv = new Map(gmv_.map((d) => [d.date, d.gmv]));
+    return rev.map((d) => ({
       date: d.date,
       subscription: subs.get(d.date) || 0,
       commission: comm.get(d.date) || 0,
@@ -93,8 +116,8 @@ export default function Revenue() {
   }, [s]);
 
   const houseRanking = useMemo(() => {
-    const rows = stores.data && stores.data.data && stores.data.data.stores;
-    if (!rows) return [];
+    const rows = storeRows;
+    if (!Array.isArray(rows)) return [];
     return rows.map((r) => ({
       label: r.storeId,
       value: r.totalRevenue,
@@ -103,7 +126,7 @@ export default function Revenue() {
   }, [stores.data]);
 
   const planMix = useMemo(() => {
-    if (!planRows) return [];
+    if (!Array.isArray(planRows)) return [];
     return planRows
       .filter((p) => p.subscribers > 0)
       .map((p) => ({ name: p.name, value: p.subscribers }));
@@ -111,13 +134,13 @@ export default function Revenue() {
 
   const workKinds = useMemo(() => {
     const set = new Set();
-    ((work.data && work.data.data && work.data.data.summary) || []).forEach((r) => set.add(r.kind));
+    workSummary.forEach((r) => set.add(r.kind));
     return [...set];
-  }, [work.data]);
+  }, [workSummary]);
 
   const totalWork = useMemo(
-    () => ((work.data && work.data.data && work.data.data.summary) || []).reduce((a, r) => a + r.n, 0),
-    [work.data]
+    () => workSummary.reduce((a, r) => a + r.n, 0),
+    [workSummary]
   );
 
   const refreshAll = () => {
@@ -159,9 +182,9 @@ export default function Revenue() {
       {s && (
         <Reveal className="stack">
           <div className="kpi-grid">
-            <Kpi label="MRR" value={s.mrr} sub="recurring subscription revenue" tone="good" spark={s.dailyRevenue.map((d) => d.amount)} />
+            <Kpi label="MRR" value={s.mrr} sub="recurring subscription revenue" tone="good" spark={(Array.isArray(s.dailyRevenue) ? s.dailyRevenue : []).map((d) => d.amount)} />
             <Kpi label="ARR run-rate" value={s.arr} sub={`${s.activeSubscriptions} active subscriptions`} tone="good" />
-            <Kpi label="GMV processed" value={s.gmv} sub="goods value across all orders" spark={s.dailyGmv.map((d) => d.gmv)} />
+            <Kpi label="GMV processed" value={s.gmv} sub="goods value across all orders" spark={(Array.isArray(s.dailyGmv) ? s.dailyGmv : []).map((d) => d.gmv)} />
             <Kpi label="Platform revenue" value={s.totalRevenue} sub="subscriptions + commission" tone="good" />
           </div>
 
@@ -171,9 +194,9 @@ export default function Revenue() {
             <Kpi label="ARPU" value={s.arpu} sub={`per paying account (${s.payingAccounts})`} />
             <Kpi
               label="Churn"
-              value={`${(s.churn.churnRateBps / 100).toFixed(1)}%`}
-              sub={`${s.churn.churned} of ${s.churn.base} accounts`}
-              tone={s.churn.churnRateBps > 0 ? 'warn' : 'good'}
+              value={`${(churn.churnRateBps / 100).toFixed(1)}%`}
+              sub={`${churn.churned} of ${churn.base} accounts`}
+              tone={churn.churnRateBps > 0 ? 'warn' : 'good'}
             />
           </div>
 
@@ -236,7 +259,7 @@ export default function Revenue() {
               <p className="muted">
                 Concentration is a risk, not a success — the top two houses carry{' '}
                 {inr(houseRanking.slice(0, 2).reduce((a, r) => a + r.value, 0))} of{' '}
-                {inr(stores.data.data.total)}.
+                {inr(storeTotal)}.
               </p>
               <Suspense fallback={<ChartFallback height={houseRanking.length * 30 + 24} />}>
                 <RankBars data={houseRanking} />
@@ -299,10 +322,10 @@ export default function Revenue() {
         </div>
         <ErrorBanner error={work.error} />
         {work.loading && <Loading rows={5} />}
-        {work.data && work.data.data && work.data.data.entries.length === 0 && (
+        {workEntries.length === 0 && (
           <EmptyState art="data" title="No work logged" hint="Run the revenue/work seed for this window." />
         )}
-        {work.data && work.data.data && work.data.data.entries.length > 0 && (
+        {workEntries.length > 0 && (
           <DataTable
             columns={[
               { key: 'occurred_at', label: 'When', width: 118, render: (w) => dateTime(w.occurred_at) },
@@ -314,7 +337,7 @@ export default function Revenue() {
               { key: 'outcome', label: 'Outcome', width: 110 },
               { key: 'detail', label: 'Detail', width: 240 },
             ]}
-            rows={work.data.data.entries}
+            rows={workEntries}
             keyField="id"
           />
         )}

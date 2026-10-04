@@ -173,3 +173,35 @@ describe('marketCalendar.describeWindow', () => {
     expect(summary.label).toBe('6 trading days');
   });
 });
+
+describe('marketCalendar override coverage', () => {
+  const { coverageFor, coverage } = require('../../domain/marketCalendar');
+
+  it('reports the current year as exact when overrides exist for it', () => {
+    expect(coverageFor(2026).exact).toBe(true);
+  });
+
+  it('reports a year with no overrides as NOT exact', () => {
+    // This is the silent-degradation case: dates still render, they are just
+    // derived from recurring rules and may be wrong.
+    expect(coverageFor(2031).exact).toBe(false);
+  });
+
+  it('lists which years are confirmed', () => {
+    expect(coverageFor(2031).exactYears).toContain(2026);
+  });
+
+  it('reports coverage for a window against the current year', () => {
+    const c = coverage('2026-11-02', '2026-11-09');
+    expect(c.year).toBe(new Date().getUTCFullYear());
+    expect(typeof c.exact).toBe('boolean');
+  });
+
+  it('still resolves dates for a year with no overrides', () => {
+    // Degraded must mean approximate, never broken or empty.
+    const day = resolve('2031-01-15');
+    expect(day.isTradingDay).toBe(false);
+    expect(day.exact).toBe(false);
+    expect(day.label).toBe('Pongal');
+  });
+});

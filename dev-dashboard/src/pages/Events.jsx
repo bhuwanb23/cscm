@@ -7,7 +7,9 @@ export default function Events() {
   const { events } = useLive();
   const snapshot = useAsyncData(() => api.get('/api/events'), []);
 
-  const rest = snapshot.data || [];
+  // A partial or error payload can put a non-array here, so normalise before
+  // anything calls .map on it.
+  const rest = Array.isArray(snapshot.data) ? snapshot.data : [];
   const live = events.length ? events : rest;
 
   return (

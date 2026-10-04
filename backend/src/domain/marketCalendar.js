@@ -306,6 +306,39 @@ function describeWindow(from, to) {
   };
 }
 
+/**
+ * Whether OVERRIDES carries confirmed dates for a given year.
+ *
+ * Tamil-calendar festivals shift every year, so the override table is
+ * populated one year at a time. When the current year has no entries the
+ * calendar silently degrades to approximate rules, which is the failure mode
+ * that hides best: every date still renders, it is just wrong. Surfacing this
+ * lets the UI say so instead of presenting a guess as fact.
+ */
+function coverageFor(year) {
+  const y = Number(year);
+  const years = new Set(
+    Object.keys(OVERRIDES)
+      .map((k) => Number(k.slice(0, 4)))
+      .filter(Number.isFinite)
+  );
+  return {
+    year: y,
+    exact: years.has(y),
+    exactYears: [...years].sort(),
+  };
+}
+
+/** Coverage report for the year a window sits in, for the staleness banner. */
+function coverage(from, to) {
+  const start = isoDay(from);
+  const end = isoDay(to);
+  if (!start || !end) return { year: new Date().getUTCFullYear(), exact: false, exactYears: [] };
+  // A window can straddle a year boundary; report the current year, which is
+  // what actually decides whether today's dates are trustworthy.
+  return coverageFor(new Date().getUTCFullYear());
+}
+
 module.exports = {
   STATUS,
   FIXED_HOLIDAYS,
@@ -319,4 +352,6 @@ module.exports = {
   closedDays,
   annotateSeries,
   describeWindow,
+  coverageFor,
+  coverage,
 };

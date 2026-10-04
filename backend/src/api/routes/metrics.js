@@ -130,6 +130,9 @@ router.get('/calendar', (req, res) => {
         window: { from, to },
         days: marketCalendar.range(from, to),
         summary: marketCalendar.describeWindow(from, to),
+        // Lets the UI warn that this year's festival dates are approximate
+        // rather than silently showing derived dates as if they were exact.
+        coverage: marketCalendar.coverage(from, to),
       },
     });
   } catch (error) {

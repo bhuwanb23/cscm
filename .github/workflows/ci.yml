@@ -71,6 +71,67 @@ jobs:
         working-directory: ai-ml
         run: pytest -p no:cacheprovider
 
+  backend-postgres:
+    name: Backend (Postgres integration)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Runs the analytics SQL against a real database. Unit tests mock rows, so
+    # a query naming a non-existent column passes them and fails only in
+    # production - which is exactly how order_items.unit_cost shipped.
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: cscm_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/cscm_test
+      DATABASE_TYPE: postgresql
+      INTEGRATION_TEST: '1'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Apply schema
+        working-directory: backend
+        run: |
+          # The app creates its own tables on boot, so start it once against the
+          # empty database to materialise the schema the queries expect.
+          node -e "
+            // The module exports the class directly, not as a named property.
+            const PostgreSQLDatabase = require('./src/storage/postgresqlDatabase');
+            const db = new PostgreSQLDatabase();
+            db.initialize()
+              .then(() => db.close())
+              .then(() => { console.log('schema applied'); process.exit(0); })
+              .catch((e) => { console.error(e.message); process.exit(1); });
+          "
+
+      - name: Run Postgres integration tests
+        working-directory: backend
+        run: npx jest src/tests/integration/metricsDb.integration.test.js --maxWorkers=2
+
   dashboard:
     name: Dev dashboard build
     runs-on: ubuntu-latest
@@ -91,3 +152,9 @@ jobs:
       - name: Build
         working-directory: dev-dashboard
         run: npm run build
+
+      - name: Run page smoke tests
+        working-directory: dev-dashboard
+        # vite build resolves identifiers at runtime, so a missing import yields
+        # a green build and a page that throws on load. These mount every route.
+        run: npm test

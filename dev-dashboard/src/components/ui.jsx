@@ -310,7 +310,11 @@ export function DataTable({
 }) {
   if (loading) return <SkeletonTable rows={loadingRows} />;
 
-  if (!rows || rows.length === 0) {
+  // Array.isArray, not a truthiness/length check. A partial API payload yields
+  // `{}` rather than `[]`, and `{}` is truthy with undefined.length, so it
+  // slipped past the old guard and threw on rows.map below — blanking the page
+  // through the error boundary instead of rendering an empty table.
+  if (!Array.isArray(rows) || rows.length === 0) {
     return typeof empty === 'string' ? (
       <EmptyState title={empty} hint="Data may appear once the system has activity." />
     ) : (

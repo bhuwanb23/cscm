@@ -15,4 +15,13 @@ export default defineConfig({
     },
   },
   build: { outDir: 'dist' },
+  // The page smoke tests render every route in jsdom. `vite build` resolves
+  // identifiers at runtime, so a missing import produces a green build and a
+  // page that throws on load - these tests are what catches that class.
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    include: ['src/**/*.test.{jsx,js}'],
+    setupFiles: ['./src/test/setup.js'],
+  },
 });

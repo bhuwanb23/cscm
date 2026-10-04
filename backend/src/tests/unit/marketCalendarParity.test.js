@@ -57,24 +57,31 @@ describe('market calendar cross-language parity', () => {
     expect(py).not.toBeNull();
   });
 
-  it('agrees with Python on every exact 2026 festival date', () => {
+  it('agrees with Python on every exact festival date, in every year either side declares', () => {
     if (!py) return; // defensive; the previous test already asserts this
 
-    // JS models a multi-day festival as one entry plus a `duration`, while
-    // Python lists each closed day explicitly. Compare the expanded day sets,
-    // otherwise a correctly-modelled two-day festival looks like a mismatch.
-    const js2026 = [...jsExactClosedDays('2026')].sort();
-    const py2026 = Object.keys(py)
-      .filter((k) => k.startsWith('2026-'))
-      .sort();
+    // Compare EVERY year present on either side, not just the current one.
+    // Checking only 2026 meant adding a 2027 override to one language and not
+    // the other would pass silently - the exact drift this test exists to stop.
+    const years = new Set([
+      ...Object.keys(OVERRIDES).map((k) => k.slice(0, 4)),
+      ...Object.keys(py).map((k) => k.slice(0, 4)),
+    ]);
 
-    expect(js2026).toEqual(py2026);
+    expect([...years].sort()).toEqual(['2026']); // update when a year is added
+
+    for (const year of years) {
+      const jsDays = [...jsExactClosedDays(year)].sort();
+      const pyDays = Object.keys(py)
+        .filter((k) => k.startsWith(`${year}-`))
+        .sort();
+      expect({ year, js: jsDays }).toEqual({ year, js: pyDays });
+    }
   });
 
   it('agrees with Python on festival names', () => {
     if (!py) return;
     for (const [date, info] of Object.entries(OVERRIDES)) {
-      if (!date.startsWith('2026-')) continue;
       if (!(date in py)) continue;
       expect(info.name).toBe(py[date]);
     }
