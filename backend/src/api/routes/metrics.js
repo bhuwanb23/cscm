@@ -179,20 +179,33 @@ router.get(
   '/freshness',
   withClient(async (client, req) => {
     const scope = scopeFor(req);
-    const scoped = scope ? ' AND ($1::text IS NULL OR store_id = $1)' : '';
-    const params = scope ? [scope] : [];
 
-    const { rows } = await client.query(
-      `SELECT
-         (SELECT MAX(created_at) FROM orders${scoped ? ' WHERE ($1::text IS NULL OR store_id = $1)' : ''})   AS last_order_at,
-         (SELECT MAX(created_at) FROM shipments${scoped ? ' WHERE ($1::text IS NULL OR store_id = $1)' : ''}) AS last_shipment_at,
-         (SELECT MAX(created_at) FROM users)  AS last_user_at,
-         (SELECT COUNT(*)::int FROM orders${scoped ? ' WHERE ($1::text IS NULL OR store_id = $1)' : ''})   AS order_count`,
-      params
+    // Separate statements rather than one row of scalar subqueries. `shipments`
+    // has no store_id of its own - a shipment belongs to an order - so scoping
+    // it means joining back to orders. Selecting MAX(created_at) FROM shipments
+    // WHERE store_id = ... looks obvious and is a 42703 at runtime.
+    const orders = await client.query(
+      `SELECT MAX(created_at) AS last_order_at, COUNT(*)::int AS order_count
+         FROM orders
+        WHERE ($1::text IS NULL OR store_id = $1)`,
+      [scope]
     );
 
-    const row = rows[0] || {};
-    const lastActivity = [row.last_order_at, row.last_shipment_at]
+    const shipments = await client.query(
+      `SELECT MAX(s.created_at) AS last_shipment_at
+         FROM shipments s
+         JOIN orders o ON o.order_id = s.order_id
+        WHERE ($1::text IS NULL OR o.store_id = $1)`,
+      [scope]
+    );
+
+    // Deliberately unscoped: registration is a platform-wide fact, not a
+    // store's, and users carries no store column to scope it by.
+    const users = await client.query(`SELECT MAX(created_at) AS last_user_at FROM users`);
+
+    const orderRow = orders.rows[0] || {};
+    const shipmentRow = shipments.rows[0] || {};
+    const lastActivity = [orderRow.last_order_at, shipmentRow.last_shipment_at]
       .filter(Boolean)
       .map((v) => new Date(v).getTime())
       .filter(Number.isFinite);
@@ -201,14 +214,15 @@ router.get(
     const ageHours = latest ? Math.round((Date.now() - latest) / 3600000) : null;
 
     return {
-      lastOrderAt: row.last_order_at || null,
-      lastShipmentAt: row.last_shipment_at || null,
-      lastUserAt: row.last_user_at || null,
+      lastOrderAt: orderRow.last_order_at || null,
+      lastShipmentAt: shipmentRow.last_shipment_at || null,
+      lastUserAt: (users.rows[0] || {}).last_user_at || null,
       lastActivityAt: latest ? new Date(latest).toISOString() : null,
       ageHours,
-      orderCount: Number(row.order_count) || 0,
+      orderCount: Number(orderRow.order_count) || 0,
       // Bucketed so the UI can colour the badge without re-deriving thresholds.
-      freshness: ageHours == null ? 'empty' : ageHours <= 48 ? 'live' : ageHours <= 24 * 14 ? 'stale' : 'very_stale',
+      freshness:
+        ageHours == null ? 'empty' : ageHours <= 48 ? 'live' : ageHours <= 24 * 14 ? 'stale' : 'very_stale',
     };
   })
 );
