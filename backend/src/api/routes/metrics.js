@@ -166,4 +166,51 @@ router.get('/calendar/today', (req, res) => {
   }
 });
 
+/**
+ * GET /api/v1/metrics/freshness
+ * How current the data actually is.
+ *
+ * A demo whose most recent order is a month old looks broken even when every
+ * number on it is correct. This answers "when did anything last happen" so the
+ * console can say so plainly instead of leaving the reader to infer staleness
+ * from a flat chart.
+ */
+router.get(
+  '/freshness',
+  withClient(async (client, req) => {
+    const scope = scopeFor(req);
+    const scoped = scope ? ' AND ($1::text IS NULL OR store_id = $1)' : '';
+    const params = scope ? [scope] : [];
+
+    const { rows } = await client.query(
+      `SELECT
+         (SELECT MAX(created_at) FROM orders${scoped ? ' WHERE ($1::text IS NULL OR store_id = $1)' : ''})   AS last_order_at,
+         (SELECT MAX(created_at) FROM shipments${scoped ? ' WHERE ($1::text IS NULL OR store_id = $1)' : ''}) AS last_shipment_at,
+         (SELECT MAX(created_at) FROM users)  AS last_user_at,
+         (SELECT COUNT(*)::int FROM orders${scoped ? ' WHERE ($1::text IS NULL OR store_id = $1)' : ''})   AS order_count`,
+      params
+    );
+
+    const row = rows[0] || {};
+    const lastActivity = [row.last_order_at, row.last_shipment_at]
+      .filter(Boolean)
+      .map((v) => new Date(v).getTime())
+      .filter(Number.isFinite);
+    const latest = lastActivity.length ? Math.max(...lastActivity) : null;
+
+    const ageHours = latest ? Math.round((Date.now() - latest) / 3600000) : null;
+
+    return {
+      lastOrderAt: row.last_order_at || null,
+      lastShipmentAt: row.last_shipment_at || null,
+      lastUserAt: row.last_user_at || null,
+      lastActivityAt: latest ? new Date(latest).toISOString() : null,
+      ageHours,
+      orderCount: Number(row.order_count) || 0,
+      // Bucketed so the UI can colour the badge without re-deriving thresholds.
+      freshness: ageHours == null ? 'empty' : ageHours <= 48 ? 'live' : ageHours <= 24 * 14 ? 'stale' : 'very_stale',
+    };
+  })
+);
+
 module.exports = router;

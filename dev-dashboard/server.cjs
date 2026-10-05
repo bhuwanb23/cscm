@@ -356,7 +356,16 @@ api.get('/revenue/plans', (req, res) => proxyGet(req, res, `${BACKEND_URL}/api/v
 api.get('/revenue/work', (req, res) => proxyGet(req, res, `${BACKEND_URL}/api/v1/revenue/work`));
 
 // -- Business metrics (operational KPIs + market calendar)
+// -- Account signup (public; no dashboard session required)
+// Self-registration for real backend users. Deliberately unauthed: a new
+// visitor has no dashboard token yet, which is the whole point of signup.
+// The dashboard admin login is a separate concern and stays as it was.
+app.post('/api/auth/register', (req, res) =>
+  proxyRequest(req, res, 'POST', `${BACKEND_URL}/api/v1/auth/register`)
+);
+
 api.get('/metrics/summary', (req, res) => proxyGet(req, res, `${BACKEND_URL}/api/v1/metrics/summary`));
+api.get('/metrics/freshness', (req, res) => proxyGet(req, res, `${BACKEND_URL}/api/v1/metrics/freshness`));
 api.get('/metrics/calendar', (req, res) => proxyGet(req, res, `${BACKEND_URL}/api/v1/metrics/calendar`));
 api.get('/metrics/calendar/today', (req, res) =>
   proxyGet(req, res, `${BACKEND_URL}/api/v1/metrics/calendar/today`)

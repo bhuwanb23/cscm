@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useMemo, useState } from 'react';
 import { PageHeader, Kpi, Loading, ErrorBanner, EmptyState, StatusPill, DataTable, useAsyncData } from '../components/ui.jsx';
 import { api } from '../api/client.jsx';
-import { inr as inrExact, num, compactINR, dateTime, dayMonthShort } from '../lib/format.js';
+import { inr as inrExact, num, compactINR, dateTime, dayMonthShort, relative } from '../lib/format.js';
 
 /**
  * recharts is ~420KB raw, so the chart surfaces load on demand exactly as the
@@ -95,11 +95,43 @@ function splitByMarket(days, field) {
   }));
 }
 
+/**
+ * Freshness badge.
+ *
+ * A demo whose newest order is a month old reads as broken even when every
+ * number is correct. Saying "last activity 32 days ago" up front is honest and
+ * tells the reader what to actually look at, where a flat chart just looks
+ * like a bug.
+ */
+function FreshnessBadge({ data }) {
+  if (!data) return null;
+  const tone = data.freshness === 'live' ? 'ok' : data.freshness === 'stale' ? 'warn' : 'err';
+
+  const label =
+    data.freshness === 'empty'
+      ? 'No activity yet'
+      : data.lastActivityAt
+        ? `Last activity ${relative(data.lastActivityAt)}`
+        : 'No activity yet';
+
+  return (
+    <span
+      className={`badge ${tone}`}
+      title={`Latest order: ${data.lastOrderAt || 'never'}${
+        data.orderCount ? `\n${data.orderCount} orders in total` : ''
+      }`}
+    >
+      {label}
+    </span>
+  );
+}
+
 export default function Business() {
   const [win, setWin] = useState(defaultWindow);
 
   const q = `from=${win.from}&to=${win.to}`;
   const metrics = useAsyncData(() => api.get(`/api/metrics/summary?${q}`), [win.from, win.to]);
+  const freshness = useAsyncData(() => api.get('/api/metrics/freshness'), []);
 
   const m = metrics.data && metrics.data.data;
   const market = m && m.market;
@@ -165,6 +197,7 @@ export default function Business() {
             <button className="secondary" onClick={() => shiftWindow(7)} aria-label="Next week">
               +7d
             </button>
+            <FreshnessBadge data={freshness.data && freshness.data.data} />
           </>
         }
       />
